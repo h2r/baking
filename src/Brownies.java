@@ -6,33 +6,17 @@ import java.util.TreeSet;
 
 public class Brownies extends Recipe {
 	
-	public Brownies(ComplexIngredientInstance complexIngredientInstance) {
-		super(complexIngredientInstance);
-		this.init();
-	}
-
-	public Brownies(IngredientClass ingredientClass, String name) {
-		super(ingredientClass, name);
-		this.init();
-	}
-	
-	protected void init()
-	{
-		IngredientClass ingredientClass = (IngredientClass)this.obClass;
-		List<SimpleIngredientInstance> ingredients = new ArrayList<SimpleIngredientInstance>();
-		ingredients.add(new SimpleIngredientInstance(ingredientClass, "cocoa"));
-		ingredients.add(new SimpleIngredientInstance(ingredientClass, "butter"));
-		ingredients.add(new SimpleIngredientInstance(ingredientClass, "flour"));
-		ingredients.add(new SimpleIngredientInstance(ingredientClass, "sugar"));
-		ingredients.add(new SimpleIngredientInstance(ingredientClass, "salt"));
-		ingredients.add(new SimpleIngredientInstance(ingredientClass, "baking_soda"));
-		ingredients.add(new SimpleIngredientInstance(ingredientClass, "baking_powder"));
-		ingredients.add(new SimpleIngredientInstance(ingredientClass, "eggs"));
-		this.simpleContents = new TreeSet<SimpleIngredientInstance>(ingredients);
-	}
-
-	@Override
-	public IngredientInstance copy() {
-		return new Brownies(this);
+	public Brownies() {
+		super();
+		List<Ingredient> ingredientList = new ArrayList<Ingredient>();
+		ingredientList.add(new SimpleIngredient("cocoa", false, false, false));
+		ingredientList.add(new SimpleIngredient("butter", false, false, false));
+		ingredientList.add(new SimpleIngredient("flour", false, false, false));
+		//ingredientList.add(new SimpleIngredient("sugar", false, false, false));
+		//ingredientList.add(new SimpleIngredient("salt", false, false, false));
+		//ingredientList.add(new SimpleIngredient("baking_soda", false, false, false));
+		//ingredientList.add(new SimpleIngredient("baking_powder", false, false, false));
+		//ingredientList.add(new SimpleIngredient("eggs", false, false, false));
+		this.topLevelIngredient = new ComplexIngredient("Brownies", false, false, false, ingredientList);
 	}
 }

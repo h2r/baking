@@ -1,4 +1,5 @@
 import java.util.List;
+import java.util.Set;
 
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
@@ -7,41 +8,27 @@ import burlap.oomdp.singleagent.RewardFunction;
 
 public class RecipeRewardFunction implements RewardFunction {
 
-	protected ComplexIngredientInstance goal;
-	public RecipeRewardFunction(Recipe recipeGoal) {
-		this.goal = recipeGoal;
+	protected Recipe goal;
+	public RecipeRewardFunction() {
+		//this.goal = recipeGoal;
 	}
 
 	@Override
-	public double reward(State s, GroundedAction a, State sprime) {
-		
-		List<ObjectInstance> objects = s.getObjectsOfTrueClass(ContainerClass.className);
-		for (ObjectInstance obj : objects)
+	public double reward(State state, GroundedAction a, State sprime) {
+		// Things look ok...for now. Continue!
+		//return -1;
+		String[] classes = a.action.getParameterClasses();
+		for (int i = 0; i < classes.length; ++i)
 		{
-			ContainerInstance container = (ContainerInstance)obj;
-			if (container.contents.size() == 1)
+			if (classes[i] == SingleAgentKitchen.CLASSAGENT)
 			{
-				if (container.contents.get(0) instanceof ComplexIngredientInstance)
+				ObjectInstance agent = state.getObject(a.params[i]);
+				if (agent.getDiscValForAttribute(SingleAgentKitchen.ATTROBOT) == 0)
 				{
-					if (this.goal.equals(container.contents.get(0))) 
-					{
-						return 0;
-					}
-				}
-			}
-			else
-			{
-				for (IngredientInstance ingredientInstance : container.contents)
-				{
-					// This ingredient is not part of the recipe, abort!
-					if (!this.goal.contains(ingredientInstance))
-					{
-						return -1;
-					}
+					return -2;
 				}
 			}
 		}
-		// Things look ok...for now. Continue!
 		return -1;
 	}
 }

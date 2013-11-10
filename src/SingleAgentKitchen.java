@@ -1,5 +1,7 @@
 
 import java.util.List;
+import java.util.Random;
+import java.util.Set;
 
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
 import burlap.behavior.statehashing.NameDependentStateHashFactory;
@@ -17,6 +19,7 @@ import burlap.oomdp.core.Attribute;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
+import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.singleagent.Action;
@@ -34,10 +37,12 @@ public class SingleAgentKitchen implements DomainGenerator {
 	public static final String							ATTMIXED = "mixed";
 	public static final String							ATTBAKED = "baked";
 	public static final String							ATTINCONTAINER = "in_container";
+	public static final String							ATTROBOT = "robot";
+	public static final String							ATTMIXINGSPACE = "mixing_space";
+	public static final String							ATTINSPACE = "in_space";
 	
-	public static final String							CLASSCONTENTS = "contents";
-	public static final String							CLASSBATTER = "batter";
-	public static final String							CLASSBROWNIES = "brownies";
+	public static final String							CLASSSPACE = "space";
+	public static final String							CLASSAGENT = "agent";
 	public static final String							CLASSINGREDIENT = "cocoa";
 	public static final String							CLASSMIXCONTAINER = "mix_container";
 	public static final String							CLASSINGREDIENTCONTAINER = "ingredient_container";
@@ -46,126 +51,227 @@ public class SingleAgentKitchen implements DomainGenerator {
 	public static final String							ACTIONMIX = "mix";
 	public static final String							ACTIONBAKE = "bake";
 	public static final String							ACTIONPOUR = "pour";
+	public static final String							ACTIONMOVE = "move";
 	
 	@Override
 	public Domain generateDomain() {
 		Domain domain = new SADomain();
-		ObjectClass containerClass = new ContainerClass(domain);
-		ObjectClass ingredientClass = new IngredientClass(domain);
+		ObjectClass containerClass = new ObjectClass(domain, ContainerClass.className);
 		
+		Attribute mixingAttribute = 
+				new Attribute(domain, ContainerClass.ATTMIXING, Attribute.AttributeType.DISC);
+		mixingAttribute.setDiscValuesForRange(0,1,1);
+		
+		Attribute heatingAttribute = 
+				new Attribute(domain, ContainerClass.ATTHEATING, Attribute.AttributeType.DISC);
+		heatingAttribute.setDiscValuesForRange(0,1,1);
+		
+		Attribute receivingAttribute =
+				new Attribute(domain, ContainerClass.ATTRECEIVING, Attribute.AttributeType.DISC);
+		receivingAttribute.setDiscValuesForRange(0,1,1);
+		Attribute inSpaceAttribute =
+				new Attribute(domain, ATTINSPACE, Attribute.AttributeType.RELATIONAL);
+		
+		containerClass.addAttribute(mixingAttribute);
+		containerClass.addAttribute(heatingAttribute);
+		containerClass.addAttribute(receivingAttribute);
+		containerClass.addAttribute(new Attribute(domain, ContainerClass.ATTCONTAINS, 
+						Attribute.AttributeType.MULTITARGETRELATIONAL));
+		containerClass.addAttribute(inSpaceAttribute);
+		
+		Attribute bakedAttribute = 
+				new Attribute(domain, Recipe.Ingredient.attBaked, Attribute.AttributeType.DISC);
+		bakedAttribute.setDiscValuesForRange(0,1,1);
+		Attribute mixedAttribute = 
+				new Attribute(domain, Recipe.Ingredient.attMixed, Attribute.AttributeType.DISC);
+		mixedAttribute.setDiscValuesForRange(0,1,1);
+		Attribute meltedAttribute = 
+				new Attribute(domain, Recipe.Ingredient.attMelted, Attribute.AttributeType.DISC);
+		meltedAttribute.setDiscValuesForRange(0,1,1);
+		Attribute containsAttribute = 
+				new Attribute(domain, Recipe.ComplexIngredient.attContains, Attribute.AttributeType.MULTITARGETRELATIONAL);
+		
+		ObjectClass spaceClass = new ObjectClass(domain, CLASSSPACE);
+		Attribute mixingSpace = new Attribute(domain, ATTMIXINGSPACE, Attribute.AttributeType.DISC);
+		mixingSpace.setDiscValuesForRange(0,1,1);
+		spaceClass.addAttribute(mixingSpace);
+		
+		ObjectClass simpleIngredientClass = new ObjectClass(domain, Recipe.SimpleIngredient.className);
+		simpleIngredientClass.addAttribute(bakedAttribute);
+		simpleIngredientClass.addAttribute(mixedAttribute);
+		simpleIngredientClass.addAttribute(meltedAttribute);
+		domain.addObjectClass(simpleIngredientClass);		
+		
+		ObjectClass complexIngredientClass = new ObjectClass(domain, Recipe.ComplexIngredient.className);
+		complexIngredientClass.addAttribute(bakedAttribute);
+		complexIngredientClass.addAttribute(mixedAttribute);
+		complexIngredientClass.addAttribute(meltedAttribute);
+		complexIngredientClass.addAttribute(containsAttribute);
+		domain.addObjectClass(complexIngredientClass);
+		
+		ObjectClass agent = new ObjectClass(domain, this.CLASSAGENT);
+		Attribute robot = new Attribute(domain, this.ATTROBOT, Attribute.AttributeType.DISC);
+		robot.setDiscValuesForRange(0, 1, 1);
+		agent.addAttribute(robot);
 		
 		Action mix = new MixAction(ACTIONMIX, domain);
 		Action bake = new BakeAction(ACTIONBAKE, domain);
 		Action pour = new PourAction(ACTIONPOUR, domain);
+		Action move = new MoveAction(ACTIONMOVE, domain);
 		return domain;
 	}
 	
+	public void PlanRecipe(Recipe recipe)
+	{
+		
+	}
+	
+	public void PlanIngredient(Recipe.ComplexIngredient complexIngredient)
+	{
+		
+	}
 	public static State getOneAgent(Domain domain){
 		State state = new State();
-		ContainerInstance mixingBowl = 
-				new MixingContainerInstance(
-						(ContainerClass)domain.getObjectClass(ContainerClass.className), 
+		
+		ObjectInstance human = new ObjectInstance(domain.getObjectClass(CLASSAGENT), "human");
+		human.setValue(ATTROBOT, 0);
+		state.addObject(human);
+		
+		ObjectInstance robot = new ObjectInstance(domain.getObjectClass(CLASSAGENT), "robot");
+		robot.setValue(ATTROBOT, 1);
+		state.addObject(robot);
+		
+		ObjectInstance shelfSpace = new ObjectInstance(domain.getObjectClass(CLASSSPACE), "shelf");
+		shelfSpace.setValue(ATTMIXINGSPACE, 0);
+		state.addObject(shelfSpace);
+		ObjectInstance counterSpace = new ObjectInstance(domain.getObjectClass(CLASSSPACE), "counter");
+		counterSpace.setValue(ATTMIXINGSPACE, 1);
+		state.addObject(counterSpace);
+		
+		ObjectInstance mixingBowl = 
+				new ObjectInstance(
+						domain.getObjectClass(ContainerClass.className), 
 						"mixing_bowl_1");
+		mixingBowl.setValue(ContainerClass.ATTRECEIVING, 1);
+		mixingBowl.setValue(ContainerClass.ATTHEATING, 0);
+		mixingBowl.setValue(ContainerClass.ATTMIXING, 1);
 		
 		state.addObject(mixingBowl);
-		IngredientClass ingredientClass = 
-				(IngredientClass)domain.getObjectClass(IngredientClass.className);
+		ObjectClass simpleIngredientClass = domain.getObjectClass(Recipe.SimpleIngredient.className);
 		
-		Recipe brownies = new Brownies(ingredientClass, "brownies");
-		ContainerClass containerClass = 
-				(ContainerClass)domain.getObjectClass(ContainerClass.className);
+		Recipe brownies = new Brownies();
+		ObjectClass containerClass = domain.getObjectClass(ContainerClass.className);
 		
-		List<ContainerInstance> containerInstances = brownies.getContainers(containerClass);
-		for (ContainerInstance containerInstance : containerInstances)
+		List<ObjectInstance> ingredientInstances = brownies.getRecipeList(simpleIngredientClass);
+		List<ObjectInstance> containerInstances = brownies.getContainers(containerClass, ingredientInstances);
+		
+		for (ObjectInstance ingredientInstance : ingredientInstances)
 		{
+			state.addObject(ingredientInstance);
+		}
+		for (ObjectInstance containerInstance : containerInstances)
+		{
+			containerInstance.addRelationalTarget(ATTINSPACE, shelfSpace.getName());
 			state.addObject(containerInstance);
-			state.addObject(containerInstance.contents.get(0));
+			
 		}
 		return state;
 	}
 	
-	public void add(State state, Domain domain, ObjectInstance ingredient, ObjectInstance container)
-	{
-		List<ObjectInstance> contentInstances = state.getObjectsOfTrueClass(CLASSCONTENTS);
-		if (contentInstances.size() > 0)
-		{
-			ObjectInstance contents = contentInstances.get(0);
-			String attributeName = "has_" + ingredient.getName();
-			contents.setValue(attributeName, 1);
-			System.out.println("Adding: " + ingredient.getName());
-		}
-	}
-	
-	public void mix(State state, Domain domain)
-	{
-		List<ObjectInstance> contentInstances = state.getObjectsOfTrueClass(CLASSCONTENTS);
-		if (contentInstances.size() > 0)
-		{
-			ObjectInstance contents = contentInstances.get(0);
-				
-			if (contents.getValueForAttribute(ATTHASFLOUR).getDiscVal() == 1)
-			{
-				state.addObject(new ObjectInstance(domain.getObjectClass(CLASSBATTER), CLASSBATTER+0));
-				
-				ObjectInstance batter = state.getObjectsOfTrueClass(CLASSBATTER).get(0);
-				batter.setValue(ATTBAKED, 0);	
-			}
-					
-		}
-	}
-	
-	public void bake(State state, Domain domain)
-	{
-		List<ObjectInstance> contentInstances = state.getObjectsOfTrueClass(CLASSCONTENTS);
-		List<ObjectInstance> batterInstances = state.getObjectsOfTrueClass(CLASSBATTER);
-		if (contentInstances.size() > 0 && batterInstances.size() > 0)
-		{
-			ObjectInstance contents = contentInstances.get(0);
-			ObjectInstance batter = batterInstances.get(0);
-			state.addObject(new ObjectInstance(domain.getObjectClass(CLASSBROWNIES), CLASSBROWNIES+0));	
-		}
-	}
-	
 	public class PourAction extends Action {
 		public PourAction(String name, Domain domain) {
-			super(name, domain, new String[] {ContainerClass.className, ContainerClass.className});
+			super(name, domain, new String[] {SingleAgentKitchen.CLASSAGENT, ContainerClass.className, ContainerClass.className});
 		}
 		
 		@Override
 		public boolean applicableInState(State state, String[] params) {
-			ContainerInstance pouringContainer = (ContainerInstance)state.getObject(params[0]);
-			if (pouringContainer.contents.size() == 0)
+			ObjectInstance agent = state.getObject(params[0]);
+			if (agent.getDiscValForAttribute(SingleAgentKitchen.ATTROBOT) == 1)
 			{
 				return false;
 			}
-			ContainerInstance recievingContainer = (ContainerInstance)state.getObject(params[1]);
-			return (recievingContainer.getDiscValForAttribute(ContainerClass.ATTRECEIVING) == 1);			
+			ObjectInstance pouringContainer = state.getObject(params[1]);
+			if (pouringContainer.getAllRelationalTargets(ContainerClass.ATTCONTAINS).size() == 0)
+			{
+				return false;
+			}
+			ObjectInstance recievingContainer = state.getObject(params[2]);
+			if (recievingContainer.getDiscValForAttribute(ContainerClass.ATTRECEIVING) == 0)
+			{
+				return false;
+			}
+			Set<String> pouringContainerSpace = pouringContainer.getAllRelationalTargets(ATTINSPACE);
+			Set<String> receivingContainerSpace = recievingContainer.getAllRelationalTargets(ATTINSPACE);
+			if (pouringContainerSpace.size() == 0 || receivingContainerSpace.size() == 0)
+			{
+				throw new RuntimeException("One of the pouring containers is not in any space");
+			}
+			
+			if (pouringContainerSpace.iterator().next() != receivingContainerSpace.iterator().next())
+			{
+				return false;
+			}
+			ObjectInstance pouringContainerSpaceObject = state.getObject(pouringContainerSpace.iterator().next());
+			
+			if (pouringContainerSpaceObject.getDiscValForAttribute(ATTMIXINGSPACE)== 0)
+			{
+				return false;
+			}
+			return true;
 		}
 
 		@Override
 		protected State performActionHelper(State state, String[] params) {
-			ContainerInstance pouringContainer = (ContainerInstance)state.getObject(params[0]);
-			ContainerInstance recievingContainer = (ContainerInstance)state.getObject(params[1]);
-			pouringContainer.pour(recievingContainer);
-			//System.out.println("Pour contents of container " + params[0] + " container " + params[1]);
+			ObjectInstance agent = state.getObject(params[0]);
+			ObjectInstance pouringContainer = state.getObject(params[1]);
+			ObjectInstance recievingContainer = state.getObject(params[2]);
+			this.pour(pouringContainer, recievingContainer);
+			System.out.println("Pour contents of container " + params[0] + " container " + params[1]);
 			return state;
+		}
+		
+		protected void pour(ObjectInstance pouringContainer, ObjectInstance receivingContainer)
+		{
+			Set<String> ingredients = pouringContainer.getAllRelationalTargets(ContainerClass.ATTCONTAINS);
+			for (String ingredient : ingredients)
+			{
+				receivingContainer.addRelationalTarget(ContainerClass.ATTCONTAINS, ingredient);
+			}
+			pouringContainer.clearRelationalTargets(ContainerClass.ATTCONTAINS);
 		}
 	}
 	
 	public class MixAction extends Action {	
 		public MixAction(String name, Domain domain) {
-			super(name, domain, new String[] {ContainerClass.className});
+			super(name, domain, new String[] {SingleAgentKitchen.CLASSAGENT, ContainerClass.className});
 		}
 		
 		@Override
 		public boolean applicableInState(State state, String[] params) {
-			ObjectInstance containerInstance = state.getObject(params[0]);
-			ContainerInstance container = (ContainerInstance)containerInstance;
-			if (container.getDiscValForAttribute(ContainerClass.ATTMIXING) != 1)
+			ObjectInstance agent =  state.getObject(params[0]);
+			if (agent.getDiscValForAttribute(SingleAgentKitchen.ATTROBOT) == 1)
 			{
 				return false;
 			}
-			if (container.getAllRelationalTargets(ContainerClass.ATTCONTAINS).size() == 0)
+			ObjectInstance containerInstance = state.getObject(params[1]);
+			if (containerInstance.getDiscValForAttribute(ContainerClass.ATTMIXING) != 1)
+			{
+				return false;
+			}
+			if (containerInstance.getAllRelationalTargets(ContainerClass.ATTCONTAINS).size() == 0)
+			{
+				return false;
+			}
+
+			Set<String> containerSpace = containerInstance.getAllRelationalTargets(ATTINSPACE);
+			if (containerSpace.size() == 0 || containerSpace.size() == 0)
+			{
+				throw new RuntimeException("Mixing container is not in any space");
+			}
+
+			ObjectInstance pouringContainerSpaceObject = state.getObject(containerSpace.iterator().next());
+			
+			if (pouringContainerSpaceObject.getDiscValForAttribute(ATTMIXINGSPACE)== 0)
 			{
 				return false;
 			}
@@ -174,11 +280,30 @@ public class SingleAgentKitchen implements DomainGenerator {
 	
 		@Override
 		protected State performActionHelper(State state, String[] params) {
-			ObjectInstance containerInstance = state.getObject(params[0]);
-			ContainerInstance container = (ContainerInstance)containerInstance;
-			//System.out.println("Mixing ingredients in container " + container.getName());
-			container.mix();
+			ObjectInstance agent = state.getObject(params[0]);
+			ObjectInstance containerInstance = state.getObject(params[1]);
+			System.out.println("Mixing ingredients in container " + containerInstance.getName());
+			this.mix(state, containerInstance);
 			return state;
+		}
+		
+		protected void mix(State state, ObjectInstance container)
+		{
+			ObjectClass complexIngredientClass = this.domain.getObjectClass(Recipe.ComplexIngredient.className);
+			Random rando = new Random();
+			ObjectInstance newIngredient = new ObjectInstance(complexIngredientClass, Integer.toString(rando.nextInt()));
+			newIngredient.setValue(Recipe.Ingredient.attBaked, 0);
+			newIngredient.setValue(Recipe.Ingredient.attMelted, 0);
+			newIngredient.setValue(Recipe.Ingredient.attMixed, 0);
+			
+			Set<String> contents = container.getAllRelationalTargets(ContainerClass.ATTCONTAINS);
+			for (String ingredient : contents)
+			{
+				newIngredient.addRelationalTarget(Recipe.ComplexIngredient.attContains, ingredient);
+			}
+			container.clearRelationalTargets(ContainerClass.ATTCONTAINS);
+			state.addObject(newIngredient);
+			
 		}
 	}
 	
@@ -190,13 +315,31 @@ public class SingleAgentKitchen implements DomainGenerator {
 		@Override
 		public boolean applicableInState(State s, String[] params) {
 			
-			return true;
+			return false;
 		}
 	
 		@Override
 		protected State performActionHelper(State state, String[] params) {
-			SingleAgentKitchen.this.bake(state, this.domain);
+			this.bake(state, this.domain);
 			//System.out.println("Bake!");
+			return state;
+		}
+		
+		public void bake(State state, Domain domain)
+		{
+		}
+	}
+	
+	public class MoveAction extends Action {
+		public MoveAction(String name, Domain domain) {
+			super(name, domain, new String[] {SingleAgentKitchen.CLASSAGENT, ContainerClass.className, SingleAgentKitchen.CLASSSPACE});
+		}
+		
+		@Override
+		protected State performActionHelper(State state, String[] params) {
+			System.out.println("Moving container " + params[1] + " to " + params[2]);
+			ObjectInstance containerInstance = state.getObject(params[1]);
+			containerInstance.addRelationalTarget(ATTINSPACE, params[2]);
 			return state;
 		}
 	}
@@ -206,12 +349,12 @@ public class SingleAgentKitchen implements DomainGenerator {
 		Domain domain = kitchen.generateDomain();
 		State state = SingleAgentKitchen.getOneAgent(domain);
 		
-		IngredientClass ingredientClass = 
-				(IngredientClass)domain.getObjectClass(IngredientClass.className);
-		final Recipe brownies = new Brownies(ingredientClass, "brownies");
+		final Recipe brownies = new Brownies();
+		final PropositionalFunction isSuccess = new RecipeFinished("success", domain, brownies);
+		PropositionalFunction isFailure = new RecipeBotched("botched", domain, brownies);
 		//RewardFunction recipeRewardFunction = new RecipeRewardFunction(brownies);
-		RewardFunction recipeRewardFunction = new UniformCostRF();
-		TerminalFunction recipeTerminalFunction = new RecipeTerminalFunction(brownies);
+		RewardFunction recipeRewardFunction = new RecipeRewardFunction();
+		TerminalFunction recipeTerminalFunction = new RecipeTerminalFunction(brownies, isSuccess, isFailure);
 		
 		StateHashFactory hashFactory = new NameDependentStateHashFactory();
 		
@@ -219,20 +362,7 @@ public class SingleAgentKitchen implements DomainGenerator {
 		{
 			@Override
 			public boolean satisfies(State s) {
-				List<ObjectInstance> objects = s.getObjectsOfTrueClass(ContainerClass.className);
-				for (ObjectInstance obj : objects)
-				{
-					ContainerInstance container = (ContainerInstance)obj;
-					if (container.contents.size() == 1)
-					{
-						if (container.contents.get(0).equals(brownies))
-						{
-							// We're done!
-							return true;
-						}
-					}
-				}
-				return false;
+				return s.somePFGroundingIsTrue(isSuccess);
 			}
 		};
 		Heuristic heuristic = new Heuristic() {
@@ -248,7 +378,19 @@ public class SingleAgentKitchen implements DomainGenerator {
 		
 		EpisodeAnalysis episodeAnalysis = 
 				policy.evaluateBehavior(state, recipeRewardFunction, recipeTerminalFunction);
-		System.out.println("Action Sequence\n" + 
-				episodeAnalysis.getActionSequenceString());
+		for (int i =0 ; i < episodeAnalysis.actionSequence.size(); ++i)
+		{
+			GroundedAction action = episodeAnalysis.actionSequence.get(i);
+			
+			double reward = episodeAnalysis.rewardSequence.get(i);
+			System.out.print("Cost: " + reward + " " + action.action.getName() + " ");
+			for (int j = 0; j < action.params.length; ++j)
+			{
+				System.out.print(action.params[j] + " ");
+			}
+			System.out.print("\n");
+		}
+		//System.out.println("Action Sequence\n" + 
+		//		episodeAnalysis.getActionSequenceString());
 	}
 }
