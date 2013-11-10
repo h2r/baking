@@ -7,13 +7,11 @@ import burlap.oomdp.core.TerminalFunction;
 
 public class RecipeTerminalFunction implements TerminalFunction{
 
-	protected Recipe goal;
 	PropositionalFunction recipeSuccess;
 	PropositionalFunction recipeFailure;
 	
 	
-	public RecipeTerminalFunction(Recipe recipeGoal, PropositionalFunction success, PropositionalFunction failure) {
-		this.goal = recipeGoal;
+	public RecipeTerminalFunction(PropositionalFunction success, PropositionalFunction failure) {
 		this.recipeSuccess = success;
 		this.recipeFailure = failure;
 	}

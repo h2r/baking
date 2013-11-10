@@ -8,9 +8,8 @@ import burlap.oomdp.singleagent.RewardFunction;
 
 public class RecipeRewardFunction implements RewardFunction {
 
-	protected Recipe goal;
 	public RecipeRewardFunction() {
-		//this.goal = recipeGoal;
+
 	}
 
 	@Override

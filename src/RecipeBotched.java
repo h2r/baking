@@ -8,16 +8,16 @@ import burlap.oomdp.core.State;
 
 public class RecipeBotched extends PropositionalFunction {
 
-	protected Recipe recipe;
-	public RecipeBotched(String name, Domain domain, Recipe recipe) {
+	protected Recipe.Ingredient topLevelIngredient;
+	public RecipeBotched(String name, Domain domain, Recipe.Ingredient ingredient) {
 		super(name, domain, new String[] {IngredientClass.className});
-		this.recipe = recipe;
+		this.topLevelIngredient = ingredient;
 	}
 
 	@Override
 	public boolean isTrue(State state, String[] params) {
 		ObjectInstance ingredient = state.getObject(params[0]);
-		return this.recipe.isFailure(state, ingredient);
+		return Recipe.isFailure(state, this.topLevelIngredient, ingredient);
 	}
 
 }
