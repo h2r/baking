@@ -384,7 +384,7 @@ State state = new State();
 		ObjectClass containerClass = domain.getObjectClass(ContainerClass.className);
 		
 		List<ObjectInstance> ingredientInstances = brownies.getRecipeList(simpleIngredientClass);
-		List<ObjectInstance> containerInstances = brownies.getContainers(containerClass, ingredientInstances);
+		List<ObjectInstance> containerInstances = Brownies.getContainers(containerClass, ingredientInstances);
 		
 		for (ObjectInstance ingredientInstance : ingredientInstances)
 		{

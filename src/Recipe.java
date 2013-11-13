@@ -71,17 +71,17 @@ public abstract class Recipe {
 	
 	public static Boolean isSuccess(State state, Ingredient ingredient, ObjectInstance object)
 	{
-		int baked = object.getDiscValForAttribute(Ingredient.attBaked);
+		int baked = object.getDiscValForAttribute(Ingredient.attributeBaked);
 		if ((baked == 1) != ingredient.Baked)
 		{
 			return false;
 		}
-		int mixed = object.getDiscValForAttribute(Ingredient.attMixed);
+		int mixed = object.getDiscValForAttribute(Ingredient.attributeMixed);
 		if ((mixed == 1) != ingredient.Mixed)
 		{
 			return false;
 		}
-		int melted = object.getDiscValForAttribute(Ingredient.attMelted);
+		int melted = object.getDiscValForAttribute(Ingredient.attributeMelted);
 		if ((melted == 1) != ingredient.Melted)
 		{
 			return false;
@@ -199,9 +199,9 @@ public abstract class Recipe {
 				// They aren't even the same name. FAIL!
 				return true;
 			}
-			if ((!ingredient.Baked && object.getDiscValForAttribute(Ingredient.attBaked) == 1) ||
-				(!ingredient.Melted && object.getDiscValForAttribute(Ingredient.attMelted) == 1) ||
-				(!ingredient.Mixed && object.getDiscValForAttribute(Ingredient.attMixed) == 1))
+			if ((!ingredient.Baked && object.getDiscValForAttribute(Ingredient.attributeBaked) == 1) ||
+				(!ingredient.Melted && object.getDiscValForAttribute(Ingredient.attributeMelted) == 1) ||
+				(!ingredient.Mixed && object.getDiscValForAttribute(Ingredient.attributeMixed) == 1))
 			{
 				// One of baked/melted/mixed is true that shouldn't be. FAIL!
 				return true;
@@ -320,85 +320,5 @@ public abstract class Recipe {
 		return true;
 	}
 	
-	public abstract class Ingredient {
-		public static final String attBaked = "baked";
-		public static final String attMelted = "melted";
-		public static final String attMixed = "mixed";
-		public Boolean Melted;
-		public Boolean Baked;
-		public Boolean Mixed;
-		public String Name;
-		public Ingredient(String name, Boolean melted, Boolean baked, Boolean mixed){
-			this.Name = name;
-			this.Melted = melted;
-			this.Baked = baked;
-			this.Mixed = mixed;
-		}
-		
-		public abstract ObjectInstance getObjectInstance(ObjectClass ingredientClass);
-		public abstract List<ObjectInstance> getSimpleObjectInstances(ObjectClass ingredientClass);
-		
-	}
 	
-	public class ComplexIngredient extends Ingredient {
-		
-		public static final String className = "produced";
-		public static final String attContains = "contains";
-		public List<Ingredient> Contents;
-		public ComplexIngredient(String name, Boolean melted, Boolean baked, Boolean mixed, List<Ingredient> contents) {
-			super(name, melted, baked, mixed);
-			this.Contents = new ArrayList<Ingredient>(contents);
-		}
-		
-		@Override
-		public ObjectInstance getObjectInstance(ObjectClass complexIngredientClass)
-		{
-			ObjectInstance objectInstance = new ObjectInstance(complexIngredientClass, this.Name);
-			objectInstance.setValue(Ingredient.attBaked, this.Baked ? 1 : 0);
-			objectInstance.setValue(Ingredient.attMelted, this.Melted ? 1 : 0);
-			objectInstance.setValue(Ingredient.attMixed, this.Mixed ? 1 : 0);
-			for (Ingredient ingredient : this.Contents)
-			{
-				objectInstance.addRelationalTarget(ComplexIngredient.attContains, ingredient.Name);
-			}
-			return objectInstance;
-			
-		}
-
-		@Override
-		public List<ObjectInstance> getSimpleObjectInstances(ObjectClass simpleIngredientClass) {
-			List<ObjectInstance> ingredientsInstances = new ArrayList<ObjectInstance>();
-			for (Ingredient ingredient : this.Contents)
-			{
-				ingredientsInstances.addAll(ingredient.getSimpleObjectInstances(simpleIngredientClass));
-			}
-			return ingredientsInstances;
-		}
-	}
-	
-	public class SimpleIngredient extends Ingredient {
-		
-		public static final String className = "simple";
-		public SimpleIngredient(String name, Boolean melted, Boolean baked, Boolean mixed) {
-			super (name, melted, baked, mixed);
-		}
-		
-		@Override
-		public ObjectInstance getObjectInstance(ObjectClass simpleIngredientClass)
-		{
-			ObjectInstance objectInstance = new ObjectInstance(simpleIngredientClass, this.Name);
-			objectInstance.setValue(Ingredient.attBaked, this.Baked ? 1 : 0);
-			objectInstance.setValue(Ingredient.attMelted, this.Melted ? 1 : 0);
-			objectInstance.setValue(Ingredient.attMixed, this.Mixed ? 1 : 0);
-			return objectInstance;
-		}
-
-		@Override
-		public List<ObjectInstance> getSimpleObjectInstances(ObjectClass simpleIngredientClass)
-		{
-			List<ObjectInstance> objectInstances = new ArrayList<ObjectInstance>();
-			objectInstances.add(this.getObjectInstance(simpleIngredientClass));
-			return objectInstances;
-		}
-	}
 }
