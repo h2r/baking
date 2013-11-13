@@ -17,6 +17,30 @@ public abstract class Recipe {
 	{
 		
 	}
+	
+	public int getNumberSteps()
+	{
+		return Recipe.getNumberSteps(this.topLevelIngredient);
+	}
+	public static int getNumberSteps(Ingredient ingredient)
+	{
+		int count = 0;
+		count += ingredient.Baked ? 1 : 0;
+		count += ingredient.Melted ? 1 : 0;
+		count += ingredient.Mixed ? 1 : 0;
+		if (ingredient instanceof SimpleIngredient)
+		{
+			return count;
+		}
+		ComplexIngredient complexIngredient = (ComplexIngredient)ingredient;
+		{
+			for (Ingredient subIngredient : complexIngredient.Contents)
+			{
+				count += Recipe.getNumberSteps(subIngredient);
+			}
+		}
+		return count;
+	}
 	public List<ObjectInstance> getRecipeList(ObjectClass simpleIngredientClass)
 	{
 		List<ObjectInstance> ingredients = new ArrayList<ObjectInstance>();
@@ -24,7 +48,7 @@ public abstract class Recipe {
 		return ingredients;
 	}
 	
-	public List<ObjectInstance> getContainers(ObjectClass containerClass, List<ObjectInstance> ingredients)
+	public static List<ObjectInstance> getContainers(ObjectClass containerClass, List<ObjectInstance> ingredients)
 	{
 		List<ObjectInstance> containers = new ArrayList<ObjectInstance>();
 		for (ObjectInstance ingredient : ingredients)
