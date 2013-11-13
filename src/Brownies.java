@@ -8,7 +8,7 @@ public class Brownies extends Recipe {
 	
 	public Brownies() {
 		super();
-		List<Ingredient> ingredientList = new ArrayList<Ingredient>();
+		List<IngredientFactory> ingredientList = new ArrayList<IngredientFactory>();
 		ingredientList.add(new SimpleIngredient("cocoa", false, false, false));
 		ingredientList.add(new SimpleIngredient("baking_soda", false, false, false));
 		ingredientList.add(new SimpleIngredient("baking_powder", false, false, false));

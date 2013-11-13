@@ -32,21 +32,12 @@ import burlap.oomdp.singleagent.common.UniformCostRF;
 
 public class SingleAgentKitchen implements DomainGenerator {
 	
-	public static final String 							ATTHASFLOUR = "has_flour";
-	public static final String 							ATTHASCOCOA = "has_cocoa";
-	public static final String 							ATTHASBUTTER = "has_butter";
-	public static final String							ATTMIXED = "mixed";
-	public static final String							ATTBAKED = "baked";
-	public static final String							ATTINCONTAINER = "in_container";
 	public static final String							ATTROBOT = "robot";
 	public static final String							ATTMIXINGSPACE = "mixing_space";
 	public static final String							ATTINSPACE = "in_space";
 	
 	public static final String							CLASSSPACE = "space";
 	public static final String							CLASSAGENT = "agent";
-	public static final String							CLASSINGREDIENT = "cocoa";
-	public static final String							CLASSMIXCONTAINER = "mix_container";
-	public static final String							CLASSINGREDIENTCONTAINER = "ingredient_container";
 	
 	public static final String							ACTIONADD = "add";
 	public static final String							ACTIONMIX = "mix";
@@ -54,61 +45,18 @@ public class SingleAgentKitchen implements DomainGenerator {
 	public static final String							ACTIONPOUR = "pour";
 	public static final String							ACTIONMOVE = "move";
 	
+	public SingleAgentKitchen() {
+
+	}
+	
 	@Override
 	public Domain generateDomain() {
 		Domain domain = new SADomain();
-		ObjectClass containerClass = new ObjectClass(domain, ContainerClass.className);
+		domain.addObjectClass(ContainerFactory.createObjectClass(domain));
+		domain.addObjectClass(IngredientFactory.createSimpleIngredientObjectClass(domain));
+		domain.addObjectClass(IngredientFactory.createComplexIngredientObjectClass(domain));
+		domain.addObjectClass(SpaceFactory.createObjectClass(domain));		
 		
-		Attribute mixingAttribute = 
-				new Attribute(domain, ContainerClass.ATTMIXING, Attribute.AttributeType.DISC);
-		mixingAttribute.setDiscValuesForRange(0,1,1);
-		
-		Attribute heatingAttribute = 
-				new Attribute(domain, ContainerClass.ATTHEATING, Attribute.AttributeType.DISC);
-		heatingAttribute.setDiscValuesForRange(0,1,1);
-		
-		Attribute receivingAttribute =
-				new Attribute(domain, ContainerClass.ATTRECEIVING, Attribute.AttributeType.DISC);
-		receivingAttribute.setDiscValuesForRange(0,1,1);
-		Attribute inSpaceAttribute =
-				new Attribute(domain, ATTINSPACE, Attribute.AttributeType.RELATIONAL);
-		
-		containerClass.addAttribute(mixingAttribute);
-		containerClass.addAttribute(heatingAttribute);
-		containerClass.addAttribute(receivingAttribute);
-		containerClass.addAttribute(new Attribute(domain, ContainerClass.ATTCONTAINS, 
-						Attribute.AttributeType.MULTITARGETRELATIONAL));
-		containerClass.addAttribute(inSpaceAttribute);
-		
-		Attribute bakedAttribute = 
-				new Attribute(domain, Recipe.Ingredient.attBaked, Attribute.AttributeType.DISC);
-		bakedAttribute.setDiscValuesForRange(0,1,1);
-		Attribute mixedAttribute = 
-				new Attribute(domain, Recipe.Ingredient.attMixed, Attribute.AttributeType.DISC);
-		mixedAttribute.setDiscValuesForRange(0,1,1);
-		Attribute meltedAttribute = 
-				new Attribute(domain, Recipe.Ingredient.attMelted, Attribute.AttributeType.DISC);
-		meltedAttribute.setDiscValuesForRange(0,1,1);
-		Attribute containsAttribute = 
-				new Attribute(domain, Recipe.ComplexIngredient.attContains, Attribute.AttributeType.MULTITARGETRELATIONAL);
-		
-		ObjectClass spaceClass = new ObjectClass(domain, CLASSSPACE);
-		Attribute mixingSpace = new Attribute(domain, ATTMIXINGSPACE, Attribute.AttributeType.DISC);
-		mixingSpace.setDiscValuesForRange(0,1,1);
-		spaceClass.addAttribute(mixingSpace);
-		
-		ObjectClass simpleIngredientClass = new ObjectClass(domain, Recipe.SimpleIngredient.className);
-		simpleIngredientClass.addAttribute(bakedAttribute);
-		simpleIngredientClass.addAttribute(mixedAttribute);
-		simpleIngredientClass.addAttribute(meltedAttribute);
-		domain.addObjectClass(simpleIngredientClass);		
-		
-		ObjectClass complexIngredientClass = new ObjectClass(domain, Recipe.ComplexIngredient.className);
-		complexIngredientClass.addAttribute(bakedAttribute);
-		complexIngredientClass.addAttribute(mixedAttribute);
-		complexIngredientClass.addAttribute(meltedAttribute);
-		complexIngredientClass.addAttribute(containsAttribute);
-		domain.addObjectClass(complexIngredientClass);
 		
 		ObjectClass agent = new ObjectClass(domain, this.CLASSAGENT);
 		Attribute robot = new Attribute(domain, this.ATTROBOT, Attribute.AttributeType.DISC);
@@ -201,7 +149,7 @@ State state = new State();
 	public State PlanIngredient(Domain domain, State startingState, Recipe.ComplexIngredient ingredient)
 	{
 		State currentState = new State(startingState);
-		for (Recipe.Ingredient subIngredient : ingredient.Contents)
+		for (Recipe.IngredientFactory subIngredient : ingredient.Contents)
 		{
 			if (subIngredient instanceof Recipe.ComplexIngredient)
 			{

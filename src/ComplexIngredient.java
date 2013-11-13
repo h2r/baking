@@ -5,24 +5,24 @@ import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 
 
-public class ComplexIngredient extends Ingredient {
+public class ComplexIngredient extends IngredientFactory {
 	
 	public static final String className = "produced";
 	public static final String attContains = "contains";
-	public List<Ingredient> Contents;
-	public ComplexIngredient(String name, Boolean melted, Boolean baked, Boolean mixed, List<Ingredient> contents) {
+	public List<IngredientFactory> Contents;
+	public ComplexIngredient(String name, Boolean melted, Boolean baked, Boolean mixed, List<IngredientFactory> contents) {
 		super(name, melted, baked, mixed);
-		this.Contents = new ArrayList<Ingredient>(contents);
+		this.Contents = new ArrayList<IngredientFactory>(contents);
 	}
 	
 	@Override
 	public ObjectInstance getObjectInstance(ObjectClass complexIngredientClass)
 	{
 		ObjectInstance objectInstance = new ObjectInstance(complexIngredientClass, this.Name);
-		objectInstance.setValue(Ingredient.attributeBaked, this.Baked ? 1 : 0);
-		objectInstance.setValue(Ingredient.attributeMelted, this.Melted ? 1 : 0);
-		objectInstance.setValue(Ingredient.attributeMixed, this.Mixed ? 1 : 0);
-		for (Ingredient ingredient : this.Contents)
+		objectInstance.setValue(IngredientFactory.attributeBaked, this.Baked ? 1 : 0);
+		objectInstance.setValue(IngredientFactory.attributeMelted, this.Melted ? 1 : 0);
+		objectInstance.setValue(IngredientFactory.attributeMixed, this.Mixed ? 1 : 0);
+		for (IngredientFactory ingredient : this.Contents)
 		{
 			objectInstance.addRelationalTarget(ComplexIngredient.attContains, ingredient.Name);
 		}
@@ -33,7 +33,7 @@ public class ComplexIngredient extends Ingredient {
 	@Override
 	public List<ObjectInstance> getSimpleObjectInstances(ObjectClass simpleIngredientClass) {
 		List<ObjectInstance> ingredientsInstances = new ArrayList<ObjectInstance>();
-		for (Ingredient ingredient : this.Contents)
+		for (IngredientFactory ingredient : this.Contents)
 		{
 			ingredientsInstances.addAll(ingredient.getSimpleObjectInstances(simpleIngredientClass));
 		}

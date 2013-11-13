@@ -7,9 +7,7 @@ import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 
-public abstract class Ingredient {
-
-	private final Domain domain;
+public abstract class IngredientFactory {
 	private final ObjectClass simpleIngredientClass;
 	private final ObjectClass complexIngredientClass;
 	private static final String attributeBaked = "baked";
@@ -19,42 +17,40 @@ public abstract class Ingredient {
 	private static final String attributeContains = "contents";
 	
 	
-	public Ingredient(Domain domain) {
+	public IngredientFactory(Domain domain) {
 		this.domain = domain;
-		this.simpleIngredientClass = this.createSimpleIngredientObjectClass();
-		this.complexIngredientClass = this.createComplexIngredientObjectClass();
 	}
 	
-	private ObjectClass createObjectClass(String className) {
-		ObjectClass objectClass = new ObjectClass(this.domain, className);
+	private static ObjectClass createObjectClass(Domain domain, String className) {
+		ObjectClass objectClass = new ObjectClass(domain, className);
 		Attribute mixingAttribute = 
-				new Attribute(this.domain, Ingredient.attributeBaked, Attribute.AttributeType.DISC);
+				new Attribute(domain, IngredientFactory.attributeBaked, Attribute.AttributeType.DISC);
 		mixingAttribute.setDiscValuesForRange(0,1,1);
 		objectClass.addAttribute(mixingAttribute);
 		
 		Attribute heatingAttribute = 
-				new Attribute(this.domain, Ingredient.attributeMelted, Attribute.AttributeType.DISC);
+				new Attribute(domain, IngredientFactory.attributeMelted, Attribute.AttributeType.DISC);
 		heatingAttribute.setDiscValuesForRange(0,1,1);
 		objectClass.addAttribute(heatingAttribute);
 		
 		Attribute receivingAttribute =
-				new Attribute(this.domain, Ingredient.attributeMixed, Attribute.AttributeType.DISC);
+				new Attribute(domain, IngredientFactory.attributeMixed, Attribute.AttributeType.DISC);
 		receivingAttribute.setDiscValuesForRange(0,1,1);
 		objectClass.addAttribute(receivingAttribute);
 		
 		objectClass.addAttribute(
-				new Attribute(this.domain, Ingredient.attributeContainer,
+				new Attribute(domain, IngredientFactory.attributeContainer,
 						Attribute.AttributeType.RELATIONAL));
 		return objectClass;
 	}
-	private ObjectClass createSimpleIngredientObjectClass() {
-		return this.createObjectClass("simple_ingredient");
+	public static ObjectClass createSimpleIngredientObjectClass(Domain domain) {
+		return IngredientFactory.createObjectClass(domain, "simple_ingredient");
 	}
 	
-	private ObjectClass createComplexIngredientObjectClass() {
-		ObjectClass objectClass = this.createObjectClass("complex_ingredient");
+	public static ObjectClass createComplexIngredientObjectClass(Domain domain) {
+		ObjectClass objectClass = IngredientFactory.createObjectClass(domain, "complex_ingredient");
 		objectClass.addAttribute(
-				new Attribute(this.domain, Ingredient.attributeContains, 
+				new Attribute(domain, IngredientFactory.attributeContains, 
 						Attribute.AttributeType.MULTITARGETRELATIONAL));
 		return objectClass;
 	}
@@ -70,12 +66,12 @@ public abstract class Ingredient {
 	public ObjectInstance getNewSimpleIngredientObjectInstance(String name, 
 			Boolean baked, Boolean melted, Boolean mixed, String ingredientContainer) {
 		ObjectInstance newInstance = new ObjectInstance(this.simpleIngredientClass, name);
-		newInstance.setValue(Ingredient.attributeBaked, baked ? 1 : 0);
-		newInstance.setValue(Ingredient.attributeMelted, melted ? 1 : 0);
-		newInstance.setValue(Ingredient.attributeMixed, mixed ? 1 : 0);
+		newInstance.setValue(IngredientFactory.attributeBaked, baked ? 1 : 0);
+		newInstance.setValue(IngredientFactory.attributeMelted, melted ? 1 : 0);
+		newInstance.setValue(IngredientFactory.attributeMixed, mixed ? 1 : 0);
 		if (ingredientContainer != null || ingredientContainer != "")
 		{
-			newInstance.addRelationalTarget(Ingredient.attributeContainer, ingredientContainer);
+			newInstance.addRelationalTarget(IngredientFactory.attributeContainer, ingredientContainer);
 		}
 		return newInstance;		
 	}
@@ -83,17 +79,17 @@ public abstract class Ingredient {
 	public ObjectInstance getNewComplexIngredientObjectInstance(String name, 
 			Boolean baked, Boolean melted, Boolean mixed, String ingredientContainer, List<String> contents) {
 		ObjectInstance newInstance = new ObjectInstance(this.complexIngredientClass, name);
-		newInstance.setValue(Ingredient.attributeBaked, baked ? 1 : 0);
-		newInstance.setValue(Ingredient.attributeMelted, melted ? 1 : 0);
-		newInstance.setValue(Ingredient.attributeMixed, mixed ? 1 : 0);
+		newInstance.setValue(IngredientFactory.attributeBaked, baked ? 1 : 0);
+		newInstance.setValue(IngredientFactory.attributeMelted, melted ? 1 : 0);
+		newInstance.setValue(IngredientFactory.attributeMixed, mixed ? 1 : 0);
 		
 		if (ingredientContainer != null || ingredientContainer != "") {
-			newInstance.addRelationalTarget(Ingredient.attributeContainer, ingredientContainer);
+			newInstance.addRelationalTarget(IngredientFactory.attributeContainer, ingredientContainer);
 		}
 		
 		if (contents != null) {
 			for (String ingredient : contents) {
-				newInstance.addRelationalTarget(Ingredient.attributeContains, ingredient);
+				newInstance.addRelationalTarget(IngredientFactory.attributeContains, ingredient);
 			}
 		}
 		
@@ -101,18 +97,18 @@ public abstract class Ingredient {
 	}
 
 	public static void addIngredient(ObjectInstance complexIngredient, ObjectInstance ingredient) {
-		complexIngredient.addRelationalTarget(Ingredient.attributeContains, ingredient.getName());
+		complexIngredient.addRelationalTarget(IngredientFactory.attributeContains, ingredient.getName());
 	}
 	
 	public static void addIngredientList(ObjectInstance complexIngredient, List<ObjectInstance> ingredientList) {
 		for (ObjectInstance ingredient : ingredientList) {
-			Ingredient.addIngredient(complexIngredient, ingredient);
+			IngredientFactory.addIngredient(complexIngredient, ingredient);
 		}
 	}
 	
 	public static void changeIngredientContainer(ObjectInstance ingredient, String ingredientContainer) {
 		if (ingredientContainer != null) {
-			ingredient.addRelationalTarget(Ingredient.attributeContainer, ingredientContainer);
+			ingredient.addRelationalTarget(IngredientFactory.attributeContainer, ingredientContainer);
 		}
 	}
 	

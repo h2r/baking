@@ -11,7 +11,7 @@ import burlap.oomdp.core.State;
 
 public abstract class Recipe {
 	
-	protected Ingredient topLevelIngredient;
+	protected IngredientFactory topLevelIngredient;
 	
 	public Recipe()
 	{
@@ -22,7 +22,7 @@ public abstract class Recipe {
 	{
 		return Recipe.getNumberSteps(this.topLevelIngredient);
 	}
-	public static int getNumberSteps(Ingredient ingredient)
+	public static int getNumberSteps(IngredientFactory ingredient)
 	{
 		int count = 0;
 		count += ingredient.Baked ? 1 : 0;
@@ -34,7 +34,7 @@ public abstract class Recipe {
 		}
 		ComplexIngredient complexIngredient = (ComplexIngredient)ingredient;
 		{
-			for (Ingredient subIngredient : complexIngredient.Contents)
+			for (IngredientFactory subIngredient : complexIngredient.Contents)
 			{
 				count += Recipe.getNumberSteps(subIngredient);
 			}
@@ -69,19 +69,19 @@ public abstract class Recipe {
 		return Recipe.isSuccess(state, this.topLevelIngredient, topLevelObject);
 	}
 	
-	public static Boolean isSuccess(State state, Ingredient ingredient, ObjectInstance object)
+	public static Boolean isSuccess(State state, IngredientFactory ingredient, ObjectInstance object)
 	{
-		int baked = object.getDiscValForAttribute(Ingredient.attributeBaked);
+		int baked = object.getDiscValForAttribute(IngredientFactory.attributeBaked);
 		if ((baked == 1) != ingredient.Baked)
 		{
 			return false;
 		}
-		int mixed = object.getDiscValForAttribute(Ingredient.attributeMixed);
+		int mixed = object.getDiscValForAttribute(IngredientFactory.attributeMixed);
 		if ((mixed == 1) != ingredient.Mixed)
 		{
 			return false;
 		}
-		int melted = object.getDiscValForAttribute(Ingredient.attributeMelted);
+		int melted = object.getDiscValForAttribute(IngredientFactory.attributeMelted);
 		if ((melted == 1) != ingredient.Melted)
 		{
 			return false;
@@ -103,7 +103,7 @@ public abstract class Recipe {
 		Map<String, ComplexIngredient> complexIngredientsRecipe = new HashMap<String, ComplexIngredient>();
 		Map<String, SimpleIngredient> simpleIngredientsRecipe = new HashMap<String, SimpleIngredient>();
 		
-		for (Ingredient subIngredient : complexIngredient.Contents)
+		for (IngredientFactory subIngredient : complexIngredient.Contents)
 		{
 			if (subIngredient instanceof ComplexIngredient)
 			{
@@ -179,7 +179,7 @@ public abstract class Recipe {
 		return Recipe.isFailure(state, this.topLevelIngredient, object);
 	}
 	
-	public static Boolean isFailure(State state, Ingredient ingredient, ObjectInstance object)
+	public static Boolean isFailure(State state, IngredientFactory ingredient, ObjectInstance object)
 	{
 		if (Recipe.isSuccess(state, ingredient, object))
 		{
@@ -199,9 +199,9 @@ public abstract class Recipe {
 				// They aren't even the same name. FAIL!
 				return true;
 			}
-			if ((!ingredient.Baked && object.getDiscValForAttribute(Ingredient.attributeBaked) == 1) ||
-				(!ingredient.Melted && object.getDiscValForAttribute(Ingredient.attributeMelted) == 1) ||
-				(!ingredient.Mixed && object.getDiscValForAttribute(Ingredient.attributeMixed) == 1))
+			if ((!ingredient.Baked && object.getDiscValForAttribute(IngredientFactory.attributeBaked) == 1) ||
+				(!ingredient.Melted && object.getDiscValForAttribute(IngredientFactory.attributeMelted) == 1) ||
+				(!ingredient.Mixed && object.getDiscValForAttribute(IngredientFactory.attributeMixed) == 1))
 			{
 				// One of baked/melted/mixed is true that shouldn't be. FAIL!
 				return true;
@@ -214,7 +214,7 @@ public abstract class Recipe {
 		Map<String, ComplexIngredient> complexSubIngredients = new HashMap<String, ComplexIngredient>();
 		Map<String, SimpleIngredient> simpleSubIngredients = new HashMap<String, SimpleIngredient>();
 		
-		for (Ingredient subIngredient : complexIngredient.Contents)
+		for (IngredientFactory subIngredient : complexIngredient.Contents)
 		{
 			if (subIngredient instanceof SimpleIngredient)
 			{
@@ -275,7 +275,7 @@ public abstract class Recipe {
 		for (ObjectInstance obj : complexIngredientContents)
 		{
 			Boolean found = false;
-			for (Ingredient subSubIngredient : complexSubIngredients.values())
+			for (IngredientFactory subSubIngredient : complexSubIngredients.values())
 			{
 				if (!Recipe.isFailure(state, subSubIngredient, obj))
 				{
