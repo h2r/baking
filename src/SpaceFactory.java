@@ -9,14 +9,15 @@ import burlap.oomdp.core.ObjectInstance;
 
 public class SpaceFactory {
 
-	private static final String attributeBaking = "mixing";
+	public static final String ClassName = "space";
+	private static final String attributeBaking = "baking";
 	private static final String attributeHeating = "heating";
 	private static final String attributeWorking = "working";
 	private static final String attributeContains = "contains";
 
 	public static ObjectClass createObjectClass(Domain domain)
 	{
-		ObjectClass objectClass = new ObjectClass(domain, "space");
+		ObjectClass objectClass = new ObjectClass(domain, SpaceFactory.ClassName);
 		Attribute mixingAttribute = 
 				new Attribute(domain, SpaceFactory.attributeBaking, Attribute.AttributeType.DISC);
 		mixingAttribute.setDiscValuesForRange(0,1,1);
@@ -54,9 +55,21 @@ public class SpaceFactory {
 		return newInstance;
 	}
 	
+	public static ObjectInstance getNewObjectInstance(Domain domain, String name, Boolean baking, 
+			Boolean heating, Boolean working, List<String> containers) {
+		return SpaceFactory.getNewObjectInstance(
+				domain.getObjectClass(SpaceFactory.ClassName), name, baking, heating, working, containers));
+	}
+	
 	public static ObjectInstance getNewWorkingSpaceObjectInstance(ObjectClass spaceClass, 
 			String name, List<String> containers) {
 		return SpaceFactory.getNewObjectInstance(spaceClass, name, false, false, true, containers);
+	}
+	
+	public static ObjectInstance getNewWorkingSpaceObjectInstance(Domain domain, 
+			String name, List<String> containers) {
+		return SpaceFactory.getNewObjectInstance(
+				domain.getObjectClass(SpaceFactory.ClassName), name, false, false, true, containers);
 	}
 	
 	public static ObjectInstance getNewHeatingSpaceObjectInstance(ObjectClass spaceClass, 
@@ -64,12 +77,40 @@ public class SpaceFactory {
 		return SpaceFactory.getNewObjectInstance(spaceClass, name, false, true, false, containers);
 	}
 	
+	public static ObjectInstance getNewHeatingSpaceObjectInstance(Domain domain, 
+			String name, List<String> containers) {
+		return SpaceFactory.getNewObjectInstance(
+				domain.getObjectClass(SpaceFactory.ClassName), name, false, true, false, containers);
+	}
+	
 	public static ObjectInstance getNewBakingSpaceObjectInstance(ObjectClass spaceClass, 
 			String name, List<String> containers) {
 		return SpaceFactory.getNewObjectInstance(spaceClass, name, true, false, false, containers);
 	}
 
+	public static ObjectInstance getNewBakingSpaceObjectInstance(Domain domain, 
+			String name, List<String> containers) {
+		return SpaceFactory.getNewObjectInstance(
+				domain.getObjectClass(SpaceFactory.ClassName), name, true, false, false, containers);
+	}
+	
 	public static void addContainer(ObjectInstance space, ObjectInstance container) {
 		space.addRelationalTarget(SpaceFactory.attributeContains, container.getName());
+	}
+	
+	public static Boolean isBaking(ObjectInstance objectInstance) {
+		return (objectInstance.getDiscValForAttribute(SpaceFactory.attributeBaking) == 1);
+	}
+	
+	public static Boolean isHeating(ObjectInstance objectInstance) {
+		return (objectInstance.getDiscValForAttribute(SpaceFactory.attributeHeating)== 1);
+	}
+	
+	public static Boolean isWorking(ObjectInstance objectInstance) {
+		return (objectInstance.getDiscValForAttribute(SpaceFactory.attributeWorking) == 1);
+	}
+	
+	public static Set<String> getContents(ObjectInstance objectInstance) {
+		return (objectInstance.getAllRelationalTargets(SpaceFactory.attributeContains));
 	}
 }

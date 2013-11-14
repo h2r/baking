@@ -1,5 +1,6 @@
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -31,20 +32,7 @@ import burlap.oomdp.singleagent.common.UniformCostRF;
 
 
 public class SingleAgentKitchen implements DomainGenerator {
-	
-	public static final String							ATTROBOT = "robot";
-	public static final String							ATTMIXINGSPACE = "mixing_space";
-	public static final String							ATTINSPACE = "in_space";
-	
-	public static final String							CLASSSPACE = "space";
-	public static final String							CLASSAGENT = "agent";
-	
-	public static final String							ACTIONADD = "add";
-	public static final String							ACTIONMIX = "mix";
-	public static final String							ACTIONBAKE = "bake";
-	public static final String							ACTIONPOUR = "pour";
-	public static final String							ACTIONMOVE = "move";
-	
+		
 	public SingleAgentKitchen() {
 
 	}
@@ -56,99 +44,53 @@ public class SingleAgentKitchen implements DomainGenerator {
 		domain.addObjectClass(IngredientFactory.createSimpleIngredientObjectClass(domain));
 		domain.addObjectClass(IngredientFactory.createComplexIngredientObjectClass(domain));
 		domain.addObjectClass(SpaceFactory.createObjectClass(domain));		
+		domain.addObjectClass(AgentFactory.createObjectClass(domain));
 		
-		
-		ObjectClass agent = new ObjectClass(domain, this.CLASSAGENT);
-		Attribute robot = new Attribute(domain, this.ATTROBOT, Attribute.AttributeType.DISC);
-		robot.setDiscValuesForRange(0, 1, 1);
-		agent.addAttribute(robot);
-		
-		Action mix = new MixAction(ACTIONMIX, domain);
-		Action bake = new BakeAction(ACTIONBAKE, domain);
-		Action pour = new PourAction(ACTIONPOUR, domain);
-		Action move = new MoveAction(ACTIONMOVE, domain);
+		Action mix = new MixAction(domain);
+		Action bake = new BakeAction(domain);
+		Action pour = new PourAction(domain);
+		Action move = new MoveAction(domain);
 		return domain;
 	}
 	
 	public void PlanRecipeOneAgent(Domain domain, Recipe recipe)
 	{
-State state = new State();
-		
-		ObjectInstance human = new ObjectInstance(domain.getObjectClass(CLASSAGENT), "human");
-		human.setValue(ATTROBOT, 0);
-		state.addObject(human);
-		
-		ObjectInstance shelfSpace = new ObjectInstance(domain.getObjectClass(CLASSSPACE), "shelf");
-		shelfSpace.setValue(ATTMIXINGSPACE, 0);
-		state.addObject(shelfSpace);
-		ObjectInstance counterSpace = new ObjectInstance(domain.getObjectClass(CLASSSPACE), "counter");
-		counterSpace.setValue(ATTMIXINGSPACE, 1);
-		state.addObject(counterSpace);
-		
-		ObjectInstance mixingBowl = 
-				new ObjectInstance(
-						domain.getObjectClass(ContainerClass.className), 
-						"mixing_bowl_1");
-		mixingBowl.setValue(ContainerClass.ATTRECEIVING, 1);
-		mixingBowl.setValue(ContainerClass.ATTHEATING, 0);
-		mixingBowl.setValue(ContainerClass.ATTMIXING, 1);
-		state.addObject(mixingBowl);
-		
-		ObjectInstance mixingBowl2 = 
-				new ObjectInstance(
-						domain.getObjectClass(ContainerClass.className), 
-						"mixing_bowl_2");
-		mixingBowl2.setValue(ContainerClass.ATTRECEIVING, 1);
-		mixingBowl2.setValue(ContainerClass.ATTHEATING, 0);
-		mixingBowl2.setValue(ContainerClass.ATTMIXING, 1);
-		state.addObject(mixingBowl2);
-				
-		State finalState = this.PlanIngredient(domain, state, (Recipe.ComplexIngredient)recipe.topLevelIngredient);
-	}
-	
-	public void PlanRecipe(Domain domain, Recipe recipe)
-	{
 		State state = new State();
 		
-		ObjectInstance human = new ObjectInstance(domain.getObjectClass(CLASSAGENT), "human");
-		human.setValue(ATTROBOT, 0);
-		state.addObject(human);
+		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
+		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2");
+		state.addObject(SpaceFactory.getNewObjectInstance(domain, "shelf", false, false, false, null));
+		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter", containers));
 		
-		ObjectInstance robot = new ObjectInstance(domain.getObjectClass(CLASSAGENT), "robot");
-		robot.setValue(ATTROBOT, 1);
-		state.addObject(robot);
+		for (String container : containers) { 
+			state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "counter"));
+		}
 		
-		ObjectInstance shelfSpace = new ObjectInstance(domain.getObjectClass(CLASSSPACE), "shelf");
-		shelfSpace.setValue(ATTMIXINGSPACE, 0);
-		state.addObject(shelfSpace);
-		ObjectInstance counterSpace = new ObjectInstance(domain.getObjectClass(CLASSSPACE), "counter");
-		counterSpace.setValue(ATTMIXINGSPACE, 1);
-		state.addObject(counterSpace);
-		
-		ObjectInstance mixingBowl = 
-				new ObjectInstance(
-						domain.getObjectClass(ContainerClass.className), 
-						"mixing_bowl_1");
-		mixingBowl.setValue(ContainerClass.ATTRECEIVING, 1);
-		mixingBowl.setValue(ContainerClass.ATTHEATING, 0);
-		mixingBowl.setValue(ContainerClass.ATTMIXING, 1);
-		state.addObject(mixingBowl);
-		
-		ObjectInstance mixingBowl2 = 
-				new ObjectInstance(
-						domain.getObjectClass(ContainerClass.className), 
-						"mixing_bowl_2");
-		mixingBowl2.setValue(ContainerClass.ATTRECEIVING, 1);
-		mixingBowl2.setValue(ContainerClass.ATTHEATING, 0);
-		mixingBowl2.setValue(ContainerClass.ATTMIXING, 1);
-		state.addObject(mixingBowl2);
-		
-		State finalState = this.PlanIngredient(domain, state, (Recipe.ComplexIngredient)recipe.topLevelIngredient);	
+		State finalState = this.PlanIngredient(domain, state, recipe.topLevelIngredient);
 	}
 	
-	public State PlanIngredient(Domain domain, State startingState, Recipe.ComplexIngredient ingredient)
+	public void PlanRecipeTwoAgents(Domain domain, Recipe recipe)
+	{
+		State state = new State();
+		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
+		state.addObject(AgentFactory.getNewRobotAgentObjectInstance(domain, "robot"));
+		
+		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2");
+		state.addObject(SpaceFactory.getNewObjectInstance(domain, "shelf", false, false, false, null));
+		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter", containers));
+		
+		for (String container : containers) { 
+			state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "counter"));
+		}
+		
+		State finalState = this.PlanIngredient(domain, state, recipe.topLevelIngredient);
+	}
+	
+	public State PlanIngredient(Domain domain, State startingState, IngredientFactory ingredient)
 	{
 		State currentState = new State(startingState);
+		Set<String> contents = IngredientFactory.getIngredientContents(complexIngredient)
+		for (IngredientFactory subIngredient : )
 		for (Recipe.IngredientFactory subIngredient : ingredient.Contents)
 		{
 			if (subIngredient instanceof Recipe.ComplexIngredient)
@@ -347,172 +289,13 @@ State state = new State();
 		return state;
 	}
 	
-	public class PourAction extends Action {
-		public PourAction(String name, Domain domain) {
-			super(name, domain, new String[] {SingleAgentKitchen.CLASSAGENT, ContainerClass.className, ContainerClass.className});
-		}
-		
-		@Override
-		public boolean applicableInState(State state, String[] params) {
-			ObjectInstance agent = state.getObject(params[0]);
-			if (agent.getDiscValForAttribute(SingleAgentKitchen.ATTROBOT) == 1)
-			{
-				return false;
-			}
-			ObjectInstance pouringContainer = state.getObject(params[1]);
-			if (pouringContainer.getAllRelationalTargets(ContainerClass.ATTCONTAINS).size() == 0)
-			{
-				return false;
-			}
-			ObjectInstance recievingContainer = state.getObject(params[2]);
-			if (recievingContainer.getDiscValForAttribute(ContainerClass.ATTRECEIVING) == 0)
-			{
-				return false;
-			}
-			Set<String> pouringContainerSpace = pouringContainer.getAllRelationalTargets(ATTINSPACE);
-			Set<String> receivingContainerSpace = recievingContainer.getAllRelationalTargets(ATTINSPACE);
-			if (pouringContainerSpace.size() == 0 || receivingContainerSpace.size() == 0)
-			{
-				throw new RuntimeException("One of the pouring containers is not in any space");
-			}
-			
-			if (pouringContainerSpace.iterator().next() != receivingContainerSpace.iterator().next())
-			{
-				return false;
-			}
-			ObjectInstance pouringContainerSpaceObject = state.getObject(pouringContainerSpace.iterator().next());
-			
-			if (pouringContainerSpaceObject.getDiscValForAttribute(ATTMIXINGSPACE)== 0)
-			{
-				return false;
-			}
-			return true;
-		}
-
-		@Override
-		protected State performActionHelper(State state, String[] params) {
-			ObjectInstance agent = state.getObject(params[0]);
-			ObjectInstance pouringContainer = state.getObject(params[1]);
-			ObjectInstance recievingContainer = state.getObject(params[2]);
-			this.pour(pouringContainer, recievingContainer);
-			//System.out.println("Pour contents of container " + params[0] + " container " + params[1]);
-			return state;
-		}
-		
-		protected void pour(ObjectInstance pouringContainer, ObjectInstance receivingContainer)
-		{
-			Set<String> ingredients = pouringContainer.getAllRelationalTargets(ContainerClass.ATTCONTAINS);
-			for (String ingredient : ingredients)
-			{
-				receivingContainer.addRelationalTarget(ContainerClass.ATTCONTAINS, ingredient);
-			}
-			pouringContainer.clearRelationalTargets(ContainerClass.ATTCONTAINS);
-		}
-	}
 	
-	public class MixAction extends Action {	
-		public MixAction(String name, Domain domain) {
-			super(name, domain, new String[] {SingleAgentKitchen.CLASSAGENT, ContainerClass.className});
-		}
-		
-		@Override
-		public boolean applicableInState(State state, String[] params) {
-			ObjectInstance agent =  state.getObject(params[0]);
-			if (agent.getDiscValForAttribute(SingleAgentKitchen.ATTROBOT) == 1)
-			{
-				return false;
-			}
-			ObjectInstance containerInstance = state.getObject(params[1]);
-			if (containerInstance.getDiscValForAttribute(ContainerClass.ATTMIXING) != 1)
-			{
-				return false;
-			}
-			if (containerInstance.getAllRelationalTargets(ContainerClass.ATTCONTAINS).size() == 0)
-			{
-				return false;
-			}
-
-			Set<String> containerSpace = containerInstance.getAllRelationalTargets(ATTINSPACE);
-			if (containerSpace.size() == 0 || containerSpace.size() == 0)
-			{
-				throw new RuntimeException("Mixing container is not in any space");
-			}
-
-			ObjectInstance pouringContainerSpaceObject = state.getObject(containerSpace.iterator().next());
-			
-			if (pouringContainerSpaceObject.getDiscValForAttribute(ATTMIXINGSPACE)== 0)
-			{
-				return false;
-			}
-			return true;
-		}
 	
-		@Override
-		protected State performActionHelper(State state, String[] params) {
-			ObjectInstance agent = state.getObject(params[0]);
-			ObjectInstance containerInstance = state.getObject(params[1]);
-			//System.out.println("Mixing ingredients in container " + containerInstance.getName());
-			this.mix(state, containerInstance);
-			return state;
-		}
-		
-		protected void mix(State state, ObjectInstance container)
-		{
-			ObjectClass complexIngredientClass = this.domain.getObjectClass(Recipe.ComplexIngredient.className);
-			Random rando = new Random();
-			ObjectInstance newIngredient = new ObjectInstance(complexIngredientClass, Integer.toString(rando.nextInt()));
-			newIngredient.setValue(Recipe.Ingredient.attBaked, 0);
-			newIngredient.setValue(Recipe.Ingredient.attMelted, 0);
-			newIngredient.setValue(Recipe.Ingredient.attMixed, 0);
-			
-			Set<String> contents = container.getAllRelationalTargets(ContainerClass.ATTCONTAINS);
-			for (String ingredient : contents)
-			{
-				newIngredient.addRelationalTarget(Recipe.ComplexIngredient.attContains, ingredient);
-			}
-			container.clearRelationalTargets(ContainerClass.ATTCONTAINS);
-			container.addRelationalTarget(ContainerClass.ATTCONTAINS, newIngredient.getName());
-			state.addObject(newIngredient);
-			
-		}
-	}
 	
-	public class BakeAction extends Action {
-		public BakeAction(String name, Domain domain) {
-			super(name, domain, "");
-		}
-		
-		@Override
-		public boolean applicableInState(State s, String[] params) {
-			
-			return false;
-		}
 	
-		@Override
-		protected State performActionHelper(State state, String[] params) {
-			this.bake(state, this.domain);
-			//System.out.println("Bake!");
-			return state;
-		}
-		
-		public void bake(State state, Domain domain)
-		{
-		}
-	}
 	
-	public class MoveAction extends Action {
-		public MoveAction(String name, Domain domain) {
-			super(name, domain, new String[] {SingleAgentKitchen.CLASSAGENT, ContainerClass.className, SingleAgentKitchen.CLASSSPACE});
-		}
-		
-		@Override
-		protected State performActionHelper(State state, String[] params) {
-			//System.out.println("Moving container " + params[1] + " to " + params[2]);
-			ObjectInstance containerInstance = state.getObject(params[1]);
-			containerInstance.addRelationalTarget(ATTINSPACE, params[2]);
-			return state;
-		}
-	}
+	
+	
 	
 	public static void main(String[] args) {
 		SingleAgentKitchen kitchen = new SingleAgentKitchen();

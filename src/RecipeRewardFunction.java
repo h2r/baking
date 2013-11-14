@@ -19,11 +19,10 @@ public class RecipeRewardFunction implements RewardFunction {
 		String[] classes = a.action.getParameterClasses();
 		for (int i = 0; i < classes.length; ++i)
 		{
-			if (classes[i] == SingleAgentKitchen.CLASSAGENT)
+			if (classes[i] == AgentFactory.ClassName)
 			{
 				ObjectInstance agent = state.getObject(a.params[i]);
-				if (agent.getDiscValForAttribute(SingleAgentKitchen.ATTROBOT) == 0)
-				{
+				if (AgentFactory.isRobot(agent)) {
 					return -2;
 				}
 			}
