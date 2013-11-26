@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,7 +12,7 @@ import burlap.oomdp.core.State;
 
 public abstract class Recipe {
 	
-	protected IngredientFactory topLevelIngredient;
+	protected IngredientRecipe topLevelIngredient;
 	
 	public Recipe()
 	{
@@ -22,44 +23,30 @@ public abstract class Recipe {
 	{
 		return Recipe.getNumberSteps(this.topLevelIngredient);
 	}
-	public static int getNumberSteps(IngredientFactory ingredient)
+	public static int getNumberSteps(IngredientRecipe ingredient)
 	{
 		int count = 0;
-		count += ingredient.Baked ? 1 : 0;
-		count += ingredient.Melted ? 1 : 0;
-		count += ingredient.Mixed ? 1 : 0;
-		if (ingredient instanceof SimpleIngredient)
-		{
-			return count;
-		}
-		ComplexIngredient complexIngredient = (ComplexIngredient)ingredient;
-		{
-			for (IngredientFactory subIngredient : complexIngredient.Contents)
-			{
-				count += Recipe.getNumberSteps(subIngredient);
-			}
-		}
+		count += ingredient.getBaked() ? 1 : 0;
+		count += ingredient.getMelted() ? 1 : 0;
+		count += ingredient.getMixed() ? 1 : 0;
+		count += ingredient.getConstituentIngredientsCount();
 		return count;
 	}
 	public List<ObjectInstance> getRecipeList(ObjectClass simpleIngredientClass)
 	{
-		List<ObjectInstance> ingredients = new ArrayList<ObjectInstance>();
-		ingredients.addAll(this.topLevelIngredient.getSimpleObjectInstances(simpleIngredientClass));
-		return ingredients;
+		return IngredientFactory.getIngredientInstancesList(simpleIngredientClass, this.topLevelIngredient);
 	}
 	
-	public static List<ObjectInstance> getContainers(ObjectClass containerClass, List<ObjectInstance> ingredients)
+	public static List<ObjectInstance> getContainers(ObjectClass containerClass, List<ObjectInstance> ingredients, String containerSpace)
 	{
 		List<ObjectInstance> containers = new ArrayList<ObjectInstance>();
 		for (ObjectInstance ingredient : ingredients)
 		{
 			ObjectInstance container = 
-					new ObjectInstance(containerClass, ingredient.getName() + "_bowl");
-			container.setValue(ContainerClass.ATTRECEIVING, 0);
-			container.setValue(ContainerClass.ATTHEATING, 0);
-			container.setValue(ContainerClass.ATTMIXING, 0);
-			container.addRelationalTarget(ContainerClass.ATTCONTAINS, ingredient.getName());
+					ContainerFactory.getNewIngredientContainerObjectInstance(
+							containerClass, ingredient.getName() + "_bowl", ingredient.getName(), containerSpace);
 			containers.add(container);
+			IngredientFactory.changeIngredientContainer(ingredient, container.getName());
 		}
 		return containers;
 	}
@@ -69,54 +56,47 @@ public abstract class Recipe {
 		return Recipe.isSuccess(state, this.topLevelIngredient, topLevelObject);
 	}
 	
-	public static Boolean isSuccess(State state, IngredientFactory ingredient, ObjectInstance object)
+	public static Boolean isSuccess(State state, IngredientRecipe ingredientRecipe, ObjectInstance object)
 	{
-		int baked = object.getDiscValForAttribute(IngredientFactory.attributeBaked);
-		if ((baked == 1) != ingredient.Baked)
-		{
+		if (IngredientFactory.isBakedIngredient(object) != ingredientRecipe.getBaked()) {
 			return false;
 		}
-		int mixed = object.getDiscValForAttribute(IngredientFactory.attributeMixed);
-		if ((mixed == 1) != ingredient.Mixed)
-		{
+		if (IngredientFactory.isMeltedIngredient(object) != ingredientRecipe.getMelted()) {
 			return false;
 		}
-		int melted = object.getDiscValForAttribute(IngredientFactory.attributeMelted);
-		if ((melted == 1) != ingredient.Melted)
-		{
+		if (IngredientFactory.isMixedIngredient(object) != ingredientRecipe.getMixed()) {
 			return false;
 		}
 		
-		if (ingredient instanceof SimpleIngredient)
+		if (ingredientRecipe.isSimple())
 		{
-			return ingredient.Name == object.getName();
+			return ingredientRecipe.getName() == object.getName();
 		}
 		
-		ComplexIngredient complexIngredient = (ComplexIngredient)ingredient;
-		
-		Set<String> contents = object.getAllRelationalTargets(ComplexIngredient.attContains);
-		if (complexIngredient.Contents.size() != contents.size())
+		List<IngredientRecipe> recipeContents = ingredientRecipe.getContents();
+		Set<String> contents = IngredientFactory.getContentsForIngredient(object);
+		if (recipeContents.size() != contents.size())
 		{
 			return false;
 		}
 		
-		Map<String, ComplexIngredient> complexIngredientsRecipe = new HashMap<String, ComplexIngredient>();
-		Map<String, SimpleIngredient> simpleIngredientsRecipe = new HashMap<String, SimpleIngredient>();
+		Map<String, IngredientRecipe> complexIngredientRecipes = new HashMap<String, IngredientRecipe>();
+		Map<String, IngredientRecipe> simpleIngredientRecipes = new HashMap<String, IngredientRecipe>();
 		
-		for (IngredientFactory subIngredient : complexIngredient.Contents)
+		for (IngredientRecipe subIngredientRecipe : recipeContents)
 		{
-			if (subIngredient instanceof ComplexIngredient)
+			if (!subIngredientRecipe.isSimple())
 			{
-				complexIngredientsRecipe.put(subIngredient.Name, (ComplexIngredient)subIngredient);
+				complexIngredientRecipes.put(subIngredientRecipe.getName(), subIngredientRecipe);
 			}
 			else
 			{
-				simpleIngredientsRecipe.put(subIngredient.Name, (SimpleIngredient)subIngredient);
+				simpleIngredientRecipes.put(subIngredientRecipe.getName(), subIngredientRecipe);
 			}
 		}
 		
 		List<ObjectInstance> producedIngredientInstances =
-				state.getObjectsOfTrueClass(ComplexIngredient.className);
+				state.getObjectsOfTrueClass(IngredientFactory.ClassNameComplex);
 		List<ObjectInstance> complexIngredientContents = new ArrayList<ObjectInstance>();
 		for (ObjectInstance obj : producedIngredientInstances)
 		{
@@ -127,7 +107,7 @@ public abstract class Recipe {
 		}
 		
 		List<ObjectInstance> simpleIngredientInstances = 
-				state.getObjectsOfTrueClass(SimpleIngredient.className);
+				state.getObjectsOfTrueClass(IngredientFactory.ClassNameSimple);
 		List<ObjectInstance> simpleIngredientContents = new ArrayList<ObjectInstance>();
 		for (ObjectInstance obj : simpleIngredientInstances)
 		{
@@ -138,8 +118,8 @@ public abstract class Recipe {
 		}
 		
 		
-		if (complexIngredientsRecipe.size() != complexIngredientContents.size() ||
-				simpleIngredientsRecipe.size() != simpleIngredientContents.size())
+		if (complexIngredientRecipes.size() != complexIngredientContents.size() ||
+				simpleIngredientRecipes.size() != simpleIngredientContents.size())
 		{
 			return false;
 		}
@@ -147,8 +127,8 @@ public abstract class Recipe {
 		for (ObjectInstance simpleIngredient : simpleIngredientContents)
 		{
 			String ingredientName = simpleIngredient.getName();
-			if (!simpleIngredientsRecipe.containsKey(ingredientName) ||
-					!Recipe.isSuccess(state, simpleIngredientsRecipe.get(ingredientName), simpleIngredient))
+			if (!simpleIngredientRecipes.containsKey(ingredientName) ||
+					!Recipe.isSuccess(state, simpleIngredientRecipes.get(ingredientName), simpleIngredient))
 			{
 				return false;
 			}
@@ -157,7 +137,8 @@ public abstract class Recipe {
 		for (ObjectInstance producedInstance : complexIngredientContents)
 		{
 			Boolean exists = false;
-			for (ComplexIngredient complexSubIngredient : complexIngredientsRecipe.values())
+			Collection<IngredientRecipe> complexIngredientRecipeValues = complexIngredientRecipes.values();
+			for (IngredientRecipe complexSubIngredient : complexIngredientRecipeValues)
 			{
 				if (Recipe.isSuccess(state, complexSubIngredient, producedInstance))
 				{
@@ -179,62 +160,66 @@ public abstract class Recipe {
 		return Recipe.isFailure(state, this.topLevelIngredient, object);
 	}
 	
-	public static Boolean isFailure(State state, IngredientFactory ingredient, ObjectInstance object)
+	public static Boolean isFailure(State state, IngredientRecipe ingredientRecipe, ObjectInstance object)
 	{
-		if (Recipe.isSuccess(state, ingredient, object))
+		if (Recipe.isSuccess(state, ingredientRecipe, object))
 		{
 			// If the recipe is complete, then we didn't fail. Go logic
 			return false;
 		}
 		
-		if (ingredient instanceof SimpleIngredient)
+		if (ingredientRecipe.isSimple())
 		{
-			if (object.getObjectClass().name != SimpleIngredient.className)
+			if (object.getObjectClass().name != IngredientFactory.ClassNameSimple)
 			{
 				// Object is not a simple ingredient, but the ingredient we are checking against is. FAIL!
 				return true;
 			}
-			if (ingredient.Name != object.getName())
+			if (ingredientRecipe.getName() != object.getName())
 			{
 				// They aren't even the same name. FAIL!
 				return true;
 			}
-			if ((!ingredient.Baked && object.getDiscValForAttribute(IngredientFactory.attributeBaked) == 1) ||
-				(!ingredient.Melted && object.getDiscValForAttribute(IngredientFactory.attributeMelted) == 1) ||
-				(!ingredient.Mixed && object.getDiscValForAttribute(IngredientFactory.attributeMixed) == 1))
+			if ((!ingredientRecipe.getBaked() && IngredientFactory.isBakedIngredient(object)) ||
+				(!ingredientRecipe.getMelted() && IngredientFactory.isMeltedIngredient(object)) ||
+				(!ingredientRecipe.getMixed() && IngredientFactory.isMixedIngredient(object)))
 			{
 				// One of baked/melted/mixed is true that shouldn't be. FAIL!
 				return true;
 			}
 		}
 		
+		List<IngredientRecipe> recipeContents = ingredientRecipe.getContents();
+		Set<String> contents = IngredientFactory.getContentsForIngredient(object);
+		Map<String, IngredientRecipe> complexIngredientRecipes = new HashMap<String, IngredientRecipe>();
+		Map<String, IngredientRecipe> simpleIngredientRecipes = new HashMap<String, IngredientRecipe>();
 		
-		ComplexIngredient complexIngredient = (ComplexIngredient)ingredient;
-		
-		Map<String, ComplexIngredient> complexSubIngredients = new HashMap<String, ComplexIngredient>();
-		Map<String, SimpleIngredient> simpleSubIngredients = new HashMap<String, SimpleIngredient>();
-		
-		for (IngredientFactory subIngredient : complexIngredient.Contents)
+		for (IngredientRecipe subIngredientRecipe : recipeContents)
 		{
-			if (subIngredient instanceof SimpleIngredient)
+			if (!subIngredientRecipe.isSimple())
 			{
-				simpleSubIngredients.put(subIngredient.Name, (SimpleIngredient)subIngredient);
+				complexIngredientRecipes.put(subIngredientRecipe.getName(), subIngredientRecipe);
 			}
 			else
 			{
-				complexSubIngredients.put(subIngredient.Name, (ComplexIngredient)subIngredient);
+				simpleIngredientRecipes.put(subIngredientRecipe.getName(), subIngredientRecipe);
 			}
 		}
 		
-		Set<String> contents = object.getAllRelationalTargets(ComplexIngredient.attContains);
-		if (contents.size() > complexIngredient.Contents.size())
+
+		List<ObjectInstance> producedIngredientInstances =
+				state.getObjectsOfTrueClass(IngredientFactory.ClassNameComplex);
+		List<ObjectInstance> complexIngredientContents = new ArrayList<ObjectInstance>();
+		for (ObjectInstance obj : producedIngredientInstances)
 		{
-			// The number of constituent ingredient in the produced object are larger than the 
-			// ingredient we are checking. Descend!
-			return Recipe.isFailure(state, simpleSubIngredients, complexSubIngredients, object);
+			if (contents.contains(obj.getName()))
+			{
+				complexIngredientContents.add(obj);
+			}
 		}
 		
-		List<ObjectInstance> simpleIngredientInstances = state.getObjectsOfTrueClass(SimpleIngredient.className);
+		List<ObjectInstance> simpleIngredientInstances = 
+				state.getObjectsOfTrueClass(IngredientFactory.ClassNameSimple);
 		List<ObjectInstance> simpleIngredientContents = new ArrayList<ObjectInstance>();
 		for (ObjectInstance obj : simpleIngredientInstances)
 		{
@@ -244,38 +229,28 @@ public abstract class Recipe {
 			}
 		}
 		
-		List<ObjectInstance> complexIngredientInstances = state.getObjectsOfTrueClass(ComplexIngredient.className);
-		List<ObjectInstance> complexIngredientContents = new ArrayList<ObjectInstance>();
-		for (ObjectInstance obj : complexIngredientInstances)
-		{
-			if (contents.contains(obj.getName()))
-			{
-				complexIngredientContents.add(obj);
-			}
-		}
-		
-		if (simpleIngredientContents.size() > simpleSubIngredients.size() ||
-			complexIngredientContents.size() > complexSubIngredients.size())
+		if (simpleIngredientContents.size() > simpleIngredientRecipes.size() ||
+			complexIngredientContents.size() > complexIngredientRecipes.size())
 		{
 			// The number of simple/complex ingredients is greater than what we've called for. DESCEND!
-			return Recipe.isFailure(state, simpleSubIngredients, complexSubIngredients, object);
+			return Recipe.isFailure(state, simpleIngredientRecipes, complexIngredientRecipes, object);
 		}
 	
 		for (ObjectInstance obj : simpleIngredientContents)
 		{
-			if (simpleSubIngredients.containsKey(obj.getName()) &&
-				Recipe.isFailure(state, simpleSubIngredients.get(obj.getName()), obj))
+			if (simpleIngredientRecipes.containsKey(obj.getName()) &&
+				Recipe.isFailure(state, simpleIngredientRecipes.get(obj.getName()), obj))
 			{
 				// If the list of simple ingredients does contain this simple ingredient, but
 				// the two simple ingredients don't match, we must descend.
-				return Recipe.isFailure(state, simpleSubIngredients, complexSubIngredients, object);
+				return Recipe.isFailure(state, simpleIngredientRecipes, complexIngredientRecipes, object);
 			}		
 		}
 		
 		for (ObjectInstance obj : complexIngredientContents)
 		{
 			Boolean found = false;
-			for (IngredientFactory subSubIngredient : complexSubIngredients.values())
+			for (IngredientRecipe subSubIngredient : complexIngredientRecipes.values())
 			{
 				if (!Recipe.isFailure(state, subSubIngredient, obj))
 				{
@@ -285,7 +260,7 @@ public abstract class Recipe {
 			if (!found)
 			{
 				// If we can't find this objectInstance in the complex ingredient list, we must descend.
-				return Recipe.isFailure(state, simpleSubIngredients, complexSubIngredients, object);
+				return Recipe.isFailure(state, simpleIngredientRecipes, complexIngredientRecipes, object);
 			}
 		}
 		
@@ -293,13 +268,13 @@ public abstract class Recipe {
 		return false;
 	}
 	
-	public static Boolean isFailure(State state, Map<String, SimpleIngredient> simpleIngredients, Map<String, ComplexIngredient> complexIngredients, ObjectInstance object)
+	public static Boolean isFailure(State state, Map<String, IngredientRecipe> simpleIngredients, Map<String, IngredientRecipe> complexIngredients, ObjectInstance object)
 	{
-		if (object.getObjectClass().name == SimpleIngredient.className)
+		if (object.getObjectClass().name == IngredientFactory.ClassNameSimple)
 		{
 			if (simpleIngredients.containsKey(object.getName()))
 			{
-				SimpleIngredient simpleIngredient = simpleIngredients.get(object.getName());
+				IngredientRecipe simpleIngredient = simpleIngredients.get(object.getName());
 				if (!Recipe.isFailure(state, simpleIngredient, object))
 				{
 					// The object we are checking is a simple ingredient, and it checks out. Carry on.
@@ -307,7 +282,8 @@ public abstract class Recipe {
 				}
 			}
 		}
-		for (ComplexIngredient complexIngredient : complexIngredients.values())
+		Collection<IngredientRecipe> complexIngredientValues = complexIngredients.values();
+		for (IngredientRecipe complexIngredient : complexIngredientValues)
 		{
 			if (!Recipe.isFailure(state, complexIngredient, object))
 			{

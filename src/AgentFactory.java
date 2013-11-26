@@ -12,13 +12,16 @@ public class AgentFactory {
 	public static final String ClassName = "agent";
 	private static final String attributeRobot = "robot";
 	
-	public static ObjectClass createObjectClass(Domain domain)
+	public static ObjectClass getObjectClass(Domain domain)
 	{
-		ObjectClass objectClass = new ObjectClass(domain, "container");
-		Attribute robotAttribute =
-				new Attribute(domain, AgentFactory.attributeRobot, Attribute.AttributeType.DISC);
-		robotAttribute.setDiscValuesForRange(0,1,1);
-		objectClass.addAttribute(robotAttribute);
+		ObjectClass objectClass = domain.getObjectClass(AgentFactory.ClassName);
+		if (objectClass == null) {
+			objectClass = new ObjectClass(domain, "agent");
+			Attribute robotAttribute =
+					new Attribute(domain, AgentFactory.attributeRobot, Attribute.AttributeType.DISC);
+			robotAttribute.setDiscValuesForRange(0,1,1);
+			objectClass.addAttribute(robotAttribute);
+		}
 		return objectClass;
 	}
 	
@@ -29,7 +32,7 @@ public class AgentFactory {
 	}
 	
 	public static ObjectInstance getNewObjectInstance(Domain domain, String name, Boolean robot) {
-		return AgentFactory.getNewObjectInstance(domain.getObjectClass(AgentFactory.ClassName), name, robot);
+		return AgentFactory.getNewObjectInstance(AgentFactory.getObjectClass(domain), name, robot);
 	}
 	
 	public static ObjectInstance getNewHumanAgentObjectInstance(ObjectClass agentClass, String name) {

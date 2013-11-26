@@ -2,6 +2,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import burlap.oomdp.core.Attribute;
 import burlap.oomdp.core.Domain;
@@ -53,10 +54,11 @@ public class ContainerFactory {
 	}
 	
 	public static ObjectInstance getNewObjectInstance(ObjectClass containerClass, String name, 
-			Boolean mixing, Boolean heating, Boolean receiving, List<String> contents, String containerSpace) {
+			Boolean mixing, Boolean heating, Boolean baking, Boolean receiving, List<String> contents, String containerSpace) {
 		ObjectInstance newInstance = new ObjectInstance(containerClass, name);
 		newInstance.setValue(ContainerFactory.attributeMixing, mixing ? 1 : 0);
 		newInstance.setValue(ContainerFactory.attributeHeating, heating ? 1 : 0);
+		newInstance.setValue(ContainerFactory.attributeBaking, baking ? 1 : 0);
 		newInstance.setValue(ContainerFactory.attributeReceiving, receiving ? 1 : 0);
 		if (contents != null)
 		{
@@ -72,42 +74,43 @@ public class ContainerFactory {
 		return newInstance;
 	}
 	
-	public static ObjectInstance getNewObjectInstance(Domain domain, String name, Boolean mixing, Boolean heating,
+	public static ObjectInstance getNewObjectInstance(Domain domain, String name, Boolean mixing, Boolean heating, Boolean baking,
 			Boolean receiving, List<String> contents, String containerSpace) {
 		return ContainerFactory.getNewObjectInstance(
-				domain.getObjectClass(ContainerFactory.ClassName), name, mixing, heating, receiving, contents, containerSpace);
+				domain.getObjectClass(ContainerFactory.ClassName), name, mixing, heating, baking, receiving, contents, containerSpace);
 	}
 	
 	public static ObjectInstance getNewMixingContainerObjectInstance(ObjectClass containerClass, 
 			String name, List<String> contents, String containerSpace) {
-		return ContainerFactory.getNewObjectInstance(containerClass, name, true, false, true, contents, containerSpace);
+		return ContainerFactory.getNewObjectInstance(containerClass, name, true, false, false, true, contents, containerSpace);
 	}
 	
 	public static ObjectInstance getNewMixingContainerObjectInstance(Domain domain, 
 			String name, List<String> contents, String containerSpace) {
 		return ContainerFactory.getNewObjectInstance(
-				domain.getObjectClass(ContainerFactory.ClassName), name, true, false, true, contents, containerSpace);
+				domain.getObjectClass(ContainerFactory.ClassName), name, true, false, false, true, contents, containerSpace);
+	}
 	
 	public static ObjectInstance getNewHeatingContainerObjectInstance(ObjectClass containerClass, 
 			String name, List<String> contents, String containerSpace) {
-		return ContainerFactory.getNewObjectInstance(containerClass, name, true, true, true, contents, containerSpace);
+		return ContainerFactory.getNewObjectInstance(containerClass, name, true, true, false, true, contents, containerSpace);
 	}
 	
 	public static ObjectInstance getNewHeatingContainerObjectInstance(Domain domain, 
 			String name, List<String> contents, String containerSpace) {
 		return ContainerFactory.getNewObjectInstance(domain.getObjectClass(ContainerFactory.ClassName), 
-				name, true, true, true, contents, containerSpace);
+				name, true, true, false, true, contents, containerSpace);
 	}
 	
 	public static ObjectInstance getNewIngredientContainerObjectInstance(ObjectClass containerClass, 
 			String name, String ingredient, String containerSpace) {
-		return ContainerFactory.getNewObjectInstance(containerClass, name, false, false, false, Arrays.asList(ingredient), containerSpace);
+		return ContainerFactory.getNewObjectInstance(containerClass, name, false, false, false, false, Arrays.asList(ingredient), containerSpace);
 	}
 	
 	public static ObjectInstance getNewIngredientContainerObjectInstance(Domain domain, 
 			String name, String ingredient, String containerSpace) {
 		return ContainerFactory.getNewObjectInstance(domain.getObjectClass(ContainerFactory.ClassName), 
-				name, false, false, false, Arrays.asList(ingredient), containerSpace);
+				name, false, false, false, false, Arrays.asList(ingredient), containerSpace);
 	}
 
 	public static void addIngredient(ObjectInstance container, String ingredient) {
@@ -145,11 +148,20 @@ public class ContainerFactory {
 	}
 	
 	public static Boolean isReceivingContainer(ObjectInstance container) {
-		return (container.getDiscValForAttribute(ContainerFactory.attributeReceiving) == 1);
+		int rec = container.getDiscValForAttribute(ContainerFactory.attributeReceiving);
+		if (rec > 0) {
+			int c = rec;
+		}
+		Boolean isReceiving = (rec == 1);
+		return isReceiving;
 	}
 
 	public static Set<String> getContentNames(ObjectInstance container) {
-		return container.getAllRelationalTargets(ContainerFactory.attributeContains);
+		Set<String> names = container.getAllRelationalTargets(ContainerFactory.attributeContains);
+		if (names.size() > 1) {
+			int c = names.size();
+		}
+		return new TreeSet<String>(names);
 	}
 	
 	public static String getSpaceName(ObjectInstance container) {

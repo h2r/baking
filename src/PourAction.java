@@ -1,3 +1,4 @@
+import java.util.List;
 import java.util.Set;
 
 import burlap.oomdp.core.Domain;
@@ -13,6 +14,9 @@ public class PourAction extends Action {
 	
 	@Override
 	public boolean applicableInState(State state, String[] params) {
+		if (params[2].contains("mixing")) {
+			String name = params[2];
+		}
 		ObjectInstance agent = state.getObject(params[0]);
 		if (AgentFactory.isRobot(agent)) {
 			return false;
@@ -24,7 +28,7 @@ public class PourAction extends Action {
 		}
 		
 		ObjectInstance receivingContainer = state.getObject(params[2]);
-		if (ContainerFactory.isReceivingContainer(receivingContainer)) {
+		if (!ContainerFactory.isReceivingContainer(receivingContainer)) {
 			return false;
 		}
 
@@ -54,16 +58,21 @@ public class PourAction extends Action {
 	protected State performActionHelper(State state, String[] params) {
 		ObjectInstance agent = state.getObject(params[0]);
 		ObjectInstance pouringContainer = state.getObject(params[1]);
-		ObjectInstance recievingContainer = state.getObject(params[2]);
-		this.pour(pouringContainer, recievingContainer);
-		//System.out.println("Pour contents of container " + params[0] + " container " + params[1]);
+		ObjectInstance receivingContainer = state.getObject(params[2]);
+		Set<String> ingredients = ContainerFactory.getContentNames(pouringContainer);
+		ContainerFactory.addIngredients(receivingContainer, ingredients);
+		ContainerFactory.removeContents(pouringContainer);
+		for (String ingredient : ingredients) {
+			ObjectInstance ingredientInstance = state.getObject(ingredient); 
+			IngredientFactory.changeIngredientContainer(ingredientInstance, receivingContainer.getName());
+		}
+		//System.out.println("Pour contents of container " + params[1] + " container " + params[2]);
 		return state;
 	}
 	
 	protected void pour(ObjectInstance pouringContainer, ObjectInstance receivingContainer)
 	{
-		Set<String> ingredients = ContainerFactory.getContentNames(pouringContainer);
-		ContainerFactory.addIngredients(receivingContainer, ingredients);
-		ContainerFactory.removeContents(receivingContainer);
+		
+		
 	}
 }

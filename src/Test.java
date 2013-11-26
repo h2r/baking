@@ -35,28 +35,6 @@ public class Test {
 		}
 		return 0;
 	}
-	 
-	public static ObjectInstance simpleIngredient(ObjectClass ingredientClass, String name)
-	{
-		ObjectInstance objectInstance = new ObjectInstance(ingredientClass, name);
-		objectInstance.setValue(Recipe.Ingredient.attBaked, 0);
-		objectInstance.setValue(Recipe.Ingredient.attMelted, 0);
-		objectInstance.setValue(Recipe.Ingredient.attMixed, 0);
-		return objectInstance;
-	}
-	
-	public static ObjectInstance complexIngredient(ObjectClass ingredientClass, String name, List<String> contents)
-	{
-		ObjectInstance objectInstance = new ObjectInstance(ingredientClass, name);
-		objectInstance.setValue(Recipe.Ingredient.attBaked, 0);
-		objectInstance.setValue(Recipe.Ingredient.attMelted, 0);
-		objectInstance.setValue(Recipe.Ingredient.attMixed, 0);
-		for (String str : contents)
-		{
-			objectInstance.addRelationalTarget(Recipe.ComplexIngredient.attContains, str);
-		}
-		return objectInstance;
-	}
 	
 	public static void main(String[] args)
 	{
@@ -64,23 +42,29 @@ public class Test {
 		Domain domain = kitchen.generateDomain();
 		State state = SingleAgentKitchen.getOneAgent(domain);
 		
-		ObjectClass simpleClass = domain.getObjectClass(Recipe.SimpleIngredient.className);
-		ObjectClass complexClass = domain.getObjectClass(Recipe.ComplexIngredient.className);
+		ObjectClass simpleClass = IngredientFactory.createSimpleIngredientObjectClass(domain);
+		ObjectClass complexClass = IngredientFactory.createComplexIngredientObjectClass(domain);
 		
-		ObjectInstance s1 = Test.simpleIngredient(simpleClass, "s1");
-		ObjectInstance s2 = Test.simpleIngredient(simpleClass, "s2");
-		ObjectInstance s3 = Test.simpleIngredient(simpleClass, "s1");
-		ObjectInstance s4 = Test.simpleIngredient(simpleClass, "s4");
-		ObjectInstance s5 = Test.simpleIngredient(simpleClass, "s5");
+		ObjectInstance s1 = IngredientFactory.getNewSimpleIngredientObjectInstance(simpleClass, "s1", false, false, false, "");
+		ObjectInstance s2 = IngredientFactory.getNewSimpleIngredientObjectInstance(simpleClass, "s2", false, false, false, "");
+		ObjectInstance s3 = IngredientFactory.getNewSimpleIngredientObjectInstance(simpleClass, "s1", false, false, false, "");
+		ObjectInstance s4 = IngredientFactory.getNewSimpleIngredientObjectInstance(simpleClass, "s4", false, false, false, "");
+		ObjectInstance s5 = IngredientFactory.getNewSimpleIngredientObjectInstance(simpleClass, "s5", false, false, false, "");
 		state.addObject(s1);
 		state.addObject(s2);
 		state.addObject(s3);
 		state.addObject(s4);
 		state.addObject(s5);
 		
-		ObjectInstance p1 = Test.complexIngredient(complexClass, "p1", Arrays.asList("s1", "s2"));
-		ObjectInstance p2 = Test.complexIngredient(complexClass, "p2", Arrays.asList("s1", "s3"));
-		ObjectInstance p3 = Test.complexIngredient(complexClass, "p3", Arrays.asList("s1", "s2", "s4"));
+		ObjectInstance p1 = 
+				IngredientFactory.getNewComplexIngredientObjectInstance(
+						complexClass, "p1", false, false, false, "", Arrays.asList("s1", "s2"));
+		ObjectInstance p2 = 
+				IngredientFactory.getNewComplexIngredientObjectInstance(
+						complexClass, "p2", false, false, false, "", Arrays.asList("s1", "s3"));
+		ObjectInstance p3 = 
+				IngredientFactory.getNewComplexIngredientObjectInstance(
+						complexClass, "p3", false, false, false, "", Arrays.asList("s1", "s2", "s4"));
 		state.addObject(p1);
 		state.addObject(p2);
 		state.addObject(p3);

@@ -13,7 +13,9 @@ public class MoveAction extends Action {
 	protected State performActionHelper(State state, String[] params) {
 		//System.out.println("Moving container " + params[1] + " to " + params[2]);
 		ObjectInstance containerInstance = state.getObject(params[1]);
-		ContainerFactory.addIngredient(containerInstance, params[2]);
+		ObjectInstance spaceInstance = state.getObject(params[2]);
+		ContainerFactory.changeContainerSpace(containerInstance, spaceInstance.getName());
+		SpaceFactory.addContainer(spaceInstance, containerInstance);
 		return state;
 	}
 }

@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import burlap.oomdp.core.Attribute;
 import burlap.oomdp.core.Domain;
@@ -40,6 +41,7 @@ public class IngredientFactory {
 						Attribute.AttributeType.RELATIONAL));
 		return objectClass;
 	}
+	
 	public static ObjectClass createSimpleIngredientObjectClass(Domain domain) {
 		return IngredientFactory.createObjectClass(domain, IngredientFactory.ClassNameSimple);
 	}
@@ -84,6 +86,41 @@ public class IngredientFactory {
 		
 		return newInstance;
 	}
+	
+	public static ObjectInstance getNewIngredientInstance(ObjectClass simpleIngredientClass, 
+			IngredientRecipe ingredientRecipe, String ingredientContainer) {
+		
+		if (ingredientRecipe.isSimple()) {
+			return IngredientFactory.getNewSimpleIngredientObjectInstance(simpleIngredientClass, 
+					ingredientRecipe.getName(), ingredientRecipe.getBaked(), ingredientRecipe.getMelted(), 
+					ingredientRecipe.getMixed(), ingredientContainer);
+		}
+		return null;
+	}
+	
+	public static ObjectInstance getNewIngredientInstance(ObjectInstance objectInstance, String name) {
+		Boolean baked = IngredientFactory.isBakedIngredient(objectInstance);
+		Boolean mixed = IngredientFactory.isMixedIngredient(objectInstance);
+		Boolean melted = IngredientFactory.isMeltedIngredient(objectInstance);
+		Set<String> contents = IngredientFactory.getContentsForIngredient(objectInstance);
+		String container = IngredientFactory.getContainer(objectInstance);
+		return IngredientFactory.getNewComplexIngredientObjectInstance(objectInstance.getObjectClass(), name, baked, melted, mixed, container, contents);
+	}
+	
+	public static List<ObjectInstance> getIngredientInstancesList(ObjectClass simpleIngredientClass,
+			IngredientRecipe ingredientRecipe) {
+		List<ObjectInstance> newInstances = new ArrayList<ObjectInstance>();
+		if (ingredientRecipe.isSimple()) {
+			newInstances.add(IngredientFactory.getNewIngredientInstance(simpleIngredientClass, ingredientRecipe, null));
+		}
+		else {
+			List<IngredientRecipe> subIngredients = ingredientRecipe.getContents();
+			for (IngredientRecipe subIngredient : subIngredients) {
+				newInstances.addAll(IngredientFactory.getIngredientInstancesList(simpleIngredientClass, subIngredient));
+			}
+		}
+		return newInstances;
+	}
 
 	public static void addIngredient(ObjectInstance complexIngredient, ObjectInstance ingredient) {
 		complexIngredient.addRelationalTarget(IngredientFactory.attributeContains, ingredient.getName());
@@ -105,7 +142,32 @@ public class IngredientFactory {
 		}
 	}
 	
-	public abstract ObjectInstance getObjectInstance(ObjectClass ingredientClass);
-	public abstract List<ObjectInstance> getSimpleObjectInstances(ObjectClass ingredientClass);
+	public static String getContainer(ObjectInstance ingredient) {
+		Set<String> containerInstances = ingredient.getAllRelationalTargets(IngredientFactory.attributeContainer);
+		if (containerInstances != null && containerInstances.size() > 0 )
+		{
+			return containerInstances.iterator().next();
+		}
+		return null;
+	}
 	
+	public static Boolean isBakedIngredient(ObjectInstance ingredient) {
+		return ingredient.getDiscValForAttribute(IngredientFactory.attributeBaked) == 1;
+	}
+	
+	public static Boolean isMixedIngredient(ObjectInstance ingredient) {
+		return ingredient.getDiscValForAttribute(IngredientFactory.attributeMixed) == 1;
+	}
+	
+	public static Boolean isMeltedIngredient(ObjectInstance ingredient) {
+		return ingredient.getDiscValForAttribute(IngredientFactory.attributeMelted) == 1;
+	}
+	
+	public static Boolean isSimple(ObjectInstance ingredient) {
+		return ingredient.getObjectClass().name == IngredientFactory.ClassNameSimple;
+	}
+	
+	public static Set<String> getContentsForIngredient(ObjectInstance ingredient) {
+		return new TreeSet<String>(ingredient.getAllRelationalTargets(IngredientFactory.attributeContains));
+	}	
 }

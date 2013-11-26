@@ -8,23 +8,23 @@ public class BrowniesSubGoals extends Recipe {
 	
 	public BrowniesSubGoals() {
 		super();
-		List<IngredientFactory> ingredientList = new ArrayList<IngredientFactory>();
-		ingredientList.add(new SimpleIngredient("cocoa", false, false, false));
-		ingredientList.add(new SimpleIngredient("eggs", false, false, false));
-		ingredientList.add(new SimpleIngredient("sugar", false, false, false));
-		IngredientFactory ingredient1 = new ComplexIngredient("goal1", false, false, false, ingredientList);
+		List<IngredientRecipe> ingredientList = new ArrayList<IngredientRecipe>();
+		ingredientList.add(new IngredientRecipe("cocoa", false, false, false));
+		ingredientList.add(new IngredientRecipe("eggs", false, false, false));
+		ingredientList.add(new IngredientRecipe("sugar", false, false, false));
+		IngredientRecipe ingredient1 = new IngredientRecipe("goal1", false, false, false, ingredientList);
 		
-		List<IngredientFactory> ingredientList2 = new ArrayList<IngredientFactory>();
-		ingredientList2.add(new SimpleIngredient("salt", false, false, false));
-		ingredientList2.add(new SimpleIngredient("butter", false, false, false));
-		ingredientList2.add(new SimpleIngredient("flour", false, false, false));
-		IngredientFactory ingredient2 = new ComplexIngredient("goal2", false, false, false, ingredientList2);
+		List<IngredientRecipe> ingredientList2 = new ArrayList<IngredientRecipe>();
+		ingredientList2.add(new IngredientRecipe("salt", false, false, false));
+		ingredientList2.add(new IngredientRecipe("butter", false, false, false));
+		ingredientList2.add(new IngredientRecipe("flour", false, false, false));
+		IngredientRecipe ingredient2 = new IngredientRecipe("goal2", false, false, false, ingredientList2);
 		
-		List<IngredientFactory> ingredientList3 = new ArrayList<IngredientFactory>();
+		List<IngredientRecipe> ingredientList3 = new ArrayList<IngredientRecipe>();
 		ingredientList3.add(ingredient1);
 		//ingredientList3.add(ingredient2);
-		ingredientList3.add(new SimpleIngredient("baking_soda", false, false, false));
-		ingredientList3.add(new SimpleIngredient("baking_powder", false, false, false));
-		this.topLevelIngredient = new ComplexIngredient("Brownies", false, false, false, ingredientList3);
+		ingredientList3.add(new IngredientRecipe("baking_soda", false, false, false));
+		ingredientList3.add(new IngredientRecipe("baking_powder", false, false, false));
+		this.topLevelIngredient = new IngredientRecipe("Brownies", false, false, false, ingredientList3);
 	}
 }

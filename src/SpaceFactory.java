@@ -1,5 +1,6 @@
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import burlap.oomdp.core.Attribute;
 import burlap.oomdp.core.Domain;
@@ -17,25 +18,28 @@ public class SpaceFactory {
 
 	public static ObjectClass createObjectClass(Domain domain)
 	{
-		ObjectClass objectClass = new ObjectClass(domain, SpaceFactory.ClassName);
-		Attribute mixingAttribute = 
-				new Attribute(domain, SpaceFactory.attributeBaking, Attribute.AttributeType.DISC);
-		mixingAttribute.setDiscValuesForRange(0,1,1);
-		objectClass.addAttribute(mixingAttribute);
-		
-		Attribute heatingAttribute = 
-				new Attribute(domain, SpaceFactory.attributeHeating, Attribute.AttributeType.DISC);
-		heatingAttribute.setDiscValuesForRange(0,1,1);
-		objectClass.addAttribute(heatingAttribute);
-		
-		Attribute receivingAttribute =
-				new Attribute(domain, SpaceFactory.attributeWorking, Attribute.AttributeType.DISC);
-		receivingAttribute.setDiscValuesForRange(0,1,1);
-		objectClass.addAttribute(receivingAttribute);
-		
-		objectClass.addAttribute(
-				new Attribute(domain, SpaceFactory.attributeContains, 
-						Attribute.AttributeType.MULTITARGETRELATIONAL));
+		ObjectClass objectClass = domain.getObjectClass(SpaceFactory.ClassName);
+		if (objectClass == null) {
+			objectClass = new ObjectClass(domain, SpaceFactory.ClassName);
+			Attribute mixingAttribute = 
+					new Attribute(domain, SpaceFactory.attributeBaking, Attribute.AttributeType.DISC);
+			mixingAttribute.setDiscValuesForRange(0,1,1);
+			objectClass.addAttribute(mixingAttribute);
+			
+			Attribute heatingAttribute = 
+					new Attribute(domain, SpaceFactory.attributeHeating, Attribute.AttributeType.DISC);
+			heatingAttribute.setDiscValuesForRange(0,1,1);
+			objectClass.addAttribute(heatingAttribute);
+			
+			Attribute receivingAttribute =
+					new Attribute(domain, SpaceFactory.attributeWorking, Attribute.AttributeType.DISC);
+			receivingAttribute.setDiscValuesForRange(0,1,1);
+			objectClass.addAttribute(receivingAttribute);
+			
+			objectClass.addAttribute(
+					new Attribute(domain, SpaceFactory.attributeContains, 
+							Attribute.AttributeType.MULTITARGETRELATIONAL));
+		}
 		return objectClass;
 	}
 	
@@ -49,7 +53,7 @@ public class SpaceFactory {
 		{
 			for (String container : containers)
 			{
-				newInstance.addRelationalTarget(SpaceFactory.attributeBaking, container);
+				newInstance.addRelationalTarget(SpaceFactory.attributeContains, container);
 			}
 		}
 		return newInstance;
@@ -58,7 +62,7 @@ public class SpaceFactory {
 	public static ObjectInstance getNewObjectInstance(Domain domain, String name, Boolean baking, 
 			Boolean heating, Boolean working, List<String> containers) {
 		return SpaceFactory.getNewObjectInstance(
-				domain.getObjectClass(SpaceFactory.ClassName), name, baking, heating, working, containers));
+				domain.getObjectClass(SpaceFactory.ClassName), name, baking, heating, working, containers);
 	}
 	
 	public static ObjectInstance getNewWorkingSpaceObjectInstance(ObjectClass spaceClass, 
@@ -69,7 +73,7 @@ public class SpaceFactory {
 	public static ObjectInstance getNewWorkingSpaceObjectInstance(Domain domain, 
 			String name, List<String> containers) {
 		return SpaceFactory.getNewObjectInstance(
-				domain.getObjectClass(SpaceFactory.ClassName), name, false, false, true, containers);
+				SpaceFactory.createObjectClass(domain), name, false, false, true, containers);
 	}
 	
 	public static ObjectInstance getNewHeatingSpaceObjectInstance(ObjectClass spaceClass, 

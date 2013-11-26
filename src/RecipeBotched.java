@@ -8,9 +8,9 @@ import burlap.oomdp.core.State;
 
 public class RecipeBotched extends PropositionalFunction {
 
-	protected Recipe.IngredientFactory topLevelIngredient;
-	public RecipeBotched(String name, Domain domain, Recipe.IngredientFactory ingredient) {
-		super(name, domain, new String[] {IngredientClass.className});
+	protected IngredientRecipe topLevelIngredient;
+	public RecipeBotched(String name, Domain domain, IngredientRecipe ingredient) {
+		super(name, domain, new String[] {IngredientFactory.ClassNameComplex});
 		this.topLevelIngredient = ingredient;
 	}
 

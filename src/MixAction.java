@@ -55,14 +55,18 @@ public class MixAction extends Action {
 	}
 	
 	protected void mix(State state, ObjectInstance container)
-	{
+	{	
 		ObjectClass complexIngredientClass = this.domain.getObjectClass(IngredientFactory.ClassNameComplex);
 		Random rando = new Random();
 		Set<String> contents = ContainerFactory.getContentNames(container);
+		if (contents.size() > 2) {
+			int c = 1;
+		}
 		ObjectInstance newIngredient = 
 				IngredientFactory.getNewComplexIngredientObjectInstance(complexIngredientClass, 
 						Integer.toString(rando.nextInt()), false, false, false, container.getName(), contents);
 		state.addObject(newIngredient);
 		ContainerFactory.removeContents(container);
+		IngredientFactory.changeIngredientContainer(newIngredient, container.getName());
 	}
 }
