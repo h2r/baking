@@ -1,45 +1,70 @@
-Original recipe makes 4 servings
-(lambda $0:e $1:in (and:<t*,t> (make<a,<e,<e,t>>> $0 $1) (recipe:<e,t> $0) (original:<e,t> $0) (equals<e,<e,t>> 4 (number:<e,i> $1))))
-
 2 potatoes
-(equal:<e,<e,t>> 2 (number:<e,i> potato))
+(equal:<i,<i,t>> 2:i (number:<e,i> potato:in))
 
 2 cups all-purpose flour
-(equal:<e,<e,t>> 2 (volume_cups:<e,i> flour))
+(equal:<i,<i,t>> 2:i (volume_cups:<e,i> flour:in))
 
 1 egg
-(equal:<e,<e,t>> 1 (number:<e,i> egg))
+(equal:<i,<i,t>> 1:i (number:<e,i> egg:in))
 
-large pot
-(lambda $0 (and<t*,t> () ()))
+recipe makes potatoes
+(lambda $0:e (lambda $1:in (make:<<e,e>,t> $0 potato:in) (recipe:<e,t> $0)))
 
-salted water
-(mixed:<in*,t> salt:in water:in)
 
-large pot of salted water
-(in<in,<c,t>>)
+recipe makes
+(lambda $0:e (lambda $1:in (and:<t*,t> (make:<<<a,e>,e>,t> $0 $1) (recipe:<e,t> $0))))
 
-bring a large pot of salted water to a boil
+4 servings
+(equals:<e,<e,t>> 4:i (number:<e,i> $1))
+
+recipe makes 4 servings
+(lambda $0:e (lambda $1:in (make:<a,<e,<e,t>>> $0 $1) (recipe:<e,t> $0) (equals:<e,<e,t>> 4:i (number:<e,i> $1))))
+
+Original recipe makes 4 servings
+(lambda $0:e $1:in (and:<t*,t> (make:<a,<e,<e,t>>> $0 $1) (recipe:<e,t> $0) (original:<e,t> $0) (equals:<e,<e,t>> 4 (number:<e,i> $1))))
 
 Bring a large pot of salted water to a boil. 
-
+(lambda $0 $1 $2 (and:<t*,t> (heat:<a,t> $0 $1) (person:<e,t> $0) (container:<c,t> $1) 
+        (is:<e,<e,t>> $2 (mixed:<in*,t> salt:in water:in)) (in:<in,<c,t>> $2 $1)
+	(post:<a,<e,t>> (boiled:<in,t> $2))))
 
 Peel potatoes and add to pot. 
+(lambda $0 $1 $2 (and:<t*,t> (peel:<a,t> $0 $1) (person:<e,t> $0) (potato:<e,t> $1)
+		   (put:<a,t> $1 $2) (container:<e,t> $2)))
 
 Cook until tender but still firm, about 15 minutes. 
+(lambda $0 $1 $2 (and:<t*,t> (heat:<a,t> $0 $1) (person:<e,t> $0) (container:<c,t> $1)
+		 (potato:<in,t> $1) (tender:<in,t> $2) (firm:<in,t> $2)))
 
 Drain, cool and mash with a fork or potato masher.
+(lambda $0 $1 $2 $3 (and:<t*,t> (pour:<a,t> $0 $1 $2) (person:<e,t> $0) (container:<c,t> $1) (sieve:<c,t> $2)
+		 (pour:<a,t> $0 $1 $2) 
+		 (mash:<a,t> $0 $3 (contents:<c,in> $2)) ((fork:<u,t> $3) (potato_masher:<u,t> $3))))
 
 Combine 1 cup mashed potato, flour and egg in a large bowl. 
+(lambda $0 $1 $2 $3 $4 (and:<t*,t> (put:<a,t> $0 $1 $4) (put:<a,t> $0 $2 $4) (put:<a,t> $0 $3 $4)
+			(mashed:<in,t> $1) (potato:<in,t> $1) (flour:<in,t> $2) (egg:<in,t> $3)))
 
 Knead until dough forms a ball. 
+(lambda $0 $1 (and:<t*,t> (knead:<a,t> $0 $1) (person:<e,t> $0) (dough:<e,t> $1)
+		(post:<a,<e,t>> (ball:<e,t> $1))))
 
 Shape small portions of the dough into long "snakes". 
 
+
 On a floured surface, cut snakes into half-inch pieces.
+(lambda $0 $1 $2 (and:<t*,t> (person:<e,t> $0) (counter:<e,t> $1) (on:<e,<e,t>> flour:in $1) (on:<e,<e,t>> $2 $1)
+		 (cut:<a,t> $2)))
 
 Bring a large pot of lightly salted water to a boil.
+(lambda $0 $1 $2 (and:<t*,t> (heat:<a,t> $0 $1) (person:<e,t> $0) (container:<c,t> $1) 
+        (is:<e,<e,t>> $2 (mixed:<in*,t> salt:in water:in)) (in:<in,<c,t>> $2 $1)
+	(post:<a,<e,t>> (boiled:<in,t> $2))))
 
 Drop in gnocchi and cook for 3 to 5 minutes or until gnocchi have risen to the top. 
+(lambda $0 $1 $2 (and:<t*,t> (put:<a,t> $0 $1 $2) (is:<e,<e,t>> $2 (mixed:<in*,t> salt:in water:in)) 
+		 (in:<in,<c,t>> $2 $1) (boiled:<in,t> $2)))
 
 Drain and serve.
+(lambda $0 $1 $2 $3 (and:<t*,t> (pour:<a,t> $0 $1 $2) (person:<e,t> $0) (container:<c,t> $1) (sieve:<c,t> $2)
+		    (serve:<a,t> $0 $3)))

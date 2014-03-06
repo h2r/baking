@@ -1,9 +1,11 @@
+package edu.brown.cs.h2r.baking.ObjectFactories;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import edu.brown.cs.h2r.baking.IngredientRecipe;
 import burlap.oomdp.core.Attribute;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
@@ -117,6 +119,18 @@ public class IngredientFactory {
 			List<IngredientRecipe> subIngredients = ingredientRecipe.getContents();
 			for (IngredientRecipe subIngredient : subIngredients) {
 				newInstances.addAll(IngredientFactory.getIngredientInstancesList(simpleIngredientClass, subIngredient));
+			}
+		}
+		return newInstances;
+	}
+	
+	public static List<ObjectInstance> getSimpleIngredients(ObjectClass simpleIngredientClass,
+			IngredientRecipe ingredientRecipe) {
+		List<ObjectInstance> newInstances = new ArrayList<ObjectInstance>();
+		
+		for (IngredientRecipe subIngredient : ingredientRecipe.getContents()) {
+			if (subIngredient.isSimple()) {
+				newInstances.add(IngredientFactory.getNewIngredientInstance(simpleIngredientClass, subIngredient, null));
 			}
 		}
 		return newInstances;

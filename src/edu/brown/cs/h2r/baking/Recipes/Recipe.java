@@ -1,3 +1,4 @@
+package edu.brown.cs.h2r.baking.Recipes;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -5,6 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import edu.brown.cs.h2r.baking.IngredientRecipe;
+import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
@@ -12,7 +16,7 @@ import burlap.oomdp.core.State;
 
 public abstract class Recipe {
 	
-	protected IngredientRecipe topLevelIngredient;
+	public IngredientRecipe topLevelIngredient;
 	
 	public Recipe()
 	{

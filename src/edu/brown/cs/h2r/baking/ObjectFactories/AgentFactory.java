@@ -1,3 +1,4 @@
+package edu.brown.cs.h2r.baking.ObjectFactories;
 import java.util.Arrays;
 import java.util.List;
 
@@ -16,7 +17,7 @@ public class AgentFactory {
 	{
 		ObjectClass objectClass = domain.getObjectClass(AgentFactory.ClassName);
 		if (objectClass == null) {
-			objectClass = new ObjectClass(domain, "agent");
+			objectClass = new ObjectClass(domain, AgentFactory.ClassName);
 			Attribute robotAttribute =
 					new Attribute(domain, AgentFactory.attributeRobot, Attribute.AttributeType.DISC);
 			robotAttribute.setDiscValuesForRange(0,1,1);

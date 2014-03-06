@@ -1,3 +1,4 @@
+package edu.brown.cs.h2r.baking;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +27,7 @@ public class IngredientRecipe {
 	}
 	
 	public Boolean isSimple() {
-		return this.contents == null;
+		return this.contents == null || this.contents.size() == 0;
 	}
 	
 	public Boolean getMixed () {

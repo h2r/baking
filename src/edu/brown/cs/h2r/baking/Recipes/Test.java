@@ -1,8 +1,11 @@
+package edu.brown.cs.h2r.baking.Recipes;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import edu.brown.cs.h2r.baking.SingleAgentKitchen;
+import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;

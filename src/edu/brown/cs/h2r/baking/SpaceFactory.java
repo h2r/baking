@@ -1,3 +1,4 @@
+package edu.brown.cs.h2r.baking;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -15,7 +16,9 @@ public class SpaceFactory {
 	private static final String attributeHeating = "heating";
 	private static final String attributeWorking = "working";
 	private static final String attributeContains = "contains";
+	private static final String attributeAgent = "agent";
 
+	
 	public static ObjectClass createObjectClass(Domain domain)
 	{
 		ObjectClass objectClass = domain.getObjectClass(SpaceFactory.ClassName);
@@ -39,16 +42,21 @@ public class SpaceFactory {
 			objectClass.addAttribute(
 					new Attribute(domain, SpaceFactory.attributeContains, 
 							Attribute.AttributeType.MULTITARGETRELATIONAL));
+			
+			objectClass.addAttribute(
+					new Attribute(domain, SpaceFactory.attributeAgent, 
+							Attribute.AttributeType.RELATIONAL));
 		}
 		return objectClass;
 	}
 	
 	public static ObjectInstance getNewObjectInstance(ObjectClass spaceClass, String name, 
-			Boolean baking, Boolean heating, Boolean working, List<String> containers) {
+			Boolean baking, Boolean heating, Boolean working, List<String> containers, String agent) {
 		ObjectInstance newInstance = new ObjectInstance(spaceClass, name);
 		newInstance.setValue(SpaceFactory.attributeBaking, baking ? 1 : 0);
 		newInstance.setValue(SpaceFactory.attributeHeating, heating ? 1 : 0);
 		newInstance.setValue(SpaceFactory.attributeWorking, working ? 1 : 0);
+		newInstance.addRelationalTarget(SpaceFactory.attributeAgent, agent);
 		if (containers != null)
 		{
 			for (String container : containers)
@@ -60,42 +68,42 @@ public class SpaceFactory {
 	}
 	
 	public static ObjectInstance getNewObjectInstance(Domain domain, String name, Boolean baking, 
-			Boolean heating, Boolean working, List<String> containers) {
+			Boolean heating, Boolean working, List<String> containers, String agent) {
 		return SpaceFactory.getNewObjectInstance(
-				domain.getObjectClass(SpaceFactory.ClassName), name, baking, heating, working, containers);
+				domain.getObjectClass(SpaceFactory.ClassName), name, baking, heating, working, containers, agent);
 	}
 	
 	public static ObjectInstance getNewWorkingSpaceObjectInstance(ObjectClass spaceClass, 
-			String name, List<String> containers) {
-		return SpaceFactory.getNewObjectInstance(spaceClass, name, false, false, true, containers);
+			String name, List<String> containers, String agent) {
+		return SpaceFactory.getNewObjectInstance(spaceClass, name, false, false, true, containers, agent);
 	}
 	
 	public static ObjectInstance getNewWorkingSpaceObjectInstance(Domain domain, 
-			String name, List<String> containers) {
+			String name, List<String> containers, String agent) {
 		return SpaceFactory.getNewObjectInstance(
-				SpaceFactory.createObjectClass(domain), name, false, false, true, containers);
+				SpaceFactory.createObjectClass(domain), name, false, false, true, containers, agent);
 	}
 	
 	public static ObjectInstance getNewHeatingSpaceObjectInstance(ObjectClass spaceClass, 
-			String name, List<String> containers) {
-		return SpaceFactory.getNewObjectInstance(spaceClass, name, false, true, false, containers);
+			String name, List<String> containers, String agent) {
+		return SpaceFactory.getNewObjectInstance(spaceClass, name, false, true, false, containers, agent);
 	}
 	
 	public static ObjectInstance getNewHeatingSpaceObjectInstance(Domain domain, 
-			String name, List<String> containers) {
+			String name, List<String> containers, String agent) {
 		return SpaceFactory.getNewObjectInstance(
-				domain.getObjectClass(SpaceFactory.ClassName), name, false, true, false, containers);
+				domain.getObjectClass(SpaceFactory.ClassName), name, false, true, false, containers, agent);
 	}
 	
 	public static ObjectInstance getNewBakingSpaceObjectInstance(ObjectClass spaceClass, 
-			String name, List<String> containers) {
-		return SpaceFactory.getNewObjectInstance(spaceClass, name, true, false, false, containers);
+			String name, List<String> containers, String agent) {
+		return SpaceFactory.getNewObjectInstance(spaceClass, name, true, false, false, containers, agent);
 	}
 
 	public static ObjectInstance getNewBakingSpaceObjectInstance(Domain domain, 
-			String name, List<String> containers) {
+			String name, List<String> containers, String agent) {
 		return SpaceFactory.getNewObjectInstance(
-				domain.getObjectClass(SpaceFactory.ClassName), name, true, false, false, containers);
+				domain.getObjectClass(SpaceFactory.ClassName), name, true, false, false, containers, agent);
 	}
 	
 	public static void addContainer(ObjectInstance space, ObjectInstance container) {
@@ -116,5 +124,9 @@ public class SpaceFactory {
 	
 	public static Set<String> getContents(ObjectInstance objectInstance) {
 		return (objectInstance.getAllRelationalTargets(SpaceFactory.attributeContains));
+	}
+	
+	public static Set<String> getAgent(ObjectInstance objectInstance) {
+		return (objectInstance.getAllRelationalTargets(SpaceFactory.attributeAgent));
 	}
 }
