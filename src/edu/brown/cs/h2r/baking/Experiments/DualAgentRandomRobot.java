@@ -175,28 +175,37 @@ public class DualAgentRandomRobot  implements DomainGenerator {
 			}
 			else
 			{
+				
 				AStar aStar = new AStar(domain, humanRewardFunction, goalCondition, hashFactory, heuristic);
 				aStar.planFromState(currentState);
 				
 				Policy policy = new DDPlannerPolicy(aStar);
 				EpisodeAnalysis episodeAnalysis = 
 						policy.evaluateBehavior(currentState, humanRewardFunction, recipeTerminalFunction);	
-				System.out.println("Taking action " + episodeAnalysis.actionSequence.get(0).action.getName());
-				fullActions.add(episodeAnalysis.actionSequence.get(0));
-				fullReward.add(episodeAnalysis.rewardSequence.get(0));
-				nextState = episodeAnalysis.getState(1);
-				endState = episodeAnalysis.getState(episodeAnalysis.stateSequence.size() - 1);
-				List<ObjectInstance> finalObjects = 
-						new ArrayList<ObjectInstance>(endState.getObjectsOfTrueClass(IngredientFactory.ClassNameComplex));
-				List<ObjectInstance> containerObjects =
-						new ArrayList<ObjectInstance>(endState.getObjectsOfTrueClass(ContainerFactory.ClassName));
-				ExperimentHelper.checkIngredientCompleted(ingredient, endState, finalObjects,
-						containerObjects);
-				
-				if (episodeAnalysis.actionSequence.size() <= 1) {
+				if (episodeAnalysis.actionSequence.isEmpty()) {
 					System.out.println("Action sequence size: " + episodeAnalysis.actionSequence.size());
 					finished = true;
 				}
+				else
+				{
+				
+					System.out.println("Taking action " + episodeAnalysis.actionSequence.get(0).action.getName());
+					fullActions.add(episodeAnalysis.actionSequence.get(0));
+					fullReward.add(episodeAnalysis.rewardSequence.get(0));
+					nextState = episodeAnalysis.getState(1);
+					endState = episodeAnalysis.getState(episodeAnalysis.stateSequence.size() - 1);
+					List<ObjectInstance> finalObjects = 
+							new ArrayList<ObjectInstance>(endState.getObjectsOfTrueClass(IngredientFactory.ClassNameComplex));
+					List<ObjectInstance> containerObjects =
+							new ArrayList<ObjectInstance>(endState.getObjectsOfTrueClass(ContainerFactory.ClassName));
+					ExperimentHelper.checkIngredientCompleted(ingredient, endState, finalObjects,
+							containerObjects);
+				}
+				if (episodeAnalysis.actionSequence.size() <=1) {
+					System.out.println("Action sequence size: " + episodeAnalysis.actionSequence.size());
+					finished = true;
+				}
+				
 			}
 			ExperimentHelper.printExpisodeSequence(fullActions, fullReward);
 
