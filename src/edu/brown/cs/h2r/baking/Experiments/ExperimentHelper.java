@@ -20,7 +20,7 @@ public class ExperimentHelper {
 		// TODO Auto-generated constructor stub
 	}
 	
-	public static void printExpisodeSequence(List<GroundedAction> fullActions,
+	public static void printEpisodeSequence(List<GroundedAction> fullActions,
 			List<Double> fullReward) {
 		for (int i =0 ; i < fullActions.size(); ++i) {
 			GroundedAction action = fullActions.get(i);

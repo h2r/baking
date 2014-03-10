@@ -3,7 +3,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.Policy;
@@ -26,6 +25,7 @@ import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.SADomain;
 import edu.brown.cs.h2r.baking.InferenceRewardFunction;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
+import edu.brown.cs.h2r.baking.RecipeAgentSpecificMakeSpanRewardFunction;
 import edu.brown.cs.h2r.baking.RecipeAgentSpecificRewardFunction;
 import edu.brown.cs.h2r.baking.RecipeBotched;
 import edu.brown.cs.h2r.baking.RecipeFinished;
@@ -81,7 +81,7 @@ public class DualAgentInference  implements DomainGenerator {
 		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
 		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "robot"));
 		state.addObject(MakeSpanFactory.getNewObjectInstance(domain, "makeSpan", 2));
-		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2");
+		List<String> containers = Arrays.asList("mixing_bowl_1");
 		state.addObject(SpaceFactory.getNewObjectInstance(domain, "shelf", false, false, false, null, "" ));
 		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter_human", containers, "human"));
 		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter_robot", containers, "robot"));
@@ -134,8 +134,8 @@ public class DualAgentInference  implements DomainGenerator {
 		//RewardFunction recipeRewardFunction = new RecipeRewardFunction(brownies);
 		//RewardFunction recipeRewardFunction = new RecipeRewardFunction();
 		List<RewardFunction> rewardFunctions = new ArrayList<RewardFunction>();
-		//rewardFunctions.add(new RecipeAgentSpecificMakeSpanRewardFunction("human"));
-		//rewardFunctions.add(new RecipeAgentSpecificMakeSpanRewardFunction("robot"));
+		rewardFunctions.add(new RecipeAgentSpecificMakeSpanRewardFunction("human"));
+		rewardFunctions.add(new RecipeAgentSpecificMakeSpanRewardFunction("robot"));
 		rewardFunctions.add(new RecipeAgentSpecificRewardFunction("human"));
 		rewardFunctions.add(new RecipeAgentSpecificRewardFunction("robot"));
 		
@@ -243,7 +243,7 @@ public class DualAgentInference  implements DomainGenerator {
 				System.out.println("Belief "  + i + ": " + newBeliefs.get(i) + ", " + updatedBelief);
 			}
 			
-		ExperimentHelper.printExpisodeSequence(fullActions, fullReward);
+		ExperimentHelper.printEpisodeSequence(fullActions, fullReward);
 
 			currentState = nextState;
 		}

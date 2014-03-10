@@ -81,7 +81,7 @@ public class DualAgentRandomRobot  implements DomainGenerator {
 		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
 		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "robot"));
 		state.addObject(MakeSpanFactory.getNewObjectInstance(domain, "makeSpan", 2));
-		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2");
+		List<String> containers = Arrays.asList("mixing_bowl_1");
 		state.addObject(SpaceFactory.getNewObjectInstance(domain, "shelf", false, false, false, null, "" ));
 		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter_human", containers, "human"));
 		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter_robot", containers, "robot"));
@@ -207,7 +207,7 @@ public class DualAgentRandomRobot  implements DomainGenerator {
 				}
 				
 			}
-			ExperimentHelper.printExpisodeSequence(fullActions, fullReward);
+			ExperimentHelper.printEpisodeSequence(fullActions, fullReward);
 
 			currentState = nextState;
 		}
