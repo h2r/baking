@@ -3,7 +3,7 @@
     <!--this file was created by Eclipse Runnable JAR Export Wizard-->
     <!--ANT 1.7 is required                                        -->
     <target name="create_run_jar">
-        <jar destfile="/Users/brawner/DAIRL.jar">
+        <jar destfile="DAIRL.jar">
             <manifest>
                 <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
                 <attribute name="Rsrc-Main-Class" value="edu.brown.cs.h2r.baking.DualAgentInference"/>
@@ -11,8 +11,8 @@
                 <attribute name="Rsrc-Class-Path" value="./ burlap.jar"/>
             </manifest>
             <zipfileset src="jar-in-jar-loader.zip"/>
-            <fileset dir="/Users/brawner/workspace/baking/bin"/>
-            <zipfileset dir="/Users/brawner/workspace/baking/lib" includes="burlap.jar"/>
+            <fileset dir="bin"/>
+            <zipfileset dir="lib" includes="burlap.jar"/>
         </jar>
     </target>
 </project>
