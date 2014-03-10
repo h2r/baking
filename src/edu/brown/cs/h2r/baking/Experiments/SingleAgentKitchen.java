@@ -26,6 +26,7 @@ import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.SADomain;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
+import edu.brown.cs.h2r.baking.RecipeAgentSpecificMakeSpanRewardFunction;
 import edu.brown.cs.h2r.baking.RecipeBotched;
 import edu.brown.cs.h2r.baking.RecipeFinished;
 import edu.brown.cs.h2r.baking.RecipeRewardFunction;
@@ -34,6 +35,7 @@ import edu.brown.cs.h2r.baking.SpaceFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
+import edu.brown.cs.h2r.baking.Recipes.Brownies;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.Recipes.TestSubGoals;
 import edu.brown.cs.h2r.baking.actions.MixAction;
@@ -75,48 +77,7 @@ public class SingleAgentKitchen implements DomainGenerator {
 		for (String container : containers) { 
 			state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "counter"));
 		}
-		
-		//ObjectClass simpleIngredientClass = domain.getObjectClass(IngredientFactory.ClassNameSimple);
-		//ObjectClass containerClass = domain.getObjectClass(ContainerFactory.ClassName);
-		//ObjectInstance shelfSpace = state.getObject("shelf");
-		
-		//List<ObjectInstance> ingredientInstances = 
-		//		IngredientFactory.getIngredientInstancesList(simpleIngredientClass, recipe.topLevelIngredient);
-		//List<ObjectInstance> containerInstances = Recipe.getContainers(containerClass, ingredientInstances, shelfSpace.getName());
-		
-		//for (ObjectInstance ingredientInstance : ingredientInstances) {
-		//	if (state.getObject(ingredientInstance.getName()) == null) {
-		//		state.addObject(ingredientInstance);
-		//	}
-		//}
-		
-		//for (ObjectInstance containerInstance : containerInstances) {
-		//	if (state.getObject(containerInstance.getName()) == null) {
-		//		ContainerFactory.changeContainerSpace(containerInstance, shelfSpace.getName());
-		//		state.addObject(containerInstance);
-		//	}
-		//}
-		
-		this.PlanIngredient(domain, state, recipe.topLevelIngredient);
-	}
-	
-	public void PlanRecipeTwoAgents(Domain domain, Recipe recipe)
-	{
-		State state = new State();
-		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
-		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "robot"));
-		
-		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2");
-		state.addObject(SpaceFactory.getNewObjectInstance(domain, "shelf", false, false, false, null, ""));
-		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter", containers, "human"));
-		
-		for (String container : containers) { 
-			state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "counter"));
-		}
-		
-		
-		
-		
+
 		this.PlanIngredient(domain, state, recipe.topLevelIngredient);
 	}
 	
@@ -157,7 +118,7 @@ public class SingleAgentKitchen implements DomainGenerator {
 		final PropositionalFunction isSuccess = new RecipeFinished("success", domain, ingredient);
 		PropositionalFunction isFailure = new RecipeBotched("botched", domain, ingredient);
 		//RewardFunction recipeRewardFunction = new RecipeRewardFunction(brownies);
-		RewardFunction recipeRewardFunction = new RecipeRewardFunction();
+		RewardFunction recipeRewardFunction = new RecipeAgentSpecificMakeSpanRewardFunction("human");
 		TerminalFunction recipeTerminalFunction = new RecipeTerminalFunction(isSuccess, isFailure);
 		
 		StateHashFactory hashFactory = new NameDependentStateHashFactory();
@@ -221,36 +182,8 @@ public class SingleAgentKitchen implements DomainGenerator {
 				new ArrayList<ObjectInstance>(endState.getObjectsOfTrueClass(IngredientFactory.ClassNameComplex));
 		List<ObjectInstance> containerObjects =
 				new ArrayList<ObjectInstance>(endState.getObjectsOfTrueClass(ContainerFactory.ClassName));
-		ObjectInstance namedIngredient = null;
-		for (ObjectInstance obj : finalObjects)
-		{
-			if (Recipe.isSuccess(endState, ingredient, obj))
-			{
-				namedIngredient = SingleAgentKitchen.getNewNamedComplexIngredient(obj, ingredient.getName());
-				String container = IngredientFactory.getContainer(obj);
-				SingleAgentKitchen.switchContainersIngredients(containerObjects, obj, namedIngredient);
-				
-				ObjectInstance containerInstance = endState.getObject(container);
-				ContainerFactory.removeContents(containerInstance);
-				ContainerFactory.addIngredient(containerInstance, ingredient.getName());
-				endState.removeObject(obj);
-				endState.addObject(namedIngredient);
-				return endState;
-			}
-		}
+		ExperimentHelper.checkIngredientCompleted(ingredient, endState, finalObjects, containerObjects);
 		return endState;
-	}
-	
-	public static void switchContainersIngredients(List<ObjectInstance> containers, ObjectInstance oldObject, ObjectInstance newObject)
-	{
-		String container = IngredientFactory.getContainer(oldObject);
-		IngredientFactory.changeIngredientContainer(newObject, container);
-		IngredientFactory.changeIngredientContainer(oldObject, "");
-	}
-	
-	public static ObjectInstance getNewNamedComplexIngredient(ObjectInstance unnamedIngredient, String name)
-	{
-		return IngredientFactory.getNewIngredientInstance(unnamedIngredient, name);
 	}
 	
 	public static State getOneAgent(Domain domain){
@@ -269,18 +202,21 @@ public class SingleAgentKitchen implements DomainGenerator {
 	
 	public static void main(String[] args) throws IOException {
 		
+		SingleAgentKitchen kitchen = new SingleAgentKitchen();
+		Domain domain = kitchen.generateDomain();
+		kitchen.PlanRecipeOneAgent(domain, new Brownies());
 		
-		//kitchen.PlanRecipeOneAgent(domain, new FruitSalad());
+		
 		//kitchen.PlanRecipeOneAgent(domain, new TestSubGoals(8, 2));
 		//kitchen.PlanRecipeTwoAgents(domain, new FruitSalad());
-		
+		/*
 		FileWriter writer = null;
 		try {
 			writer = new FileWriter("time_wo_subgoals.txt");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}*/
 		/*
 		for (int i = 1; i < 20; i++) {
 			SingleAgentKitchen kitchen = new SingleAgentKitchen();
@@ -293,6 +229,7 @@ public class SingleAgentKitchen implements DomainGenerator {
 				break;
 			}
 		}*/
+		/*
 		for (int j = 2; j < 5; j++) {
 			SingleAgentKitchen kitchen = new SingleAgentKitchen();
 			Domain domain = kitchen.generateDomain();
@@ -322,28 +259,8 @@ public class SingleAgentKitchen implements DomainGenerator {
 				e.printStackTrace();
 			}
 		}
-		try {
-			
-		} catch (Exception e) {
-			
-		} finally {
-			writer.flush();
-			writer.close();
-		}
-		try {
-			writer.flush();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		try {
-			writer.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		
-		
+		*/
 		/*
 		State state = SingleAgentKitchen.getOneAgent(domain);
 		
