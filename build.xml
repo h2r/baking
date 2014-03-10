@@ -1,8 +1,41 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project default="create_run_jar" name="Create Runnable Jar for Project baking with Jar-in-Jar Loader">
+<project default="all" basedir="." name="DAInference">
+    
+    <property name="src.dir" value="src"/>
+    <property name="lib.dir" value="lib"/>
+    <property name="classes.dir" value="classes"/>
+    
+    <path id="external.classpath">
+        <pathelement path="${lib.dir}/burlap.jar" />
+    </path>
+    
+    <target name="all" depends="DAInference" />
+    
+    <target name="clean" description="Delete files">
+        <delete dir="${classes.dir}" failonerror="false"/>
+        <delete file="${ant.project.name}.jar"/>
+    </target>
+    
+    <target name="compile" description="Compiles">
+        <mkdir dir="${classes.dir}"/>
+        <javac srcdir="${src.dir}" destdir="${classes.dir}">
+            <classpath refid="external.classpath" />
+        </javac>
+    </target>
+    
+    <target name="DAInference" description="Creates baking jar" depends="compile">
+        <jar destfile="${ant.project.name}.jar" basedir="${classes.dir}"/>
+    </target>
+</project>
+
+
+
+
+<!--<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Create Runnable Jar for Project baking with Jar-in-Jar Loader">-->
     <!--this file was created by Eclipse Runnable JAR Export Wizard-->
     <!--ANT 1.7 is required                                        -->
-    <target name="create_run_jar">
+<!--    <target name="create_run_jar">
         <jar destfile="DAIRL.jar">
             <manifest>
                 <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
@@ -16,3 +49,4 @@
         </jar>
     </target>
 </project>
+-->
