@@ -202,7 +202,7 @@ public class DualAgentStubbornRobot  implements DomainGenerator {
 	
 
 	public static void main(String[] args) throws IOException {
-		DualAgentPerfectRobot kitchen = new DualAgentPerfectRobot();
+		DualAgentStubbornRobot kitchen = new DualAgentStubbornRobot();
 		System.out.println("Generating Domain");
 		Domain domain = kitchen.generateDomain();
 		kitchen.PlanRecipeTwoAgents(domain, new Brownies());
