@@ -1,6 +1,5 @@
 package edu.brown.cs.h2r.baking.ObjectFactories;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -150,24 +149,18 @@ public class ContainerFactory {
 	
 	public static Boolean isReceivingContainer(ObjectInstance container) {
 		int rec = container.getDiscValForAttribute(ContainerFactory.attributeReceiving);
-		if (rec > 0) {
-			int c = rec;
-		}
 		Boolean isReceiving = (rec == 1);
 		return isReceiving;
 	}
 
 	public static Set<String> getContentNames(ObjectInstance container) {
 		Set<String> names = container.getAllRelationalTargets(ContainerFactory.attributeContains);
-		if (names.size() > 1) {
-			int c = names.size();
-		}
 		return new TreeSet<String>(names);
 	}
 	
 	public static String getSpaceName(ObjectInstance container) {
 		Set<String> spaces = container.getAllRelationalTargets(ContainerFactory.attributeSpace);
-		if (spaces != null || !spaces.isEmpty()) {
+		if (spaces != null && !spaces.isEmpty()) {
 			return spaces.iterator().next();
 		}
 		return null;

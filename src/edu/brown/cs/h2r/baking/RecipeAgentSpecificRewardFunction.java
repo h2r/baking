@@ -1,10 +1,4 @@
 package edu.brown.cs.h2r.baking;
-import java.util.List;
-import java.util.Set;
-
-import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
-import edu.brown.cs.h2r.baking.ObjectFactories.MakeSpanFactory;
-import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;

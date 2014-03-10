@@ -1,7 +1,4 @@
 package edu.brown.cs.h2r.baking;
-import java.util.List;
-
-import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;

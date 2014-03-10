@@ -1,11 +1,10 @@
 package edu.brown.cs.h2r.baking.actions;
-import edu.brown.cs.h2r.baking.SpaceFactory;
-import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
-import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
-import burlap.oomdp.singleagent.Action;
+import edu.brown.cs.h2r.baking.SpaceFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 
 public class MoveAction extends BakingAction {
 	public static final String className = "move";

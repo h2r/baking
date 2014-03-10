@@ -28,8 +28,8 @@ public class GroundedActionScheduler {
 		Map<String, List<GroundedAction>> allocatedTasks = 
 				new HashMap<String, List<GroundedAction>>();
 		
-		ActionTree actionTree = new ActionTree(this.initialState);
-		State state = new State(this.initialState);
+		//ActionTree actionTree = new ActionTree(this.initialState);
+		//State state = new State(this.initialState);
 		
 		
 		return allocatedTasks;

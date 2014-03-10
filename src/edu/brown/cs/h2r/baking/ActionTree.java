@@ -26,7 +26,7 @@ public class ActionTree {
 			this.children = new ArrayList<ActionNode>();
 		}
 		
-		public ActionNode(ActionNode parant, State state, GroundedAction groundedAction) {
+		public ActionNode(ActionNode parent, State state, GroundedAction groundedAction) {
 			this.parent = parent;
 			this.state = new State(state);
 			this.groundedAction = new GroundedAction(groundedAction.action, groundedAction.params);

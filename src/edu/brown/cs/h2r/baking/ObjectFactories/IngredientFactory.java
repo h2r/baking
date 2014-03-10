@@ -1,15 +1,14 @@
 package edu.brown.cs.h2r.baking.ObjectFactories;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import edu.brown.cs.h2r.baking.IngredientRecipe;
 import burlap.oomdp.core.Attribute;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
+import edu.brown.cs.h2r.baking.IngredientRecipe;
 
 public class IngredientFactory {
 

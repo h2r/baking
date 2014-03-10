@@ -3,14 +3,11 @@ package edu.brown.cs.h2r.baking.actions;
 import java.util.List;
 import java.util.Set;
 
-import edu.brown.cs.h2r.baking.SpaceFactory;
-import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
-import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
-import edu.brown.cs.h2r.baking.ObjectFactories.MakeSpanFactory;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.Action;
+import edu.brown.cs.h2r.baking.ObjectFactories.MakeSpanFactory;
 
 public class BakingAction extends Action {
 

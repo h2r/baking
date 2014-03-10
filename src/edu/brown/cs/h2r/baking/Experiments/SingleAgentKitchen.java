@@ -1,35 +1,20 @@
-package edu.brown.cs.h2r.baking;
+package edu.brown.cs.h2r.baking.Experiments;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
-import java.util.Set;
 
-import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
-import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
-import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
-import edu.brown.cs.h2r.baking.Recipes.Recipe;
-import edu.brown.cs.h2r.baking.Recipes.TestSubGoals;
-import edu.brown.cs.h2r.baking.actions.MixAction;
-import edu.brown.cs.h2r.baking.actions.MoveAction;
-import edu.brown.cs.h2r.baking.actions.PourAction;
-import burlap.behavior.statehashing.DiscreteStateHashFactory;
-import burlap.behavior.statehashing.NameDependentStateHashFactory;
-import burlap.behavior.statehashing.StateHashFactory;
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.Policy;
 import burlap.behavior.singleagent.planning.StateConditionTest;
 import burlap.behavior.singleagent.planning.deterministic.DDPlannerPolicy;
-import burlap.behavior.singleagent.planning.deterministic.SDPlannerPolicy;
-import burlap.behavior.singleagent.planning.deterministic.TFGoalCondition;
 import burlap.behavior.singleagent.planning.deterministic.informed.Heuristic;
 import burlap.behavior.singleagent.planning.deterministic.informed.astar.AStar;
-import burlap.behavior.singleagent.planning.stochastic.valueiteration.ValueIteration;
+import burlap.behavior.statehashing.NameDependentStateHashFactory;
+import burlap.behavior.statehashing.StateHashFactory;
 import burlap.oomdp.auxiliary.DomainGenerator;
-import burlap.oomdp.core.Attribute;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
@@ -40,7 +25,20 @@ import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.SADomain;
-import burlap.oomdp.singleagent.common.UniformCostRF;
+import edu.brown.cs.h2r.baking.IngredientRecipe;
+import edu.brown.cs.h2r.baking.RecipeBotched;
+import edu.brown.cs.h2r.baking.RecipeFinished;
+import edu.brown.cs.h2r.baking.RecipeRewardFunction;
+import edu.brown.cs.h2r.baking.RecipeTerminalFunction;
+import edu.brown.cs.h2r.baking.SpaceFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
+import edu.brown.cs.h2r.baking.Recipes.Recipe;
+import edu.brown.cs.h2r.baking.Recipes.TestSubGoals;
+import edu.brown.cs.h2r.baking.actions.MixAction;
+import edu.brown.cs.h2r.baking.actions.MoveAction;
+import edu.brown.cs.h2r.baking.actions.PourAction;
 
 
 public class SingleAgentKitchen implements DomainGenerator {
@@ -78,8 +76,8 @@ public class SingleAgentKitchen implements DomainGenerator {
 			state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "counter"));
 		}
 		
-		ObjectClass simpleIngredientClass = domain.getObjectClass(IngredientFactory.ClassNameSimple);
-		ObjectClass containerClass = domain.getObjectClass(ContainerFactory.ClassName);
+		//ObjectClass simpleIngredientClass = domain.getObjectClass(IngredientFactory.ClassNameSimple);
+		//ObjectClass containerClass = domain.getObjectClass(ContainerFactory.ClassName);
 		//ObjectInstance shelfSpace = state.getObject("shelf");
 		
 		//List<ObjectInstance> ingredientInstances = 
@@ -99,7 +97,7 @@ public class SingleAgentKitchen implements DomainGenerator {
 		//	}
 		//}
 		
-		State finalState = this.PlanIngredient(domain, state, recipe.topLevelIngredient);
+		this.PlanIngredient(domain, state, recipe.topLevelIngredient);
 	}
 	
 	public void PlanRecipeTwoAgents(Domain domain, Recipe recipe)
@@ -119,7 +117,7 @@ public class SingleAgentKitchen implements DomainGenerator {
 		
 		
 		
-		State finalState = this.PlanIngredient(domain, state, recipe.topLevelIngredient);
+		this.PlanIngredient(domain, state, recipe.topLevelIngredient);
 	}
 	
 	public State PlanIngredient(Domain domain, State startingState, IngredientRecipe ingredient)
@@ -169,7 +167,7 @@ public class SingleAgentKitchen implements DomainGenerator {
 				return s.somePFGroundingIsTrue(isSuccess);
 			}
 		};
-		final int numSteps = Recipe.getNumberSteps(ingredient);
+		//final int numSteps = Recipe.getNumberSteps(ingredient);
 		Heuristic heuristic = new Heuristic() {
 			@Override
 			public double h(State state) {
@@ -182,7 +180,7 @@ public class SingleAgentKitchen implements DomainGenerator {
 				//}
 				//return numSteps - max;
 			}
-			
+			/*
 			public int getSubIngredients(State state, ObjectInstance object)
 			{
 				int count = 0;
@@ -200,7 +198,7 @@ public class SingleAgentKitchen implements DomainGenerator {
 					count += this.getSubIngredients(state, state.getObject(str));
 				}
 				return count;
-			}
+			}*/
 		};
 		AStar aStar = new AStar(domain, recipeRewardFunction, goalCondition, hashFactory, heuristic);
 		aStar.planFromState(currentState);

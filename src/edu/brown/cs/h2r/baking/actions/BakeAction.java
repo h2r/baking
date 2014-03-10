@@ -1,8 +1,7 @@
 package edu.brown.cs.h2r.baking.actions;
-import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.State;
-import burlap.oomdp.singleagent.Action;
+import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 
 
 public class BakeAction extends BakingAction {

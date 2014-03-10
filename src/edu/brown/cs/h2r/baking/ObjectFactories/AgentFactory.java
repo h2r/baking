@@ -1,7 +1,4 @@
 package edu.brown.cs.h2r.baking.ObjectFactories;
-import java.util.Arrays;
-import java.util.List;
-
 import burlap.oomdp.core.Attribute;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;

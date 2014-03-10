@@ -1,9 +1,9 @@
-package edu.brown.cs.h2r.baking;
+package edu.brown.cs.h2r.baking.Experiments;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
+import java.util.Random;
 
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.Policy;
@@ -24,6 +24,16 @@ import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.SADomain;
+import edu.brown.cs.h2r.baking.InferenceRewardFunction;
+import edu.brown.cs.h2r.baking.IngredientRecipe;
+import edu.brown.cs.h2r.baking.RecipeAgentSpecificMakeSpanRewardFunction;
+import edu.brown.cs.h2r.baking.RecipeAgentSpecificRewardFunction;
+import edu.brown.cs.h2r.baking.RecipeBotched;
+import edu.brown.cs.h2r.baking.RecipeFinished;
+import edu.brown.cs.h2r.baking.RecipeTerminalFunction;
+import edu.brown.cs.h2r.baking.SpaceFactory;
+import edu.brown.cs.h2r.baking.GoalCondition.RecipeGoalCondition;
+import edu.brown.cs.h2r.baking.Heuristics.RecipeHeuristic;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
@@ -41,11 +51,11 @@ planning time.
 
 Therefore, this is interesting because if two independent planners attempt to speed up planning and use subgoals,
 they will both collide if they both choose the same subgoal. Instead, you only want as much cooperation as will
-speed up the total time to solve the problem.
+speed up the total time t1o solve the problem.
 */
-public class DualAgentIndependentPlan  implements DomainGenerator {
+public class DualAgentPerfectRobot  implements DomainGenerator {
 
-	public DualAgentIndependentPlan() {
+	public DualAgentPerfectRobot() {
 		// TODO Auto-generated constructor stub
 	}
 	@Override
@@ -72,7 +82,7 @@ public class DualAgentIndependentPlan  implements DomainGenerator {
 		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
 		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "robot"));
 		state.addObject(MakeSpanFactory.getNewObjectInstance(domain, "makeSpan", 2));
-		List<String> containers = Arrays.asList("mixing_bowl_1");
+		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2");
 		state.addObject(SpaceFactory.getNewObjectInstance(domain, "shelf", false, false, false, null, "" ));
 		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter_human", containers, "human"));
 		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter_robot", containers, "robot"));
@@ -81,7 +91,7 @@ public class DualAgentIndependentPlan  implements DomainGenerator {
 			state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "shelf"));
 		}
 		
-		State finalState = this.PlanIngredient(domain, state, recipe.topLevelIngredient);
+		this.PlanIngredient(domain, state, recipe.topLevelIngredient);
 	}
 	
 	public State PlanIngredient(Domain domain, State startingState, IngredientRecipe ingredient)
@@ -102,7 +112,8 @@ public class DualAgentIndependentPlan  implements DomainGenerator {
 		
 		List<ObjectInstance> ingredientInstances = 
 				IngredientFactory.getSimpleIngredients(simpleIngredientClass, ingredient);
-		List<ObjectInstance> containerInstances = Recipe.getContainers(containerClass, ingredientInstances, shelfSpace.getName());
+		List<ObjectInstance> containerInstances = 
+				Recipe.getContainers(containerClass, ingredientInstances, shelfSpace.getName());
 		
 		
 		for (ObjectInstance ingredientInstance : ingredientInstances) {
@@ -123,50 +134,33 @@ public class DualAgentIndependentPlan  implements DomainGenerator {
 		PropositionalFunction isFailure = new RecipeBotched("botched", domain, ingredient);
 		//RewardFunction recipeRewardFunction = new RecipeRewardFunction(brownies);
 		//RewardFunction recipeRewardFunction = new RecipeRewardFunction();
-		RewardFunction humanRewardFunction = new RecipeAgentSpecificMakeSpanRewardFunction("human");
-		RewardFunction robotRewardFunction = new RecipeAgentSpecificMakeSpanRewardFunction("robot");
+		List<RewardFunction> rewardFunctions = new ArrayList<RewardFunction>();
+		rewardFunctions.add(new RecipeAgentSpecificMakeSpanRewardFunction("human"));
+		rewardFunctions.add(new RecipeAgentSpecificMakeSpanRewardFunction("robot"));
+		rewardFunctions.add(new RecipeAgentSpecificRewardFunction("human"));
+		rewardFunctions.add(new RecipeAgentSpecificRewardFunction("robot"));
+		
 		TerminalFunction recipeTerminalFunction = new RecipeTerminalFunction(isSuccess, isFailure);
 		
 		StateHashFactory hashFactory = new NameDependentStateHashFactory();
-		StateConditionTest goalCondition = new StateConditionTest() {
-			@Override
-			public boolean satisfies(State s) {
-				return s.somePFGroundingIsTrue(isSuccess);
-			}
-		};
-		final int numSteps = Recipe.getNumberSteps(ingredient);
-		Heuristic heuristic = new Heuristic() {
-			@Override
-			public double h(State state) {
-				return 0;
-				//List<ObjectInstance> objects = state.getObjectsOfTrueClass(Recipe.ComplexIngredient.className);
-				//double max = 0;
-				//for (ObjectInstance object : objects)
-				//{
-				//	max = Math.max(max, this.getSubIngredients(state, object));
-				//}
-				//return numSteps - max;
-			}
-			
-			public int getSubIngredients(State state, ObjectInstance object)
-			{
-				int count = 0;
-				count += IngredientFactory.isBakedIngredient(object) ? 1 : 0;
-				count += IngredientFactory.isMixedIngredient(object) ? 1 : 0;
-				count += IngredientFactory.isMeltedIngredient(object) ? 1 : 0; 
+		StateConditionTest goalCondition = new RecipeGoalCondition(isSuccess);
+		//final int numSteps = Recipe.getNumberSteps(ingredient);
+		Heuristic heuristic = new RecipeHeuristic();
+		List<EpisodeAnalysis> episodes = new ArrayList<EpisodeAnalysis>();
 				
-				if (IngredientFactory.isSimple(object))
-				{
-					return count;
-				}
-				Set<String> contents = IngredientFactory.getContentsForIngredient(object);
-				for (String str: contents)
-				{
-					count += this.getSubIngredients(state, state.getObject(str));
-				}
-				return count;
-			}
-		};
+		return planIngredient(domain, startingState, ingredient,
+				currentState, rewardFunctions, recipeTerminalFunction,
+				hashFactory, goalCondition, heuristic, episodes);
+		}
+	private State planIngredient(Domain domain, State startingState,
+			IngredientRecipe ingredient, State currentState,
+			List<RewardFunction> rewardFunctions,
+			TerminalFunction recipeTerminalFunction,
+			StateHashFactory hashFactory, StateConditionTest goalCondition,
+			Heuristic heuristic, List<EpisodeAnalysis> episodes) {
+		RewardFunction humanRewardFunction = rewardFunctions.get(0);
+		RewardFunction robotRewardFunction = rewardFunctions.get(0);
+		
 		boolean finished = false;
 		State endState = startingState;
 		List<GroundedAction> fullActions = new ArrayList<GroundedAction>();
@@ -177,71 +171,39 @@ public class DualAgentIndependentPlan  implements DomainGenerator {
 			RewardFunction recipeRewardFunction = (currentAgent) ? humanRewardFunction : robotRewardFunction;
 			AStar aStar = new AStar(domain, recipeRewardFunction, goalCondition, hashFactory, heuristic);
 			aStar.planFromState(currentState);
+			State nextState = currentState;
+
 			Policy policy = new DDPlannerPolicy(aStar);
 			EpisodeAnalysis episodeAnalysis = 
-					policy.evaluateBehavior(currentState, recipeRewardFunction, recipeTerminalFunction);	
-			
-			
-			
+					policy.evaluateBehavior(currentState, humanRewardFunction, recipeTerminalFunction);	
 			System.out.println("Taking action " + episodeAnalysis.actionSequence.get(0).action.getName());
 			fullActions.add(episodeAnalysis.actionSequence.get(0));
 			fullReward.add(episodeAnalysis.rewardSequence.get(0));
-			currentState = episodeAnalysis.stateSequence.get(1);
+			nextState = episodeAnalysis.getState(1);
 			endState = episodeAnalysis.getState(episodeAnalysis.stateSequence.size() - 1);
 			List<ObjectInstance> finalObjects = 
 					new ArrayList<ObjectInstance>(endState.getObjectsOfTrueClass(IngredientFactory.ClassNameComplex));
 			List<ObjectInstance> containerObjects =
 					new ArrayList<ObjectInstance>(endState.getObjectsOfTrueClass(ContainerFactory.ClassName));
-			ObjectInstance namedIngredient = null;
-			for (ObjectInstance obj : finalObjects)
-			{
-				if (Recipe.isSuccess(endState, ingredient, obj))
-				{
-					namedIngredient = DualAgentIndependentPlan.getNewNamedComplexIngredient(obj, ingredient.getName());
-					String container = IngredientFactory.getContainer(obj);
-					DualAgentIndependentPlan.switchContainersIngredients(containerObjects, obj, namedIngredient);
-					
-					ObjectInstance containerInstance = endState.getObject(container);
-					ContainerFactory.removeContents(containerInstance);
-					ContainerFactory.addIngredient(containerInstance, ingredient.getName());
-					endState.removeObject(obj);
-					endState.addObject(namedIngredient);
-					//return endState;
-				}
-			}
+			ExperimentHelper.checkIngredientCompleted(ingredient, endState, finalObjects,
+					containerObjects);
 			if (episodeAnalysis.actionSequence.size() <= 1) {
 				System.out.println("Action sequence size: " + episodeAnalysis.actionSequence.size());
 				finished = true;
 			}
 			
-			for (int i =0 ; i < fullActions.size(); ++i) {
-				GroundedAction action = fullActions.get(i);
-				
-				double reward = fullReward.get(i);
-				System.out.print("Cost: " + reward + " " + action.action.getName() + " ");
-				for (int j = 0; j < action.params.length; ++j) {
-					System.out.print(action.params[j] + " ");
-				}
-				System.out.print("\n");
-			}
+			ExperimentHelper.printExpisodeSequence(fullActions, fullReward);
+			currentState = nextState;
 		}
+		ExperimentHelper.printResults(fullActions, fullReward);
 		return endState;
 	}
 	
-	public static void switchContainersIngredients(List<ObjectInstance> containers, ObjectInstance oldObject, ObjectInstance newObject)
-	{
-		String container = IngredientFactory.getContainer(oldObject);
-		IngredientFactory.changeIngredientContainer(newObject, container);
-		IngredientFactory.changeIngredientContainer(oldObject, "");
-	}
 	
-	public static ObjectInstance getNewNamedComplexIngredient(ObjectInstance unnamedIngredient, String name)
-	{
-		return IngredientFactory.getNewIngredientInstance(unnamedIngredient, name);
-	}
+	
 
 	public static void main(String[] args) throws IOException {
-		DualAgentIndependentPlan kitchen = new DualAgentIndependentPlan();
+		DualAgentPerfectRobot kitchen = new DualAgentPerfectRobot();
 		System.out.println("Generating Domain");
 		Domain domain = kitchen.generateDomain();
 		kitchen.PlanRecipeTwoAgents(domain, new Brownies());

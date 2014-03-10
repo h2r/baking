@@ -9,20 +9,21 @@ import burlap.oomdp.singleagent.RewardFunction;
 
 public class InferenceRewardFunction implements RewardFunction {
 	List<RewardFunction> rewardFunctions;
-	List<Double> beliefs;
+	private List<Double> beliefs;
 	
 	public InferenceRewardFunction(List<RewardFunction> rewardFunctions) {
 		this.rewardFunctions = new ArrayList<RewardFunction>(rewardFunctions);
-		this.beliefs = new ArrayList<Double>();
-		for (RewardFunction rf : this.rewardFunctions) {
-			this.beliefs.add(1.0 / this.rewardFunctions.size());
+		this.setBeliefs(new ArrayList<Double>());
+		
+		for (int i = 0; i < this.rewardFunctions.size(); ++i) {
+			this.getBeliefs().add(1.0 / this.rewardFunctions.size());
 		}
 	}
 
 	public void updateBeliefs(List<Double> values) {
-		for (int i = 0; i < this.beliefs.size(); i++)
+		for (int i = 0; i < this.getBeliefs().size(); i++)
 		{
-			this.beliefs.set(i, this.beliefs.get(i) * values.get(i));
+			this.getBeliefs().set(i, this.getBeliefs().get(i) * values.get(i));
 		}
 	}
 	
@@ -32,10 +33,18 @@ public class InferenceRewardFunction implements RewardFunction {
 		double sumBeliefs = 0;
 		for (int i =0; i < this.rewardFunctions.size(); i++)
 		{
-			sumBeliefs += this.beliefs.get(i);
-			reward += this.rewardFunctions.get(i).reward(s, a, sprime) * this.beliefs.get(i);
+			sumBeliefs += this.getBeliefs().get(i);
+			reward += this.rewardFunctions.get(i).reward(s, a, sprime) * this.getBeliefs().get(i);
 		}
 		return reward / sumBeliefs;
+	}
+
+	public List<Double> getBeliefs() {
+		return beliefs;
+	}
+
+	public void setBeliefs(List<Double> beliefs) {
+		this.beliefs = beliefs;
 	}
 
 }
