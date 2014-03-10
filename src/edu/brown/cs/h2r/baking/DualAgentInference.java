@@ -25,6 +25,8 @@ import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.SADomain;
+import edu.brown.cs.h2r.baking.GoalCondition.RecipeGoalCondition;
+import edu.brown.cs.h2r.baking.Heuristics.RecipeHeuristic;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
@@ -42,7 +44,7 @@ planning time.
 
 Therefore, this is interesting because if two independent planners attempt to speed up planning and use subgoals,
 they will both collide if they both choose the same subgoal. Instead, you only want as much cooperation as will
-speed up the total time to solve the problem.
+speed up the total time t1o solve the problem.
 */
 public class DualAgentInference  implements DomainGenerator {
 
@@ -103,7 +105,8 @@ public class DualAgentInference  implements DomainGenerator {
 		
 		List<ObjectInstance> ingredientInstances = 
 				IngredientFactory.getSimpleIngredients(simpleIngredientClass, ingredient);
-		List<ObjectInstance> containerInstances = Recipe.getContainers(containerClass, ingredientInstances, shelfSpace.getName());
+		List<ObjectInstance> containerInstances = 
+				Recipe.getContainers(containerClass, ingredientInstances, shelfSpace.getName());
 		
 		
 		for (ObjectInstance ingredientInstance : ingredientInstances) {
@@ -130,53 +133,24 @@ public class DualAgentInference  implements DomainGenerator {
 		rewardFunctions.add(new RecipeAgentSpecificRewardFunction("human"));
 		rewardFunctions.add(new RecipeAgentSpecificRewardFunction("robot"));
 		
-		
-		
 		TerminalFunction recipeTerminalFunction = new RecipeTerminalFunction(isSuccess, isFailure);
 		
 		StateHashFactory hashFactory = new NameDependentStateHashFactory();
-		StateConditionTest goalCondition = new StateConditionTest() {
-			@Override
-			public boolean satisfies(State s) {
-				return s.somePFGroundingIsTrue(isSuccess);
-			}
-		};
+		StateConditionTest goalCondition = new RecipeGoalCondition(isSuccess);
 		final int numSteps = Recipe.getNumberSteps(ingredient);
-		Heuristic heuristic = new Heuristic() {
-			@Override
-			public double h(State state) {
-				return 0;
-				//List<ObjectInstance> objects = state.getObjectsOfTrueClass(Recipe.ComplexIngredient.className);
-				//double max = 0;
-				//for (ObjectInstance object : objects)
-				//{
-				//	max = Math.max(max, this.getSubIngredients(state, object));
-				//}
-				//return numSteps - max;
-			}
-			
-			public int getSubIngredients(State state, ObjectInstance object)
-			{
-				int count = 0;
-				count += IngredientFactory.isBakedIngredient(object) ? 1 : 0;
-				count += IngredientFactory.isMixedIngredient(object) ? 1 : 0;
-				count += IngredientFactory.isMeltedIngredient(object) ? 1 : 0; 
-				
-				if (IngredientFactory.isSimple(object))
-				{
-					return count;
-				}
-				Set<String> contents = IngredientFactory.getContentsForIngredient(object);
-				for (String str: contents)
-				{
-					count += this.getSubIngredients(state, state.getObject(str));
-				}
-				return count;
-			}
-		};
-		
+		Heuristic heuristic = new RecipeHeuristic();
 		List<EpisodeAnalysis> episodes = new ArrayList<EpisodeAnalysis>();
-		
+				
+		return planIngredient(domain, startingState, ingredient,
+				currentState, rewardFunctions, recipeTerminalFunction,
+				hashFactory, goalCondition, heuristic, episodes);
+		}
+	private State planIngredient(Domain domain, State startingState,
+			IngredientRecipe ingredient, State currentState,
+			List<RewardFunction> rewardFunctions,
+			TerminalFunction recipeTerminalFunction,
+			StateHashFactory hashFactory, StateConditionTest goalCondition,
+			Heuristic heuristic, List<EpisodeAnalysis> episodes) {
 		RewardFunction humanRewardFunction = rewardFunctions.get(0);
 		RewardFunction robotRewardFunction = new InferenceRewardFunction(rewardFunctions);
 		
@@ -248,8 +222,7 @@ public class DualAgentInference  implements DomainGenerator {
 					Policy p = new DDPlannerPolicy(search);
 					EpisodeAnalysis episode = 
 							p.evaluateBehavior(currentState, rf, recipeTerminalFunction);	
-					episodes.add(episode);
-					
+					episodes.add(episode);					
 				}
 				
 				GroundedAction humanAction = episodeAnalysis.getAction(0);
@@ -297,12 +270,6 @@ public class DualAgentInference  implements DomainGenerator {
 				((InferenceRewardFunction)robotRewardFunction).updateBeliefs(newBeliefs);
 			
 			}
-			
-			
-			
-			
-			
-			
 			for (int i =0 ; i < fullActions.size(); ++i) {
 				GroundedAction action = fullActions.get(i);
 				
