@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.Policy;
@@ -31,6 +32,7 @@ import edu.brown.cs.h2r.baking.RecipeFinished;
 import edu.brown.cs.h2r.baking.RecipeTerminalFunction;
 import edu.brown.cs.h2r.baking.SpaceFactory;
 import edu.brown.cs.h2r.baking.GoalCondition.RecipeGoalCondition;
+import edu.brown.cs.h2r.baking.Heuristics.AgentSpecificHeuristic;
 import edu.brown.cs.h2r.baking.Heuristics.RecipeHeuristic;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
@@ -75,11 +77,11 @@ public class DualAgentStubbornRobot  implements DomainGenerator {
 	
 	public void PlanRecipeTwoAgents(Domain domain, Recipe recipe)
 	{
-		System.out.println("Creating two-agent initial start state");
 		State state = new State();
 		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
 		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "robot"));
 		state.addObject(MakeSpanFactory.getNewObjectInstance(domain, "makeSpan", 2));
+		
 		List<String> containers = Arrays.asList("mixing_bowl_1");
 		state.addObject(SpaceFactory.getNewObjectInstance(domain, "shelf", false, false, false, null, "" ));
 		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter_human", containers, "human"));
@@ -135,8 +137,8 @@ public class DualAgentStubbornRobot  implements DomainGenerator {
 		List<RewardFunction> rewardFunctions = new ArrayList<RewardFunction>();
 		rewardFunctions.add(new RecipeAgentSpecificMakeSpanRewardFunction("human"));
 		rewardFunctions.add(new RecipeAgentSpecificMakeSpanRewardFunction("robot"));
-		rewardFunctions.add(new RecipeAgentSpecificRewardFunction("human"));
-		rewardFunctions.add(new RecipeAgentSpecificRewardFunction("robot"));
+		rewardFunctions.add(new RecipeAgentSpecificRewardFunction("human", -1, -2));
+		rewardFunctions.add(new RecipeAgentSpecificRewardFunction("robot", -1, -2));
 		
 		TerminalFunction recipeTerminalFunction = new RecipeTerminalFunction(isSuccess, isFailure);
 		
@@ -158,36 +160,70 @@ public class DualAgentStubbornRobot  implements DomainGenerator {
 			Heuristic heuristic, List<EpisodeAnalysis> episodes) {
 		RewardFunction humanRewardFunction = rewardFunctions.get(0);
 		RewardFunction robotRewardFunction = rewardFunctions.get(1);
-		
+		//Heuristic humanHeuristic = new AgentSpecificHeuristic(domain, ingredient, "human", -1, -100);
+		//Heuristic robotHeuristic = new AgentSpecificHeuristic(domain, ingredient, "robot", -1, -100);
 		boolean finished = false;
 		State endState = startingState;
 		List<GroundedAction> fullActions = new ArrayList<GroundedAction>();
 		List<Double> fullReward = new ArrayList<Double>();
 		boolean currentAgent = false;
 		while (!finished) {
-			currentAgent = !currentAgent;
-			RewardFunction recipeRewardFunction = (currentAgent) ? humanRewardFunction : robotRewardFunction;
-			AStar aStar = new AStar(domain, recipeRewardFunction, goalCondition, hashFactory, heuristic);
-			aStar.planFromState(currentState);
-			State nextState = currentState;
-
-			Policy policy = new DDPlannerPolicy(aStar);
-			EpisodeAnalysis episodeAnalysis = 
-					policy.evaluateBehavior(currentState, humanRewardFunction, recipeTerminalFunction);	
-			System.out.println("Taking action " + episodeAnalysis.actionSequence.get(0).action.getName());
-			fullActions.add(episodeAnalysis.actionSequence.get(0));
-			fullReward.add(episodeAnalysis.rewardSequence.get(0));
-			nextState = episodeAnalysis.getState(1);
-			endState = episodeAnalysis.getState(episodeAnalysis.stateSequence.size() - 1);
-			List<ObjectInstance> finalObjects = 
-					new ArrayList<ObjectInstance>(endState.getObjectsOfTrueClass(IngredientFactory.ClassNameComplex));
-			List<ObjectInstance> containerObjects =
-					new ArrayList<ObjectInstance>(endState.getObjectsOfTrueClass(ContainerFactory.ClassName));
-			ExperimentHelper.checkIngredientCompleted(ingredient, endState, finalObjects,
-					containerObjects);
-			if (episodeAnalysis.actionSequence.size() <= 1) {
-				System.out.println("Action sequence size: " + episodeAnalysis.actionSequence.size());
+			
+			State humanCurrentState = ExperimentHelper.setPrimaryAgent(currentState, "robot");
+			State robotCurrentState = ExperimentHelper.setPrimaryAgent(currentState, "robot");
+			AStar robotAgent = new AStar(domain, robotRewardFunction, goalCondition, hashFactory, heuristic);
+			AStar humanAgent = new AStar(domain, humanRewardFunction, goalCondition, hashFactory, heuristic);
+			robotAgent.planFromState(robotCurrentState);
+			humanAgent.planFromState(humanCurrentState);
+			
+			Policy robotPolicy = new DDPlannerPolicy(robotAgent);
+			Policy humanPolicy = new DDPlannerPolicy(humanAgent);
+			
+			EpisodeAnalysis robotEpisodes = 
+					robotPolicy.evaluateBehavior(robotCurrentState, robotRewardFunction, recipeTerminalFunction);	
+			EpisodeAnalysis humanEpisodes = 
+					humanPolicy.evaluateBehavior(humanCurrentState, humanRewardFunction, recipeTerminalFunction);	
+			
+			if (robotEpisodes.actionSequence.size() <= 1 ||
+					humanEpisodes.actionSequence.size() <= 1) {
 				finished = true;
+				continue;
+			}
+			System.out.println("Robot tries action " + robotEpisodes.actionSequence.get(1).toString());
+			System.out.println("Human tries action " + humanEpisodes.actionSequence.get(0).toString());
+			
+			// Robot's action is always #2
+			GroundedAction robotAction = robotEpisodes.actionSequence.get(1);
+			GroundedAction humanAction = humanEpisodes.actionSequence.get(0);
+			
+			Random random = new Random();
+			Boolean reverse = random.nextBoolean();
+			int numApplicable = ExperimentHelper.numberActionsApplicableInState(currentState, humanAction, robotAction, reverse);
+			if (numApplicable <= 1)
+			{
+				String agentFailed = reverse ? "human" : "robot";
+				System.out.println(agentFailed + " failed to execute action");
+			}
+			
+			State nextState = ExperimentHelper.applyGroundedActions(currentState, humanAction, robotAction, reverse);
+			
+			if (reverse)
+			{
+				fullActions.add(robotAction);
+				fullReward.add(-1.0);
+				if (numApplicable > 1){
+					fullActions.add(humanAction);
+					fullReward.add(0.0);
+				}
+			}
+			else
+			{
+				fullActions.add(humanAction);
+				fullReward.add(-1.0);
+				if (numApplicable > 1) {
+					fullActions.add(robotAction);
+					fullReward.add(0.0);
+				}
 			}
 			
 			ExperimentHelper.printEpisodeSequence(fullActions, fullReward);
@@ -196,13 +232,9 @@ public class DualAgentStubbornRobot  implements DomainGenerator {
 		ExperimentHelper.printResults(fullActions, fullReward);
 		return endState;
 	}
-	
-	
-	
 
 	public static void main(String[] args) throws IOException {
 		DualAgentStubbornRobot kitchen = new DualAgentStubbornRobot();
-		System.out.println("Generating Domain");
 		Domain domain = kitchen.generateDomain();
 		kitchen.PlanRecipeTwoAgents(domain, new Brownies());
 	}

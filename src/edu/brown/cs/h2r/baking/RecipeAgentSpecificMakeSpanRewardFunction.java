@@ -11,8 +11,18 @@ import edu.brown.cs.h2r.baking.ObjectFactories.MakeSpanFactory;
 public class RecipeAgentSpecificMakeSpanRewardFunction implements RewardFunction {
 
 	protected String agent;
+	private double costMe;
+	private double costYou;
 	public RecipeAgentSpecificMakeSpanRewardFunction(String agent) {
 		this.agent = agent;
+		this.costMe = -1;
+		this.costYou = -2;
+	}
+	
+	public RecipeAgentSpecificMakeSpanRewardFunction(String agent, double costMe, double costYou) {
+		this.agent = agent;
+		this.costMe = costMe;
+		this.costYou = costYou;
 	}
 
 	@Override
@@ -22,14 +32,14 @@ public class RecipeAgentSpecificMakeSpanRewardFunction implements RewardFunction
 		if (!objectInstances.isEmpty()) {
 			Set<String> occupiedAgents = MakeSpanFactory.getOccupiedAgentNames(objectInstances.get(0));
 			if (occupiedAgents.contains(a.params[0]) || occupiedAgents.isEmpty()) {
-				return (a.params[0] == this.agent) ? -1 : -2;
+				return (a.params[0] == this.agent) ? this.costMe : this.costYou;
 			}
 			else {
 				return 0;
 			}
 		}
 		else {
-			return (a.params[0] == this.agent) ? -1 : -2;
+			return (a.params[0] == this.agent) ? this.costMe : this.costYou;
 		}
 
 		//String[] classes = a.action.getParameterClasses();

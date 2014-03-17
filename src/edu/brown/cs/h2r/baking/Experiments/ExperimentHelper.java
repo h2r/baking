@@ -7,6 +7,7 @@ import java.util.Random;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.MakeSpanFactory;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
@@ -91,6 +92,35 @@ public class ExperimentHelper {
 		return ga;
 	}
 	
+	public static boolean isGroundedActionApplicableInState(State state, GroundedAction action)
+	{
+		return action.action.applicableInState(state, action.params);
+	}
+
+	public static int numberActionsApplicableInState(State currentState, GroundedAction action1, GroundedAction action2, boolean reverse)
+	{
+		GroundedAction firstAction = (reverse) ? action2 : action1;
+		GroundedAction secondAction = (reverse) ? action1 : action2;
+		
+		int count = 0;
+		count += ExperimentHelper.isGroundedActionApplicableInState(currentState, firstAction) ? 1 : 0;
+		State nextState = firstAction.executeIn(currentState);
+		count += ExperimentHelper.isGroundedActionApplicableInState(nextState, secondAction) ? 1 : 0;
+		return count;
+	}
+	
+	public static State applyGroundedActions(State currentState, GroundedAction action1, GroundedAction action2, boolean reverse)
+	{
+		GroundedAction firstAction = (reverse) ? action2 : action1;
+		GroundedAction secondAction = (reverse) ? action1 : action2;
+		State nextState = firstAction.executeIn(currentState);
+		if (ExperimentHelper.isGroundedActionApplicableInState(nextState, secondAction))
+		{
+			nextState = secondAction.executeIn(nextState);
+		}
+		return nextState;
+	}
+	
 	public static void checkIngredientCompleted(IngredientRecipe ingredient,
 			State endState, List<ObjectInstance> finalObjects,
 			List<ObjectInstance> containerObjects) {
@@ -110,5 +140,17 @@ public class ExperimentHelper {
 				endState.addObject(namedIngredient);
 			}
 		}
+	}
+	
+	public static State setPrimaryAgent(State state, String agent)
+	{
+		State newState = state.copy();
+		List<ObjectInstance> makeSpanObjects = newState.getObjectsOfTrueClass(MakeSpanFactory.ClassName);
+		if (!makeSpanObjects.isEmpty())
+		{
+			ObjectInstance makeSpanObject = makeSpanObjects.get(0);
+			MakeSpanFactory.setPrimaryAgent(makeSpanObject, agent);
+		}
+		return newState;
 	}
 }

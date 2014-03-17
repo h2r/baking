@@ -33,10 +33,7 @@ public class BakingAction extends Action {
 
 	@Override
 	public boolean applicableInState(State state, String[] params) {
-		if (params[0] == "human") {
-		return true;
-		}
-		else return this.hasHumanGone(state);
+		return this.canAgentGo(state, params);
 	}
 
 	@Override
@@ -45,16 +42,26 @@ public class BakingAction extends Action {
 		return s;	
 	}
 	
-	protected boolean hasHumanGone(State state) {
+	protected boolean canAgentGo(State state, String[] params) {
 		List<ObjectInstance> makeSpanObjects = state.getObjectsOfTrueClass(MakeSpanFactory.ClassName);
 		if (!makeSpanObjects.isEmpty()) {
-			Set<String> agents = MakeSpanFactory.getOccupiedAgentNames(makeSpanObjects.get(0));
-			if (agents.size() == MakeSpanFactory.getAgentCount(makeSpanObjects.get(0))) {
-				return false;
-			}
-			if (agents.contains("human")) {
+			ObjectInstance makeSpanObject = makeSpanObjects.get(0);
+			String primaryAgent = MakeSpanFactory.getPrimaryAgent(makeSpanObject);
+			if (primaryAgent == "")
+			{
 				return true;
 			}
+			if (params[0] == primaryAgent) {
+				return true;
+			}
+			Set<String> agents = MakeSpanFactory.getOccupiedAgentNames(makeSpanObject);
+			if (agents.size() == MakeSpanFactory.getAgentCount(makeSpanObject)) {
+				return false;
+			}
+			if (agents.contains(primaryAgent)) {
+				return true;
+			}
+			return false;
 		}
 		// If make span is not used here, it's always good.
 		return true;

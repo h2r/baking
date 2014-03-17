@@ -36,6 +36,7 @@ import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.Recipes.Brownies;
+import edu.brown.cs.h2r.baking.Recipes.BrowniesSubGoals;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.Recipes.TestSubGoals;
 import edu.brown.cs.h2r.baking.actions.MixAction;
@@ -71,7 +72,7 @@ public class SingleAgentKitchen implements DomainGenerator {
 		
 		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
 		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2");
-		//state.addObject(SpaceFactory.getNewObjectInstance(domain, "shelf", false, false, false, null));
+		state.addObject(SpaceFactory.getNewObjectInstance(domain, "shelf", false, false, false, null, ""));
 		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter", containers, "human"));
 		
 		for (String container : containers) { 
@@ -94,7 +95,7 @@ public class SingleAgentKitchen implements DomainGenerator {
 		
 		ObjectClass simpleIngredientClass = domain.getObjectClass(IngredientFactory.ClassNameSimple);
 		ObjectClass containerClass = domain.getObjectClass(ContainerFactory.ClassName);		
-		ObjectInstance shelfSpace = currentState.getObject("counter");
+		ObjectInstance shelfSpace = currentState.getObject("shelf");
 		
 		List<ObjectInstance> ingredientInstances = 
 				IngredientFactory.getSimpleIngredients(simpleIngredientClass, ingredient);

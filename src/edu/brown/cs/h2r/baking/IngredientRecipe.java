@@ -50,6 +50,29 @@ public class IngredientRecipe {
 		return new ArrayList<IngredientRecipe>(this.contents);
 	}
 	
+	public List<IngredientRecipe> getConstituentIngredients()
+	{
+		return this.getConstituentIngredient(this.getContents());
+	}
+	
+	public List<IngredientRecipe> getConstituentIngredient(List<IngredientRecipe> ingredients)
+	{
+		List<IngredientRecipe> subIngredients = new ArrayList<IngredientRecipe>();
+		for (IngredientRecipe ingredient : ingredients)
+		{
+			if (ingredient.isSimple())
+			{
+				subIngredients.add(ingredient);
+			}
+			else
+			{
+				subIngredients.addAll(ingredient.getContents());
+			}
+			
+		}
+		return subIngredients;
+	}
+	
 	public int getConstituentIngredientsCount() {
 		int count = 0;
 		if (this.contents != null ) {

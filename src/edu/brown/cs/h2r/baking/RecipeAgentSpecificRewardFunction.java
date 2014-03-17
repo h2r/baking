@@ -6,33 +6,22 @@ import burlap.oomdp.singleagent.RewardFunction;
 public class RecipeAgentSpecificRewardFunction implements RewardFunction {
 
 	protected String agent;
+	private double youCost;
+	private double meCost;
 	public RecipeAgentSpecificRewardFunction(String agent) {
 		this.agent = agent;
+		this.youCost = -2;
+		this.meCost = -1;
 	}
-
+	
+	public RecipeAgentSpecificRewardFunction(String agent, double meCost, double youCost)
+	{
+		this.agent = agent;
+		this.youCost = youCost;
+		this.meCost = meCost;
+	}
 	@Override
 	public double reward(State state, GroundedAction a, State sprime) {
-		// Things look ok...for now. Continue!
-		//return -1;
-		if (a.params[0] == this.agent){ 
-			return -1;
-		}
-		else {
-			return -2;
-		}
-
-		
-		//String[] classes = a.action.getParameterClasses();
-		//for (int i = 0; i < classes.length; ++i)
-		//{
-		//	if (classes[i] == AgentFactory.ClassName)
-		//	{
-		//		ObjectInstance agent = state.getObject(a.params[i]);
-		//		if (AgentFactory.isRobot(agent)) {
-		//			return -1;
-		//		}
-		//	}
-		//}
-		//return -2;
+		return (a.params[0] == this.agent) ? this.meCost : this.youCost;
 	}
 }

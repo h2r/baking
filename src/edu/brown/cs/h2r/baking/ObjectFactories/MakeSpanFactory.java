@@ -12,7 +12,7 @@ public class MakeSpanFactory {
 	public static final String ClassName = "MakeSpan";
 	private static final String attributeAgentList = "AgentList";
 	private static final String attributeAgentCount = "AgentCount";
-
+	private static final String attributePrimaryAgent = "PrimaryAgent";
 
 	public static ObjectClass getObjectClass(Domain domain)
 	{
@@ -28,6 +28,10 @@ public class MakeSpanFactory {
 					new Attribute(domain, MakeSpanFactory.attributeAgentCount, Attribute.AttributeType.DISC);
 			agentCount.setDiscValuesForRange(0, 10, 1);
 			objectClass.addAttribute(agentCount);
+			
+			Attribute primaryAgent =
+					new Attribute(domain, MakeSpanFactory.attributePrimaryAgent, Attribute.AttributeType.RELATIONAL);
+			objectClass.addAttribute(primaryAgent);
 		}
 		return objectClass;
 	}
@@ -44,6 +48,14 @@ public class MakeSpanFactory {
 	
 	public static Set<String> getOccupiedAgentNames(ObjectInstance makeSpanObject) {
 		return makeSpanObject.getAllRelationalTargets(MakeSpanFactory.attributeAgentList);
+	}
+	
+	public static String getPrimaryAgent(ObjectInstance makeSpanObject) {
+		return makeSpanObject.getValueForAttribute(MakeSpanFactory.attributePrimaryAgent).getStringVal();
+	}
+	
+	public static void setPrimaryAgent(ObjectInstance makeSpanObject, String primaryAgent) {
+		makeSpanObject.setValue(MakeSpanFactory.attributePrimaryAgent, primaryAgent);
 	}
 	
 	public static int getAgentCount(ObjectInstance makeSpanObject) {

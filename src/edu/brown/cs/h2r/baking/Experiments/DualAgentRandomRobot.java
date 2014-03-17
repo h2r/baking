@@ -23,7 +23,6 @@ import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.SADomain;
-import edu.brown.cs.h2r.baking.InferenceRewardFunction;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.RecipeAgentSpecificMakeSpanRewardFunction;
 import edu.brown.cs.h2r.baking.RecipeAgentSpecificRewardFunction;
@@ -37,7 +36,7 @@ import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.MakeSpanFactory;
-import edu.brown.cs.h2r.baking.Recipes.Brownies;
+import edu.brown.cs.h2r.baking.Recipes.BrowniesSubGoals;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.actions.MixAction;
 import edu.brown.cs.h2r.baking.actions.MoveAction;
@@ -222,6 +221,6 @@ public class DualAgentRandomRobot  implements DomainGenerator {
 		DualAgentRandomRobot kitchen = new DualAgentRandomRobot();
 		System.out.println("Generating Domain");
 		Domain domain = kitchen.generateDomain();
-		kitchen.PlanRecipeTwoAgents(domain, new Brownies());
+		kitchen.PlanRecipeTwoAgents(domain, new BrowniesSubGoals());
 	}
 }
