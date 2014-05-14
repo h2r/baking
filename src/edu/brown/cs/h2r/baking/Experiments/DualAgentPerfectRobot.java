@@ -30,13 +30,13 @@ import edu.brown.cs.h2r.baking.RecipeAgentSpecificRewardFunction;
 import edu.brown.cs.h2r.baking.RecipeBotched;
 import edu.brown.cs.h2r.baking.RecipeFinished;
 import edu.brown.cs.h2r.baking.RecipeTerminalFunction;
-import edu.brown.cs.h2r.baking.SpaceFactory;
 import edu.brown.cs.h2r.baking.GoalCondition.RecipeGoalCondition;
 import edu.brown.cs.h2r.baking.Heuristics.RecipeHeuristic;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.MakeSpanFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import edu.brown.cs.h2r.baking.Recipes.Brownies;
 import edu.brown.cs.h2r.baking.Recipes.BrowniesSubGoals;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
@@ -190,12 +190,13 @@ public class DualAgentPerfectRobot  implements DomainGenerator {
 				finished = true;
 				continue;
 			}
-			System.out.println("Robot tries action " + robotEpisodes.actionSequence.get(1).toString());
-			System.out.println("Human tries action " + humanEpisodes.actionSequence.get(0).toString());
+			GroundedAction robotAction = ExperimentHelper.getFirstRelavantAction(robotEpisodes.actionSequence, "robot");
+			GroundedAction humanAction = ExperimentHelper.getFirstRelavantAction(humanEpisodes.actionSequence, "human");
+
+			System.out.println("Robot tries action " + robotAction.toString());
+			System.out.println("Human tries action " + humanAction.toString());
 			
 			// Robot's action is always #2
-			GroundedAction robotAction = robotEpisodes.actionSequence.get(1);
-			GroundedAction humanAction = humanEpisodes.actionSequence.get(0);
 			
 			Random random = new Random();
 			Boolean reverse = random.nextBoolean();
@@ -227,9 +228,6 @@ public class DualAgentPerfectRobot  implements DomainGenerator {
 				}
 			}
 
-			
-			
-			
 			ExperimentHelper.printEpisodeSequence(fullActions, fullReward);
 			currentState = nextState;
 		}

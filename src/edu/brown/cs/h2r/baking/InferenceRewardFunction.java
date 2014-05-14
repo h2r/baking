@@ -31,12 +31,18 @@ public class InferenceRewardFunction implements RewardFunction {
 	public double reward(State s, GroundedAction a, State sprime) {
 		double reward = 0;
 		double sumBeliefs = 0;
+		double maxBelief = 0;
+
 		for (int i =0; i < this.rewardFunctions.size(); i++)
 		{
-			sumBeliefs += this.getBeliefs().get(i);
-			reward += this.rewardFunctions.get(i).reward(s, a, sprime) * this.getBeliefs().get(i);
+			if (this.getBeliefs().get(i) > maxBelief) {
+				maxBelief = this.getBeliefs().get(i);
+				reward = this.rewardFunctions.get(i).reward(s,  a,  sprime);
+			}
+			//sumBeliefs += this.getBeliefs().get(i);
+			//reward += this.rewardFunctions.get(i).reward(s, a, sprime) * this.getBeliefs().get(i);
 		}
-		return reward / sumBeliefs;
+		return reward;
 	}
 
 	public List<Double> getBeliefs() {

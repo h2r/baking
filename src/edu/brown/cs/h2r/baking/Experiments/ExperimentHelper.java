@@ -103,9 +103,18 @@ public class ExperimentHelper {
 		GroundedAction secondAction = (reverse) ? action1 : action2;
 		
 		int count = 0;
-		count += ExperimentHelper.isGroundedActionApplicableInState(currentState, firstAction) ? 1 : 0;
-		State nextState = firstAction.executeIn(currentState);
-		count += ExperimentHelper.isGroundedActionApplicableInState(nextState, secondAction) ? 1 : 0;
+		State nextState = currentState.copy();
+		
+		if (firstAction != null) {
+			count += ExperimentHelper.isGroundedActionApplicableInState(currentState, firstAction) ? 1 : 0;
+			nextState = firstAction.executeIn(currentState);
+		}
+		if (secondAction != null) {
+			if (firstAction == null || (firstAction.params[1] != secondAction.params[1] &&
+					ExperimentHelper.isGroundedActionApplicableInState(nextState, secondAction))) {
+				count++;
+			}
+		}
 		return count;
 	}
 	
@@ -113,10 +122,16 @@ public class ExperimentHelper {
 	{
 		GroundedAction firstAction = (reverse) ? action2 : action1;
 		GroundedAction secondAction = (reverse) ? action1 : action2;
-		State nextState = firstAction.executeIn(currentState);
-		if (ExperimentHelper.isGroundedActionApplicableInState(nextState, secondAction))
-		{
-			nextState = secondAction.executeIn(nextState);
+		
+		State nextState = currentState.copy();
+		if (firstAction != null) {
+			nextState = firstAction.executeIn(currentState);
+		}
+		if (secondAction != null) {
+			if (firstAction == null || (firstAction.params[1] != secondAction.params[1] &&
+					ExperimentHelper.isGroundedActionApplicableInState(nextState, secondAction))) {
+				nextState = secondAction.executeIn(nextState);
+			}
 		}
 		return nextState;
 	}
@@ -152,5 +167,15 @@ public class ExperimentHelper {
 			MakeSpanFactory.setPrimaryAgent(makeSpanObject, agent);
 		}
 		return newState;
+	}
+	
+	public static GroundedAction getFirstRelavantAction(List<GroundedAction> actions, String agent)
+	{
+		for (GroundedAction action : actions) {
+			if (action.params[0] == agent) {
+				return action;
+			}
+		}
+		return null;
 	}
 }

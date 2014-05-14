@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.Policy;
@@ -30,13 +31,13 @@ import edu.brown.cs.h2r.baking.RecipeAgentSpecificRewardFunction;
 import edu.brown.cs.h2r.baking.RecipeBotched;
 import edu.brown.cs.h2r.baking.RecipeFinished;
 import edu.brown.cs.h2r.baking.RecipeTerminalFunction;
-import edu.brown.cs.h2r.baking.SpaceFactory;
 import edu.brown.cs.h2r.baking.GoalCondition.RecipeGoalCondition;
 import edu.brown.cs.h2r.baking.Heuristics.RecipeHeuristic;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.MakeSpanFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import edu.brown.cs.h2r.baking.Recipes.Brownies;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.actions.MixAction;
@@ -166,48 +167,84 @@ public class DualAgentInference  implements DomainGenerator {
 		List<Double> fullReward = new ArrayList<Double>();
 		boolean currentAgent = false;
 		while (!finished) {
-			currentAgent = !currentAgent;
-			RewardFunction recipeRewardFunction = (currentAgent) ? humanRewardFunction : robotRewardFunction;
-			AStar aStar = new AStar(domain, recipeRewardFunction, goalCondition, hashFactory, heuristic);
-			aStar.planFromState(currentState);
+			//currentAgent = !currentAgent;
+			//RewardFunction recipeRewardFunction = (currentAgent) ? humanRewardFunction : robotRewardFunction;
 			
-			Policy policy = new DDPlannerPolicy(aStar);
-			EpisodeAnalysis episodeAnalysis = 
-					policy.evaluateBehavior(currentState, humanRewardFunction, recipeTerminalFunction);	
-			System.out.println("Taking action " + episodeAnalysis.actionSequence.get(0).action.getName());
-			fullActions.add(episodeAnalysis.actionSequence.get(0));
-			fullReward.add(episodeAnalysis.rewardSequence.get(0));
-			State nextState = episodeAnalysis.getState(1);
-			endState = episodeAnalysis.getState(episodeAnalysis.stateSequence.size() - 1);
-			List<ObjectInstance> finalObjects = 
-					new ArrayList<ObjectInstance>(endState.getObjectsOfTrueClass(IngredientFactory.ClassNameComplex));
-			List<ObjectInstance> containerObjects =
-					new ArrayList<ObjectInstance>(endState.getObjectsOfTrueClass(ContainerFactory.ClassName));
-			ExperimentHelper.checkIngredientCompleted(ingredient, endState, finalObjects, containerObjects);
-
-			if (episodeAnalysis.actionSequence.size() <= 1) {
-				System.out.println("Action sequence size: " + episodeAnalysis.actionSequence.size());
+			State humanCurrentState = ExperimentHelper.setPrimaryAgent(currentState, "human");
+			State robotCurrentState = ExperimentHelper.setPrimaryAgent(currentState, "robot");
+			AStar robotAgent = new AStar(domain, robotRewardFunction, goalCondition, hashFactory, heuristic);
+			AStar humanAgent = new AStar(domain, humanRewardFunction, goalCondition, hashFactory, heuristic);
+			robotAgent.planFromState(robotCurrentState);
+			humanAgent.planFromState(humanCurrentState);
+			
+			Policy robotPolicy = new DDPlannerPolicy(robotAgent);
+			Policy humanPolicy = new DDPlannerPolicy(humanAgent);
+			
+			EpisodeAnalysis robotEpisodes = 
+					robotPolicy.evaluateBehavior(robotCurrentState, robotRewardFunction, recipeTerminalFunction);	
+			EpisodeAnalysis humanEpisodes = 
+					humanPolicy.evaluateBehavior(humanCurrentState, humanRewardFunction, recipeTerminalFunction);	
+			
+			if (robotEpisodes.actionSequence.size() <= 1 ||
+					humanEpisodes.actionSequence.size() <= 1) {
 				finished = true;
+				continue;
+			}
+			GroundedAction robotAction = ExperimentHelper.getFirstRelavantAction(robotEpisodes.actionSequence, "robot");
+			GroundedAction humanAction = ExperimentHelper.getFirstRelavantAction(humanEpisodes.actionSequence, "human");
+
+			System.out.println("Robot tries action " + robotAction.toString());
+			System.out.println("Human tries action " + humanAction.toString());
+			
+			// Robot's action is always #2
+			
+			Random random = new Random();
+			Boolean reverse = random.nextBoolean();
+			int numApplicable = ExperimentHelper.numberActionsApplicableInState(currentState, humanAction, robotAction, reverse);
+			if (numApplicable <= 1)
+			{
+				String agentFailed = reverse ? "human" : "robot";
+				System.out.println(agentFailed + " failed to execute action");
+			}
+			
+			State nextState = ExperimentHelper.applyGroundedActions(currentState, humanAction, robotAction, reverse);
+			
+			if (reverse)
+			{
+				fullActions.add(robotAction);
+				fullReward.add(-1.0);
+				if (numApplicable > 1){
+					fullActions.add(humanAction);
+					fullReward.add(0.0);
+				}
+			}
+			else
+			{
+				fullActions.add(humanAction);
+				fullReward.add(-1.0);
+				if (numApplicable > 1) {
+					fullActions.add(robotAction);
+					fullReward.add(0.0);
+				}
 			}
 			
 			for (RewardFunction rf : rewardFunctions)
 			{
 				AStar search = new AStar(domain, rf, goalCondition, hashFactory, heuristic);
-				search.planFromState(currentState);
+				search.planFromState(humanCurrentState);
 				Policy p = new DDPlannerPolicy(search);
 				EpisodeAnalysis episode = 
-						p.evaluateBehavior(currentState, rf, recipeTerminalFunction);	
+						p.evaluateBehavior(humanCurrentState, rf, recipeTerminalFunction);	
 				episodes.add(episode);					
 			}
 			
-			GroundedAction humanAction = episodeAnalysis.getAction(0);
 			List<Double> newBeliefs = new ArrayList<Double>();
 			Double totalMatches = 0.0;
 			for (int i =0; i < rewardFunctions.size(); i++)
 			{
-				GroundedAction action = episodes.get(i).getAction(0);
+				GroundedAction action = ExperimentHelper.getFirstRelavantAction(episodes.get(i).actionSequence, "human");
 				
-				if (action.action.getName() == humanAction.action.getName() &&
+				if (action != null && action.action.getName() == humanAction.action.getName() &&
 						action.params.length == humanAction.params.length)
 				{
 					boolean match = true;
@@ -215,12 +252,12 @@ public class DualAgentInference  implements DomainGenerator {
 					{
 						match &= (humanAction.params[j] == action.params[j]);
 					}
-					newBeliefs.add(match ? 1.0 : 1.0 / rewardFunctions.size());
+					newBeliefs.add(match ? 2.0 : 1.0);
 					totalMatches++;
 				}
 				else
 				{
-					newBeliefs.add(1.0 / rewardFunctions.size());
+					newBeliefs.add(1.0);
 				}
 			}
 			

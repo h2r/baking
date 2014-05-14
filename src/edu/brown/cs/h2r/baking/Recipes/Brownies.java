@@ -10,14 +10,14 @@ public class Brownies extends Recipe {
 	public Brownies() {
 		super();
 		List<IngredientRecipe> ingredientList = new ArrayList<IngredientRecipe>();
-		ingredientList.add(new IngredientRecipe("cocoa", false, false, false));
-		ingredientList.add(new IngredientRecipe("baking_soda", false, false, false));
-		//ingredientList.add(new IngredientRecipe("baking_powder", false, false, false));
-		//ingredientList.add(new SimpleIngredient("eggs", false, false, false));
-		//ingredientList.add(new SimpleIngredient("butter", false, false, false));
-		//ingredientList.add(new SimpleIngredient("flour", false, false, false));
-		//ingredientList.add(new SimpleIngredient("sugar", false, false, false));
-		//ingredientList.add(new SimpleIngredient("salt", false, false, false));
+		ingredientList.add(new IngredientRecipe("Cocoa", false, false, false));
+		ingredientList.add(new IngredientRecipe("Baking soda", false, false, false));
+		//ingredientList.add(new IngredientRecipe("Baking powder", false, false, false));
+		//ingredientList.add(new SimpleIngredient("Eggs", false, false, false));
+		//ingredientList.add(new SimpleIngredient("Butter", false, false, false));
+		//ingredientList.add(new SimpleIngredient("Flour", false, false, false));
+		//ingredientList.add(new SimpleIngredient("Sugar", false, false, false));
+		//ingredientList.add(new SimpleIngredient("Salt", false, false, false));
 		this.topLevelIngredient = new IngredientRecipe("Brownies", false, false, false, ingredientList);
 	}
 }

@@ -30,7 +30,6 @@ import edu.brown.cs.h2r.baking.RecipeAgentSpecificRewardFunction;
 import edu.brown.cs.h2r.baking.RecipeBotched;
 import edu.brown.cs.h2r.baking.RecipeFinished;
 import edu.brown.cs.h2r.baking.RecipeTerminalFunction;
-import edu.brown.cs.h2r.baking.SpaceFactory;
 import edu.brown.cs.h2r.baking.GoalCondition.RecipeGoalCondition;
 import edu.brown.cs.h2r.baking.Heuristics.AgentSpecificHeuristic;
 import edu.brown.cs.h2r.baking.Heuristics.RecipeHeuristic;
@@ -38,6 +37,7 @@ import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.MakeSpanFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import edu.brown.cs.h2r.baking.Recipes.Brownies;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.actions.MixAction;
@@ -135,8 +135,8 @@ public class DualAgentStubbornRobot  implements DomainGenerator {
 		//RewardFunction recipeRewardFunction = new RecipeRewardFunction(brownies);
 		//RewardFunction recipeRewardFunction = new RecipeRewardFunction();
 		List<RewardFunction> rewardFunctions = new ArrayList<RewardFunction>();
-		rewardFunctions.add(new RecipeAgentSpecificMakeSpanRewardFunction("human"));
-		rewardFunctions.add(new RecipeAgentSpecificMakeSpanRewardFunction("robot"));
+		//rewardFunctions.add(new RecipeAgentSpecificMakeSpanRewardFunction("human", -1, -10));
+		//rewardFunctions.add(new RecipeAgentSpecificMakeSpanRewardFunction("robot", -1, -10));
 		rewardFunctions.add(new RecipeAgentSpecificRewardFunction("human", -1, -2));
 		rewardFunctions.add(new RecipeAgentSpecificRewardFunction("robot", -1, -2));
 		
@@ -158,8 +158,8 @@ public class DualAgentStubbornRobot  implements DomainGenerator {
 			TerminalFunction recipeTerminalFunction,
 			StateHashFactory hashFactory, StateConditionTest goalCondition,
 			Heuristic heuristic, List<EpisodeAnalysis> episodes) {
-		RewardFunction humanRewardFunction = rewardFunctions.get(0);
-		RewardFunction robotRewardFunction = rewardFunctions.get(1);
+		RewardFunction humanRewardFunction = rewardFunctions.get(1);
+		RewardFunction robotRewardFunction = rewardFunctions.get(0);
 		//Heuristic humanHeuristic = new AgentSpecificHeuristic(domain, ingredient, "human", -1, -100);
 		//Heuristic robotHeuristic = new AgentSpecificHeuristic(domain, ingredient, "robot", -1, -100);
 		boolean finished = false;
@@ -169,7 +169,7 @@ public class DualAgentStubbornRobot  implements DomainGenerator {
 		boolean currentAgent = false;
 		while (!finished) {
 			
-			State humanCurrentState = ExperimentHelper.setPrimaryAgent(currentState, "robot");
+			State humanCurrentState = ExperimentHelper.setPrimaryAgent(currentState, "human");
 			State robotCurrentState = ExperimentHelper.setPrimaryAgent(currentState, "robot");
 			AStar robotAgent = new AStar(domain, robotRewardFunction, goalCondition, hashFactory, heuristic);
 			AStar humanAgent = new AStar(domain, humanRewardFunction, goalCondition, hashFactory, heuristic);
@@ -189,12 +189,16 @@ public class DualAgentStubbornRobot  implements DomainGenerator {
 				finished = true;
 				continue;
 			}
-			System.out.println("Robot tries action " + robotEpisodes.actionSequence.get(1).toString());
-			System.out.println("Human tries action " + humanEpisodes.actionSequence.get(0).toString());
 			
-			// Robot's action is always #2
-			GroundedAction robotAction = robotEpisodes.actionSequence.get(1);
-			GroundedAction humanAction = humanEpisodes.actionSequence.get(0);
+			GroundedAction robotAction = ExperimentHelper.getFirstRelavantAction(robotEpisodes.actionSequence, "robot");
+			GroundedAction humanAction = ExperimentHelper.getFirstRelavantAction(humanEpisodes.actionSequence, "human");
+
+			if (robotAction != null) {
+				System.out.println("Robot tries action " + robotAction.toString());
+			}
+			if (humanAction != null) {
+				System.out.println("Human tries action " + humanAction.toString());
+			}
 			
 			Random random = new Random();
 			Boolean reverse = random.nextBoolean();
@@ -209,20 +213,28 @@ public class DualAgentStubbornRobot  implements DomainGenerator {
 			
 			if (reverse)
 			{
-				fullActions.add(robotAction);
-				fullReward.add(-1.0);
+				if (robotAction != null) {
+					fullActions.add(robotAction);
+					fullReward.add(-1.0);
+				}
 				if (numApplicable > 1){
-					fullActions.add(humanAction);
-					fullReward.add(0.0);
+					if (humanAction != null) {
+						fullActions.add(humanAction);
+						fullReward.add(0.0);
+					}
 				}
 			}
 			else
 			{
-				fullActions.add(humanAction);
-				fullReward.add(-1.0);
+				if (humanAction != null) {
+					fullActions.add(humanAction);
+					fullReward.add(-1.0);
+				}
 				if (numApplicable > 1) {
-					fullActions.add(robotAction);
-					fullReward.add(0.0);
+					if (robotAction != null) {
+						fullActions.add(robotAction);
+						fullReward.add(0.0);
+					}
 				}
 			}
 			

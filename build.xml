@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project default="all" basedir="." name="baking">
+<project default="all" basedir="." name="h2r-baking">
     
     <property name="src.dir" value="src"/>
     <property name="lib.dir" value="lib"/>
@@ -9,7 +9,7 @@
         <pathelement path="${lib.dir}/burlap.jar" />
     </path>
     
-    <target name="all" depends="baking" />
+    <target name="all" depends="h2r-baking" />
     
     <target name="clean" description="Delete files">
         <delete dir="${classes.dir}" failonerror="false"/>
@@ -23,7 +23,15 @@
         </javac>
     </target>
     
-    <target name="baking" description="Creates baking jar" depends="compile">
-        <jar destfile="${ant.project.name}.jar" basedir="${classes.dir}"/>
+    <target name="h2r-baking" description="Creates baking jar" depends="compile">
+        <jar jarfile="${classes.dir}/external-libs.jar">
+          <zipgroupfileset dir="${lib.dir}/">
+            <include name="**/*.jar"/>
+          </zipgroupfileset>
+        </jar>
+        <sleep seconds="1"/>
+        <jar destfile="${ant.project.name}.jar" basedir="${classes.dir}">
+            <zipfileset src="${classes.dir}/external-libs.jar"/>
+        </jar>
     </target>
 </project>
