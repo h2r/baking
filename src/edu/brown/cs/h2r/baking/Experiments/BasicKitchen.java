@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import burlap.behavior.statehashing.NameDependentStateHashFactory;
+import burlap.behavior.statehashing.StateHashFactory;
+import burlap.behavior.statehashing.StateHashTuple;
 import burlap.oomdp.auxiliary.DomainGenerator;
 import burlap.oomdp.auxiliary.common.StateJSONParser;
 import burlap.oomdp.core.Domain;
@@ -35,10 +38,20 @@ public class BasicKitchen implements DomainGenerator {
 	State currentState;
 	PropositionalFunction isSuccess;
 	PropositionalFunction isFailure;
+	StateHashFactory stateHashFactory;
+	
 	public BasicKitchen(Recipe recipe) {
 		this.recipe = recipe;
+		this.stateHashFactory = new NameDependentStateHashFactory();
 	}
 	
+	public State getCurrentState() {
+		return new State(this.currentState);
+	}
+	
+	public String getCurrentStateString() {
+		return this.parser.stateToString(this.currentState);
+	}
 	
 	@Override
 	public Domain generateDomain() {
@@ -62,20 +75,20 @@ public class BasicKitchen implements DomainGenerator {
 	private State getInitialState() {
 		State state = new State();
 		state.addObject(SpaceFactory.getNewBakingSpaceObjectInstance(this.domain, "Oven", null, ""));
-		state.addObject(SpaceFactory.getNewHeatingSpaceObjectInstance(this.domain, "Stove Top", null, ""));
+		state.addObject(SpaceFactory.getNewHeatingSpaceObjectInstance(this.domain, "Stove", null, ""));
 		
 		
-		List<String> mixingContainers = Arrays.asList("Large Bowl");
+		List<String> mixingContainers = Arrays.asList("Large_Bowl");
 		for (String container : mixingContainers) { 
 			state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "counter"));
 		}
 		
-		List<String> heatingContainers = Arrays.asList("Large Pot", "Large Saucepan");
+		List<String> heatingContainers = Arrays.asList("Large_Pot", "Large_Saucepan");
 		for (String container : heatingContainers) { 
 			state.addObject(ContainerFactory.getNewHeatingContainerObjectInstance(domain, container, null, "counter"));
 		}
 		
-		List<String> bakingContainers = Arrays.asList("Baking Dish");
+		List<String> bakingContainers = Arrays.asList("Baking_Dish");
 		for (String container : bakingContainers) { 
 			state.addObject(ContainerFactory.getNewHeatingContainerObjectInstance(domain, container, null, "counter"));
 		}
@@ -85,12 +98,12 @@ public class BasicKitchen implements DomainGenerator {
 		containers.addAll(heatingContainers);
 		containers.addAll(bakingContainers);
 		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter", containers, "human"));
-		state.addObject(SpaceFactory.getNewObjectInstance(domain, "shelf", false, false, false, null, ""));
+		//state.addObject(SpaceFactory.getNewObjectInstance(domain, "shelf", false, false, false, null, ""));
 		
 		
 		ObjectClass simpleIngredientClass = domain.getObjectClass(IngredientFactory.ClassNameSimple);
 		ObjectClass containerClass = domain.getObjectClass(ContainerFactory.ClassName);		
-		ObjectInstance shelfSpace = state.getObject("shelf");
+		ObjectInstance shelfSpace = state.getObject("counter");
 		
 		List<ObjectInstance> ingredientInstances = 
 				IngredientFactory.getSimpleIngredients(simpleIngredientClass, this.recipe.topLevelIngredient);	
@@ -140,15 +153,19 @@ public class BasicKitchen implements DomainGenerator {
 		return this.parser.stateToString(this.currentState);
 	}
 	
-	public String takeAction(String actionName, String[] params) {
+	public boolean takeAction(String actionName, String[] params) {
 		this.init();
 		
+		StateHashTuple previousTuple = this.stateHashFactory.hashState(this.currentState);
 		Action action = this.domain.getAction(actionName);
-		if (action != null) {
-			action.performAction(this.currentState, params);
+			if (action != null) {
+			this.currentState = action.performAction(this.currentState, params);
 		}
+		StateHashTuple newTuple = this.stateHashFactory.hashState(this.currentState);
 		
-		return this.parser.stateToString(this.currentState);	
+		
+		
+		return previousTuple.hashCode() != newTuple.hashCode();
 	}
 	
 	public boolean getIsSuccess() {

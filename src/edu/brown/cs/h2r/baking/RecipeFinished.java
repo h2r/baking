@@ -1,4 +1,6 @@
 package edu.brown.cs.h2r.baking;
+import java.util.List;
+
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.PropositionalFunction;
@@ -17,8 +19,20 @@ public class RecipeFinished extends PropositionalFunction {
 
 	@Override
 	public boolean isTrue(State state, String[] params) {
-		ObjectInstance ingredient = state.getObject(params[0]);
-		return Recipe.isSuccess(state, this.topLevelIngredient, ingredient);
+		if (!params[0].equalsIgnoreCase("")) {
+			ObjectInstance ingredient = state.getObject(params[0]);
+			return Recipe.isSuccess(state, this.topLevelIngredient, ingredient);
+		}
+		else
+		{
+			List<ObjectInstance> ingredients = state.getObjectsOfTrueClass(IngredientFactory.ClassNameComplex);
+			for (ObjectInstance ingredient: ingredients) {
+				if (Recipe.isSuccess(state, this.topLevelIngredient, ingredient)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 }

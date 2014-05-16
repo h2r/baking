@@ -48,7 +48,7 @@ public abstract class Recipe {
 		{
 			ObjectInstance container = 
 					ContainerFactory.getNewIngredientContainerObjectInstance(
-							containerClass, ingredient.getName() + " bowl", ingredient.getName(), containerSpace);
+							containerClass, ingredient.getName() + "_bowl", ingredient.getName(), containerSpace);
 			containers.add(container);
 			IngredientFactory.changeIngredientContainer(ingredient, container.getName());
 		}
