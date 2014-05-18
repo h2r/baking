@@ -2,6 +2,7 @@ package edu.brown.cs.h2r.baking.Experiments;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
@@ -15,6 +16,7 @@ import burlap.behavior.statehashing.NameDependentStateHashFactory;
 import burlap.behavior.statehashing.StateHashFactory;
 import burlap.oomdp.auxiliary.DomainGenerator;
 import burlap.oomdp.core.Domain;
+//import edu.brown.cs.h2r.baking.Domain;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.PropositionalFunction;
@@ -43,6 +45,8 @@ import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.actions.MixAction;
 import edu.brown.cs.h2r.baking.actions.MoveAction;
 import edu.brown.cs.h2r.baking.actions.PourAction;
+
+
 /*
 The issue here, appears to be that our makespan calculation can't account for subgoals. Because we plan subgoals
 sequentially, a plan that optimally uses the two agents won't be computed. Instead, we need to change the task to
@@ -55,7 +59,12 @@ speed up the total time t1o solve the problem.
 */
 public class DualAgentPerfectRobot  implements DomainGenerator {
 
+	/*IngredientRecipe current_ing = null;
+	HashMap<String, Boolean> affordance;*/
 	public DualAgentPerfectRobot() {
+		/*this.current_ing = null;
+		this.affordance = new HashMap<String,Boolean>();*/
+		
 		// TODO Auto-generated constructor stub
 	}
 	@Override
@@ -145,7 +154,15 @@ public class DualAgentPerfectRobot  implements DomainGenerator {
 		StateHashFactory hashFactory = new NameDependentStateHashFactory();
 		StateConditionTest goalCondition = new RecipeGoalCondition(isSuccess);
 		//final int numSteps = Recipe.getNumberSteps(ingredient);
-		Heuristic heuristic = new RecipeHeuristic();
+		
+		RecipeHeuristic heuristic = new RecipeHeuristic();
+		/*this.current_ing = ingredient;
+		if (has_affordance()) {
+			domain.setAffordances(getAffordances());
+		}
+		if (ingredient.has_affordance()) {
+			domain.setAffordances(ingredient.get_affordances());
+		}*/
 		List<EpisodeAnalysis> episodes = new ArrayList<EpisodeAnalysis>();
 				
 		return planIngredient(domain, startingState, ingredient,
@@ -172,6 +189,10 @@ public class DualAgentPerfectRobot  implements DomainGenerator {
 			
 			State humanCurrentState = ExperimentHelper.setPrimaryAgent(currentState, "robot");
 			State robotCurrentState = ExperimentHelper.setPrimaryAgent(currentState, "robot");
+			
+			/*State humanCurrentState = ExperimentHelper.setPrimaryAgent(currentState, "robot", ingredient);
+			State robotCurrentState = ExperimentHelper.setPrimaryAgent(currentState, "robot", ingredient);*/
+			
 			AStar robotAgent = new AStar(domain, robotRewardFunction, goalCondition, hashFactory, heuristic);
 			AStar humanAgent = new AStar(domain, humanRewardFunction, goalCondition, hashFactory, heuristic);
 			robotAgent.planFromState(robotCurrentState);
@@ -236,6 +257,18 @@ public class DualAgentPerfectRobot  implements DomainGenerator {
 		ExperimentHelper.printResults(fullActions, fullReward);
 		return endState;
 	}
+	
+	/*
+	public HashMap<String,Boolean> getAffordances(IngredientRecipe ing) {
+		if (ing.has_affordance()) {
+			return ing.get_affordances();
+		}
+		return null;
+	}
+	
+	public Boolean has_affordance() {
+		return this.current_ing.has_affordance();
+	}*/
 	
 	public static void main(String[] args) throws IOException {
 		DualAgentPerfectRobot kitchen = new DualAgentPerfectRobot();

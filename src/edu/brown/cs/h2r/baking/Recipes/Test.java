@@ -38,7 +38,7 @@ public class Test {
 	
 	public static void main(String[] args)
 	{
-		SingleAgentKitchen kitchen = new SingleAgentKitchen();
+		/*SingleAgentKitchen kitchen = new SingleAgentKitchen();
 		Domain domain = kitchen.generateDomain();
 		State state = SingleAgentKitchen.getOneAgent(domain);
 		
@@ -159,7 +159,7 @@ public class Test {
 		failures += Test.testContains(p3, p5, false);
 		
 		*/
-		System.out.println(failures + " failures");
+		//System.out.println(failures + " failures");
 	}
 	
 	

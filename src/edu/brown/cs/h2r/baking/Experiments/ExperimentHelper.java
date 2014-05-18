@@ -153,4 +153,16 @@ public class ExperimentHelper {
 		}
 		return newState;
 	}
+	
+	/*public static State setPrimaryAgent(State state, String agent, IngredientRecipe ingredient)
+	{
+		State newState = state.copy();
+		List<ObjectInstance> makeSpanObjects = newState.getObjectsOfTrueClass(MakeSpanFactory.ClassName);
+		if (!makeSpanObjects.isEmpty())
+		{
+			ObjectInstance makeSpanObject = makeSpanObjects.get(0);
+			MakeSpanFactory.setPrimaryAgent(makeSpanObject, agent);
+		}
+		return newState;
+	}*/
 }
