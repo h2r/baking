@@ -1,6 +1,8 @@
 package edu.brown.cs.h2r.baking.Recipes;
 import java.util.ArrayList;
 import java.util.List;
+//import edu.brown.cs.h2r.baking.Parser;
+//import java.util.HashMap;
 
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 
@@ -23,6 +25,8 @@ public class Brownies extends Recipe {
 	
 	public Brownies() {
 	super();
+	//Parser parser = new Parser("");
+	//HashMap<String,String> ingredientAttributes = parser.getAttributeMap();
 	List<IngredientRecipe> ingredientList = new ArrayList<IngredientRecipe>();
 	
 	IngredientRecipe flour = new IngredientRecipe("flour", false, false, false);
@@ -50,7 +54,6 @@ public class Brownies extends Recipe {
 	//ingredientList.add(eggs);
 	//ingredientList.add(cocoa);
 	//ingredientList.add(butter);
-	
 	
 	this.topLevelIngredient = new IngredientRecipe("Brownies", false, false, false, ingredientList);
 	}
