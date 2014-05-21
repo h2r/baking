@@ -1,5 +1,6 @@
 package edu.brown.cs.h2r.baking.Recipes;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +22,10 @@ public abstract class Recipe {
 	public Recipe()
 	{
 		
+	}
+	
+	public List<String> getRecipeProcedures() {
+		return Arrays.asList("Recipe not implemented");
 	}
 	
 	public int getNumberSteps()
