@@ -17,6 +17,8 @@ public class IngredientFactory {
 	private static final String attributeBaked = "baked";
 	private static final String attributeMelted = "melted";
 	private static final String attributeMixed = "mixed";
+	private static final String attributeWet = "wet";
+	private static final String attributeDry = "dry";
 	private static final String attributeContainer = "container";
 	private static final String attributeContains = "contents";
 
@@ -36,6 +38,17 @@ public class IngredientFactory {
 				new Attribute(domain, IngredientFactory.attributeMixed, Attribute.AttributeType.DISC);
 		receivingAttribute.setDiscValuesForRange(0,1,1);
 		objectClass.addAttribute(receivingAttribute);
+		
+		/* Affordances */
+		/*Attribute dryAttribute = 
+				new Attribute(domain, IngredientFactory.attributeDry, Attribute.AttributeType.DISC);
+		dryAttribute.setDiscValuesForRange(0,1,1);
+		objectClass.addAttribute(dryAttribute);
+		Attribute wetAttribute = 
+				new Attribute(domain, IngredientFactory.attributeWet, Attribute.AttributeType.DISC);
+		wetAttribute.setDiscValuesForRange(0,1,1);
+		objectClass.addAttribute(wetAttribute);*/
+		/* end */
 		
 		objectClass.addAttribute(
 				new Attribute(domain, IngredientFactory.attributeContainer,
@@ -61,6 +74,9 @@ public class IngredientFactory {
 		newInstance.setValue(IngredientFactory.attributeBaked, baked ? 1 : 0);
 		newInstance.setValue(IngredientFactory.attributeMelted, melted ? 1 : 0);
 		newInstance.setValue(IngredientFactory.attributeMixed, mixed ? 1 : 0);
+		//newInstance.setValue(IngredientFactory.attributeWet, wet ? 1 : 0);
+		//newInstance.setValue(IngredientFactory.attributeDry, dry ? 1 : 0);
+		//for (String key : )
 		if (ingredientContainer != null || ingredientContainer != "")
 		{
 			newInstance.addRelationalTarget(IngredientFactory.attributeContainer, ingredientContainer);
@@ -179,6 +195,26 @@ public class IngredientFactory {
 	public static Boolean isSimple(ObjectInstance ingredient) {
 		return ingredient.getObjectClass().name == IngredientFactory.ClassNameSimple;
 	}
+	
+	/** Affordances **/
+	public static Boolean isWetIngredient(ObjectInstance ingredient) {
+		return ingredient.getDiscValForAttribute(IngredientFactory.attributeWet) == 1;
+	}
+	
+	public static Boolean isDryIngredient(ObjectInstance ingredient) {
+		return ingredient.getDiscValForAttribute(IngredientFactory.attributeDry) == 1;
+	}
+	
+	public static void setWetIngredient(ObjectInstance ingredient) {
+		ingredient.setValue(IngredientFactory.attributeWet, 1);
+	}
+	
+	public static void setDryIngredient(ObjectInstance ingredient) {
+		ingredient.setValue(IngredientFactory.attributeDry, 1);
+	}
+	
+	
+	/** End Affordances **/
 	
 	public static Set<String> getContentsForIngredient(ObjectInstance ingredient) {
 		return new TreeSet<String>(ingredient.getAllRelationalTargets(IngredientFactory.attributeContains));

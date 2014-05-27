@@ -88,7 +88,21 @@ public abstract class Recipe {
 		Map<String, IngredientRecipe> simpleIngredientRecipes = new HashMap<String, IngredientRecipe>();
 		
 		for (IngredientRecipe subIngredientRecipe : recipeContents)
-		{
+		{/*
+			if (subIngredientRecipe.getOptions()) {
+				for (IngredientRecipe ing : subIngredientRecipe.getContents()) {
+					if (!ing.isSimple())
+					{
+						complexIngredientRecipes.put(ing.getName(), ing);
+					}
+					else
+					{
+						simpleIngredientRecipes.put(ing.getName(), ing);
+					}
+				}
+			}
+			else {*/
+				
 			if (!subIngredientRecipe.isSimple())
 			{
 				complexIngredientRecipes.put(subIngredientRecipe.getName(), subIngredientRecipe);
@@ -97,6 +111,7 @@ public abstract class Recipe {
 			{
 				simpleIngredientRecipes.put(subIngredientRecipe.getName(), subIngredientRecipe);
 			}
+
 		}
 		
 		List<ObjectInstance> producedIngredientInstances =

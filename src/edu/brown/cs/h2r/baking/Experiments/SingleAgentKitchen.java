@@ -15,7 +15,8 @@ import burlap.behavior.singleagent.planning.deterministic.informed.astar.AStar;
 import burlap.behavior.statehashing.NameDependentStateHashFactory;
 import burlap.behavior.statehashing.StateHashFactory;
 import burlap.oomdp.auxiliary.DomainGenerator;
-import burlap.oomdp.core.Domain;
+//import burlap.oomdp.core.Domain;
+import edu.brown.cs.h2r.baking.Domain;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.PropositionalFunction;
@@ -52,7 +53,7 @@ public class SingleAgentKitchen implements DomainGenerator {
 	
 	@Override
 	public Domain generateDomain() {
-		Domain domain = new SADomain();
+		Domain domain = new Domain();
 		domain.addObjectClass(ContainerFactory.createObjectClass(domain));
 		domain.addObjectClass(IngredientFactory.createSimpleIngredientObjectClass(domain));
 		domain.addObjectClass(IngredientFactory.createComplexIngredientObjectClass(domain));
