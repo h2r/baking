@@ -1,9 +1,13 @@
 package edu.brown.cs.h2r.baking.actions;
 
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.HashMap;
 
 import burlap.oomdp.core.Domain;
+//import edu.brown.cs.h2r.baking.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
@@ -15,6 +19,7 @@ public class PourAction extends BakingAction {
 	public static final String className = "pour";
 	public PourAction(Domain domain) {
 		super(PourAction.className, domain, new String[] {AgentFactory.ClassName, ContainerFactory.ClassName, ContainerFactory.ClassName});
+		this.domain = domain;
 	}
 	
 	@Override
@@ -32,7 +37,8 @@ public class PourAction extends BakingAction {
 		if (ContainerFactory.getContentNames(pouringContainer).size() == 0) {
 			return false;
 		}
-		
+
+
 		ObjectInstance receivingContainer = state.getObject(params[2]);
 		if (!ContainerFactory.isReceivingContainer(receivingContainer)) {
 			return false;
@@ -41,6 +47,26 @@ public class PourAction extends BakingAction {
 		String pouringContainerSpace = ContainerFactory.getSpaceName(pouringContainer);
 		String receivingContainerSpace = ContainerFactory.getSpaceName(receivingContainer);
 		
+		/* Proposed affordance, using edu.brown.cs.h2r.baking.Domain.java as Domain
+		if (((Domain) domain).hasAffordances()) {
+			HashMap<String,Boolean> affordances = ((Domain) domain).getAffordances();
+			
+			Boolean pour_match = false;
+			Boolean receive_match = false;
+			for (String key : affordances.keySet()) {
+				int val = (affordances.get(key)) ? 1 : 0;
+				if (val == pouringContainer.getRealValForAttribute(key)) {
+					pour_match = true;
+				}
+				if (val == receivingContainer.getRealValForAttribute(key)) {
+					receive_match = true;
+				}
+			}
+			if (!(pour_match && receive_match)) {
+				return false;
+			}
+		}
+		*/
 		
 		if (pouringContainerSpace == null || receivingContainerSpace == null)
 		{

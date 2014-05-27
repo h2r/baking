@@ -169,6 +169,7 @@ public class ExperimentHelper {
 		return newState;
 	}
 	
+<<<<<<< HEAD
 	public static GroundedAction getFirstRelavantAction(List<GroundedAction> actions, String agent)
 	{
 		for (GroundedAction action : actions) {
@@ -178,4 +179,17 @@ public class ExperimentHelper {
 		}
 		return null;
 	}
+=======
+	/*public static State setPrimaryAgent(State state, String agent, IngredientRecipe ingredient)
+	{
+		State newState = state.copy();
+		List<ObjectInstance> makeSpanObjects = newState.getObjectsOfTrueClass(MakeSpanFactory.ClassName);
+		if (!makeSpanObjects.isEmpty())
+		{
+			ObjectInstance makeSpanObject = makeSpanObjects.get(0);
+			MakeSpanFactory.setPrimaryAgent(makeSpanObject, agent);
+		}
+		return newState;
+	}*/
+>>>>>>> c66c90729268a33bcadb7fc4e01f3ef2ecf8a311
 }
