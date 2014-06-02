@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.Policy;
@@ -26,16 +27,17 @@ import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.SADomain;
+import edu.brown.cs.h2r.baking.AffordancesApply;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.RecipeAgentSpecificMakeSpanRewardFunction;
 import edu.brown.cs.h2r.baking.RecipeBotched;
 import edu.brown.cs.h2r.baking.RecipeFinished;
 import edu.brown.cs.h2r.baking.RecipeRewardFunction;
 import edu.brown.cs.h2r.baking.RecipeTerminalFunction;
+import edu.brown.cs.h2r.baking.SpaceFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
-import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import edu.brown.cs.h2r.baking.Recipes.Brownies;
 import edu.brown.cs.h2r.baking.Recipes.BrowniesSubGoals;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
@@ -45,9 +47,10 @@ import edu.brown.cs.h2r.baking.actions.MoveAction;
 import edu.brown.cs.h2r.baking.actions.PourAction;
 
 
-public class SingleAgentKitchen implements DomainGenerator {
+public class KevinsKitchen implements DomainGenerator {
 		
-	public SingleAgentKitchen() {
+	List<ObjectInstance> allIngredients;
+	public KevinsKitchen() {
 
 	}
 	
@@ -57,10 +60,13 @@ public class SingleAgentKitchen implements DomainGenerator {
 		domain.addObjectClass(ContainerFactory.createObjectClass(domain));
 		domain.addObjectClass(IngredientFactory.createSimpleIngredientObjectClass(domain));
 		domain.addObjectClass(IngredientFactory.createComplexIngredientObjectClass(domain));
+		domain.addObjectClass(IngredientFactory.createSimpleHiddenIngredientObjectClass(domain));
+		domain.addObjectClass(IngredientFactory.createComplexHiddenIngredientObjectClass(domain));
 		domain.addObjectClass(SpaceFactory.createObjectClass(domain));		
 		domain.addObjectClass(AgentFactory.getObjectClass(domain));
 		
 		Action mix = new MixAction(domain);
+		//Action bake = new BakeAction(domain);
 		Action pour = new PourAction(domain);
 		Action move = new MoveAction(domain);
 		return domain;
@@ -71,13 +77,15 @@ public class SingleAgentKitchen implements DomainGenerator {
 		State state = new State();
 		
 		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
-		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2");
-		state.addObject(SpaceFactory.getNewObjectInstance(domain, "shelf", false, false, false, null, ""));
+		List<String> containers = Arrays.asList("mixing_bowl_1");
 		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter", containers, "human"));
-		
+
 		for (String container : containers) { 
 			state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "counter"));
 		}
+		
+		recipe.addAllIngredients(state, domain);
+		this.allIngredients = recipe.getAllIngredients();
 
 		this.PlanIngredient(domain, state, recipe.topLevelIngredient);
 	}
@@ -95,11 +103,10 @@ public class SingleAgentKitchen implements DomainGenerator {
 		
 		ObjectClass simpleIngredientClass = domain.getObjectClass(IngredientFactory.ClassNameSimple);
 		ObjectClass containerClass = domain.getObjectClass(ContainerFactory.ClassName);		
-		ObjectInstance shelfSpace = currentState.getObject("shelf");
-		
-		List<ObjectInstance> ingredientInstances = 
-				IngredientFactory.getSimpleIngredients(simpleIngredientClass, ingredient);
-		List<ObjectInstance> containerInstances = Recipe.getContainers(containerClass, ingredientInstances, shelfSpace.getName());
+		ObjectInstance counterSpace = currentState.getObject("counter");
+
+		List<ObjectInstance> ingredientInstances = allIngredients;
+		List<ObjectInstance> containerInstances = Recipe.getContainers(containerClass, ingredientInstances, counterSpace.getName());
 		
 		
 		for (ObjectInstance ingredientInstance : ingredientInstances) {
@@ -110,15 +117,44 @@ public class SingleAgentKitchen implements DomainGenerator {
 		
 		for (ObjectInstance containerInstance : containerInstances) {
 			if (currentState.getObject(containerInstance.getName()) == null) {
-				ContainerFactory.changeContainerSpace(containerInstance, shelfSpace.getName());
+				ContainerFactory.changeContainerSpace(containerInstance, counterSpace.getName());
 				currentState.addObject(containerInstance);
 			}
 		}
 		
+		if (domain.getPropFunction("affordances") == null) {
+			final PropositionalFunction newProp = new AffordancesApply("affordances", domain, ingredient.getTraits());
+		} else {
+			System.out.println(ingredient.getTraits());
+			/* */
+			ObjectInstance bowl = currentState.getObject("mixing_bowl_1");
+			Set<String> contains;
+			if ((contains = ContainerFactory.getContentNames(bowl)).size()==1) {
+				for (String object : contains) {
+					currentState.getObject(object).clearRelationalTargets("container");
+				}
+				ContainerFactory.removeContents((currentState.getObject("mixing_bowl_1")));
+			}
+			/*			ObjectInstance bowl = currentState.getObject("mixing_bowl_1");
+			Set<String> contains;
+			if ((contains = ContainerFactory.getContentNames(bowl)).size()==1) {
+				ContainerFactory.removeContents((currentState.getObject("mixing_bowl_1")));
+				for (String name : contains) {
+					ObjectInstance object = currentState.getObject(name);
+					for (String trait : ingredient.getTraits()) {
+						if (object.getAllRelationalTargets("traits").contains(trait)) {
+							ContainerFactory.addIngredient(bowl, object.getName());
+							object.addRelationalTarget("container", bowl.getName());
+						}
+					}
+				}
+			} */
+			((AffordancesApply)(domain.getPropFunction("affordances"))).changeTraits(ingredient.getTraits());
+
+		}
 		
 		final PropositionalFunction isSuccess = new RecipeFinished("success", domain, ingredient);
 		PropositionalFunction isFailure = new RecipeBotched("botched", domain, ingredient);
-		RewardFunction recipeRewardFunction = new RecipeAgentSpecificMakeSpanRewardFunction("human");
 		TerminalFunction recipeTerminalFunction = new RecipeTerminalFunction(isSuccess, isFailure);
 		
 		StateHashFactory hashFactory = new NameDependentStateHashFactory();
@@ -128,54 +164,49 @@ public class SingleAgentKitchen implements DomainGenerator {
 				return s.somePFGroundingIsTrue(isSuccess);
 			}
 		};
+		RewardFunction rf = new RewardFunction() {
+			@Override
+			public double reward(State s, GroundedAction a, State sprime) {
+				return -1;
+			}
+		};
+				
 		Heuristic heuristic = new Heuristic() {
 			@Override
 			public double h(State state) {
 				return 0;
 			}
 		};
-		AStar aStar = new AStar(domain, recipeRewardFunction, goalCondition, hashFactory, heuristic);
+		AStar aStar = new AStar(domain, rf, goalCondition, hashFactory, heuristic);
 		aStar.planFromState(currentState);
 		Policy policy = new DDPlannerPolicy(aStar);
 		EpisodeAnalysis episodeAnalysis = 
-				policy.evaluateBehavior(currentState, recipeRewardFunction, recipeTerminalFunction);	
-		
-		for (int i =0 ; i < episodeAnalysis.actionSequence.size(); ++i) {
-			GroundedAction action = episodeAnalysis.actionSequence.get(i);
-			
-			double reward = episodeAnalysis.rewardSequence.get(i);
-			System.out.print("Cost: " + reward + " " + action.action.getName() + " ");
-			for (int j = 0; j < action.params.length; ++j) {
-				System.out.print(action.params[j] + " ");
-			}
-			System.out.print("\n");
-		}
+				policy.evaluateBehavior(currentState, rf, recipeTerminalFunction);	
+		ExperimentHelper.printEpisodeSequence(episodeAnalysis.actionSequence, episodeAnalysis.rewardSequence);
+
 		State endState = episodeAnalysis.getState(episodeAnalysis.stateSequence.size() - 1);
+
 		List<ObjectInstance> finalObjects = 
 				new ArrayList<ObjectInstance>(endState.getObjectsOfTrueClass(IngredientFactory.ClassNameComplex));
 		List<ObjectInstance> containerObjects =
 				new ArrayList<ObjectInstance>(endState.getObjectsOfTrueClass(ContainerFactory.ClassName));
+		
 		ExperimentHelper.checkIngredientCompleted(ingredient, endState, finalObjects, containerObjects);
+		
+		ExperimentHelper.printResults(episodeAnalysis.actionSequence, episodeAnalysis.rewardSequence);
+		
+		/* Adding complex_ingredient_bowl */
+		endState.addObject(IngredientFactory.getNewIngredientInstance(ingredient, ingredient.getName(), domain.getObjectClass(IngredientFactory.ClassNameComplex)));
+		ObjectInstance container = ContainerFactory.getNewIngredientContainerObjectInstance(domain, ingredient.getName()+"_bowl", ingredient.getName(), "counter");
+		endState.getObject(ingredient.getName()).addRelationalTarget("container", container.getName());
+		endState.addObject(container);
+		/* */
 		return endState;
-	}
-	
-	public static State getOneAgent(Domain domain){
-		State state = new State();
-		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
-		
-		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2");
-		state.addObject(SpaceFactory.getNewObjectInstance(domain, "shelf", false, false, false, null, ""));
-		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter", containers, "human"));
-		
-		for (String container : containers) { 
-			state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "counter"));
-		}
-		return state;
 	}
 	
 	public static void main(String[] args) throws IOException {
 		
-		SingleAgentKitchen kitchen = new SingleAgentKitchen();
+		KevinsKitchen kitchen = new KevinsKitchen();
 		Domain domain = kitchen.generateDomain();
 		kitchen.PlanRecipeOneAgent(domain, new Brownies());
 	}

@@ -9,18 +9,27 @@ import java.util.Set;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
+import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
+
+import java.util.AbstractMap;
+import java.util.HashMap;
+import java.util.TreeSet;
 
 
 public abstract class Recipe {
 	
 	public IngredientRecipe topLevelIngredient;
+	private static AbstractMap<String, Set<String>> traitMap;
+	private static List<ObjectInstance> allIngredients;
 	
 	public Recipe()
 	{
-		
+		//get actual trait map here
+		this.traitMap = generateTraitMap();
+		this.allIngredients = new ArrayList<ObjectInstance>();
 	}
 	
 	public int getNumberSteps()
@@ -79,6 +88,10 @@ public abstract class Recipe {
 		
 		List<IngredientRecipe> recipeContents = ingredientRecipe.getContents();
 		Set<String> contents = IngredientFactory.getContentsForIngredient(object);
+		
+		if (contents.contains("dry_stuff")) {
+			//System.out.println("biddies");
+		}
 		if (recipeContents.size() != contents.size())
 		{
 			return false;
@@ -88,21 +101,7 @@ public abstract class Recipe {
 		Map<String, IngredientRecipe> simpleIngredientRecipes = new HashMap<String, IngredientRecipe>();
 		
 		for (IngredientRecipe subIngredientRecipe : recipeContents)
-		{/*
-			if (subIngredientRecipe.getOptions()) {
-				for (IngredientRecipe ing : subIngredientRecipe.getContents()) {
-					if (!ing.isSimple())
-					{
-						complexIngredientRecipes.put(ing.getName(), ing);
-					}
-					else
-					{
-						simpleIngredientRecipes.put(ing.getName(), ing);
-					}
-				}
-			}
-			else {*/
-				
+		{		
 			if (!subIngredientRecipe.isSimple())
 			{
 				complexIngredientRecipes.put(subIngredientRecipe.getName(), subIngredientRecipe);
@@ -113,36 +112,26 @@ public abstract class Recipe {
 			}
 
 		}
-		
-		List<ObjectInstance> producedIngredientInstances =
-				state.getObjectsOfTrueClass(IngredientFactory.ClassNameComplex);
+		// Gets all of the contents for the curren object we've created
 		List<ObjectInstance> complexIngredientContents = new ArrayList<ObjectInstance>();
-		for (ObjectInstance obj : producedIngredientInstances)
-		{
-			if (contents.contains(obj.getName()))
-			{
+		List<ObjectInstance> simpleIngredientContents = new ArrayList<ObjectInstance>();
+		for (String name : contents) {
+			ObjectInstance obj = state.getObject(name);
+			if (IngredientFactory.isSimple(obj)) {
+				simpleIngredientContents.add(obj);
+			} else {
 				complexIngredientContents.add(obj);
 			}
 		}
 		
-		List<ObjectInstance> simpleIngredientInstances = 
-				state.getObjectsOfTrueClass(IngredientFactory.ClassNameSimple);
-		List<ObjectInstance> simpleIngredientContents = new ArrayList<ObjectInstance>();
-		for (ObjectInstance obj : simpleIngredientInstances)
-		{
-			if (contents.contains(obj.getName()))
-			{
-				simpleIngredientContents.add(obj);
-			}
-		}
-		
-		
+		// compares sizes of recipe and object for both simple and complex ingredient
 		if (complexIngredientRecipes.size() != complexIngredientContents.size() ||
 				simpleIngredientRecipes.size() != simpleIngredientContents.size())
 		{
 			return false;
 		}
 		
+		// For each simple, calls success recursively and ensures that that ingredient is in the recipe
 		for (ObjectInstance simpleIngredient : simpleIngredientContents)
 		{
 			String ingredientName = simpleIngredient.getName();
@@ -153,6 +142,7 @@ public abstract class Recipe {
 			}
 		}
 		
+		// For each complex Calls success recursively, checks if it's a valid ingredient
 		for (ObjectInstance producedInstance : complexIngredientContents)
 		{
 			Boolean exists = false;
@@ -189,7 +179,8 @@ public abstract class Recipe {
 		
 		if (ingredientRecipe.isSimple())
 		{
-			if (object.getObjectClass().name != IngredientFactory.ClassNameSimple)
+			if ((object.getObjectClass().name != IngredientFactory.ClassNameSimple) || 
+					(object.getObjectClass().name != IngredientFactory.ClassNameSimpleHidden))
 			{
 				// Object is not a simple ingredient, but the ingredient we are checking against is. FAIL!
 				return true;
@@ -289,7 +280,8 @@ public abstract class Recipe {
 	
 	public static Boolean isFailure(State state, Map<String, IngredientRecipe> simpleIngredients, Map<String, IngredientRecipe> complexIngredients, ObjectInstance object)
 	{
-		if (object.getObjectClass().name == IngredientFactory.ClassNameSimple)
+		if ((object.getObjectClass().name == IngredientFactory.ClassNameSimple) ||
+				(object.getObjectClass().name == IngredientFactory.ClassNameSimpleHidden))
 		{
 			if (simpleIngredients.containsKey(object.getName()))
 			{
@@ -315,5 +307,82 @@ public abstract class Recipe {
 		return true;
 	}
 	
+	public AbstractMap<String, Set<String>> getTraitMap() {
+		return this.traitMap;
+	}
+	
+	public AbstractMap<String, Set<String>> generateTraitMap() {
+		AbstractMap<String, Set<String>> traitMap = new HashMap<String, Set<String>>();
+		Set<String> traits;
+		
+		traits = new TreeSet<String>();
+		traits.add("dry");
+		traitMap.put("dry_stuff", traits);
+		
+		traits = new TreeSet<String>();
+		traits.add("dry");
+		traitMap.put("baking_soda", traits);
+		
+		traits = new TreeSet<String>();
+		traits.add("dry");
+		traits.add("flour");
+		traitMap.put("flour", traits);
+		
+		traits = new TreeSet<String>();
+		traits.add("dry");
+		traitMap.put("baking_powder", traits);
+		
+		traits = new TreeSet<String>();
+		traits.add("dry");
+		traits.add("seasoning");
+		traitMap.put("salt", traits);
+		
+		traits = new TreeSet<String>();
+		traits.add("wet");
+		traits.add("sugar");
+		traitMap.put("sugar", traits);
+		
+		traits = new TreeSet<String>();
+		traits.add("wet");
+		traitMap.put("eggs", traits);
+		
+		traits = new TreeSet<String>();
+		traits.add("wet");
+		traits.add("fat");
+		traitMap.put("butter", traits);
+		
+		traits = new TreeSet<String>();
+		traits.add("wet");
+		traitMap.put("cocoa", traits);
+		
+		traits = new TreeSet<String>();
+		traits.add("wet");
+		traitMap.put("wet_stuff", traits);
+		
+		traits = new TreeSet<String>();
+		traitMap.put("brownies", traits);
+		
+		System.out.println(traitMap);
+		return traitMap;
+	}
+	
+	public static Set<String> getTraits(String ingredient) {
+		if (traitMap.containsKey(ingredient)) {
+			return traitMap.get(ingredient);
+		}
+		return new TreeSet<String>();
+	}
+
+	public void addAllIngredients(State state, Domain domain) {
+		for (IngredientRecipe ing : topLevelIngredient.getConstituentIngredients()) {
+			ObjectClass oc = ing.isSimple() ? domain.getObjectClass(IngredientFactory.ClassNameSimple) : domain.getObjectClass(IngredientFactory.ClassNameComplex);
+			ObjectInstance obj = IngredientFactory.getNewIngredientInstance(ing, ing.getName(), oc);
+			allIngredients.add(obj);
+		}
+	}
+	
+	public List<ObjectInstance> getAllIngredients() {
+		return allIngredients;
+	}
 	
 }

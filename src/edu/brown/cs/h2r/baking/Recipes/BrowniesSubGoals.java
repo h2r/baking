@@ -17,7 +17,11 @@ public class BrowniesSubGoals extends Recipe {
 		//ingredientList.add(new IngredientRecipe("baking_powder", false, false, false));
 		//ingredientList.add(new IngredientRecipe("flour", false, false, false, true));
 		ingredientList.add(new IngredientRecipe("flour", false, false, false));
-		//IngredientRecipe ingredient1 = new IngredientRecipe("goal1", false, false, false, ingredientList);
+		IngredientRecipe ingredient1 = new IngredientRecipe("goal1", false, false, false, ingredientList);
+		ingredient1.addTraits(getTraits(ingredient1.getName()));
+		
+		List<IngredientRecipe> ingredientList1 = new ArrayList<IngredientRecipe>(); 
+		ingredientList1.add(ingredient1);
 		
 		//List<IngredientRecipe> ingredientList2 = new ArrayList<IngredientRecipe>();
 		//ingredientList2.add(new IngredientRecipe("salt", false, false, false));
@@ -30,7 +34,8 @@ public class BrowniesSubGoals extends Recipe {
 		
 		//IngredientRecipe Brownies = new IngredientRecipe("Brownies", false, false, false, false, ingredientList);
 		//Brownies.set_affordance("dry");
-		IngredientRecipe Brownies = new IngredientRecipe("Brownies", false, false, false, ingredientList);
+		IngredientRecipe Brownies = new IngredientRecipe("Brownies", false, false, false, ingredientList1);
+		//Brownies.addTrait("dry");
 		this.topLevelIngredient = Brownies;
 	}
 }
