@@ -9,6 +9,7 @@ import java.util.HashMap;
 import burlap.oomdp.core.Domain;
 //import edu.brown.cs.h2r.baking.Domain;
 import burlap.oomdp.core.ObjectInstance;
+import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
 import edu.brown.cs.h2r.baking.SpaceFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
@@ -46,6 +47,25 @@ public class PourAction extends BakingAction {
 
 		String pouringContainerSpace = ContainerFactory.getSpaceName(pouringContainer);
 		String receivingContainerSpace = ContainerFactory.getSpaceName(receivingContainer);
+		
+		
+		/* Traits */
+		
+		PropositionalFunction affordance_test = domain.getPropFunction("affordances");
+		for (String ing : pouringContainer.getAllRelationalTargets("contains")) {
+			ObjectInstance ob = state.getObject(ing);
+			Set<String> trait_set = ob.getAllRelationalTargets("traits");
+			String[] traits = new String[trait_set.size()];
+			trait_set.toArray(traits);
+			if (!affordance_test.isTrue(state, traits)) {
+				return false;
+			}
+			// No traits were matched, ingredient not necessary!
+			//return false;
+		}
+		/* Traits end */
+	
+		
 		
 		/* Proposed affordance, using edu.brown.cs.h2r.baking.Domain.java as Domain
 		if (((Domain) domain).hasAffordances()) {

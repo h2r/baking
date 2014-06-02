@@ -26,6 +26,7 @@ import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.SADomain;
+import edu.brown.cs.h2r.baking.AffordancesApply;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.RecipeAgentSpecificMakeSpanRewardFunction;
 import edu.brown.cs.h2r.baking.RecipeAgentSpecificRewardFunction;
@@ -73,6 +74,8 @@ public class DualAgentPerfectRobot  implements DomainGenerator {
 		domain.addObjectClass(ContainerFactory.createObjectClass(domain));
 		domain.addObjectClass(IngredientFactory.createSimpleIngredientObjectClass(domain));
 		domain.addObjectClass(IngredientFactory.createComplexIngredientObjectClass(domain));
+		domain.addObjectClass(IngredientFactory.createSimpleHiddenIngredientObjectClass(domain));
+		domain.addObjectClass(IngredientFactory.createComplexHiddenIngredientObjectClass(domain));
 		domain.addObjectClass(SpaceFactory.createObjectClass(domain));		
 		domain.addObjectClass(AgentFactory.getObjectClass(domain));
 		domain.addObjectClass(MakeSpanFactory.getObjectClass(domain));
@@ -116,11 +119,17 @@ public class DualAgentPerfectRobot  implements DomainGenerator {
 		}
 		
 		ObjectClass simpleIngredientClass = domain.getObjectClass(IngredientFactory.ClassNameSimple);
+		ObjectClass complexIngredientClass = domain.getObjectClass(IngredientFactory.ClassNameComplex);
 		ObjectClass containerClass = domain.getObjectClass(ContainerFactory.ClassName);		
 		ObjectInstance shelfSpace = currentState.getObject("shelf");
 		
 		List<ObjectInstance> ingredientInstances = 
 				IngredientFactory.getSimpleIngredients(simpleIngredientClass, ingredient);
+		/* Adding complex? */
+		for (ObjectInstance obj : IngredientFactory.getComplexIngredients(complexIngredientClass, ingredient)) {
+			ingredientInstances.add(obj);
+		}
+		/* */
 		List<ObjectInstance> containerInstances = 
 				Recipe.getContainers(containerClass, ingredientInstances, shelfSpace.getName());
 		
@@ -137,7 +146,13 @@ public class DualAgentPerfectRobot  implements DomainGenerator {
 				currentState.addObject(containerInstance);
 			}
 		}
-		
+		if (domain.getPropFunction("affordances") == null) {
+			final PropositionalFunction newProp = new AffordancesApply("affordances", domain, ingredient.getTraits());
+		} else {
+			System.out.println(ingredient.getTraits());
+			((AffordancesApply)(domain.getPropFunction("affordances"))).changeTraits(ingredient.getTraits());
+			
+		}
 		
 		final PropositionalFunction isSuccess = new RecipeFinished("success", domain, ingredient);
 		PropositionalFunction isFailure = new RecipeBotched("botched", domain, ingredient);
@@ -178,12 +193,14 @@ public class DualAgentPerfectRobot  implements DomainGenerator {
 		RewardFunction humanRewardFunction = rewardFunctions.get(0);
 		RewardFunction robotRewardFunction = rewardFunctions.get(0);
 		
+		
 		boolean finished = false;
 		State endState = startingState;
 		List<GroundedAction> fullActions = new ArrayList<GroundedAction>();
 		List<Double> fullReward = new ArrayList<Double>();
 		//boolean currentAgent = false;
 		while (!finished) {
+			
 			//currentAgent = !currentAgent;
 			//RewardFunction recipeRewardFunction = (currentAgent) ? humanRewardFunction : robotRewardFunction;
 			
@@ -255,6 +272,14 @@ public class DualAgentPerfectRobot  implements DomainGenerator {
 			currentState = nextState;
 		}
 		ExperimentHelper.printResults(fullActions, fullReward);
+		
+		/* */
+		endState.addObject(IngredientFactory.getNewIngredientInstance(ingredient, ingredient.getName(), domain.getObjectClass(IngredientFactory.ClassNameComplex)));
+		ObjectInstance container = ContainerFactory.getNewIngredientContainerObjectInstance(domain, ingredient.getName()+"_bowl", ingredient.getName(), "shelf");
+		endState.getObject(ingredient.getName()).addRelationalTarget("container", container.getName());
+		endState.addObject(container);
+		
+		/* test */
 		return endState;
 	}
 	

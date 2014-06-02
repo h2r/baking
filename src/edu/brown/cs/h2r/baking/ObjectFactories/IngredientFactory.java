@@ -14,13 +14,14 @@ public class IngredientFactory {
 
 	public static final String ClassNameSimple = "simple_ingredient";
 	public static final String ClassNameComplex = "complex_ingredient";
+	public static final String ClassNameSimpleHidden = "simple_hidden_ingredient";
+	public static final String ClassNameComplexHidden = "complex_hidden_ingredient";
 	private static final String attributeBaked = "baked";
 	private static final String attributeMelted = "melted";
 	private static final String attributeMixed = "mixed";
-	private static final String attributeWet = "wet";
-	private static final String attributeDry = "dry";
 	private static final String attributeContainer = "container";
 	private static final String attributeContains = "contents";
+	private static final String attributeTraits = "traits";
 
 	private static ObjectClass createObjectClass(Domain domain, String className) {
 		ObjectClass objectClass = new ObjectClass(domain, className);
@@ -38,21 +39,30 @@ public class IngredientFactory {
 				new Attribute(domain, IngredientFactory.attributeMixed, Attribute.AttributeType.DISC);
 		receivingAttribute.setDiscValuesForRange(0,1,1);
 		objectClass.addAttribute(receivingAttribute);
+
+		Attribute traitAttribute = new Attribute(domain, IngredientFactory.attributeTraits, Attribute.AttributeType.MULTITARGETRELATIONAL);
+		objectClass.addAttribute(traitAttribute);
 		
-		/* Affordances */
-		/*Attribute dryAttribute = 
-				new Attribute(domain, IngredientFactory.attributeDry, Attribute.AttributeType.DISC);
-		dryAttribute.setDiscValuesForRange(0,1,1);
-		objectClass.addAttribute(dryAttribute);
-		Attribute wetAttribute = 
-				new Attribute(domain, IngredientFactory.attributeWet, Attribute.AttributeType.DISC);
-		wetAttribute.setDiscValuesForRange(0,1,1);
-		objectClass.addAttribute(wetAttribute);*/
-		/* end */
 		
 		objectClass.addAttribute(
 				new Attribute(domain, IngredientFactory.attributeContainer,
 						Attribute.AttributeType.RELATIONAL));
+		return objectClass;
+	}
+	
+	public static ObjectClass createSimpleHiddenIngredientObjectClass(Domain domain) {
+		ObjectClass oc = IngredientFactory.createObjectClass(domain, IngredientFactory.ClassNameSimpleHidden);
+		oc.hidden = true;
+		return oc;
+		
+	}
+	
+	public static ObjectClass createComplexHiddenIngredientObjectClass(Domain domain) {
+		ObjectClass objectClass = IngredientFactory.createObjectClass(domain, IngredientFactory.ClassNameComplexHidden);
+		objectClass.addAttribute(
+				new Attribute(domain, IngredientFactory.attributeContains, 
+						Attribute.AttributeType.MULTITARGETRELATIONAL));
+		objectClass.hidden = true;
 		return objectClass;
 	}
 	
@@ -69,14 +79,14 @@ public class IngredientFactory {
 	}
 		
 	public static ObjectInstance getNewSimpleIngredientObjectInstance(ObjectClass simpleIngredientClass, String name, 
-			Boolean baked, Boolean melted, Boolean mixed, String ingredientContainer) {
+			Boolean baked, Boolean melted, Boolean mixed, Set<String> traits, String ingredientContainer) {
 		ObjectInstance newInstance = new ObjectInstance(simpleIngredientClass, name);
 		newInstance.setValue(IngredientFactory.attributeBaked, baked ? 1 : 0);
 		newInstance.setValue(IngredientFactory.attributeMelted, melted ? 1 : 0);
 		newInstance.setValue(IngredientFactory.attributeMixed, mixed ? 1 : 0);
-		//newInstance.setValue(IngredientFactory.attributeWet, wet ? 1 : 0);
-		//newInstance.setValue(IngredientFactory.attributeDry, dry ? 1 : 0);
-		//for (String key : )
+		for (String trait : traits) {
+			newInstance.addRelationalTarget("traits", trait);
+		}
 		if (ingredientContainer != null || ingredientContainer != "")
 		{
 			newInstance.addRelationalTarget(IngredientFactory.attributeContainer, ingredientContainer);
@@ -85,7 +95,7 @@ public class IngredientFactory {
 	}
 	
 	public static ObjectInstance getNewComplexIngredientObjectInstance(ObjectClass complexIngredientClass, String name, 
-			Boolean baked, Boolean melted, Boolean mixed, String ingredientContainer, Iterable<String> contents) {
+			Boolean baked, Boolean melted, Boolean mixed, String ingredientContainer, Set<String> traits, Iterable<String> contents) {
 		ObjectInstance newInstance = new ObjectInstance(complexIngredientClass, name);
 		newInstance.setValue(IngredientFactory.attributeBaked, baked ? 1 : 0);
 		newInstance.setValue(IngredientFactory.attributeMelted, melted ? 1 : 0);
@@ -93,6 +103,9 @@ public class IngredientFactory {
 		
 		if (ingredientContainer != null || ingredientContainer != "") {
 			newInstance.addRelationalTarget(IngredientFactory.attributeContainer, ingredientContainer);
+		}
+		for (String trait : traits) {
+			newInstance.addRelationalTarget("traits", trait);
 		}
 		
 		if (contents != null) {
@@ -110,7 +123,7 @@ public class IngredientFactory {
 		if (ingredientRecipe.isSimple()) {
 			return IngredientFactory.getNewSimpleIngredientObjectInstance(simpleIngredientClass, 
 					ingredientRecipe.getName(), ingredientRecipe.getBaked(), ingredientRecipe.getMelted(), 
-					ingredientRecipe.getMixed(), ingredientContainer);
+					ingredientRecipe.getMixed(), ingredientRecipe.getTraits(), ingredientContainer);
 		}
 		return null;
 	}
@@ -121,7 +134,23 @@ public class IngredientFactory {
 		Boolean melted = IngredientFactory.isMeltedIngredient(objectInstance);
 		Set<String> contents = IngredientFactory.getContentsForIngredient(objectInstance);
 		String container = IngredientFactory.getContainer(objectInstance);
-		return IngredientFactory.getNewComplexIngredientObjectInstance(objectInstance.getObjectClass(), name, baked, melted, mixed, container, contents);
+		Set<String> traits = IngredientFactory.getTraits(objectInstance);
+		return IngredientFactory.getNewComplexIngredientObjectInstance(objectInstance.getObjectClass(), name, baked, melted, mixed, container, traits, contents);
+	}
+	
+	public static ObjectInstance getNewIngredientInstance(IngredientRecipe ingredient, String name, ObjectClass oc) {
+		Boolean baked = ingredient.getBaked();
+		Boolean mixed = ingredient.getMixed();
+		Boolean melted = ingredient.getMelted();
+		Set<String> contents = new TreeSet<String>();
+		if (!ingredient.isSimple()) {
+			for (IngredientRecipe ing : ingredient.getContents()) {
+				contents.add(ing.getName());
+			}
+		}
+		String container = "";
+		Set<String> traits = ingredient.getTraits();
+		return IngredientFactory.getNewComplexIngredientObjectInstance(oc, name, baked, melted, mixed, container, traits, contents);
 	}
 	
 	public static List<ObjectInstance> getIngredientInstancesList(ObjectClass simpleIngredientClass,
@@ -150,6 +179,18 @@ public class IngredientFactory {
 		}
 		return newInstances;
 	}
+	
+	public static List<ObjectInstance> getComplexIngredients(ObjectClass complexIngredientClass,IngredientRecipe ingredientRecipe) {
+		List<ObjectInstance> newInstances = new ArrayList<ObjectInstance>();
+		
+		for (IngredientRecipe subIngredient : ingredientRecipe.getContents()) {
+			if (!subIngredient.isSimple()) {
+				newInstances.add(IngredientFactory.getNewIngredientInstance(complexIngredientClass, subIngredient, null));
+			}
+		}
+		return newInstances;
+	}
+		
 
 	public static void addIngredient(ObjectInstance complexIngredient, ObjectInstance ingredient) {
 		complexIngredient.addRelationalTarget(IngredientFactory.attributeContains, ingredient.getName());
@@ -180,6 +221,10 @@ public class IngredientFactory {
 		return null;
 	}
 	
+	public static Set<String> getTraits(ObjectInstance ingredient) {
+		return ingredient.getAllRelationalTargets(IngredientFactory.attributeTraits);
+	}
+	
 	public static Boolean isBakedIngredient(ObjectInstance ingredient) {
 		return ingredient.getDiscValForAttribute(IngredientFactory.attributeBaked) == 1;
 	}
@@ -193,28 +238,9 @@ public class IngredientFactory {
 	}
 	
 	public static Boolean isSimple(ObjectInstance ingredient) {
-		return ingredient.getObjectClass().name == IngredientFactory.ClassNameSimple;
+		return (ingredient.getObjectClass().name == IngredientFactory.ClassNameSimple ||
+				ingredient.getObjectClass().name == IngredientFactory.ClassNameSimpleHidden);
 	}
-	
-	/** Affordances **/
-	public static Boolean isWetIngredient(ObjectInstance ingredient) {
-		return ingredient.getDiscValForAttribute(IngredientFactory.attributeWet) == 1;
-	}
-	
-	public static Boolean isDryIngredient(ObjectInstance ingredient) {
-		return ingredient.getDiscValForAttribute(IngredientFactory.attributeDry) == 1;
-	}
-	
-	public static void setWetIngredient(ObjectInstance ingredient) {
-		ingredient.setValue(IngredientFactory.attributeWet, 1);
-	}
-	
-	public static void setDryIngredient(ObjectInstance ingredient) {
-		ingredient.setValue(IngredientFactory.attributeDry, 1);
-	}
-	
-	
-	/** End Affordances **/
 	
 	public static Set<String> getContentsForIngredient(ObjectInstance ingredient) {
 		return new TreeSet<String>(ingredient.getAllRelationalTargets(IngredientFactory.attributeContains));
