@@ -4,14 +4,15 @@ import java.util.Arrays;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
+import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 
 public class MoveAction extends BakingAction {
 	public static final String className = "move";
-	public MoveAction(Domain domain) {
-		super("move", domain, new String[] {AgentFactory.ClassName, ContainerFactory.ClassName, SpaceFactory.ClassName});
+	public MoveAction(Domain domain, IngredientRecipe ingredient) {
+		super("move", domain, ingredient, new String[] {AgentFactory.ClassName, ContainerFactory.ClassName, SpaceFactory.ClassName});
 	}
 	
 	@Override

@@ -27,8 +27,8 @@ import edu.brown.cs.h2r.baking.Recipes.Recipe;
 public class MixAction extends BakingAction {	
 	public static final String className = "mix";
 	public AbstractMap<String, Set<String>> switches;
-	public MixAction(Domain domain) {
-		super(MixAction.className, domain, new String[] {AgentFactory.ClassName, ContainerFactory.ClassName});
+	public MixAction(Domain domain, IngredientRecipe ingredient) {
+		super(MixAction.className, domain, ingredient, new String[] {AgentFactory.ClassName, ContainerFactory.ClassName});
 		// At some point, generate the actual map
 		this.switches = generateSwitches();
 	}
@@ -200,7 +200,7 @@ public class MixAction extends BakingAction {
 		//Set<String> ings = this.switches.get(toswap);
 		Set<String> traits = new TreeSet<String>();
 		//get the actual traits from the trait thing
-		for (String trait : Recipe.getTraits(toswap)) {
+		for (String trait : ingredient.getTraits()) {
 			traits.add(trait);
 		}
 		Set<String> ings = ContainerFactory.getContentNames(container);

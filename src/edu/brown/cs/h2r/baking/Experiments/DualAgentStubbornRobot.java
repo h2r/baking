@@ -68,17 +68,16 @@ public class DualAgentStubbornRobot  implements DomainGenerator {
 		domain.addObjectClass(SpaceFactory.createObjectClass(domain));		
 		domain.addObjectClass(AgentFactory.getObjectClass(domain));
 		domain.addObjectClass(MakeSpanFactory.getObjectClass(domain));
-		
-		Action mix = new MixAction(domain);
-		//Action bake = new BakeAction(domain);
-		Action pour = new PourAction(domain);
-		Action move = new MoveAction(domain);
 		return domain;
 	}
 	
 	public void PlanRecipeTwoAgents(Domain domain, Recipe recipe)
 	{
 		State state = new State();
+		Action mix = new MixAction(domain, recipe.topLevelIngredient);
+		//Action bake = new BakeAction(domain);
+		Action pour = new PourAction(domain, recipe.topLevelIngredient);
+		Action move = new MoveAction(domain, recipe.topLevelIngredient);
 		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
 		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "robot"));
 		state.addObject(MakeSpanFactory.getNewObjectInstance(domain, "makeSpan", 2));

@@ -7,10 +7,12 @@ import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.Action;
+import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.MakeSpanFactory;
 
-public class BakingAction extends Action {
 
+public class BakingAction extends Action {
+	IngredientRecipe ingredient;
 	public BakingAction() {
 		// TODO Auto-generated constructor stub
 	}
@@ -28,6 +30,25 @@ public class BakingAction extends Action {
 	public BakingAction(String name, Domain domain, String[] parameterClasses,
 			String[] parameterOrderGroups) {
 		super(name, domain, parameterClasses, parameterOrderGroups);
+		// TODO Auto-generated constructor stub
+	}
+	
+	public BakingAction(String name, Domain domain, IngredientRecipe ingredient, String parameterClasses) {
+		super(name, domain, parameterClasses);
+		this.ingredient = ingredient;
+		// TODO Auto-generated constructor stub
+	}
+
+	public BakingAction(String name, Domain domain, IngredientRecipe ingredient, String[] parameterClasses) {
+		super(name, domain, parameterClasses);
+		this.ingredient = ingredient;
+		// TODO Auto-generated constructor stub
+	}
+
+	public BakingAction(String name, Domain domain, IngredientRecipe ingredient, String[] parameterClasses,
+			String[] parameterOrderGroups) {
+		super(name, domain, parameterClasses, parameterOrderGroups);
+		this.ingredient = ingredient;
 		// TODO Auto-generated constructor stub
 	}
 

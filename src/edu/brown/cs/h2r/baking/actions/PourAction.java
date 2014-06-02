@@ -11,6 +11,7 @@ import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
+import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
@@ -18,8 +19,8 @@ import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 
 public class PourAction extends BakingAction {
 	public static final String className = "pour";
-	public PourAction(Domain domain) {
-		super(PourAction.className, domain, new String[] {AgentFactory.ClassName, ContainerFactory.ClassName, ContainerFactory.ClassName});
+	public PourAction(Domain domain, IngredientRecipe ingredient) {
+		super(PourAction.className, domain, ingredient, new String[] {AgentFactory.ClassName, ContainerFactory.ClassName, ContainerFactory.ClassName});
 		this.domain = domain;
 	}
 	

@@ -62,18 +62,16 @@ public class BasicKitchen implements DomainGenerator {
 		domain.addObjectClass(SpaceFactory.createObjectClass(domain));		
 		domain.addObjectClass(AgentFactory.getObjectClass(domain));
 		domain.addObjectClass(MakeSpanFactory.getObjectClass(domain));
-		
-		Action mix = new MixAction(domain);
-		Action turnOnOff = new TurnOnOffAction(domain);
-		Action use = new UseAction(domain);
-		//Action bake = new BakeAction(domain);
-		Action pour = new PourAction(domain);
-		Action move = new MoveAction(domain);
+
 		return domain;
 	}
 	
 	private State getInitialState() {
 		State state = new State();
+		Action mix = new MixAction(domain, recipe.topLevelIngredient);
+		//Action bake = new BakeAction(domain);
+		Action pour = new PourAction(domain, recipe.topLevelIngredient);
+		Action move = new MoveAction(domain, recipe.topLevelIngredient);
 		state.addObject(SpaceFactory.getNewBakingSpaceObjectInstance(this.domain, "Oven", null, ""));
 		state.addObject(SpaceFactory.getNewHeatingSpaceObjectInstance(this.domain, "Stove", null, ""));
 		

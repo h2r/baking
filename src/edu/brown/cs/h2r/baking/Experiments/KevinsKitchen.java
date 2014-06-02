@@ -59,15 +59,15 @@ public class KevinsKitchen implements DomainGenerator {
 		domain.addObjectClass(SpaceFactory.createObjectClass(domain));		
 		domain.addObjectClass(AgentFactory.getObjectClass(domain));
 		
-		Action mix = new MixAction(domain);
-		//Action bake = new BakeAction(domain);
-		Action pour = new PourAction(domain);
-		Action move = new MoveAction(domain);
 		return domain;
 	}
 	
 	public void PlanRecipeOneAgent(Domain domain, Recipe recipe)
 	{
+		Action mix = new MixAction(domain, recipe.topLevelIngredient);
+		//Action bake = new BakeAction(domain);
+		Action pour = new PourAction(domain, recipe.topLevelIngredient);
+		Action move = new MoveAction(domain, recipe.topLevelIngredient);
 		State state = new State();
 		
 		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));

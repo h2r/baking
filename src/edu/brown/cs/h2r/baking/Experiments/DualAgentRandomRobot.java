@@ -70,10 +70,6 @@ public class DualAgentRandomRobot  implements DomainGenerator {
 		domain.addObjectClass(AgentFactory.getObjectClass(domain));
 		domain.addObjectClass(MakeSpanFactory.getObjectClass(domain));
 		
-		Action mix = new MixAction(domain);
-		//Action bake = new BakeAction(domain);
-		Action pour = new PourAction(domain);
-		Action move = new MoveAction(domain);
 		return domain;
 	}
 	
@@ -81,6 +77,10 @@ public class DualAgentRandomRobot  implements DomainGenerator {
 	{
 		System.out.println("Creating two-agent initial start state");
 		State state = new State();
+		Action mix = new MixAction(domain, recipe.topLevelIngredient);
+		//Action bake = new BakeAction(domain);
+		Action pour = new PourAction(domain, recipe.topLevelIngredient);
+		Action move = new MoveAction(domain, recipe.topLevelIngredient);
 		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
 		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "robot"));
 		state.addObject(MakeSpanFactory.getNewObjectInstance(domain, "makeSpan", 2));
