@@ -311,7 +311,7 @@ public abstract class Recipe {
 		return this.traitMap;
 	}
 	
-	public static AbstractMap<String, Set<String>> generateTraitMap() {
+	public AbstractMap<String, Set<String>> generateTraitMap() {
 		AbstractMap<String, Set<String>> traitMap = new HashMap<String, Set<String>>();
 		Set<String> traits;
 		
