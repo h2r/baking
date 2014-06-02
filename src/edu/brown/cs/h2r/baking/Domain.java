@@ -47,7 +47,8 @@ public class Domain extends SADomain {
 		
 	}
 	
-	// Affordance stuff
+	// Affordance stuff v1
+	/*
 	public void setAffordances(HashMap<String,Boolean> affordanceList) {
 		affordances = affordanceList;
 	}
@@ -59,7 +60,7 @@ public class Domain extends SADomain {
 	
 	public Boolean hasAffordances() {
 		return this.hasAffordances;
-	}
+	}*/
 	
 
 	
