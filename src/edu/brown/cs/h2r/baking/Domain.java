@@ -7,7 +7,7 @@ import burlap.oomdp.core.Attribute;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.singleagent.Action;
-import burlap.oomdp.stocashticgames.SingleAction;
+import burlap.oomdp.stochasticgames.SingleAction;
 import burlap.oomdp.singleagent.SADomain;
 
 

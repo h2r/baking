@@ -22,8 +22,8 @@ import java.util.TreeSet;
 public abstract class Recipe {
 	
 	public IngredientRecipe topLevelIngredient;
-	private static AbstractMap<String, Set<String>> traitMap;
-	private static List<ObjectInstance> allIngredients;
+	private AbstractMap<String, Set<String>> traitMap;
+	private List<ObjectInstance> allIngredients;
 	
 	public Recipe()
 	{
@@ -311,7 +311,7 @@ public abstract class Recipe {
 		return this.traitMap;
 	}
 	
-	public AbstractMap<String, Set<String>> generateTraitMap() {
+	public static AbstractMap<String, Set<String>> generateTraitMap() {
 		AbstractMap<String, Set<String>> traitMap = new HashMap<String, Set<String>>();
 		Set<String> traits;
 		
@@ -366,9 +366,9 @@ public abstract class Recipe {
 		return traitMap;
 	}
 	
-	public static Set<String> getTraits(String ingredient) {
-		if (traitMap.containsKey(ingredient)) {
-			return traitMap.get(ingredient);
+	public Set<String> getTraits(String ingredient) {
+		if (this.traitMap.containsKey(ingredient)) {
+			return this.traitMap.get(ingredient);
 		}
 		return new TreeSet<String>();
 	}

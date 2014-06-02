@@ -2,17 +2,16 @@ package edu.brown.cs.h2r.baking.Heuristics;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.List;
+import java.util.Set;
 
-import edu.brown.cs.h2r.baking.IngredientRecipe;
-import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
-import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
-import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import burlap.behavior.singleagent.planning.deterministic.informed.Heuristic;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
+import edu.brown.cs.h2r.baking.IngredientRecipe;
+import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 
 public class AgentSpecificHeuristic implements Heuristic {
 	private String agent;
