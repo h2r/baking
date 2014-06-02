@@ -30,6 +30,7 @@ public class Brownies extends Recipe {
 	IngredientRecipe dry_ings = new IngredientRecipe ("dry_stuff", false, false, false, ingredientList);
 	dry_ings.addTraits(getTraits("dry_stuff"));
 	
+<<<<<<< HEAD
 	List<IngredientRecipe> ingredientList2 = new ArrayList<IngredientRecipe>();
 	IngredientRecipe sugar = new IngredientRecipe("sugar", false, false, false);
 	sugar.addTraits(getTraits("sugar"));
@@ -53,5 +54,8 @@ public class Brownies extends Recipe {
 	Brownies.addTraits(getTraits("brownies"));
 	
 	this.topLevelIngredient = Brownies;
+=======
+	this.topLevelIngredient = new IngredientRecipe("Brownies", false, false, false, ingredientList);
+>>>>>>> FETCH_HEAD
 	}
 }
