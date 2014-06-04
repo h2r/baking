@@ -27,13 +27,13 @@ public class AffordancesApply extends PropositionalFunction {
 				return true;
 			}
 		}
-		if (obj_traits.length != 0) {
+		/*if (obj_traits.length != 0) {
 			String have = "";
 			for (String t: obj_traits) {
 				have = have + t + ",";
 			}
-			//System.out.println("Want: "+this.traits+", but have: "+have);
-		}
+			System.out.println("Want: "+this.traits+", but have: "+have);
+		}*/
 		return false;
 	}
 	

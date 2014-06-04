@@ -8,6 +8,7 @@ import java.util.Set;
 
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.Policy;
+import burlap.behavior.singleagent.auxiliary.StateReachability;
 import burlap.behavior.singleagent.planning.StateConditionTest;
 import burlap.behavior.singleagent.planning.deterministic.DDPlannerPolicy;
 import burlap.behavior.singleagent.planning.deterministic.informed.Heuristic;
@@ -65,7 +66,6 @@ public class KevinsKitchen implements DomainGenerator {
 	public void PlanRecipeOneAgent(Domain domain, Recipe recipe)
 	{
 		Action mix = new MixAction(domain, recipe.topLevelIngredient);
-		//Action bake = new BakeAction(domain);
 		Action pour = new PourAction(domain, recipe.topLevelIngredient);
 		Action move = new MoveAction(domain, recipe.topLevelIngredient);
 		State state = new State();
@@ -80,6 +80,9 @@ public class KevinsKitchen implements DomainGenerator {
 		
 		recipe.addAllIngredients(state, domain);
 		this.allIngredients = recipe.getAllIngredients();
+		System.out.println("Planner will now plan the "+recipe.topLevelIngredient.getName()+" recipe!");
+		System.out.println("");
+		
 
 		this.PlanIngredient(domain, state, recipe.topLevelIngredient);
 	}
@@ -117,9 +120,10 @@ public class KevinsKitchen implements DomainGenerator {
 		}
 		
 		if (domain.getPropFunction("affordances") == null) {
+			System.out.println("Planning over ingredients with the traits: "+ingredient.getTraits());
 			final PropositionalFunction newProp = new AffordancesApply("affordances", domain, ingredient.getTraits());
 		} else {
-			System.out.println(ingredient.getTraits());
+			System.out.println("Planning over ingredients with the traits: "+ingredient.getTraits());
 			/* */
 			ObjectInstance bowl = currentState.getObject("mixing_bowl_1");
 			Set<String> contains;
@@ -129,20 +133,6 @@ public class KevinsKitchen implements DomainGenerator {
 				}
 				ContainerFactory.removeContents((currentState.getObject("mixing_bowl_1")));
 			}
-			/*			ObjectInstance bowl = currentState.getObject("mixing_bowl_1");
-			Set<String> contains;
-			if ((contains = ContainerFactory.getContentNames(bowl)).size()==1) {
-				ContainerFactory.removeContents((currentState.getObject("mixing_bowl_1")));
-				for (String name : contains) {
-					ObjectInstance object = currentState.getObject(name);
-					for (String trait : ingredient.getTraits()) {
-						if (object.getAllRelationalTargets("traits").contains(trait)) {
-							ContainerFactory.addIngredient(bowl, object.getName());
-							object.addRelationalTarget("container", bowl.getName());
-						}
-					}
-				}
-			} */
 			((AffordancesApply)(domain.getPropFunction("affordances"))).changeTraits(ingredient.getTraits());
 
 		}
@@ -171,8 +161,16 @@ public class KevinsKitchen implements DomainGenerator {
 				return 0;
 			}
 		};
+		
+		//List<State> reachableStates = StateReachability.getReachableStates(currentState, domain, hashFactory);
+		//System.out.println("Number of reachable states: " + reachableStates.size());
+		
 		AStar aStar = new AStar(domain, rf, goalCondition, hashFactory, heuristic);
 		aStar.planFromState(currentState);
+		
+		
+		
+		
 		Policy policy = new DDPlannerPolicy(aStar);
 		EpisodeAnalysis episodeAnalysis = 
 				policy.evaluateBehavior(currentState, rf, recipeTerminalFunction);	

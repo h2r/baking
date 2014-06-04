@@ -41,6 +41,7 @@ public class PourAction extends BakingAction {
 		}
 
 
+		//TODO move precondition like this to affordance planner
 		ObjectInstance receivingContainer = state.getObject(params[2]);
 		if (!ContainerFactory.isReceivingContainer(receivingContainer)) {
 			return false;
@@ -64,30 +65,6 @@ public class PourAction extends BakingAction {
 			// No traits were matched, ingredient not necessary!
 			//return false;
 		}
-		/* Traits end */
-	
-		
-		
-		/* Proposed affordance, using edu.brown.cs.h2r.baking.Domain.java as Domain
-		if (((Domain) domain).hasAffordances()) {
-			HashMap<String,Boolean> affordances = ((Domain) domain).getAffordances();
-			
-			Boolean pour_match = false;
-			Boolean receive_match = false;
-			for (String key : affordances.keySet()) {
-				int val = (affordances.get(key)) ? 1 : 0;
-				if (val == pouringContainer.getRealValForAttribute(key)) {
-					pour_match = true;
-				}
-				if (val == receivingContainer.getRealValForAttribute(key)) {
-					receive_match = true;
-				}
-			}
-			if (!(pour_match && receive_match)) {
-				return false;
-			}
-		}
-		*/
 		
 		if (pouringContainerSpace == null || receivingContainerSpace == null)
 		{

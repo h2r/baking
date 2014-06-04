@@ -86,15 +86,25 @@ public abstract class Recipe {
 			return ingredientRecipe.getName() == object.getName();
 		}
 		
-		List<IngredientRecipe> recipeContents = ingredientRecipe.getContents();
-		Set<String> contents = IngredientFactory.getContentsForIngredient(object);
+		// List of ingredients that fullfill a "trait" rather than a ingredient in recipe
+		List<ObjectInstance> traitIngredients = new ArrayList<ObjectInstance>();
 		
-		if (contents.contains("dry_stuff")) {
-			//System.out.println("biddies");
-		}
-		if (recipeContents.size() != contents.size())
-		{
-			return false;
+		List<IngredientRecipe> recipeContents = ingredientRecipe.getContents();
+		Set<String> compulsoryTraits = ingredientRecipe.getNecessaryTraits();
+		
+		
+		if (!ingredientRecipe.isSimple()) {
+			Set<String> contents = IngredientFactory.getContentsForIngredient(object);
+			
+			if ((recipeContents.size() + compulsoryTraits.size()) != contents.size())
+			{
+				return false;
+			}
+			// Gets all of the contents for the current object we've created
+			for (String name : contents) {
+				ObjectInstance obj = state.getObject(name);
+				traitIngredients.add(obj);
+			}
 		}
 		
 		Map<String, IngredientRecipe> complexIngredientRecipes = new HashMap<String, IngredientRecipe>();
@@ -112,51 +122,62 @@ public abstract class Recipe {
 			}
 
 		}
-		// Gets all of the contents for the curren object we've created
-		List<ObjectInstance> complexIngredientContents = new ArrayList<ObjectInstance>();
-		List<ObjectInstance> simpleIngredientContents = new ArrayList<ObjectInstance>();
-		for (String name : contents) {
-			ObjectInstance obj = state.getObject(name);
-			if (IngredientFactory.isSimple(obj)) {
-				simpleIngredientContents.add(obj);
-			} else {
-				complexIngredientContents.add(obj);
-			}
-		}
-		
-		// compares sizes of recipe and object for both simple and complex ingredient
-		if (complexIngredientRecipes.size() != complexIngredientContents.size() ||
-				simpleIngredientRecipes.size() != simpleIngredientContents.size())
-		{
-			return false;
-		}
-		
-		// For each simple, calls success recursively and ensures that that ingredient is in the recipe
-		for (ObjectInstance simpleIngredient : simpleIngredientContents)
-		{
-			String ingredientName = simpleIngredient.getName();
-			if (!simpleIngredientRecipes.containsKey(ingredientName) ||
-					!Recipe.isSuccess(state, simpleIngredientRecipes.get(ingredientName), simpleIngredient))
-			{
-				return false;
-			}
-		}
-		
-		// For each complex Calls success recursively, checks if it's a valid ingredient
-		for (ObjectInstance producedInstance : complexIngredientContents)
-		{
-			Boolean exists = false;
-			Collection<IngredientRecipe> complexIngredientRecipeValues = complexIngredientRecipes.values();
-			for (IngredientRecipe complexSubIngredient : complexIngredientRecipeValues)
-			{
-				if (Recipe.isSuccess(state, complexSubIngredient, producedInstance))
-				{
-					exists = true;
+		/*
+		 * Now, we want to remove each ingredient that is a compulsory ingredient from
+		 * trait ingredients. To do so, we check if our object has all of the compulsory
+		 * ingredients, and recursively checks if these recipes are successes. If it doesn't find
+		 * a compulsory ingredient, it will return false. When it does find the right
+		 * ingredient, it will remove it form traitIngredients, since it was "used up".
+		 */
+		for (IngredientRecipe ingredient : recipeContents) {
+			String ingredientName = ingredient.getName();
+			ObjectInstance ingredientObj = null;
+			Boolean match = false;
+			for (ObjectInstance obj : traitIngredients) {
+				if (obj.getName().equals(ingredientName)) {
+					ingredientObj = obj;
+					match = true;
 					break;
 				}
 			}
-			if (!exists)
-			{
+			if (!match) {
+				return false;
+			}
+			if (ingredient.isSimple()) {
+				if (!Recipe.isSuccess(state, ingredient, ingredientObj)) {
+					return false;
+				}
+				traitIngredients.remove(ingredientObj);
+			} else {
+				Boolean exists = false;
+				Collection<IngredientRecipe> complexIngredientRecipeValues = complexIngredientRecipes.values();
+				for (IngredientRecipe complexSubIngredient : complexIngredientRecipeValues)
+				{
+					if (Recipe.isSuccess(state, complexSubIngredient, ingredientObj))
+					{
+						exists = true;
+						break;
+					}
+				}
+				if (!exists)
+				{
+					return false;
+				}
+			}
+		}
+		
+		/* At this point, traitIngredients only has the ingredients that could be used
+		 * for Traits, not as compulsory ingredients.
+		 */
+		for (String trait : compulsoryTraits) {
+			Boolean match = false;
+			for (ObjectInstance obj : traitIngredients) {
+				if (obj.getAllRelationalTargets("traits").contains(trait)) {
+					match = true;
+					break;
+				}
+			}
+			if (!match) {
 				return false;
 			}
 		}
@@ -335,20 +356,28 @@ public abstract class Recipe {
 		traits = new TreeSet<String>();
 		traits.add("dry");
 		traits.add("seasoning");
+		traits.add("salt");
 		traitMap.put("salt", traits);
 		
 		traits = new TreeSet<String>();
 		traits.add("wet");
 		traits.add("sugar");
-		traitMap.put("sugar", traits);
+		traitMap.put("white_sugar", traits);
 		
 		traits = new TreeSet<String>();
 		traits.add("wet");
+		traits.add("sugar");
+		traitMap.put("brown_sugar", traits);
+		
+		traits = new TreeSet<String>();
+		traits.add("wet");
+		traits.add("eggs");
 		traitMap.put("eggs", traits);
 		
 		traits = new TreeSet<String>();
 		traits.add("wet");
 		traits.add("fat");
+		traits.add("butter");
 		traitMap.put("butter", traits);
 		
 		traits = new TreeSet<String>();
@@ -362,7 +391,7 @@ public abstract class Recipe {
 		traits = new TreeSet<String>();
 		traitMap.put("brownies", traits);
 		
-		System.out.println(traitMap);
+		//System.out.println(traitMap);
 		return traitMap;
 	}
 	
@@ -374,7 +403,7 @@ public abstract class Recipe {
 	}
 
 	public void addAllIngredients(State state, Domain domain) {
-		for (IngredientRecipe ing : topLevelIngredient.getConstituentIngredients()) {
+		for (IngredientRecipe ing : topLevelIngredient.getPossibleIngredients()) {
 			ObjectClass oc = ing.isSimple() ? domain.getObjectClass(IngredientFactory.ClassNameSimple) : domain.getObjectClass(IngredientFactory.ClassNameComplex);
 			ObjectInstance obj = IngredientFactory.getNewIngredientInstance(ing, ing.getName(), oc);
 			allIngredients.add(obj);
@@ -384,5 +413,4 @@ public abstract class Recipe {
 	public List<ObjectInstance> getAllIngredients() {
 		return allIngredients;
 	}
-	
 }
