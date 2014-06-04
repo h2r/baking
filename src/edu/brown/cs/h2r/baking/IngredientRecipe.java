@@ -16,7 +16,6 @@ public class IngredientRecipe {
 	private String name;
 	private List<IngredientRecipe> contents;
 	private Set<String> necessaryTraits;
-	private List<IngredientRecipe> possibleIngredients;
 	
 	public IngredientRecipe (String name, Boolean mixed, Boolean melted, Boolean baked) {
 		this.name = name;
@@ -33,7 +32,6 @@ public class IngredientRecipe {
 		this.baked = baked;
 		this.contents = contents;
 		this.traits = new TreeSet<String>();
-		this.possibleIngredients = new ArrayList<IngredientRecipe>();
 	}
 	
 	public IngredientRecipe (String name, Boolean mixed, Boolean melted, Boolean baked, List<IngredientRecipe> contents, Set<String> compulsoryTraits) {
@@ -44,7 +42,6 @@ public class IngredientRecipe {
 		this.contents = contents;
 		this.traits = new TreeSet<String>();
 		this.necessaryTraits = compulsoryTraits;
-		this.possibleIngredients = new ArrayList<IngredientRecipe>();
 	}
 	
 	public Boolean isSimple() {
@@ -142,19 +139,5 @@ public class IngredientRecipe {
 			return this.necessaryTraits;
 		}
 		return new TreeSet<String>();
-	}
-	
-	public List<IngredientRecipe> getPossibleIngredients() {
-		return this.possibleIngredients;
-	}
-	
-	public void addPossibleIngredient(IngredientRecipe toadd) {
-		this.possibleIngredients.add(toadd);
-	}
-	
-	public void addPossibleIngredient(List<IngredientRecipe> toadd) {
-		for (IngredientRecipe ing : toadd) {
-			this.possibleIngredients.add(ing);
-		}
 	}
 }

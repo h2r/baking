@@ -18,7 +18,7 @@ public class BrowniesSubGoals extends Recipe {
 		//ingredientList.add(new IngredientRecipe("flour", false, false, false, true));
 		ingredientList.add(new IngredientRecipe("flour", false, false, false));
 		IngredientRecipe ingredient1 = new IngredientRecipe("goal1", false, false, false, ingredientList);
-		ingredient1.addTraits(getTraits(ingredient1.getName()));
+		//ingredient1.addTraits(getTraits(ingredient1.getName()));
 		
 		List<IngredientRecipe> ingredientList1 = new ArrayList<IngredientRecipe>(); 
 		ingredientList1.add(ingredient1);

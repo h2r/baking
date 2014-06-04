@@ -24,10 +24,12 @@ import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
+import burlap.oomdp.singleagent.SADomain;
 import edu.brown.cs.h2r.baking.AffordancesApply;
-//import burlap.oomdp.core.Domain;
-import edu.brown.cs.h2r.baking.Domain;
+import burlap.oomdp.core.Domain;
+//import edu.brown.cs.h2r.baking.Domain;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
+import edu.brown.cs.h2r.baking.KitchenIngredients;
 import edu.brown.cs.h2r.baking.RecipeBotched;
 import edu.brown.cs.h2r.baking.RecipeFinished;
 import edu.brown.cs.h2r.baking.RecipeTerminalFunction;
@@ -51,7 +53,7 @@ public class KevinsKitchen implements DomainGenerator {
 	
 	@Override
 	public Domain generateDomain() {
-		Domain domain = new Domain();
+		Domain domain = new SADomain();
 		domain.addObjectClass(ContainerFactory.createObjectClass(domain));
 		domain.addObjectClass(IngredientFactory.createSimpleIngredientObjectClass(domain));
 		domain.addObjectClass(IngredientFactory.createComplexIngredientObjectClass(domain));
@@ -78,8 +80,10 @@ public class KevinsKitchen implements DomainGenerator {
 			state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "counter"));
 		}
 		
-		recipe.addAllIngredients(state, domain);
-		this.allIngredients = recipe.getAllIngredients();
+		//recipe.addAllIngredients(state, domain);
+		//this.allIngredients = recipe.getAllIngredients();
+		KitchenIngredients kitchenIngs = new KitchenIngredients();
+		this.allIngredients = kitchenIngs.getAllIngredientObjectInstances(domain);
 		System.out.println("Planner will now plan the "+recipe.topLevelIngredient.getName()+" recipe!");
 		System.out.println("");
 		
