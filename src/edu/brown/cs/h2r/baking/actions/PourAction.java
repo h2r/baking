@@ -50,9 +50,9 @@ public class PourAction extends BakingAction {
 		String pouringContainerSpace = ContainerFactory.getSpaceName(pouringContainer);
 		String receivingContainerSpace = ContainerFactory.getSpaceName(receivingContainer);
 		
-		
-		/* Traits */
-		
+		//TODO: Move this elsewhere to planner
+		/* Traits 
+		// Pouring Container has traits that we're looking for
 		PropositionalFunction affordance_test = domain.getPropFunction("affordances");
 		for (String ing : pouringContainer.getAllRelationalTargets("contains")) {
 			ObjectInstance ob = state.getObject(ing);
@@ -62,9 +62,19 @@ public class PourAction extends BakingAction {
 			if (!affordance_test.isTrue(state, traits)) {
 				return false;
 			}
-			// No traits were matched, ingredient not necessary!
-			//return false;
 		}
+		// Receiving container is either empty of has traits we're looking for!
+		if (!ContainerFactory.getContentNames(receivingContainer).isEmpty()) {
+			for (String ing : receivingContainer.getAllRelationalTargets("contains")) {
+				ObjectInstance ob = state.getObject(ing);
+				Set<String> trait_set = ob.getAllRelationalTargets("traits");
+				String[] traits = new String[trait_set.size()];
+				trait_set.toArray(traits);
+				if (!affordance_test.isTrue(state, traits)) {
+					return false;
+				}
+			}
+		}*/
 		
 		if (pouringContainerSpace == null || receivingContainerSpace == null)
 		{

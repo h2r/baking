@@ -25,11 +25,10 @@ import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.SADomain;
+import edu.brown.cs.h2r.Knowledgebase.IngredientKnowledgebase;
 import edu.brown.cs.h2r.baking.AffordancesApply;
 import burlap.oomdp.core.Domain;
-//import edu.brown.cs.h2r.baking.Domain;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
-import edu.brown.cs.h2r.baking.KitchenIngredients;
 import edu.brown.cs.h2r.baking.RecipeBotched;
 import edu.brown.cs.h2r.baking.RecipeFinished;
 import edu.brown.cs.h2r.baking.RecipeTerminalFunction;
@@ -73,7 +72,7 @@ public class KevinsKitchen implements DomainGenerator {
 		State state = new State();
 		
 		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
-		List<String> containers = Arrays.asList("mixing_bowl_1");
+		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2");
 		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter", containers, "human"));
 
 		for (String container : containers) { 
@@ -82,8 +81,8 @@ public class KevinsKitchen implements DomainGenerator {
 		
 		//recipe.addAllIngredients(state, domain);
 		//this.allIngredients = recipe.getAllIngredients();
-		KitchenIngredients kitchenIngs = new KitchenIngredients();
-		this.allIngredients = kitchenIngs.getAllIngredientObjectInstances(domain);
+		IngredientKnowledgebase knowledgebase = new IngredientKnowledgebase();
+		this.allIngredients = knowledgebase.getAllIngredientObjectInstanceList(domain);
 		System.out.println("Planner will now plan the "+recipe.topLevelIngredient.getName()+" recipe!");
 		System.out.println("");
 		
@@ -128,17 +127,7 @@ public class KevinsKitchen implements DomainGenerator {
 			final PropositionalFunction newProp = new AffordancesApply("affordances", domain, ingredient.getTraits());
 		} else {
 			System.out.println("Planning over ingredients with the traits: "+ingredient.getTraits());
-			/* */
-			ObjectInstance bowl = currentState.getObject("mixing_bowl_1");
-			Set<String> contains;
-			if ((contains = ContainerFactory.getContentNames(bowl)).size()==1) {
-				for (String object : contains) {
-					currentState.getObject(object).clearRelationalTargets("container");
-				}
-				ContainerFactory.removeContents((currentState.getObject("mixing_bowl_1")));
-			}
 			((AffordancesApply)(domain.getPropFunction("affordances"))).changeTraits(ingredient.getTraits());
-
 		}
 		
 		final PropositionalFunction isSuccess = new RecipeFinished("success", domain, ingredient);
@@ -190,13 +179,6 @@ public class KevinsKitchen implements DomainGenerator {
 		ExperimentHelper.checkIngredientCompleted(ingredient, endState, finalObjects, containerObjects);
 		
 		ExperimentHelper.printResults(episodeAnalysis.actionSequence, episodeAnalysis.rewardSequence);
-		
-		/* Adding complex_ingredient_bowl */
-		endState.addObject(IngredientFactory.getNewIngredientInstance(ingredient, ingredient.getName(), domain.getObjectClass(IngredientFactory.ClassNameComplex)));
-		ObjectInstance container = ContainerFactory.getNewIngredientContainerObjectInstance(domain, ingredient.getName()+"_bowl", ingredient.getName(), "counter");
-		endState.getObject(ingredient.getName()).addRelationalTarget("container", container.getName());
-		endState.addObject(container);
-		/* */
 		return endState;
 	}
 	

@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import edu.brown.cs.h2r.Knowledgebase.IngredientKnowledgebase;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
-import edu.brown.cs.h2r.baking.TraitKnowledgebase;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import burlap.oomdp.core.Domain;
@@ -23,10 +23,18 @@ import java.util.TreeSet;
 public abstract class Recipe {
 	
 	public IngredientRecipe topLevelIngredient;
+	protected IngredientKnowledgebase knowledgebase;
+	
+	protected final Boolean NOTMIXED= false;
+	protected final Boolean NOTMELTED= false;
+	protected final Boolean NOTBAKED= false;
+	protected final Boolean MIXED= false;
+	protected final Boolean MELTED= false;
+	protected final Boolean BAKED= false;;
 	
 	public Recipe()
 	{
-		//get actual trait map here
+		this.knowledgebase = new IngredientKnowledgebase();
 	}
 	
 	public int getNumberSteps()
@@ -80,10 +88,21 @@ public abstract class Recipe {
 		
 		if (ingredientRecipe.isSimple())
 		{
-			return ingredientRecipe.getName() == object.getName();
+			//TODO: Fix this weird bug. Inelegant solution for now.
+			if (ingredientRecipe.getName() != object.getName()) {
+				String obj_name = object.getName();
+				String ing_name = ingredientRecipe.getName();
+				for (int i = 0; i < ing_name.length(); i++) {
+					if (obj_name.charAt(i) != ing_name.charAt(i)) {
+						return false;
+					}
+				}
+				return true;
+			}
+			return true;
 		}
 		
-		// List of ingredients that fullfill a "trait" rather than a ingredient in recipe
+		// List of ingredients that fulfill a "trait" rather than a ingredient in recipe
 		List<ObjectInstance> traitIngredients = new ArrayList<ObjectInstance>();
 		
 		List<IngredientRecipe> recipeContents = ingredientRecipe.getContents();

@@ -45,7 +45,10 @@ public class IngredientRecipe {
 	}
 	
 	public Boolean isSimple() {
-		return this.contents == null || this.contents.size() == 0;
+		if (this.necessaryTraits == null || this.necessaryTraits.size() == 0) {
+			return this.contents == null || this.contents.size() == 0;
+		}
+		return false;
 	}
 	
 	public Boolean getMixed () {

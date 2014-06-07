@@ -14,7 +14,7 @@ import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.Value;
-import edu.brown.cs.h2r.baking.CombinationKnowledgebase;
+import edu.brown.cs.h2r.Knowledgebase.IngredientKnowledgebase;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.actions.BakingAction;
 import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
@@ -28,12 +28,12 @@ import edu.brown.cs.h2r.baking.Recipes.Recipe;
 public class MixAction extends BakingAction {	
 	public static final String className = "mix";
 	public AbstractMap<String, Set<String>> switches;
-	public CombinationKnowledgebase combinations;
+	public IngredientKnowledgebase knowledgebase;
 	public MixAction(Domain domain, IngredientRecipe ingredient) {
 		super(MixAction.className, domain, ingredient, new String[] {AgentFactory.ClassName, ContainerFactory.ClassName});
 		// At some point, generate the actual map
-		this.combinations = new CombinationKnowledgebase();
-		this.switches = combinations.generateSwitches();
+		this.knowledgebase = new IngredientKnowledgebase();
+		//this.switches = knowledgebase.;
 		
 	}
 	
@@ -93,8 +93,8 @@ public class MixAction extends BakingAction {
 		Set<String> contents = ContainerFactory.getContentNames(container);
 		//String name;
 		String res;
-		if (!(res  = combinations.canCombine(state, container)).equals("")) {
-			combinations.combineIngredients(state, domain, ingredient, container, res);
+		if (!(res  = knowledgebase.canCombine(state, container)).equals("")) {
+			knowledgebase.combineIngredients(state, domain, ingredient, container, res);
 		} else {
 			
 			/* Trait stuff 
@@ -128,7 +128,7 @@ public class MixAction extends BakingAction {
 			}
 			// hide objects
 			for (String name: contents) {
-				hidden_copies.add(combinations.hideObject(state, this.domain, state.getObject(name)));
+				hidden_copies.add(knowledgebase.hideObject(state, this.domain, state.getObject(name)));
 			}
 			
 			
