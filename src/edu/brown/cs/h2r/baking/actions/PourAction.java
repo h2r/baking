@@ -51,7 +51,6 @@ public class PourAction extends BakingAction {
 		String receivingContainerSpace = ContainerFactory.getSpaceName(receivingContainer);
 		
 		//TODO: Move this elsewhere to planner
-		/* Traits 
 		// Pouring Container has traits that we're looking for
 		PropositionalFunction affordance_test = domain.getPropFunction("affordances");
 		for (String ing : pouringContainer.getAllRelationalTargets("contains")) {
@@ -74,7 +73,7 @@ public class PourAction extends BakingAction {
 					return false;
 				}
 			}
-		}*/
+		}
 		
 		if (pouringContainerSpace == null || receivingContainerSpace == null)
 		{

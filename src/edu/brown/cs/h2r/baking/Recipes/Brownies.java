@@ -17,24 +17,23 @@ public class Brownies extends Recipe {
 		ingredientList.add(knowledgebase.getIngredient("baking_powder"));
 		ingredientList.add(knowledgebase.getIngredient("cocoa"));
 		
-		// Add to compulsory traits
-		Set<String> dry_traits = new HashSet<String>();
-		dry_traits.add("flour");
-		dry_traits.add("salt");
 		
 		// Make the subgoal
-		IngredientRecipe dry_ings = new IngredientRecipe ("dry_stuff", NOTMIXED, NOTMELTED, NOTBAKED, ingredientList, dry_traits);
+		IngredientRecipe dry_ings = new IngredientRecipe ("dry_stuff", NOTMIXED, NOTMELTED, NOTBAKED, ingredientList);
+		// Add the necessaryTraits and their respective attributes
+		dry_ings.addNecessaryTrait("flour", NOTMIXED, NOTMELTED, NOTBAKED);
+		dry_ings.addNecessaryTrait("salt", NOTMIXED, NOTMELTED, NOTBAKED);
+
 		dry_ings.addTraits(knowledgebase.getTraits("dry_stuff"));
 		
 		
 		List<IngredientRecipe> ingredientList2 = new ArrayList<IngredientRecipe>();
 		ingredientList2.add(knowledgebase.getIngredient("vanilla"));
 		
-		Set<String> wet_traits = new HashSet<String>();
-		wet_traits.add("eggs");
-		wet_traits.add("sugar");
-		wet_traits.add("fat");
-		IngredientRecipe wet_ings = new IngredientRecipe("wet_stuff", NOTMIXED, NOTMELTED, NOTBAKED, ingredientList2, wet_traits);
+		IngredientRecipe wet_ings = new IngredientRecipe("wet_stuff", NOTMIXED, NOTMELTED, NOTBAKED, ingredientList2);
+		wet_ings.addNecessaryTrait("eggs", NOTMIXED, NOTMELTED, NOTBAKED);
+		wet_ings.addNecessaryTrait("sugar", NOTMIXED, NOTMELTED, NOTBAKED);
+		wet_ings.addNecessaryTrait("fat", NOTMIXED, NOTMELTED, NOTBAKED);
 		wet_ings.addTraits(knowledgebase.getTraits("wet_stuff"));
 	
 	

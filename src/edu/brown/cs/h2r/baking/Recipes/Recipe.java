@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import edu.brown.cs.h2r.Knowledgebase.IngredientKnowledgebase;
+import edu.brown.cs.h2r.baking.Knowledgebase.IngredientKnowledgebase;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
@@ -28,9 +28,9 @@ public abstract class Recipe {
 	protected final Boolean NOTMIXED= false;
 	protected final Boolean NOTMELTED= false;
 	protected final Boolean NOTBAKED= false;
-	protected final Boolean MIXED= false;
-	protected final Boolean MELTED= false;
-	protected final Boolean BAKED= false;;
+	protected final Boolean MIXED= true;
+	protected final Boolean MELTED= true;
+	protected final Boolean BAKED= true;;
 	
 	public Recipe()
 	{
@@ -76,13 +76,7 @@ public abstract class Recipe {
 	
 	public static Boolean isSuccess(State state, IngredientRecipe ingredientRecipe, ObjectInstance object)
 	{
-		if (IngredientFactory.isBakedIngredient(object) != ingredientRecipe.getBaked()) {
-			return false;
-		}
-		if (IngredientFactory.isMeltedIngredient(object) != ingredientRecipe.getMelted()) {
-			return false;
-		}
-		if (IngredientFactory.isMixedIngredient(object) != ingredientRecipe.getMixed()) {
+		if (!AttributesMatch(ingredientRecipe, object)) {
 			return false;
 		}
 		
@@ -106,8 +100,18 @@ public abstract class Recipe {
 		List<ObjectInstance> traitIngredients = new ArrayList<ObjectInstance>();
 		
 		List<IngredientRecipe> recipeContents = ingredientRecipe.getContents();
-		Set<String> compulsoryTraits = ingredientRecipe.getNecessaryTraits();
+		Set<String> compulsoryTraits = ingredientRecipe.getNecessaryTraits().keySet();
+		AbstractMap<String, IngredientRecipe> compulsoryTraitMap = ingredientRecipe.getNecessaryTraits();
 		
+		
+		/* Sanity Check */
+		for (String trait : compulsoryTraits) {
+			if (!compulsoryTraitMap.containsKey(trait)) {
+				System.out.println("??");
+			}
+		}
+		
+		/* END */
 		
 		if (!ingredientRecipe.isSimple()) {
 			Set<String> contents = IngredientFactory.getContentsForIngredient(object);
@@ -189,7 +193,9 @@ public abstract class Recipe {
 			Boolean match = false;
 			for (ObjectInstance obj : traitIngredients) {
 				if (obj.getAllRelationalTargets("traits").contains(trait)) {
-					match = true;
+					// Ensure traitIngredient has the correct Attributes (melted, baked...)
+					// I.E. The fat we are using is in fact melted.
+					match = AttributesMatch(compulsoryTraitMap.get(trait), obj);
 					break;
 				}
 			}
@@ -341,6 +347,19 @@ public abstract class Recipe {
 		}
 		
 		// This object doesn't match anything in the two lists of sub ingredients. We've failed.
+		return true;
+	}
+	
+	public static Boolean AttributesMatch(IngredientRecipe ingredientRecipe, ObjectInstance object) {
+		if (IngredientFactory.isBakedIngredient(object) != ingredientRecipe.getBaked()) {
+			return false;
+		}
+		if (IngredientFactory.isMeltedIngredient(object) != ingredientRecipe.getMelted()) {
+			return false;
+		}
+		if (IngredientFactory.isMixedIngredient(object) != ingredientRecipe.getMixed()) {
+			return false;
+		}
 		return true;
 	}
 }

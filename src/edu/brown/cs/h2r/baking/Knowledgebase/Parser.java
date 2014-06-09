@@ -1,4 +1,4 @@
-package edu.brown.cs.h2r.Knowledgebase;
+package edu.brown.cs.h2r.baking.Knowledgebase;
 
 import java.io.BufferedReader;
 import java.io.IOException;

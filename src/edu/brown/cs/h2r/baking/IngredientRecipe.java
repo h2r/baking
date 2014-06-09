@@ -1,8 +1,11 @@
 package edu.brown.cs.h2r.baking;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
+
 import static java.util.Arrays.asList;
+
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -15,7 +18,15 @@ public class IngredientRecipe {
 	private Set<String> traits;
 	private String name;
 	private List<IngredientRecipe> contents;
-	private Set<String> necessaryTraits;
+	private AbstractMap<String, IngredientRecipe> necessaryTraits;
+	
+	private final Boolean NOTMIXED = false;
+	private final Boolean NOTMELTED = false;
+	private final Boolean NOTBAKED = false;
+	
+	private final Boolean MIXED = true;
+	private final Boolean MELTED = true;
+	private final Boolean BAKED = true;
 	
 	public IngredientRecipe (String name, Boolean mixed, Boolean melted, Boolean baked) {
 		this.name = name;
@@ -32,17 +43,18 @@ public class IngredientRecipe {
 		this.baked = baked;
 		this.contents = contents;
 		this.traits = new TreeSet<String>();
+		this.necessaryTraits = new HashMap<String, IngredientRecipe>();
 	}
 	
-	public IngredientRecipe (String name, Boolean mixed, Boolean melted, Boolean baked, List<IngredientRecipe> contents, Set<String> compulsoryTraits) {
+	/*public IngredientRecipe (String name, Boolean mixed, Boolean melted, Boolean baked, List<IngredientRecipe> contents, Set<String> compulsoryTraits) {
 		this.name = name;
 		this.mixed = mixed;
 		this.melted = melted;
 		this.baked = baked;
 		this.contents = contents;
 		this.traits = new TreeSet<String>();
-		this.necessaryTraits = compulsoryTraits;
-	}
+		this.necessaryTraits = generateNecessaryTraits(compulsoryTraits);
+	}*/
 	
 	public Boolean isSimple() {
 		if (this.necessaryTraits == null || this.necessaryTraits.size() == 0) {
@@ -137,10 +149,23 @@ public class IngredientRecipe {
 		return count;
 	}
 	
-	public Set<String> getNecessaryTraits() {
+	public AbstractMap<String, IngredientRecipe> getNecessaryTraits() {
 		if (this.necessaryTraits != null) {
 			return this.necessaryTraits;
 		}
-		return new TreeSet<String>();
+		return new HashMap<String, IngredientRecipe>();
 	}
+	
+	public void addNecessaryTrait(String trait, boolean mixed, boolean melted, boolean baked) {
+		IngredientRecipe ing = new IngredientRecipe(trait, mixed, melted, baked);
+		this.necessaryTraits.put(trait, ing);
+	}
+	/*private AbstractMap<String, IngredientRecipe> generateNecessaryTraits(Set<String> traits) {
+		HashMap<String, IngredientRecipe> necessaryTraits = new HashMap<String, IngredientRecipe>();
+		for (String trait : traits) {
+			IngredientRecipe ing = new IngredientRecipe(trait, NOTMIXED, NOTMELTED, NOTBAKED);
+			necessaryTraits.put(trait, ing);
+		}
+		return necessaryTraits;
+	}*/
 }

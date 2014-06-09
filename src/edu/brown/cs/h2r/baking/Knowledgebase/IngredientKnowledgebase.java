@@ -1,4 +1,4 @@
-package edu.brown.cs.h2r.Knowledgebase;
+package edu.brown.cs.h2r.baking.Knowledgebase;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
