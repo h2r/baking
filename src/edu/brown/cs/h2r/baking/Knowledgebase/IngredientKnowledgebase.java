@@ -31,13 +31,13 @@ public class IngredientKnowledgebase {
 	private AbstractMap<String, Set<String>> traitMap;
 	private AbstractMap<String, Set<String>> combinationTraitMap;
 	private AbstractMap<String, Set<String>> allTraits;
-	private AbstractMap<String, Set<String>> combinationMap;
+	private AbstractMap<String, ArrayList<Set<String>>> combinationMap;
 	private AbstractMap<String, IngredientRecipe> allIngredients;
 	public IngredientKnowledgebase() {
-		this.traitMap = new Parser(TRAITFILE).getMap();
-		this.combinationTraitMap = new Parser(COMBINATIONTRAITFILE).getMap();
+		this.traitMap = new TraitParser(TRAITFILE).getMap();
+		this.combinationTraitMap = new TraitParser(COMBINATIONTRAITFILE).getMap();
 		this.allTraits = generateAllTraitMap();
-		this.combinationMap = new Parser(COMBINATIONFILE).getMap();
+		this.combinationMap = new CombinationParser(COMBINATIONFILE).getMap();
 		this.allIngredients = generateAllIngredients();
 	}
 	
@@ -98,32 +98,34 @@ public class IngredientKnowledgebase {
 			contains.add(state.getObject(content));
 		}
 		for (String key : this.combinationMap.keySet()) {
-			Set<String> necessary_traits = this.combinationMap.get(key);
-			if (necessary_traits.size() == 1) {
-				String[] traitArray = new String[1];
-				String trait = necessary_traits.toArray(traitArray)[0];
-				Boolean match = true;
-				for (ObjectInstance obj : contains) {
-					if (!obj.getAllRelationalTargets("traits").contains(trait)) {
-						match = false;
+			ArrayList<Set<String>> possible_combinations = this.combinationMap.get(key);
+			for (Set<String> necessary_traits : possible_combinations) {
+				if (necessary_traits.size() == 1) {
+					String[] traitArray = new String[1];
+					String trait = necessary_traits.toArray(traitArray)[0];
+					Boolean match = true;
+					for (ObjectInstance obj : contains) {
+						if (!obj.getAllRelationalTargets("traits").contains(trait)) {
+							match = false;
+						}
 					}
-				}
-				if (match) {
-					return key;
-				}
-				
-			} else {
-				String[] traitArray = new String[necessary_traits.size()];
-				necessary_traits.toArray(traitArray);
-				ObjectInstance[] contentArray = new ObjectInstance[contains.size()];
-				contains.toArray(contentArray);
-				if ((contentArray[0].getAllRelationalTargets("traits").contains(traitArray[0])) 
-						&& (contentArray[1].getAllRelationalTargets("traits").contains(traitArray[1]))) {
-					return key;
-				}
-				if ((contentArray[0].getAllRelationalTargets("traits").contains(traitArray[1])) 
-						&& (contentArray[1].getAllRelationalTargets("traits").contains(traitArray[0]))) {
-					return key;
+					if (match) {
+						return key;
+					}
+					
+				} else {
+					String[] traitArray = new String[necessary_traits.size()];
+					necessary_traits.toArray(traitArray);
+					ObjectInstance[] contentArray = new ObjectInstance[contains.size()];
+					contains.toArray(contentArray);
+					if ((contentArray[0].getAllRelationalTargets("traits").contains(traitArray[0])) 
+							&& (contentArray[1].getAllRelationalTargets("traits").contains(traitArray[1]))) {
+						return key;
+					}
+					if ((contentArray[0].getAllRelationalTargets("traits").contains(traitArray[1])) 
+							&& (contentArray[1].getAllRelationalTargets("traits").contains(traitArray[0]))) {
+						return key;
+					}
 				}
 			}
 		}

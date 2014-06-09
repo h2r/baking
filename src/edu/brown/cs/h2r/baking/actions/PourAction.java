@@ -95,6 +95,7 @@ public class PourAction extends BakingAction {
 			return false;
 		}
 
+		//System.out.println(pouringContainer.getAllRelationalTargets("contains"));
 		return true;
 	}
 

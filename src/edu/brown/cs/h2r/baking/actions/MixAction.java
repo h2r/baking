@@ -1,34 +1,25 @@
 package edu.brown.cs.h2r.baking.actions;
-import java.util.AbstractMap;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.ArrayList;
-import java.util.List;
 
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
-import burlap.oomdp.core.Value;
 import edu.brown.cs.h2r.baking.Knowledgebase.IngredientKnowledgebase;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.actions.BakingAction;
 import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
-import edu.brown.cs.h2r.baking.Experiments.ExperimentHelper;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
-import edu.brown.cs.h2r.baking.Recipes.Recipe;
 
 
 public class MixAction extends BakingAction {	
 	public static final String className = "mix";
-	public AbstractMap<String, Set<String>> switches;
-	public IngredientKnowledgebase knowledgebase;
+	private IngredientKnowledgebase knowledgebase;
 	public MixAction(Domain domain, IngredientRecipe ingredient) {
 		super(MixAction.className, domain, ingredient, new String[] {AgentFactory.ClassName, ContainerFactory.ClassName});
 		// At some point, generate the actual map
@@ -135,7 +126,6 @@ public class MixAction extends BakingAction {
 			ObjectInstance newIngredient = 
 					IngredientFactory.getNewComplexIngredientObjectInstance(complexIngredientClass, 
 							Integer.toString(rando.nextInt()), false, false, false, container.getName(), traits, contents);
-			
 			state.addObject(newIngredient);
 			ContainerFactory.removeContents(container);
 			

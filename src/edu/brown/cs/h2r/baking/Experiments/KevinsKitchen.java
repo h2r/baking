@@ -38,10 +38,10 @@ import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import edu.brown.cs.h2r.baking.Recipes.Brownies;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
+import edu.brown.cs.h2r.baking.actions.MeltAction;
 import edu.brown.cs.h2r.baking.actions.MixAction;
 import edu.brown.cs.h2r.baking.actions.MoveAction;
 import edu.brown.cs.h2r.baking.actions.PourAction;
-
 
 public class KevinsKitchen implements DomainGenerator {
 		
@@ -69,6 +69,7 @@ public class KevinsKitchen implements DomainGenerator {
 		Action mix = new MixAction(domain, recipe.topLevelIngredient);
 		Action pour = new PourAction(domain, recipe.topLevelIngredient);
 		Action move = new MoveAction(domain, recipe.topLevelIngredient);
+		Action melt = new MeltAction(domain, recipe.topLevelIngredient);
 		State state = new State();
 		
 		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
@@ -79,8 +80,6 @@ public class KevinsKitchen implements DomainGenerator {
 			state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "counter"));
 		}
 		
-		//recipe.addAllIngredients(state, domain);
-		//this.allIngredients = recipe.getAllIngredients();
 		IngredientKnowledgebase knowledgebase = new IngredientKnowledgebase();
 		this.allIngredients = knowledgebase.getAllIngredientObjectInstanceList(domain);
 		System.out.println("Planner will now plan the "+recipe.topLevelIngredient.getName()+" recipe!");
@@ -128,6 +127,7 @@ public class KevinsKitchen implements DomainGenerator {
 		} else {
 			System.out.println("Planning over ingredients with the traits: "+ingredient.getTraits());
 			((AffordancesApply)(domain.getPropFunction("affordances"))).changeTraits(ingredient.getTraits());
+			((MeltAction)(domain.getAction("melt"))).changePlanningIngredient(ingredient);
 		}
 		
 		final PropositionalFunction isSuccess = new RecipeFinished("success", domain, ingredient);

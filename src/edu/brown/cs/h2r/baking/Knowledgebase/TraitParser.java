@@ -10,10 +10,10 @@ import java.util.Set;
 import java.util.TreeSet;
 
 
-public class Parser {
+public class TraitParser {
 
 	private AbstractMap<String, Set<String>> map;
-	public Parser(String filename) {
+	public TraitParser(String filename) {
 		this.map = generateMap(filename);
 	}
 

@@ -10,14 +10,11 @@ import edu.brown.cs.h2r.baking.Knowledgebase.IngredientKnowledgebase;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
-import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 
 import java.util.AbstractMap;
-import java.util.HashMap;
-import java.util.TreeSet;
 
 
 public abstract class Recipe {
@@ -102,16 +99,6 @@ public abstract class Recipe {
 		List<IngredientRecipe> recipeContents = ingredientRecipe.getContents();
 		Set<String> compulsoryTraits = ingredientRecipe.getNecessaryTraits().keySet();
 		AbstractMap<String, IngredientRecipe> compulsoryTraitMap = ingredientRecipe.getNecessaryTraits();
-		
-		
-		/* Sanity Check */
-		for (String trait : compulsoryTraits) {
-			if (!compulsoryTraitMap.containsKey(trait)) {
-				System.out.println("??");
-			}
-		}
-		
-		/* END */
 		
 		if (!ingredientRecipe.isSimple()) {
 			Set<String> contents = IngredientFactory.getContentsForIngredient(object);

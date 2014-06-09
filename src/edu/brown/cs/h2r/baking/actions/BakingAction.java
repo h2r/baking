@@ -103,4 +103,8 @@ public class BakingAction extends Action {
 			MakeSpanFactory.occupyAgent(makeSpanObjects.get(0), agentName);
 		}		
 	}
+	
+	public void changePlanningIngredient(IngredientRecipe newIngredient) {
+		this.ingredient = newIngredient;
+	}
 }

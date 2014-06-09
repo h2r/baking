@@ -237,6 +237,18 @@ public class IngredientFactory {
 		return ingredient.getDiscValForAttribute(IngredientFactory.attributeMelted) == 1;
 	}
 	
+	public static void mixIngredient(ObjectInstance ingredient) {
+		ingredient.setValue(IngredientFactory.attributeMixed, 1);
+	}
+	
+	public static void bakeIngredient(ObjectInstance ingredient) {
+		ingredient.setValue(IngredientFactory.attributeBaked, 1);
+	}
+	
+	public static void meltIngredient(ObjectInstance ingredient) {
+		ingredient.setValue(IngredientFactory.attributeMelted, 1);
+	}
+	
 	public static Boolean isSimple(ObjectInstance ingredient) {
 		return (ingredient.getObjectClass().name == IngredientFactory.ClassNameSimple ||
 				ingredient.getObjectClass().name == IngredientFactory.ClassNameSimpleHidden);

@@ -20,14 +20,6 @@ public class IngredientRecipe {
 	private List<IngredientRecipe> contents;
 	private AbstractMap<String, IngredientRecipe> necessaryTraits;
 	
-	private final Boolean NOTMIXED = false;
-	private final Boolean NOTMELTED = false;
-	private final Boolean NOTBAKED = false;
-	
-	private final Boolean MIXED = true;
-	private final Boolean MELTED = true;
-	private final Boolean BAKED = true;
-	
 	public IngredientRecipe (String name, Boolean mixed, Boolean melted, Boolean baked) {
 		this.name = name;
 		this.mixed = mixed;
