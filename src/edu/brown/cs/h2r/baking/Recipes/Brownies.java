@@ -50,7 +50,7 @@ public class Brownies extends Recipe {
 		List<IngredientRecipe> ingredientList3 = new ArrayList<IngredientRecipe>();
 		ingredientList3.add(dry_ings);
 		ingredientList3.add(wet_ings);
-		IngredientRecipe brownies = new IngredientRecipe("brownies", false, false, false, ingredientList3);
+		IngredientRecipe brownies = new IngredientRecipe("brownies", NOTMIXED, NOTMELTED, NOTBAKED, ingredientList3);
 		brownies.addTraits(knowledgebase.getTraits("brownies"));
 		
 		this.topLevelIngredient = brownies;

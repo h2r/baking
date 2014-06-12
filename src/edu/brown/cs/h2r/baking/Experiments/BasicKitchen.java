@@ -96,7 +96,7 @@ public class BasicKitchen implements DomainGenerator {
 		containers.addAll(heatingContainers);
 		containers.addAll(bakingContainers);
 		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter", containers, "human"));
-		//state.addObject(SpaceFactory.getNewObjectInstance(domain, "shelf", false, false, false, null, ""));
+		state.addObject(SpaceFactory.getNewObjectInstance(domain, "shelf", false, false, false, null, ""));
 		
 		
 		ObjectClass simpleIngredientClass = domain.getObjectClass(IngredientFactory.ClassNameSimple);

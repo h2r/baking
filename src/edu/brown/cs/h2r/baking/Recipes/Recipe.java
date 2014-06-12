@@ -245,8 +245,40 @@ public abstract class Recipe {
 			contents.add(content);
 		}
 		
-		// ensure that our state still enough ingredients to fulfill all necessary ingredients
-		// and traits!
+		// For all of our contents...
+		// If we've found a match in our ingredients
+		Boolean foundAGoodIngredient = false;
+		for (String content_name : contents) {
+			// If current ingredient is a match
+			Boolean goodIngredient = false;
+			// Check that the object is a required ingredient
+			for (IngredientRecipe ing : recipeContents) {
+				if (ing.getName().equals(content_name)) {
+					goodIngredient = true;
+					foundAGoodIngredient = true;
+				}
+			}
+			// or check that it fulfills a required trait
+			for (String trait : IngredientFactory.getTraits(state.getObject(content_name))) {
+				if (recipeTraits.contains(trait)) {
+					goodIngredient = true;
+					foundAGoodIngredient = true;
+				}
+			}
+			// Current Ingredient isn't a necessary ingredient NOR does it fulfill any
+			// of the required traits
+			if (!goodIngredient) {
+				// In our ingredients, we have added at least one "good" ingredient, but have also
+				// ruined our recipe by adding a bad ingredient -- we failed! 
+				if (foundAGoodIngredient) {
+					return true;
+				}
+			}
+		}
+		
+		
+		// ensure that our there are still enough ingredients in our state to fulfill
+		// all the necessary ingredients and traits!
 		for (String name : contents) {
 			IngredientRecipe match = null;
 			for (IngredientRecipe recipeContent : recipeContents) {
@@ -296,7 +328,7 @@ public abstract class Recipe {
 				}
 			}
 		}
-		
+		// Check if there are any ingredients or traits we haven't fulfilled yet.
 		if (recipeContents.size() != 0 || recipeTraits.size() != 0) {
 			return true;
 		}
