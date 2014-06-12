@@ -21,6 +21,11 @@ public class MeltAction extends BakingAction {
 	
 	@Override
 	public boolean applicableInState(State state, String[] params) {
+		if (ingredient.getName().equals("wet_ingredients")) {
+			if (ingredient.getNecessaryTraits().size() == 0) {
+				System.out.println("!!");
+			}
+		}
 		if (!super.applicableInState(state, params)) {
 			return false;
 		}
@@ -39,7 +44,6 @@ public class MeltAction extends BakingAction {
 			List<IngredientRecipe> contents = ingredient.getContents();
 			for (IngredientRecipe content : contents) {
 				if (content.getName().equals(toMelt.getName())) {
-					//return content.getMelted();
 					if (content.getMelted()) {
 						return true;
 					}

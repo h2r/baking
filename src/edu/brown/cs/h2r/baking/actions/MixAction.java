@@ -22,10 +22,7 @@ public class MixAction extends BakingAction {
 	private IngredientKnowledgebase knowledgebase;
 	public MixAction(Domain domain, IngredientRecipe ingredient) {
 		super(MixAction.className, domain, ingredient, new String[] {AgentFactory.ClassName, ContainerFactory.ClassName});
-		// At some point, generate the actual map
 		this.knowledgebase = new IngredientKnowledgebase();
-		//this.switches = knowledgebase.;
-		
 	}
 	
 	@Override
@@ -87,22 +84,6 @@ public class MixAction extends BakingAction {
 		if (!(res  = knowledgebase.canCombine(state, container)).equals("")) {
 			knowledgebase.combineIngredients(state, domain, ingredient, container, res);
 		} else {
-			
-			/* Trait stuff 
-			Set<String> traits = new TreeSet<String>();
-			Set<ObjectInstance> hidden_copies = new HashSet<ObjectInstance>();
-			for (String content : contents) {
-				ObjectInstance ob = state.getObject(content);
-				if (ob.getObjectClass() == null) {
-					System.out.println("help!");
-				}
-				Set<String> ob_traits = ob.getAllRelationalTargets("traits");
-				for (String trait : ob_traits) {
-					traits.add(trait);
-				}
-				hidden_copies.add(hideObject(state, ob));
-			}
-			end traits */
 			Set<ObjectInstance> hidden_copies = new HashSet<ObjectInstance>();
 			Set<String> traits = new TreeSet<String>();
 			Set<ObjectInstance> objects = new HashSet<ObjectInstance>();

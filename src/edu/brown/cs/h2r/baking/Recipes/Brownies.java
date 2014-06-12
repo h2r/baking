@@ -25,10 +25,10 @@ public class Brownies extends Recipe {
 		List<IngredientRecipe> ingredientList = new ArrayList<IngredientRecipe>();
 		ingredientList.add(knowledgebase.getIngredient("vanilla"));
 		
-		IngredientRecipe wet_ings = new IngredientRecipe("wet_stuff", NOTMIXED, NOTMELTED, NOTBAKED, ingredientList);
+		IngredientRecipe wet_ings = new IngredientRecipe("wet_ingredients", NOTMIXED, NOTMELTED, NOTBAKED, ingredientList);
 		wet_ings.addNecessaryTrait("eggs", NOTMIXED, NOTMELTED, NOTBAKED);
 		wet_ings.addNecessaryTrait("sugar", NOTMIXED, NOTMELTED, NOTBAKED);
-		wet_ings.addTraits(knowledgebase.getTraits("wet_stuff"));
+		wet_ings.addTraits(knowledgebase.getTraits("wet_ingredients"));
 		
 		// In a large saucepan, melt 1/2 cup butter.
 		wet_ings.addNecessaryTrait("fat", NOTMIXED, MELTED, NOTBAKED);
@@ -41,11 +41,11 @@ public class Brownies extends Recipe {
 		
 		
 		// Make the subgoal
-		IngredientRecipe dry_ings = new IngredientRecipe ("dry_stuff", NOTMIXED, NOTMELTED, NOTBAKED, ingredientList2);
+		IngredientRecipe dry_ings = new IngredientRecipe ("dry_ingredients", NOTMIXED, NOTMELTED, NOTBAKED, ingredientList2);
 		// Add the necessaryTraits and their respective attributes
 		dry_ings.addNecessaryTrait("flour", NOTMIXED, NOTMELTED, NOTBAKED);
 		dry_ings.addNecessaryTrait("salt", NOTMIXED, NOTMELTED, NOTBAKED);
-		dry_ings.addTraits(knowledgebase.getTraits("dry_stuff"));
+		dry_ings.addTraits(knowledgebase.getTraits("dry_ingredients"));
 		
 		List<IngredientRecipe> ingredientList3 = new ArrayList<IngredientRecipe>();
 		ingredientList3.add(dry_ings);

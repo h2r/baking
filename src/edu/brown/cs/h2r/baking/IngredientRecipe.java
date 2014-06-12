@@ -38,16 +38,6 @@ public class IngredientRecipe {
 		this.necessaryTraits = new HashMap<String, IngredientRecipe>();
 	}
 	
-	/*public IngredientRecipe (String name, Boolean mixed, Boolean melted, Boolean baked, List<IngredientRecipe> contents, Set<String> compulsoryTraits) {
-		this.name = name;
-		this.mixed = mixed;
-		this.melted = melted;
-		this.baked = baked;
-		this.contents = contents;
-		this.traits = new TreeSet<String>();
-		this.necessaryTraits = generateNecessaryTraits(compulsoryTraits);
-	}*/
-	
 	public Boolean isSimple() {
 		if (this.necessaryTraits == null || this.necessaryTraits.size() == 0) {
 			return this.contents == null || this.contents.size() == 0;
@@ -152,12 +142,4 @@ public class IngredientRecipe {
 		IngredientRecipe ing = new IngredientRecipe(trait, mixed, melted, baked);
 		this.necessaryTraits.put(trait, ing);
 	}
-	/*private AbstractMap<String, IngredientRecipe> generateNecessaryTraits(Set<String> traits) {
-		HashMap<String, IngredientRecipe> necessaryTraits = new HashMap<String, IngredientRecipe>();
-		for (String trait : traits) {
-			IngredientRecipe ing = new IngredientRecipe(trait, NOTMIXED, NOTMELTED, NOTBAKED);
-			necessaryTraits.put(trait, ing);
-		}
-		return necessaryTraits;
-	}*/
 }

@@ -131,7 +131,7 @@ public class IngredientKnowledgebase {
 		}
 		return "";
 	}
-	//TODO: Ffind a better place for this method
+	//TODO: Find a better place for this method
 	public void combineIngredients(State state, Domain domain, IngredientRecipe recipe, ObjectInstance container, String toswap) {
 		Set<String> traits = new TreeSet<String>();
 		//get the actual traits from the trait thing
@@ -140,7 +140,7 @@ public class IngredientKnowledgebase {
 		}
 		Set<String> ings = ContainerFactory.getContentNames(container);
 		ObjectInstance new_ing = IngredientFactory.getNewComplexIngredientObjectInstance(domain.getObjectClass(IngredientFactory.ClassNameComplex), toswap, false, false, false, "", traits, ings);
-		
+		IngredientFactory.setSwapped(new_ing);
 		// Make the hidden Copies
 		Set<ObjectInstance> hidden_copies = new HashSet<ObjectInstance>();
 		for (String name : ings) {

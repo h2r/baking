@@ -22,6 +22,7 @@ public class IngredientFactory {
 	private static final String attributeContainer = "container";
 	private static final String attributeContains = "contents";
 	private static final String attributeTraits = "traits";
+	private static final String attributeSwapped = "swapped";
 
 	private static ObjectClass createObjectClass(Domain domain, String className) {
 		ObjectClass objectClass = new ObjectClass(domain, className);
@@ -62,6 +63,11 @@ public class IngredientFactory {
 		objectClass.addAttribute(
 				new Attribute(domain, IngredientFactory.attributeContains, 
 						Attribute.AttributeType.MULTITARGETRELATIONAL));
+		Attribute swappedAttribute =
+				new Attribute(domain, IngredientFactory.attributeSwapped, Attribute.AttributeType.DISC);
+		swappedAttribute.setDiscValuesForRange(0,1,1);
+		objectClass.addAttribute(swappedAttribute);
+		
 		objectClass.hidden = true;
 		return objectClass;
 	}
@@ -75,6 +81,12 @@ public class IngredientFactory {
 		objectClass.addAttribute(
 				new Attribute(domain, IngredientFactory.attributeContains, 
 						Attribute.AttributeType.MULTITARGETRELATIONAL));
+		
+		Attribute swappedAttribute =
+				new Attribute(domain, IngredientFactory.attributeSwapped, Attribute.AttributeType.DISC);
+		swappedAttribute.setDiscValuesForRange(0,1,1);
+		objectClass.addAttribute(swappedAttribute);
+		
 		return objectClass;
 	}
 		
@@ -100,6 +112,7 @@ public class IngredientFactory {
 		newInstance.setValue(IngredientFactory.attributeBaked, baked ? 1 : 0);
 		newInstance.setValue(IngredientFactory.attributeMelted, melted ? 1 : 0);
 		newInstance.setValue(IngredientFactory.attributeMixed, mixed ? 1 : 0);
+		newInstance.setValue(IngredientFactory.attributeSwapped, 0);
 		
 		if (ingredientContainer != null || ingredientContainer != "") {
 			newInstance.addRelationalTarget(IngredientFactory.attributeContainer, ingredientContainer);
@@ -143,13 +156,14 @@ public class IngredientFactory {
 		Boolean mixed = ingredient.getMixed();
 		Boolean melted = ingredient.getMelted();
 		Set<String> contents = new TreeSet<String>();
-		if (!ingredient.isSimple()) {
-			for (IngredientRecipe ing : ingredient.getContents()) {
-				contents.add(ing.getName());
-			}
-		}
 		String container = "";
 		Set<String> traits = ingredient.getTraits();
+		if (ingredient.isSimple()) {
+			return IngredientFactory.getNewSimpleIngredientObjectInstance(oc, name, baked, melted, mixed, traits, container);
+		}
+		for (IngredientRecipe ing : ingredient.getContents()) {
+			contents.add(ing.getName());
+		}
 		return IngredientFactory.getNewComplexIngredientObjectInstance(oc, name, baked, melted, mixed, container, traits, contents);
 	}
 	
@@ -252,6 +266,19 @@ public class IngredientFactory {
 	public static Boolean isSimple(ObjectInstance ingredient) {
 		return (ingredient.getObjectClass().name == IngredientFactory.ClassNameSimple ||
 				ingredient.getObjectClass().name == IngredientFactory.ClassNameSimpleHidden);
+	}
+	
+	public static Boolean isSwapped(ObjectInstance ingredient) {
+		if (!isSimple(ingredient)) {
+			return ingredient.getDiscValForAttribute(IngredientFactory.attributeSwapped) == 1;
+		}
+		return false;
+	}
+	
+	public static void setSwapped(ObjectInstance ingredient) {
+		if (!isSimple(ingredient)) {
+			ingredient.setValue(IngredientFactory.attributeSwapped, 1);
+		}
 	}
 	
 	public static Set<String> getContentsForIngredient(ObjectInstance ingredient) {

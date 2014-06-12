@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import apple.laf.JRSUIConstants.Size;
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.Policy;
 import burlap.behavior.singleagent.auxiliary.StateReachability;
@@ -131,7 +132,7 @@ public class KevinsKitchen implements DomainGenerator {
 		}
 		
 		final PropositionalFunction isSuccess = new RecipeFinished("success", domain, ingredient);
-		PropositionalFunction isFailure = new RecipeBotched("botched", domain, ingredient);
+		final PropositionalFunction isFailure = new RecipeBotched("botched", domain, ingredient);
 		TerminalFunction recipeTerminalFunction = new RecipeTerminalFunction(isSuccess, isFailure);
 		
 		StateHashFactory hashFactory = new NameDependentStateHashFactory();
@@ -144,7 +145,16 @@ public class KevinsKitchen implements DomainGenerator {
 		RewardFunction rf = new RewardFunction() {
 			@Override
 			public double reward(State s, GroundedAction a, State sprime) {
+				ObjectInstance container = sprime.getObject(a.params[a.params.length-1]);
+				if (container.getObjectClass().equals("container")) {
+					Set<String> contents = ContainerFactory.getContentNames(container);
+					if (contents.size() == 0) {
+						return -1;
+					}
+					return (isFailure.isTrue(sprime, container.getName())) ? -1 : -1;
+				}
 				return -1;
+
 			}
 		};
 				

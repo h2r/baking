@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import edu.brown.cs.h2r.baking.Knowledgebase.IngredientKnowledgebase;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
@@ -100,18 +101,23 @@ public abstract class Recipe {
 		Set<String> compulsoryTraits = ingredientRecipe.getNecessaryTraits().keySet();
 		AbstractMap<String, IngredientRecipe> compulsoryTraitMap = ingredientRecipe.getNecessaryTraits();
 		
-		if (!ingredientRecipe.isSimple()) {
-			Set<String> contents = IngredientFactory.getContentsForIngredient(object);
-			
-			if ((recipeContents.size() + compulsoryTraits.size()) != contents.size())
-			{
-				return false;
-			}
-			// Gets all of the contents for the current object we've created
-			for (String name : contents) {
-				ObjectInstance obj = state.getObject(name);
-				traitIngredients.add(obj);
-			}
+		Set<String> contents = IngredientFactory.getContentsForIngredient(object);
+		
+		if ((recipeContents.size() + compulsoryTraits.size()) != contents.size())
+		{
+			return false;
+		}
+		
+		// Names match and content size match (checked above). Since it's a swapped 
+		// ingredient (we've created it) we know that it has the correct ingredients 
+		// and thus there's no need to check further.
+		if (IngredientFactory.isSwapped(object)) {
+			return object.getName() == ingredientRecipe.getName();
+		}
+		// Gets all of the contents for the current object we've created
+		for (String name : contents) {
+			ObjectInstance obj = state.getObject(name);
+			traitIngredients.add(obj);
 		}
 		
 		Map<String, IngredientRecipe> complexIngredientRecipes = new HashMap<String, IngredientRecipe>();
@@ -220,88 +226,79 @@ public abstract class Recipe {
 				// They aren't even the same name. FAIL!
 				return true;
 			}
-			if ((!ingredientRecipe.getBaked() && IngredientFactory.isBakedIngredient(object)) ||
-				(!ingredientRecipe.getMelted() && IngredientFactory.isMeltedIngredient(object)) ||
-				(!ingredientRecipe.getMixed() && IngredientFactory.isMixedIngredient(object)))
-			{
-				// One of baked/melted/mixed is true that shouldn't be. FAIL!
+			if (!AttributesMatch(ingredientRecipe, object)) {
 				return true;
 			}
 		}
 		
-		List<IngredientRecipe> recipeContents = ingredientRecipe.getContents();
-		Set<String> contents = IngredientFactory.getContentsForIngredient(object);
-		Map<String, IngredientRecipe> complexIngredientRecipes = new HashMap<String, IngredientRecipe>();
-		Map<String, IngredientRecipe> simpleIngredientRecipes = new HashMap<String, IngredientRecipe>();
-		
-		for (IngredientRecipe subIngredientRecipe : recipeContents)
-		{
-			if (!subIngredientRecipe.isSimple())
-			{
-				complexIngredientRecipes.put(subIngredientRecipe.getName(), subIngredientRecipe);
-			}
-			else
-			{
-				simpleIngredientRecipes.put(subIngredientRecipe.getName(), subIngredientRecipe);
-			}
+		// Make copies so we can edit them as we go!
+		List<IngredientRecipe> recipeContents = new ArrayList<IngredientRecipe>();
+		for (IngredientRecipe rc : ingredientRecipe.getContents()) {
+			recipeContents.add(rc);
+		}
+		Set<String> recipeTraits = new TreeSet<String>();
+		for (String trait : ingredientRecipe.getNecessaryTraits().keySet()) {
+			recipeTraits.add(trait);
+		}
+		Set<String> contents = new TreeSet<String>();
+		for (String content :IngredientFactory.getContentsForIngredient(object)) {
+			contents.add(content);
 		}
 		
-
-		List<ObjectInstance> producedIngredientInstances =
-				state.getObjectsOfTrueClass(IngredientFactory.ClassNameComplex);
-		List<ObjectInstance> complexIngredientContents = new ArrayList<ObjectInstance>();
-		for (ObjectInstance obj : producedIngredientInstances)
-		{
-			if (contents.contains(obj.getName()))
-			{
-				complexIngredientContents.add(obj);
-			}
-		}
-		
-		List<ObjectInstance> simpleIngredientInstances = 
-				state.getObjectsOfTrueClass(IngredientFactory.ClassNameSimple);
-		List<ObjectInstance> simpleIngredientContents = new ArrayList<ObjectInstance>();
-		for (ObjectInstance obj : simpleIngredientInstances)
-		{
-			if (contents.contains(obj.getName()))
-			{
-				simpleIngredientContents.add(obj);
-			}
-		}
-		
-		if (simpleIngredientContents.size() > simpleIngredientRecipes.size() ||
-			complexIngredientContents.size() > complexIngredientRecipes.size())
-		{
-			// The number of simple/complex ingredients is greater than what we've called for. DESCEND!
-			return Recipe.isFailure(state, simpleIngredientRecipes, complexIngredientRecipes, object);
-		}
-	
-		for (ObjectInstance obj : simpleIngredientContents)
-		{
-			if (simpleIngredientRecipes.containsKey(obj.getName()) &&
-				Recipe.isFailure(state, simpleIngredientRecipes.get(obj.getName()), obj))
-			{
-				// If the list of simple ingredients does contain this simple ingredient, but
-				// the two simple ingredients don't match, we must descend.
-				return Recipe.isFailure(state, simpleIngredientRecipes, complexIngredientRecipes, object);
-			}		
-		}
-		
-		for (ObjectInstance obj : complexIngredientContents)
-		{
-			Boolean found = false;
-			for (IngredientRecipe subSubIngredient : complexIngredientRecipes.values())
-			{
-				if (!Recipe.isFailure(state, subSubIngredient, obj))
-				{
-					found = true;
+		// ensure that our state still enough ingredients to fulfill all necessary ingredients
+		// and traits!
+		for (String name : contents) {
+			IngredientRecipe match = null;
+			for (IngredientRecipe recipeContent : recipeContents) {
+				if (recipeContent.getName().equals(name)) {
+					match = recipeContent;
+					break;
 				}
 			}
-			if (!found)
-			{
-				// If we can't find this objectInstance in the complex ingredient list, we must descend.
-				return Recipe.isFailure(state, simpleIngredientRecipes, complexIngredientRecipes, object);
+			if (match != null) {
+				recipeContents.remove(match);
+			} else {
+				ObjectInstance ing = state.getObject(name);
+				String trait_match = null;
+				for (String trait : IngredientFactory.getTraits(ing)) {
+					if (recipeTraits.contains(trait)) {
+						trait_match = trait;
+						break;
+					}
+				}
+				if (trait_match != null) {
+					recipeTraits.remove(trait_match);
+				}
 			}
+		}
+		List<ObjectInstance> simple_objs = state.getObjectsOfTrueClass("simple_ingredient");
+		for (ObjectInstance ing : simple_objs) {
+			IngredientRecipe match = null;
+			String name = ing.getName();
+			for (IngredientRecipe recipeContent : recipeContents) {
+				if (recipeContent.getName().equals(name)) {
+					match = recipeContent;
+					break;
+				}
+			}
+			if (match != null) {
+				recipeContents.remove(match);
+			} else {
+				String trait_match = null;
+				for (String trait : IngredientFactory.getTraits(ing)) {
+					if (recipeTraits.contains(trait)) {
+						trait_match = trait;
+						break;
+					}
+				}
+				if (trait_match != null) {
+					recipeTraits.remove(trait_match);
+				}
+			}
+		}
+		
+		if (recipeContents.size() != 0 || recipeTraits.size() != 0) {
+			return true;
 		}
 		
 		// No failures were explicitly found, therefore we haven't yet failed.
