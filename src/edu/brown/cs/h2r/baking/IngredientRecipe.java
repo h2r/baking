@@ -8,21 +8,43 @@ public class IngredientRecipe {
 	private Boolean mixed;
 	private Boolean melted;
 	private Boolean baked;
+	private Boolean peeled;
 	private String name;
 	private List<IngredientRecipe> contents;
 	
+	@Deprecated
 	public IngredientRecipe (String name, Boolean mixed, Boolean melted, Boolean baked) {
 		this.name = name;
 		this.mixed = mixed;
 		this.melted = melted;
 		this.baked = baked;
+		this.peeled = false;
 	}
 	
+	@Deprecated
 	public IngredientRecipe (String name, Boolean mixed, Boolean melted, Boolean baked, List<IngredientRecipe> contents) {
 		this.name = name;
 		this.mixed = mixed;
 		this.melted = melted;
 		this.baked = baked;
+		this.peeled = false;
+		this.contents = contents;
+	}
+	
+	public IngredientRecipe(String name, Boolean mixed, Boolean melted, Boolean baked, Boolean peeled) {
+		this.name = name;
+		this.mixed = mixed;
+		this.melted = melted;
+		this.baked = baked;
+		this.peeled = peeled;
+	}
+	
+	public IngredientRecipe(String name, Boolean mixed, Boolean melted, Boolean baked, Boolean peeled, List<IngredientRecipe> contents) {
+		this.name = name;
+		this.mixed = mixed;
+		this.melted = melted;
+		this.baked = baked;
+		this.peeled = peeled;
 		this.contents = contents;
 	}
 	
@@ -40,6 +62,10 @@ public class IngredientRecipe {
 	
 	public Boolean getBaked () {
 		return this.baked;
+	}
+	
+	public Boolean getPeeled() {
+		return this.peeled;
 	}
 	
 	public String getName() {

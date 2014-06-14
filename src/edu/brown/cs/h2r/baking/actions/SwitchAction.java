@@ -4,13 +4,14 @@ import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
-import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 
-public class PeelAction extends BakingAction {
-	public PeelAction(Domain domain) {
-		super("peel", domain, new String[] {AgentFactory.ClassName, IngredientFactory.ClassNameSimple});
+public class SwitchAction extends BakingAction {
+	public SwitchAction(Domain domain) {
+		super("switch", domain, new String[] {AgentFactory.ClassName, SpaceFactory.ClassName});
 	}
-
+	
 	@Override
 	public boolean applicableInState(State state, String[] params) {
 		if (!super.applicableInState(state, params)) {
@@ -19,7 +20,11 @@ public class PeelAction extends BakingAction {
 		
 		ObjectInstance agent =  state.getObject(params[0]);
 		
-		ObjectInstance ingredientInstance = state.getObject(params[1]);
+		ObjectInstance spaceInstance = state.getObject(params[1]);
+		if (!SpaceFactory.isSwitchable(spaceInstance)) {
+			return false;
+		}
+		
 		
 		return true;
 	}
@@ -28,11 +33,12 @@ public class PeelAction extends BakingAction {
 	protected State performActionHelper(State state, String[] params) {
 		super.performActionHelper(state, params);
 		ObjectInstance spaceInstance = state.getObject(params[1]);
-		this.peel(spaceInstance);
+		this.switchOnOff(spaceInstance);
 		return state;
 	}
 	
-	protected void peel(ObjectInstance objectInstance) {
-		IngredientFactory.setPeeled(objectInstance, true);
+	protected void switchOnOff(ObjectInstance objectInstance) {
+		boolean isOn = SpaceFactory.getOnOff(objectInstance);
+		SpaceFactory.setOnOff(objectInstance, !isOn);
 	}
 }

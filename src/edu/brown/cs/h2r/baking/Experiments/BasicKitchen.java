@@ -16,7 +16,6 @@ import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.SADomain;
-import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.RecipeBotched;
 import edu.brown.cs.h2r.baking.RecipeFinished;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
@@ -28,7 +27,7 @@ import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.actions.MixAction;
 import edu.brown.cs.h2r.baking.actions.MoveAction;
 import edu.brown.cs.h2r.baking.actions.PourAction;
-import edu.brown.cs.h2r.baking.actions.TurnOnOffAction;
+import edu.brown.cs.h2r.baking.actions.SwitchAction;
 import edu.brown.cs.h2r.baking.actions.UseAction;
 
 public class BasicKitchen implements DomainGenerator {
@@ -64,7 +63,7 @@ public class BasicKitchen implements DomainGenerator {
 		domain.addObjectClass(MakeSpanFactory.getObjectClass(domain));
 		
 		Action mix = new MixAction(domain);
-		Action turnOnOff = new TurnOnOffAction(domain);
+		Action turnOnOff = new SwitchAction(domain);
 		Action use = new UseAction(domain);
 		//Action bake = new BakeAction(domain);
 		Action pour = new PourAction(domain);
@@ -124,8 +123,7 @@ public class BasicKitchen implements DomainGenerator {
 		}
 		
 		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
-		
-		state.addObject(SpaceFactory.getNewObjectInstance(domain, "shelf", false, false, false, null, "" ));
+		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "shelf", null, null));
 		
 		return state;
 	}
