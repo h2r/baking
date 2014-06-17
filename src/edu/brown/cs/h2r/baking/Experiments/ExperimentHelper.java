@@ -145,6 +145,7 @@ public class ExperimentHelper {
 			if (Recipe.isSuccess(endState, ingredient, obj))
 			{
 				namedIngredient = ExperimentHelper.getNewNamedComplexIngredient(obj, ingredient.getName());
+				IngredientFactory.setSwapped(namedIngredient);
 				String container = IngredientFactory.getContainer(obj);
 				ExperimentHelper.switchContainersIngredients(containerObjects, obj, namedIngredient);
 				
@@ -178,15 +179,4 @@ public class ExperimentHelper {
 		}
 		return null;
 	}
-	/*public static State setPrimaryAgent(State state, String agent, IngredientRecipe ingredient)
-	{
-		State newState = state.copy();
-		List<ObjectInstance> makeSpanObjects = newState.getObjectsOfTrueClass(MakeSpanFactory.ClassName);
-		if (!makeSpanObjects.isEmpty())
-		{
-			ObjectInstance makeSpanObject = makeSpanObjects.get(0);
-			MakeSpanFactory.setPrimaryAgent(makeSpanObject, agent);
-		}
-		return newState;
-	}*/
 }

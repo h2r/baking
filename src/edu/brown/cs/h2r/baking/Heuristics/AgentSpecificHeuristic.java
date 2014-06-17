@@ -80,7 +80,7 @@ public class AgentSpecificHeuristic implements Heuristic {
 		{
 			return count;
 		}
-		Set<String> contents = IngredientFactory.getContentsForIngredient(object);
+		Set<String> contents = IngredientFactory.getIngredientContents(object);
 		for (String str: contents)
 		{
 			count += this.getSubIngredients(state, state.getObject(str));

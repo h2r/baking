@@ -20,12 +20,18 @@ public class MoveAction extends BakingAction {
 		if (!super.applicableInState(s, params)) {
 			return false;
 		}
+		
 		String spaceName = params[2];
 		ObjectInstance space = s.getObject(spaceName);
 		String agentName = SpaceFactory.getAgent(space).iterator().next();
 		if (agentName != params[0]) {
 			//return false;
 		}
+		ObjectInstance container = s.getObject(params[1]);
+		if (ContainerFactory.getSpaceName(container).equals(spaceName)) {
+			return false;
+		}
+		
 		return true;
 	
 	}
@@ -36,8 +42,12 @@ public class MoveAction extends BakingAction {
 		//System.out.println("Moving container " + params[1] + " to " + params[2]);
 		ObjectInstance containerInstance = state.getObject(params[1]);
 		ObjectInstance spaceInstance = state.getObject(params[2]);
+		move (state, containerInstance, spaceInstance);
+		return state;
+	}
+	
+	protected void move(State state, ObjectInstance containerInstance, ObjectInstance spaceInstance) {
 		ContainerFactory.changeContainerSpace(containerInstance, spaceInstance.getName());
 		SpaceFactory.addContainer(spaceInstance, containerInstance);
-		return state;
 	}
 }

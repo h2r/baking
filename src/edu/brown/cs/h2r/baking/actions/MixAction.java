@@ -40,6 +40,7 @@ public class MixAction extends BakingAction {
 		if (!ContainerFactory.isMixingContainer(containerInstance)) {
 			return false;
 		}
+		// move to should mix probably!
 		if (ContainerFactory.getContentNames(containerInstance).size() < 2) {
 			return false;
 		}
@@ -100,13 +101,13 @@ public class MixAction extends BakingAction {
 			}
 			// hide objects
 			for (String name: contents) {
-				hidden_copies.add(knowledgebase.hideObject(state, this.domain, state.getObject(name)));
+				hidden_copies.add(IngredientFactory.makeHiddenObjectCopy(state, this.domain, state.getObject(name)));
 			}
 			
-			
+			// TODO: Reevaluate the swapped false here? (4th one)
 			ObjectInstance newIngredient = 
 					IngredientFactory.getNewComplexIngredientObjectInstance(complexIngredientClass, 
-							Integer.toString(rando.nextInt()), false, false, false, container.getName(), traits, contents);
+							Integer.toString(rando.nextInt()), false, false, false, false, container.getName(), traits, contents);
 			state.addObject(newIngredient);
 			ContainerFactory.removeContents(container);
 			

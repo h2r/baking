@@ -3,12 +3,13 @@ import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.State;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 
 
 public class BakeAction extends BakingAction {
 	public static final String className = "bake";
 	public BakeAction(Domain domain, IngredientRecipe ingredient) {
-		super(BakeAction.className, domain, ingredient, new String[] {AgentFactory.ClassName});
+		super(BakeAction.className, domain, ingredient, new String[] {AgentFactory.ClassName, IngredientFactory.ClassNameComplex});
 	}
 	
 	@Override
@@ -16,7 +17,7 @@ public class BakeAction extends BakingAction {
 		if (!super.applicableInState(s, params)) {
 			return false;
 		}
-		return false;
+		return true;
 	}
 
 	@Override

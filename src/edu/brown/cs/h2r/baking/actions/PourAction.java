@@ -12,6 +12,7 @@ import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
+import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
@@ -29,50 +30,25 @@ public class PourAction extends BakingAction {
 		if (!super.applicableInState(state, params)) {
 			return false;
 		}
-
 		ObjectInstance agent = state.getObject(params[0]);
 		if (AgentFactory.isRobot(agent)) {
 			return false;
 		}
 		
 		ObjectInstance pouringContainer = state.getObject(params[1]);
-		if (ContainerFactory.getContentNames(pouringContainer).size() == 0) {
-			return false;
-		}
-
-
-		//TODO move precondition like this to affordance planner
 		ObjectInstance receivingContainer = state.getObject(params[2]);
-		if (!ContainerFactory.isReceivingContainer(receivingContainer)) {
-			return false;
-		}
 
-		String pouringContainerSpace = ContainerFactory.getSpaceName(pouringContainer);
-		String receivingContainerSpace = ContainerFactory.getSpaceName(receivingContainer);
 		
 		//TODO: Move this elsewhere to planner
-		// Pouring Container has traits that we're looking for
-		PropositionalFunction affordance_test = domain.getPropFunction("affordances");
-		for (String ing : pouringContainer.getAllRelationalTargets("contains")) {
-			ObjectInstance ob = state.getObject(ing);
-			Set<String> trait_set = ob.getAllRelationalTargets("traits");
-			String[] traits = new String[trait_set.size()];
-			trait_set.toArray(traits);
-			if (!affordance_test.isTrue(state, traits)) {
-				return false;
-			}
+		String pouringContainerSpace = ContainerFactory.getSpaceName(pouringContainer);
+		String receivingContainerSpace = ContainerFactory.getSpaceName(receivingContainer);
+		/*
+		if (ContainerFactory.isEmptyContainer(pouringContainer)) {
+			return false;
 		}
-		// Receiving container is either empty of has traits we're looking for!
-		if (!ContainerFactory.getContentNames(receivingContainer).isEmpty()) {
-			for (String ing : receivingContainer.getAllRelationalTargets("contains")) {
-				ObjectInstance ob = state.getObject(ing);
-				Set<String> trait_set = ob.getAllRelationalTargets("traits");
-				String[] traits = new String[trait_set.size()];
-				trait_set.toArray(traits);
-				if (!affordance_test.isTrue(state, traits)) {
-					return false;
-				}
-			}
+		
+		if (!ContainerFactory.isReceivingContainer(receivingContainer)) {
+			return false;
 		}
 		
 		if (pouringContainerSpace == null || receivingContainerSpace == null)
@@ -93,9 +69,7 @@ public class PourAction extends BakingAction {
 		}
 		if (!SpaceFactory.isWorking(pouringContainerSpaceObject)) {
 			return false;
-		}
-
-		//System.out.println(pouringContainer.getAllRelationalTargets("contains"));
+		}*/
 		return true;
 	}
 
@@ -104,6 +78,12 @@ public class PourAction extends BakingAction {
 		super.performActionHelper(state, params);
 		ObjectInstance pouringContainer = state.getObject(params[1]);
 		ObjectInstance receivingContainer = state.getObject(params[2]);
+		pour(state, pouringContainer, receivingContainer);
+		return state;
+	}
+	
+	protected void pour(State state, ObjectInstance pouringContainer, ObjectInstance receivingContainer)
+	{
 		Set<String> ingredients = new HashSet<String>(ContainerFactory.getContentNames(pouringContainer));
 		ContainerFactory.addIngredients(receivingContainer, ingredients);
 		ContainerFactory.removeContents(pouringContainer);
@@ -111,12 +91,6 @@ public class PourAction extends BakingAction {
 			ObjectInstance ingredientInstance = state.getObject(ingredient); 
 			IngredientFactory.changeIngredientContainer(ingredientInstance, receivingContainer.getName());
 		}
-		return state;
-	}
-	
-	protected void pour(ObjectInstance pouringContainer, ObjectInstance receivingContainer)
-	{
-		
 		
 	}
 }

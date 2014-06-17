@@ -1,4 +1,5 @@
 package edu.brown.cs.h2r.baking.ObjectFactories;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -8,6 +9,8 @@ import burlap.oomdp.core.Attribute;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
+import burlap.oomdp.core.State;
+import burlap.oomdp.core.Value;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 
 public class IngredientFactory {
@@ -107,12 +110,12 @@ public class IngredientFactory {
 	}
 	
 	public static ObjectInstance getNewComplexIngredientObjectInstance(ObjectClass complexIngredientClass, String name, 
-			Boolean baked, Boolean melted, Boolean mixed, String ingredientContainer, Set<String> traits, Iterable<String> contents) {
+			Boolean baked, Boolean melted, Boolean mixed, Boolean swapped, String ingredientContainer, Set<String> traits, Iterable<String> contents) {
 		ObjectInstance newInstance = new ObjectInstance(complexIngredientClass, name);
 		newInstance.setValue(IngredientFactory.attributeBaked, baked ? 1 : 0);
 		newInstance.setValue(IngredientFactory.attributeMelted, melted ? 1 : 0);
 		newInstance.setValue(IngredientFactory.attributeMixed, mixed ? 1 : 0);
-		newInstance.setValue(IngredientFactory.attributeSwapped, 0);
+		newInstance.setValue(IngredientFactory.attributeSwapped, swapped ? 1 : 0);
 		
 		if (ingredientContainer != null || ingredientContainer != "") {
 			newInstance.addRelationalTarget(IngredientFactory.attributeContainer, ingredientContainer);
@@ -145,16 +148,18 @@ public class IngredientFactory {
 		Boolean baked = IngredientFactory.isBakedIngredient(objectInstance);
 		Boolean mixed = IngredientFactory.isMixedIngredient(objectInstance);
 		Boolean melted = IngredientFactory.isMeltedIngredient(objectInstance);
-		Set<String> contents = IngredientFactory.getContentsForIngredient(objectInstance);
+		Boolean swapped = IngredientFactory.isSwapped(objectInstance);
+		Set<String> contents = IngredientFactory.getIngredientContents(objectInstance);
 		String container = IngredientFactory.getContainer(objectInstance);
 		Set<String> traits = IngredientFactory.getTraits(objectInstance);
-		return IngredientFactory.getNewComplexIngredientObjectInstance(objectInstance.getObjectClass(), name, baked, melted, mixed, container, traits, contents);
+		return IngredientFactory.getNewComplexIngredientObjectInstance(objectInstance.getObjectClass(), name, baked, melted, mixed, swapped, container, traits, contents);
 	}
 	
 	public static ObjectInstance getNewIngredientInstance(IngredientRecipe ingredient, String name, ObjectClass oc) {
 		Boolean baked = ingredient.getBaked();
 		Boolean mixed = ingredient.getMixed();
 		Boolean melted = ingredient.getMelted();
+		Boolean swapped = ingredient.getSwapped();
 		Set<String> contents = new TreeSet<String>();
 		String container = "";
 		Set<String> traits = ingredient.getTraits();
@@ -164,7 +169,7 @@ public class IngredientFactory {
 		for (IngredientRecipe ing : ingredient.getContents()) {
 			contents.add(ing.getName());
 		}
-		return IngredientFactory.getNewComplexIngredientObjectInstance(oc, name, baked, melted, mixed, container, traits, contents);
+		return IngredientFactory.getNewComplexIngredientObjectInstance(oc, name, baked, melted, mixed, swapped, container, traits, contents);
 	}
 	
 	public static List<ObjectInstance> getIngredientInstancesList(ObjectClass simpleIngredientClass,
@@ -281,7 +286,86 @@ public class IngredientFactory {
 		}
 	}
 	
-	public static Set<String> getContentsForIngredient(ObjectInstance ingredient) {
-		return new TreeSet<String>(ingredient.getAllRelationalTargets(IngredientFactory.attributeContains));
-	}	
+	public static Set<String> getRecursiveContentsForIngredient(State state, ObjectInstance ingredient) {
+		//return new TreeSet<String>(ingredient.getAllRelationalTargets(IngredientFactory.attributeContains));
+		Set<String> contents = new TreeSet<String>();
+		for (String content_name : ingredient.getAllRelationalTargets(IngredientFactory.attributeContains)) {
+			ObjectInstance content = state.getObject(content_name);
+			if (IngredientFactory.isSimple(content)) {
+				contents.add(content_name);
+			} else {
+				/*Set<String> toAdd = getContentsForIngredient(state, content);
+				if (!toAdd.isEmpty()) {
+					
+				}*/
+				contents.addAll(getRecursiveContentsForIngredient(state, content));
+			}
+		}
+		return contents;
+	}
+	
+	public static ObjectInstance makeHiddenObjectCopy(State s, Domain domain, ObjectInstance object) {
+		ObjectInstance hidden;
+		ObjectClass oc;
+		if (isSimple(object)) {
+			oc = domain.getObjectClass(ClassNameSimpleHidden);
+			
+		} else {
+			oc = domain.getObjectClass(ClassNameComplexHidden);
+		}
+		hidden = new ObjectInstance(oc, object.getName());
+		
+		hidden.initializeValueObjects();
+		for (Value v : hidden.getValues()) {
+			String name = v.attName();
+			if (name.equals("traits") || name.equals("contents")) {
+				for (String val : object.getAllRelationalTargets(name)) {
+					hidden.addRelationalTarget(name, val);
+				}
+			} else {
+				hidden.setValue(name, object.getValueForAttribute(name).getStringVal());
+			}
+		}
+		return hidden;
+	}
+	
+	public static void removeUnecessaryTraitIngredients(State state, Domain domain, IngredientRecipe topLevelIngredient, IngredientRecipe currentGoal) {
+		AbstractMap<String, IngredientRecipe> goalTraits = currentGoal.getConstituentNecessaryTraits();
+		List<IngredientRecipe> necessaryIngredients = topLevelIngredient.getConstituentIngredients();
+		List<ObjectInstance> toHide = new ArrayList<ObjectInstance>();
+		Boolean match;
+		for (ObjectInstance obj : state.getObjectsOfTrueClass(ClassNameSimple)) {
+			match = false;
+			String name = obj.getName();
+			// Check if this is a required ingredient in recipe that hasn't yet been used
+			for (IngredientRecipe ing : necessaryIngredients) {
+				if (ing.getName().equals(name)) {
+					match = true;
+					break;
+				}
+			}
+			// Check this ingredient could've fulfilled a trait at this step, but it wasn't
+			// used. (perhaps there was another ingredient that could fill the same trait,
+			// e.x. white and brown sugar.
+			if (!match) {
+				Set<String> objectTraits = IngredientFactory.getTraits(obj);
+				for (String trait : goalTraits.keySet()) {
+					if (objectTraits.contains(trait)) {
+						match = true;
+						break;
+					}
+				}
+				if (match) {
+					toHide.add(obj);
+				}
+				
+			}
+		}
+		for (ObjectInstance hide : toHide) {
+			ObjectInstance hidden = makeHiddenObjectCopy(state, domain, hide);
+			ContainerFactory.removeContents(state.getObject(getContainer(hidden)));
+			state.removeObject(hidden.getName());
+			state.addObject(hidden);
+		}
+	}
 }

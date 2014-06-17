@@ -14,13 +14,15 @@ import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.Value;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
+import edu.brown.cs.h2r.baking.Experiments.KevinsKitchen;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.IngredientNecessaryForRecipe;
 
 
 public class IngredientKnowledgebase {
 	
-	private final String TRAITFILE = "IngredientTraits.txt";
+	private final String TRAITFILE = "IngredientTraitsFULL.txt";
 	private final String COMBINATIONFILE = "IngredientCombinations.txt";
 	private final String COMBINATIONTRAITFILE = "CombinationTraits.txt";
 	
@@ -72,6 +74,20 @@ public class IngredientKnowledgebase {
 		}
 		return ingredients;
 	}
+	
+	//TODO: Will move this out soon, here to see if it works!
+	public List<ObjectInstance>getPotentialIngredientObjectInstanceList(State s, Domain domain, IngredientRecipe tlIngredient) {
+		List<ObjectInstance> ingredients = new ArrayList<ObjectInstance>();
+		IngredientNecessaryForRecipe necessary = new IngredientNecessaryForRecipe(AffordanceCreator.INGREDIENTPF, domain, tlIngredient);
+		for (IngredientRecipe ing : getIngredientList()) {
+			if (necessary.isTrue(s, new String[] {ing.getName()})) {
+				ObjectClass oc = ing.isSimple() ? domain.getObjectClass(IngredientFactory.ClassNameSimple) : domain.getObjectClass(IngredientFactory.ClassNameComplex);
+				ObjectInstance obj = IngredientFactory.getNewIngredientInstance(ing, ing.getName(), oc);
+				ingredients.add(obj);
+			}
+		}
+		return ingredients;
+	}
 	private AbstractMap<String,Set<String>> generateAllTraitMap() {
 		AbstractMap<String, Set<String>> allTraits = new HashMap<String, Set<String>>();
 		allTraits.putAll(this.traitMap);
@@ -92,6 +108,9 @@ public class IngredientKnowledgebase {
 		return new TreeSet<String>();
 	}
 	
+	// TODO: maybe make this a PF? but returns a string so IDK. If we can't
+	// convey what combination is to be made then it might not be as useful
+	// to have this separate so we will see if we can keep this is the mix method?
 	public String canCombine(State state, ObjectInstance container) {
 		Set<ObjectInstance> contains = new HashSet<>();
 		for (String content : ContainerFactory.getContentNames(container)) {
@@ -131,7 +150,7 @@ public class IngredientKnowledgebase {
 		}
 		return "";
 	}
-	//TODO: Find a better place for this method
+	//TODO: Find a better place for this method -- totes. Mix method should actually work I reckon?
 	public void combineIngredients(State state, Domain domain, IngredientRecipe recipe, ObjectInstance container, String toswap) {
 		Set<String> traits = new TreeSet<String>();
 		//get the actual traits from the trait thing
@@ -139,13 +158,12 @@ public class IngredientKnowledgebase {
 			traits.add(trait);
 		}
 		Set<String> ings = ContainerFactory.getContentNames(container);
-		ObjectInstance new_ing = IngredientFactory.getNewComplexIngredientObjectInstance(domain.getObjectClass(IngredientFactory.ClassNameComplex), toswap, false, false, false, "", traits, ings);
-		IngredientFactory.setSwapped(new_ing);
+		ObjectInstance new_ing = IngredientFactory.getNewComplexIngredientObjectInstance(domain.getObjectClass(IngredientFactory.ClassNameComplex), toswap, false, false, false, true, "", traits, ings);
 		// Make the hidden Copies
 		Set<ObjectInstance> hidden_copies = new HashSet<ObjectInstance>();
 		for (String name : ings) {
 			ObjectInstance ob = state.getObject(name);
-			hidden_copies.add(hideObject(state, domain, ob));
+			hidden_copies.add(IngredientFactory.makeHiddenObjectCopy(state, domain, ob));
 		}
 		ContainerFactory.removeContents(container);
 		for (String name : ings) {
@@ -157,31 +175,5 @@ public class IngredientKnowledgebase {
 		ContainerFactory.addIngredient(container, toswap);
 		IngredientFactory.changeIngredientContainer(new_ing, container.getName());
 		state.addObject(new_ing);
-	}
-	
-	//TODO: Find a better place for this method
-	public ObjectInstance hideObject(State s, Domain domain, ObjectInstance object) {
-		ObjectInstance hidden;
-		ObjectClass oc;
-		if (IngredientFactory.isSimple(object)) {
-			oc = domain.getObjectClass(IngredientFactory.ClassNameSimpleHidden);
-			
-		} else {
-			oc = domain.getObjectClass(IngredientFactory.ClassNameComplexHidden);
-		}
-		hidden = new ObjectInstance(oc, object.getName());
-		
-		hidden.initializeValueObjects();
-		for (Value v : hidden.getValues()) {
-			String name = v.attName();
-			if (name.equals("traits") || name.equals("contents")) {
-				for (String val : object.getAllRelationalTargets(name)) {
-					hidden.addRelationalTarget(name, val);
-				}
-			} else {
-				hidden.setValue(name, object.getValueForAttribute(name).getStringVal());
-			}
-		}
-		return hidden;
 	}
 }

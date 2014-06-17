@@ -74,7 +74,10 @@ public abstract class Recipe {
 	
 	public static Boolean isSuccess(State state, IngredientRecipe ingredientRecipe, ObjectInstance object)
 	{
-		if (!AttributesMatch(ingredientRecipe, object)) {
+		/*if (!AttributesMatch(ingredientRecipe, object)) {
+			return false;
+		}*/
+		if (!ingredientRecipe.AttributesMatch(object)) {
 			return false;
 		}
 		
@@ -100,20 +103,57 @@ public abstract class Recipe {
 		List<IngredientRecipe> recipeContents = ingredientRecipe.getContents();
 		Set<String> compulsoryTraits = ingredientRecipe.getNecessaryTraits().keySet();
 		AbstractMap<String, IngredientRecipe> compulsoryTraitMap = ingredientRecipe.getNecessaryTraits();
+		Set<String> objContents = IngredientFactory.getIngredientContents(object);
+		Set<String> contents = IngredientFactory.getRecursiveContentsForIngredient(state, object);
 		
-		Set<String> contents = IngredientFactory.getContentsForIngredient(object);
-		
+		// First, take care of the "swapped" ingredients and evaluate those.
+		// Get all the swapped ingredients the recipe calls for
+		List<IngredientRecipe> swappedRecipeIngredients = new ArrayList<IngredientRecipe>();
+		for (IngredientRecipe ing : recipeContents) {
+			if (ing.getSwapped()) {
+				swappedRecipeIngredients.add(ing);
+			}
+		}
+		if (!swappedRecipeIngredients.isEmpty()) {
+			List<ObjectInstance> swappedObjectIngredients = new ArrayList<ObjectInstance>();
+			for (String name : objContents) {
+				ObjectInstance obj = state.getObject(name);
+				if (IngredientFactory.isSwapped(obj)) {
+					swappedObjectIngredients.add(obj);
+				}
+			}
+			if (swappedRecipeIngredients.size() != swappedObjectIngredients.size()) {
+				return false;
+			}
+			IngredientRecipe match;
+			for (ObjectInstance swappedObj : swappedObjectIngredients) {
+				match = null;
+				for (IngredientRecipe swappedIng : swappedRecipeIngredients) {
+					if (swappedIng.getName().equals(swappedObj.getName())) {
+						match = swappedIng;
+						break;
+					}
+				}
+				// couldn't find a matched ingredient, we failed!
+				if (match == null) {
+					return false;
+				// we've matched swapped ingredients
+				} else {
+					swappedRecipeIngredients.remove(match);
+					recipeContents.remove(match);
+					for (String name : IngredientFactory.getRecursiveContentsForIngredient(state, swappedObj)) {
+						contents.remove(name);
+					}
+				}
+			}
+			
+		}
+
 		if ((recipeContents.size() + compulsoryTraits.size()) != contents.size())
 		{
 			return false;
 		}
 		
-		// Names match and content size match (checked above). Since it's a swapped 
-		// ingredient (we've created it) we know that it has the correct ingredients 
-		// and thus there's no need to check further.
-		if (IngredientFactory.isSwapped(object)) {
-			return object.getName() == ingredientRecipe.getName();
-		}
 		// Gets all of the contents for the current object we've created
 		for (String name : contents) {
 			ObjectInstance obj = state.getObject(name);
@@ -188,7 +228,7 @@ public abstract class Recipe {
 				if (obj.getAllRelationalTargets("traits").contains(trait)) {
 					// Ensure traitIngredient has the correct Attributes (melted, baked...)
 					// I.E. The fat we are using is in fact melted.
-					match = AttributesMatch(compulsoryTraitMap.get(trait), obj);
+					match = compulsoryTraitMap.get(trait).AttributesMatch(obj);
 					break;
 				}
 			}
@@ -226,7 +266,8 @@ public abstract class Recipe {
 				// They aren't even the same name. FAIL!
 				return true;
 			}
-			if (!AttributesMatch(ingredientRecipe, object)) {
+			// they have the right attributes (melted, peeled, etc).
+			if (ingredientRecipe.AttributesMatch(object)) {
 				return true;
 			}
 		}
@@ -241,7 +282,7 @@ public abstract class Recipe {
 			recipeTraits.add(trait);
 		}
 		Set<String> contents = new TreeSet<String>();
-		for (String content :IngredientFactory.getContentsForIngredient(object)) {
+		for (String content :IngredientFactory.getRecursiveContentsForIngredient(state, object)) {
 			contents.add(content);
 		}
 		
@@ -328,6 +369,34 @@ public abstract class Recipe {
 				}
 			}
 		}
+		List<ObjectInstance> complex_objs = state.getObjectsOfTrueClass("complex_ingredient");
+		for (ObjectInstance complex_obj : complex_objs) {
+			Set<String> content_names = IngredientFactory.getIngredientContents(complex_obj);
+			for (String name : content_names) {
+				IngredientRecipe match = null;
+				ObjectInstance ing = state.getObject(name);
+				for (IngredientRecipe recipeContent : recipeContents) {
+					if (recipeContent.getName().equals(name)) {
+						match = recipeContent;
+						break;
+					}
+				}
+				if (match != null) {
+					recipeContents.remove(match);
+				} else {
+					String trait_match = null;
+					for (String trait : IngredientFactory.getTraits(ing)) {
+						if (recipeTraits.contains(trait)) {
+							trait_match = trait;
+							break;
+						}
+					}
+					if (trait_match != null) {
+						recipeTraits.remove(trait_match);
+					}
+				}
+			}
+		}
 		// Check if there are any ingredients or traits we haven't fulfilled yet.
 		if (recipeContents.size() != 0 || recipeTraits.size() != 0) {
 			return true;
@@ -363,19 +432,6 @@ public abstract class Recipe {
 		}
 		
 		// This object doesn't match anything in the two lists of sub ingredients. We've failed.
-		return true;
-	}
-	
-	public static Boolean AttributesMatch(IngredientRecipe ingredientRecipe, ObjectInstance object) {
-		if (IngredientFactory.isBakedIngredient(object) != ingredientRecipe.getBaked()) {
-			return false;
-		}
-		if (IngredientFactory.isMeltedIngredient(object) != ingredientRecipe.getMelted()) {
-			return false;
-		}
-		if (IngredientFactory.isMixedIngredient(object) != ingredientRecipe.getMixed()) {
-			return false;
-		}
 		return true;
 	}
 }

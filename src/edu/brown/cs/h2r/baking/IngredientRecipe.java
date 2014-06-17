@@ -9,6 +9,9 @@ import static java.util.Arrays.asList;
 import java.util.Set;
 import java.util.TreeSet;
 
+import burlap.oomdp.core.ObjectInstance;
+import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
+
 
 public class IngredientRecipe {
 	
@@ -17,6 +20,7 @@ public class IngredientRecipe {
 	private Boolean baked;
 	private Set<String> traits;
 	private String name;
+	private Boolean swapped;
 	private List<IngredientRecipe> contents;
 	private AbstractMap<String, IngredientRecipe> necessaryTraits;
 	
@@ -35,6 +39,7 @@ public class IngredientRecipe {
 		this.baked = baked;
 		this.contents = contents;
 		this.traits = new TreeSet<String>();
+		this.swapped = false;
 		this.necessaryTraits = new HashMap<String, IngredientRecipe>();
 	}
 	
@@ -59,6 +64,17 @@ public class IngredientRecipe {
 	
 	public String getName() {
 		return this.name;
+	}
+	
+	public Boolean getSwapped() {
+		if (this.isSimple()) {
+			return false;
+		}
+		return this.swapped;
+	}
+	
+	public void setSwapped() {
+		this.swapped = true;
 	}
 	/* traits */
 	public Boolean hasTraits() {
@@ -119,16 +135,7 @@ public class IngredientRecipe {
 	}
 	
 	public int getConstituentIngredientsCount() {
-		int count = 0;
-		if (this.contents != null ) {
-			for (IngredientRecipe subIngredient : this.contents) {
-				count += subIngredient.getConstituentIngredientsCount();
-			}
-		}
-		else {
-			count++;
-		}
-		return count;
+		return this.getConstituentIngredients().size() + this.getConstituentNecessaryTraits().size();
 	}
 	
 	public AbstractMap<String, IngredientRecipe> getNecessaryTraits() {
@@ -141,5 +148,46 @@ public class IngredientRecipe {
 	public void addNecessaryTrait(String trait, boolean mixed, boolean melted, boolean baked) {
 		IngredientRecipe ing = new IngredientRecipe(trait, mixed, melted, baked);
 		this.necessaryTraits.put(trait, ing);
+	}
+	
+	
+	public AbstractMap<String, IngredientRecipe> getConstituentNecessaryTraits() {
+		AbstractMap<String, IngredientRecipe> toRet = this.getNecessaryTraits();
+		AbstractMap<String, IngredientRecipe> toAdd = getConstituentNecessaryTraits(this.contents);
+		if (!toRet.isEmpty()) {
+			if (!toAdd.isEmpty()) {
+				toRet.putAll(toAdd);
+			}
+			return toRet;
+		} else {
+			if (!toAdd.isEmpty()) {
+				return toAdd;
+			}
+		}
+		return new HashMap<String, IngredientRecipe>();
+	}
+	
+	public AbstractMap<String, IngredientRecipe> getConstituentNecessaryTraits(List<IngredientRecipe> ingredients) {
+		AbstractMap<String, IngredientRecipe> traits = new HashMap<String, IngredientRecipe>();
+		for (IngredientRecipe ingredient : ingredients) {
+			if (!ingredient.isSimple()) {
+				traits.putAll(ingredient.getNecessaryTraits());
+				traits.putAll(getConstituentNecessaryTraits(ingredient.getContents()));
+			}
+		}
+		return traits;
+	}
+	
+	public Boolean AttributesMatch(ObjectInstance object) {
+		if (IngredientFactory.isBakedIngredient(object) != this.getBaked()) {
+			return false;
+		}
+		if (IngredientFactory.isMeltedIngredient(object) != this.getMelted()) {
+			return false;
+		}
+		if (IngredientFactory.isMixedIngredient(object) != this.getMixed()) {
+			return false;
+		}
+		return true;
 	}
 }

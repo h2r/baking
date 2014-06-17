@@ -166,4 +166,7 @@ public class ContainerFactory {
 		return null;
 	}
 	
+	public static Boolean isEmptyContainer(ObjectInstance container) {
+		return getContentNames(container).isEmpty();
+	}
 }

@@ -21,47 +21,19 @@ public class MeltAction extends BakingAction {
 	
 	@Override
 	public boolean applicableInState(State state, String[] params) {
-		if (ingredient.getName().equals("wet_ingredients")) {
-			if (ingredient.getNecessaryTraits().size() == 0) {
-				System.out.println("!!");
-			}
-		}
 		if (!super.applicableInState(state, params)) {
 			return false;
 		}
 		ObjectInstance containerInstance = state.getObject(params[1]);
-		if (ContainerFactory.getContentNames(containerInstance).size() != 1) {
+		if (ContainerFactory.isEmptyContainer(containerInstance)) {
 			return false;
 		}
 		for (String ingredientName : ContainerFactory.getContentNames(containerInstance)) {
-			ObjectInstance toMelt = state.getObject(ingredientName);
-			// can't melt an already melted ingredient
-			if (IngredientFactory.isMeltedIngredient(toMelt)) {
+			if (IngredientFactory.isMeltedIngredient(state.getObject(ingredientName))) {
 				return false;
 			}
-			//TODO: Like in PourAction, move this to planner
-			// Check if this is an ingredient that should be melted (cheating by putting it here!)
-			List<IngredientRecipe> contents = ingredient.getContents();
-			for (IngredientRecipe content : contents) {
-				if (content.getName().equals(toMelt.getName())) {
-					if (content.getMelted()) {
-						return true;
-					}
-				}
-			}
-			AbstractMap<String, IngredientRecipe> necessaryTraits = ingredient.getNecessaryTraits();
-			Set<String> toMeltTraits = toMelt.getAllRelationalTargets("traits");
-			for (String trait : necessaryTraits.keySet()) {
-				if (toMeltTraits.contains(trait)) {
-					//return necessaryTraits.get(trait).getMelted();
-					if (necessaryTraits.get(trait).getMelted()) {
-						return true;
-					}
-				}
-			}
-			// End "Cheating"
 		}
-		return false;
+		return true;
 	}
 
 	@Override
@@ -79,4 +51,25 @@ public class MeltAction extends BakingAction {
 			IngredientFactory.meltIngredient(ingredient);
 		}
 	}
+	
+	/*public static boolean shouldMelt(IngredientRecipe ingredient, ObjectInstance toMelt) {
+		List<IngredientRecipe> contents = ingredient.getContents();
+		for (IngredientRecipe content : contents) {
+			if (content.getName().equals(toMelt.getName())) {
+				if (content.getMelted()) {
+					return true;
+				}
+			}
+		}
+		AbstractMap<String, IngredientRecipe> necessaryTraits = ingredient.getNecessaryTraits();
+		Set<String> toMeltTraits = toMelt.getAllRelationalTargets("traits");
+		for (String trait : necessaryTraits.keySet()) {
+			if (toMeltTraits.contains(trait)) {
+				if (necessaryTraits.get(trait).getMelted()) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}*/
 }

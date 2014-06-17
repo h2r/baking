@@ -26,12 +26,9 @@ import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.SADomain;
-import edu.brown.cs.h2r.baking.AffordancesApply;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.RecipeAgentSpecificMakeSpanRewardFunction;
 import edu.brown.cs.h2r.baking.RecipeAgentSpecificRewardFunction;
-import edu.brown.cs.h2r.baking.RecipeBotched;
-import edu.brown.cs.h2r.baking.RecipeFinished;
 import edu.brown.cs.h2r.baking.RecipeTerminalFunction;
 import edu.brown.cs.h2r.baking.GoalCondition.RecipeGoalCondition;
 import edu.brown.cs.h2r.baking.Heuristics.RecipeHeuristic;
@@ -40,6 +37,9 @@ import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.MakeSpanFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.AllowPouring;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
 import edu.brown.cs.h2r.baking.Recipes.Brownies;
 import edu.brown.cs.h2r.baking.Recipes.BrowniesSubGoals;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
@@ -147,10 +147,10 @@ public class DualAgentPerfectRobot  implements DomainGenerator {
 			}
 		}
 		if (domain.getPropFunction("affordances") == null) {
-			final PropositionalFunction newProp = new AffordancesApply("affordances", domain, ingredient.getTraits());
+			final PropositionalFunction newProp = new AllowPouring("pourPF", domain, ingredient);
 		} else {
 			System.out.println(ingredient.getTraits());
-			((AffordancesApply)(domain.getPropFunction("affordances"))).changeTraits(ingredient.getTraits());
+			((AllowPouring)(domain.getPropFunction("pourPF"))).changeTopLevelIngredient(ingredient);
 			
 		}
 		

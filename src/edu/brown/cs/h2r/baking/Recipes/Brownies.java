@@ -26,6 +26,7 @@ public class Brownies extends Recipe {
 		ingredientList.add(knowledgebase.getIngredient("vanilla"));
 		
 		IngredientRecipe wet_ings = new IngredientRecipe("wet_ingredients", NOTMIXED, NOTMELTED, NOTBAKED, ingredientList);
+		wet_ings.setSwapped();
 		wet_ings.addNecessaryTrait("eggs", NOTMIXED, NOTMELTED, NOTBAKED);
 		wet_ings.addNecessaryTrait("sugar", NOTMIXED, NOTMELTED, NOTBAKED);
 		wet_ings.addTraits(knowledgebase.getTraits("wet_ingredients"));
@@ -42,6 +43,7 @@ public class Brownies extends Recipe {
 		
 		// Make the subgoal
 		IngredientRecipe dry_ings = new IngredientRecipe ("dry_ingredients", NOTMIXED, NOTMELTED, NOTBAKED, ingredientList2);
+		dry_ings.setSwapped();
 		// Add the necessaryTraits and their respective attributes
 		dry_ings.addNecessaryTrait("flour", NOTMIXED, NOTMELTED, NOTBAKED);
 		dry_ings.addNecessaryTrait("salt", NOTMIXED, NOTMELTED, NOTBAKED);
