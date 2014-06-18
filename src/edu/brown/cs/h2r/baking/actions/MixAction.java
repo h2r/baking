@@ -37,6 +37,11 @@ public class MixAction extends BakingAction {
 			return false;
 		}
 		ObjectInstance containerInstance = state.getObject(params[1]);
+		
+		if (ContainerFactory.getContentNames(containerInstance).isEmpty()) {
+			return false;
+		}
+		
 		if (!ContainerFactory.isMixingContainer(containerInstance)) {
 			return false;
 		}
@@ -94,8 +99,8 @@ public class MixAction extends BakingAction {
 			ObjectInstance[] objectArray = new ObjectInstance[objects.size()];
 			objects.toArray(objectArray);
 			//find mutual traits
-			for (String trait: objectArray[0].getAllRelationalTargets("traits")) {
-				if (objectArray[1].getAllRelationalTargets("traits").contains(trait)) {
+			for (String trait: IngredientFactory.getTraits(objectArray[0])) {
+				if (IngredientFactory.getTraits(objectArray[1]).contains(trait)) {
 					traits.add(trait);
 				}
 			}

@@ -6,8 +6,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.AbstractMap;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.TreeSet;
@@ -34,7 +32,6 @@ public class CombinationParser {
 				String combination_list = line.substring(line.indexOf("{")+1, line.indexOf("}"));
 				ArrayList<Set<String>> combinations = new ArrayList<Set<String>>();
 				
-				Boolean has_combinations = true;
 				int comb_start = 0;
 				int comb_end = 0;
 				while (true) {

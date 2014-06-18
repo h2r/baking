@@ -13,7 +13,6 @@ import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
-import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
 
 public class AllowPouring extends BakingPropositionalFunction {
@@ -25,20 +24,6 @@ public class AllowPouring extends BakingPropositionalFunction {
 	public boolean isTrue(State s, String[] params) {
 		ObjectInstance pouringContainer = s.getObject(params[1]);
 		ObjectInstance receivingContainer = s.getObject(params[2]);
-		
-		// Pouring Container has traits we're looking for!
-		if (ContainerFactory.isEmptyContainer(pouringContainer)) {
-			return false;
-		}
-		
-		if (!ContainerFactory.isMixingContainer(receivingContainer)) {
-			return false;
-		}
-		
-		// avoid pouring back and forth between containers
-		if (ContainerFactory.isMixingContainer(pouringContainer) && (ContainerFactory.isEmptyContainer(receivingContainer))) {
-			return false;
-		}
 		
 		// Get what our subgoal is looking for and make copies
 		List<IngredientRecipe> necessary_ings = new ArrayList<IngredientRecipe>(); 
@@ -63,6 +48,8 @@ public class AllowPouring extends BakingPropositionalFunction {
 				}
 			}
 		}
+		// Check that everything in our bowl is either a necessary ingredient or a trait
+		// ingredient for our current subgoal.
 		for (ObjectInstance content : receiving_contents) {
 			String content_name = content.getName();
 			IngredientRecipe match = null;
@@ -85,12 +72,13 @@ public class AllowPouring extends BakingPropositionalFunction {
 				if (found_trait != null) {
 					necessary_traits.remove(found_trait);
 				} else {
-					// We're trying to pour into a bowl that doesn't have good ingredients
+					// We're trying to pour into a bowl that doesn't have "good" ingredients
+					// By good I mean relevant, in relation to our current subgoal.
 					return false;
 				}
 			}
 		}
-		// Now, lets see if our pouring container has ingredients that are actually needed;
+		// Get all of the ingredients in our pouring bowl.
 		Set<ObjectInstance> pour_contents = new HashSet<ObjectInstance>();
 		for (String content_name : ContainerFactory.getContentNames(pouringContainer)) {
 			ObjectInstance obj = s.getObject(content_name);
@@ -101,7 +89,8 @@ public class AllowPouring extends BakingPropositionalFunction {
 					pour_contents.add(s.getObject(n));
 				}
 			}
-		}		
+		}	
+		// Now, lets see if our pouring container has ingredients that are actually needed;
 		Boolean current_match;
 		for (ObjectInstance content : pour_contents) {
 			current_match = false;
@@ -125,6 +114,8 @@ public class AllowPouring extends BakingPropositionalFunction {
 				}
 			}
 		}
+		// Ingredient we are pouring and those in the bowl we're pouring into are all pertinent
+		// to our current subgoal and therefore this pour action will get us closer to our goal!
 		return true;
 	}
 }

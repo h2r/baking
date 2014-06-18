@@ -1,7 +1,4 @@
 package edu.brown.cs.h2r.baking.actions;
-import java.util.AbstractMap;
-import java.util.List;
-import java.util.Set;
 
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
@@ -10,7 +7,6 @@ import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
-import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 
 
 public class MeltAction extends BakingAction {
@@ -51,25 +47,4 @@ public class MeltAction extends BakingAction {
 			IngredientFactory.meltIngredient(ingredient);
 		}
 	}
-	
-	/*public static boolean shouldMelt(IngredientRecipe ingredient, ObjectInstance toMelt) {
-		List<IngredientRecipe> contents = ingredient.getContents();
-		for (IngredientRecipe content : contents) {
-			if (content.getName().equals(toMelt.getName())) {
-				if (content.getMelted()) {
-					return true;
-				}
-			}
-		}
-		AbstractMap<String, IngredientRecipe> necessaryTraits = ingredient.getNecessaryTraits();
-		Set<String> toMeltTraits = toMelt.getAllRelationalTargets("traits");
-		for (String trait : necessaryTraits.keySet()) {
-			if (toMeltTraits.contains(trait)) {
-				if (necessaryTraits.get(trait).getMelted()) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}*/
 }

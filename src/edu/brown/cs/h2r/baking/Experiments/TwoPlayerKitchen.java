@@ -1,4 +1,4 @@
-/*package edu.brown.cs.h2r.baking.Experiments;
+package edu.brown.cs.h2r.baking.Experiments;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,8 +11,8 @@ import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.SADomain;
-import edu.brown.cs.h2r.baking.RecipeBotched;
-import edu.brown.cs.h2r.baking.RecipeFinished;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
@@ -129,4 +129,4 @@ public class TwoPlayerKitchen implements DomainGenerator {
 		return this.isFailure.isTrue(this.currentState, "");
 	}
 
-}*/
+}

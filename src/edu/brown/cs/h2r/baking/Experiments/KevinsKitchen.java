@@ -6,30 +6,25 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import apple.laf.JRSUIConstants.Size;
 import burlap.behavior.affordances.AffordancesController;
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.Policy;
-import burlap.behavior.singleagent.auxiliary.StateReachability;
+//import burlap.behavior.singleagent.auxiliary.StateReachability;
 import burlap.behavior.singleagent.planning.QComputablePlanner;
-import burlap.behavior.singleagent.planning.StateConditionTest;
+//import burlap.behavior.singleagent.planning.StateConditionTest;
 import burlap.behavior.singleagent.planning.commonpolicies.AffordanceGreedyQPolicy;
 import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
-import burlap.behavior.singleagent.planning.deterministic.DDPlannerPolicy;
-import burlap.behavior.singleagent.planning.deterministic.informed.Heuristic;
-import burlap.behavior.singleagent.planning.deterministic.informed.astar.AStar;
+//import burlap.behavior.singleagent.planning.deterministic.informed.Heuristic;
 import burlap.behavior.singleagent.planning.stochastic.rtdp.AffordanceRTDP;
 import burlap.behavior.singleagent.planning.stochastic.rtdp.RTDP;
 import burlap.behavior.statehashing.NameDependentStateHashFactory;
 import burlap.behavior.statehashing.StateHashFactory;
 import burlap.oomdp.auxiliary.DomainGenerator;
-import burlap.oomdp.core.GroundedProp;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
-import burlap.oomdp.logicalexpressions.PFAtom;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
@@ -76,12 +71,14 @@ public class KevinsKitchen implements DomainGenerator {
 	}
 	
 	public void PlanRecipeOneAgent(Domain domain, Recipe recipe) {
+		// Add our actions to the domain.
 		Action mix = new MixAction(domain, recipe.topLevelIngredient);
 		Action pour = new PourAction(domain, recipe.topLevelIngredient);
 		Action move = new MoveAction(domain, recipe.topLevelIngredient);
 		Action melt = new MeltAction(domain, recipe.topLevelIngredient);
 		State state = new State();
 		
+		// Get the "highest" subgoal in our recipe.
 		if (this.topLevelIngredient == null) {
 			this.topLevelIngredient = recipe.topLevelIngredient;
 		}
@@ -94,6 +91,7 @@ public class KevinsKitchen implements DomainGenerator {
 			state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "counter"));
 		}
 		
+		// Out of all the ingredients in our kitchen, plan over only those that might be useful!
 		IngredientKnowledgebase knowledgebase = new IngredientKnowledgebase();
 		this.allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, recipe.topLevelIngredient);
 		for (ObjectInstance ing : this.allIngredients) {
@@ -117,7 +115,6 @@ public class KevinsKitchen implements DomainGenerator {
 			}
 		}
 		
-		ObjectClass simpleIngredientClass = domain.getObjectClass(IngredientFactory.ClassNameSimple);
 		ObjectClass containerClass = domain.getObjectClass(ContainerFactory.ClassName);		
 		ObjectInstance counterSpace = currentState.getObject("counter");
 
@@ -138,29 +135,22 @@ public class KevinsKitchen implements DomainGenerator {
 			}
 		}
 		
-		final PropositionalFunction shouldPour = new AllowPouring(AffordanceCreator.POURPF, domain, ingredient);
-		final PropositionalFunction isSuccess = new RecipeFinished(AffordanceCreator.FINISHPF, domain, ingredient);
-		final PropositionalFunction isFailure = new RecipeBotched(AffordanceCreator.BOTCHEDPF, domain, ingredient);
+		//final PropositionalFunction isSuccess = new RecipeFinished(AffordanceCreator.FINISHPF, domain, ingredient);
+		//final PropositionalFunction isFailure = new RecipeBotched(AffordanceCreator.BOTCHEDPF, domain, ingredient);
 		
 		AffordanceCreator theCreator = new AffordanceCreator(domain, currentState, ingredient);
-		
-		System.out.println("Planning over ingredients with the traits: "+ingredient.getTraits());
-		((MeltAction)(domain.getAction("melt"))).changePlanningIngredient(ingredient);
-		
 		// Add the current top level ingredient so we can properly trim the action space
 		for (PropositionalFunction pf : domain.getPropFunctions()) {
 			((BakingPropositionalFunction)pf).changeTopLevelIngredient(ingredient);
 		}
+		final PropositionalFunction isSuccess = domain.getPropFunction(AffordanceCreator.FINISHPF);
+		final PropositionalFunction isFailure = domain.getPropFunction(AffordanceCreator.BOTCHEDPF);
+		
+		System.out.println("Planning over ingredients with the traits: "+ingredient.getTraits());
 		
 		TerminalFunction recipeTerminalFunction = new RecipeTerminalFunction(isSuccess, isFailure);
 		
 		StateHashFactory hashFactory = new NameDependentStateHashFactory();
-		StateConditionTest goalCondition = new StateConditionTest() {
-			@Override
-			public boolean satisfies(State s) {
-				return s.somePFGroundingIsTrue(isSuccess);
-			}
-		};
 		RewardFunction rf = new RewardFunction() {
 			@Override
 			public double reward(State s, GroundedAction a, State sprime) {
@@ -179,13 +169,6 @@ public class KevinsKitchen implements DomainGenerator {
 				}
 				return -1;
 
-			}
-		};
-				
-		Heuristic heuristic = new Heuristic() {
-			@Override
-			public double h(State state) {
-				return 0;
 			}
 		};
 		

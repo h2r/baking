@@ -1,4 +1,4 @@
-/*package edu.brown.cs.h2r.baking.Experiments;
+package edu.brown.cs.h2r.baking.Experiments;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,9 +16,8 @@ import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.SADomain;
-import edu.brown.cs.h2r.baking.IngredientRecipe;
-import edu.brown.cs.h2r.baking.RecipeBotched;
-import edu.brown.cs.h2r.baking.RecipeFinished;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
@@ -28,8 +27,6 @@ import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.actions.MixAction;
 import edu.brown.cs.h2r.baking.actions.MoveAction;
 import edu.brown.cs.h2r.baking.actions.PourAction;
-import edu.brown.cs.h2r.baking.actions.TurnOnOffAction;
-import edu.brown.cs.h2r.baking.actions.UseAction;
 
 public class BasicKitchen implements DomainGenerator {
 	Domain domain;
@@ -174,4 +171,4 @@ public class BasicKitchen implements DomainGenerator {
 		return this.isFailure.isTrue(this.currentState, "");
 	}
 
-}*/
+}

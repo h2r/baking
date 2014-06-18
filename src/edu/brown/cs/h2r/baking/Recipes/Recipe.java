@@ -74,9 +74,6 @@ public abstract class Recipe {
 	
 	public static Boolean isSuccess(State state, IngredientRecipe ingredientRecipe, ObjectInstance object)
 	{
-		/*if (!AttributesMatch(ingredientRecipe, object)) {
-			return false;
-		}*/
 		if (!ingredientRecipe.AttributesMatch(object)) {
 			return false;
 		}
@@ -114,7 +111,9 @@ public abstract class Recipe {
 				swappedRecipeIngredients.add(ing);
 			}
 		}
+		// If the recipe actually has swapped ingredients, then...
 		if (!swappedRecipeIngredients.isEmpty()) {
+			// Find any swapped ingredients in our object
 			List<ObjectInstance> swappedObjectIngredients = new ArrayList<ObjectInstance>();
 			for (String name : objContents) {
 				ObjectInstance obj = state.getObject(name);
@@ -122,6 +121,7 @@ public abstract class Recipe {
 					swappedObjectIngredients.add(obj);
 				}
 			}
+			// If we don't have equal amounts of swapped ingredients, then we've done something wrong
 			if (swappedRecipeIngredients.size() != swappedObjectIngredients.size()) {
 				return false;
 			}
@@ -141,6 +141,8 @@ public abstract class Recipe {
 				} else {
 					swappedRecipeIngredients.remove(match);
 					recipeContents.remove(match);
+					// Remove the contents of the swapped ingredients from objectContents, such that
+					// we're not "double counting" those ingredients!
 					for (String name : IngredientFactory.getRecursiveContentsForIngredient(state, swappedObj)) {
 						contents.remove(name);
 					}
@@ -149,6 +151,7 @@ public abstract class Recipe {
 			
 		}
 
+		// We don't have enough/have too many ingredients.
 		if ((recipeContents.size() + compulsoryTraits.size()) != contents.size())
 		{
 			return false;
@@ -225,7 +228,7 @@ public abstract class Recipe {
 		for (String trait : compulsoryTraits) {
 			Boolean match = false;
 			for (ObjectInstance obj : traitIngredients) {
-				if (obj.getAllRelationalTargets("traits").contains(trait)) {
+				if (IngredientFactory.getTraits(obj).contains(trait)) {
 					// Ensure traitIngredient has the correct Attributes (melted, baked...)
 					// I.E. The fat we are using is in fact melted.
 					match = compulsoryTraitMap.get(trait).AttributesMatch(obj);
@@ -236,7 +239,8 @@ public abstract class Recipe {
 				return false;
 			}
 		}
-		
+		// All of our ingredients in our recipe are accounted for in our object, and vice versa.
+		// Every ingredient has the right attribute, so we must be done!
 		return true;
 	}
 	
@@ -266,10 +270,11 @@ public abstract class Recipe {
 				// They aren't even the same name. FAIL!
 				return true;
 			}
-			// they have the right attributes (melted, peeled, etc).
-			if (ingredientRecipe.AttributesMatch(object)) {
+			// they don't have the right attributes (melted, peeled, etc).
+			if (!ingredientRecipe.AttributesMatch(object)) {
 				return true;
 			}
+			return false;
 		}
 		
 		// Make copies so we can edit them as we go!

@@ -1,5 +1,4 @@
 package edu.brown.cs.h2r.baking.actions;
-import java.util.Arrays;
 
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
@@ -25,7 +24,7 @@ public class MoveAction extends BakingAction {
 		ObjectInstance space = s.getObject(spaceName);
 		String agentName = SpaceFactory.getAgent(space).iterator().next();
 		if (agentName != params[0]) {
-			//return false;
+			return false;
 		}
 		ObjectInstance container = s.getObject(params[1]);
 		if (ContainerFactory.getSpaceName(container).equals(spaceName)) {

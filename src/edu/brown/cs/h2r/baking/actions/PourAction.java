@@ -1,18 +1,12 @@
 package edu.brown.cs.h2r.baking.actions;
 
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.HashMap;
 
 import burlap.oomdp.core.Domain;
-//import edu.brown.cs.h2r.baking.Domain;
 import burlap.oomdp.core.ObjectInstance;
-import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
-import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
@@ -42,7 +36,7 @@ public class PourAction extends BakingAction {
 		//TODO: Move this elsewhere to planner
 		String pouringContainerSpace = ContainerFactory.getSpaceName(pouringContainer);
 		String receivingContainerSpace = ContainerFactory.getSpaceName(receivingContainer);
-		/*
+		
 		if (ContainerFactory.isEmptyContainer(pouringContainer)) {
 			return false;
 		}
@@ -69,7 +63,11 @@ public class PourAction extends BakingAction {
 		}
 		if (!SpaceFactory.isWorking(pouringContainerSpaceObject)) {
 			return false;
-		}*/
+		}
+		
+		if (ContainerFactory.isMixingContainer(pouringContainer) && (ContainerFactory.isEmptyContainer(receivingContainer))) {
+			return false;
+		}
 		return true;
 	}
 

@@ -30,7 +30,7 @@ public class InferenceRewardFunction implements RewardFunction {
 	@Override
 	public double reward(State s, GroundedAction a, State sprime) {
 		double reward = 0;
-		double sumBeliefs = 0;
+		//double sumBeliefs = 0;
 		double maxBelief = 0;
 
 		for (int i =0; i < this.rewardFunctions.size(); i++)

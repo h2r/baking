@@ -192,7 +192,7 @@ public class AffordanceCreator {
 	
 	private ArrayList<PFAtom> meltPFAtoms;
 	private ArrayList<PFAtom> mixPFAtoms;
-	private ArrayList<PFAtom> bakePFAtoms;
+	//private ArrayList<PFAtom> bakePFAtoms;
 	private ArrayList<PFAtom> movePFAtoms;
 	private ArrayList<PFAtom> pourPFAtoms;
 	private ArrayList<PFAtom> finishedPFAtoms;
@@ -207,37 +207,14 @@ public class AffordanceCreator {
 		final PropositionalFunction allowMixing = new AllowMixing(AffordanceCreator.MIXPF, domain, ingredient);
 		final PropositionalFunction allowPouring= new AllowPouring(AffordanceCreator.POURPF, domain, ingredient);
 		final PropositionalFunction allowMoving = new AllowMoving(AffordanceCreator.MOVEPF, domain, ingredient);
-		//final PropositionalFunction shouldPour = new ShouldPour(AffordanceCreator.SHOULDPOURPF, domain, ingredient);
-		//final PropositionalFunction isSuccess = new RecipeFinished(AffordanceCreator.FINISHPF, domain, ingredient);
-		//final PropositionalFunction isFailure = new RecipeBotched(AffordanceCreator.BOTCHEDPF, domain, ingredient);
+		final PropositionalFunction isSuccess = new RecipeFinished(AffordanceCreator.FINISHPF, domain, ingredient);
+		final PropositionalFunction isFailure = new RecipeBotched(AffordanceCreator.BOTCHEDPF, domain, ingredient);
 		//final PropositionalFunction allowBaking = new AllowBaking(AffordanceCreator.BAKEPF, domain, ingredient);
 		//final PropositionalFunction ingNecessary = new IngredientNecessaryForRecipe(AffordanceCreator.INGREDIENTPF, domain, ingredient);
 		
-		
-		//setupActions(domain, state);
 		setupPFAtoms(domain, state);
 		setupAffordances(domain, state);
 	}
-	
-	
-	/*public void setupActions(Domain domain, State state) {
-		for (GroundedAction a : state.getAllGroundedActionsFor(domain.getAction("melt"))) {
-			this.meltActions.add(a);
-		}
-		for (GroundedAction a : state.getAllGroundedActionsFor(domain.getAction("mix"))) {
-			this.mixActions.add(a);
-		}
-		for (GroundedAction a : state.getAllGroundedActionsFor(domain.getAction("move"))) {
-			this.moveActions.add(a);
-		}
-		for (GroundedAction a : state.getAllGroundedActionsFor(domain.getAction("pour"))) {
-			this.pourActions.add(a);
-		}
-		//for (GroundedAction a : state.getAllGroundedActionsFor(domain.getAction("bake"))) {
-		//	this.bakeActions.add(a);
-		//}
-	}*/
-	
 	
 	public void setupPFAtoms(Domain domain, State state) {
 		PropositionalFunction meltPF = domain.getPropFunction(MELTPF);

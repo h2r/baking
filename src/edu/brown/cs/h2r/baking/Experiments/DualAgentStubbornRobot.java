@@ -26,11 +26,9 @@ import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.SADomain;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
-import edu.brown.cs.h2r.baking.RecipeAgentSpecificMakeSpanRewardFunction;
 import edu.brown.cs.h2r.baking.RecipeAgentSpecificRewardFunction;
 import edu.brown.cs.h2r.baking.RecipeTerminalFunction;
 import edu.brown.cs.h2r.baking.GoalCondition.RecipeGoalCondition;
-import edu.brown.cs.h2r.baking.Heuristics.AgentSpecificHeuristic;
 import edu.brown.cs.h2r.baking.Heuristics.RecipeHeuristic;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
@@ -166,7 +164,6 @@ public class DualAgentStubbornRobot  implements DomainGenerator {
 		State endState = startingState;
 		List<GroundedAction> fullActions = new ArrayList<GroundedAction>();
 		List<Double> fullReward = new ArrayList<Double>();
-		boolean currentAgent = false;
 		while (!finished) {
 			
 			State humanCurrentState = ExperimentHelper.setPrimaryAgent(currentState, "human");

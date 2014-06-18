@@ -12,9 +12,7 @@ import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
-import burlap.oomdp.core.Value;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
-import edu.brown.cs.h2r.baking.Experiments.KevinsKitchen;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.IngredientNecessaryForRecipe;
@@ -22,7 +20,7 @@ import edu.brown.cs.h2r.baking.PropositionalFunctions.IngredientNecessaryForReci
 
 public class IngredientKnowledgebase {
 	
-	private final String TRAITFILE = "IngredientTraitsFULL.txt";
+	private final String TRAITFILE = "IngredientTraits.txt";
 	private final String COMBINATIONFILE = "IngredientCombinations.txt";
 	private final String COMBINATIONTRAITFILE = "CombinationTraits.txt";
 	
@@ -108,23 +106,27 @@ public class IngredientKnowledgebase {
 		return new TreeSet<String>();
 	}
 	
-	// TODO: maybe make this a PF? but returns a string so IDK. If we can't
-	// convey what combination is to be made then it might not be as useful
-	// to have this separate so we will see if we can keep this is the mix method?
+	// TODO: Update/fix logic when trying to mix 3+ ingredients? Finding all permutations or something!
+	// Determine whether the ingredient in the container can be swapped out (flour + liquid -> flour).
+	// If a match is found, return the name of the combination found.
 	public String canCombine(State state, ObjectInstance container) {
 		Set<ObjectInstance> contains = new HashSet<>();
+		// get contents
 		for (String content : ContainerFactory.getContentNames(container)) {
 			contains.add(state.getObject(content));
 		}
 		for (String key : this.combinationMap.keySet()) {
 			ArrayList<Set<String>> possible_combinations = this.combinationMap.get(key);
 			for (Set<String> necessary_traits : possible_combinations) {
+				// If there's only one necessary trait, then this combination can be treated like
+				// a "collection" (that is, a collection of dry ingredients, or a collection of wet
+				// ingredients).
 				if (necessary_traits.size() == 1) {
 					String[] traitArray = new String[1];
 					String trait = necessary_traits.toArray(traitArray)[0];
 					Boolean match = true;
 					for (ObjectInstance obj : contains) {
-						if (!obj.getAllRelationalTargets("traits").contains(trait)) {
+						if (!IngredientFactory.getTraits(obj).contains(trait)) {
 							match = false;
 						}
 					}
@@ -137,17 +139,20 @@ public class IngredientKnowledgebase {
 					necessary_traits.toArray(traitArray);
 					ObjectInstance[] contentArray = new ObjectInstance[contains.size()];
 					contains.toArray(contentArray);
-					if ((contentArray[0].getAllRelationalTargets("traits").contains(traitArray[0])) 
-							&& (contentArray[1].getAllRelationalTargets("traits").contains(traitArray[1]))) {
+					// If the combination has two traits (flour + liquid), then check that either ingredient
+					// 1 has trait 1 and ingredient 2 has trait 2 or vice versa!
+					if ((IngredientFactory.getTraits(contentArray[0]).contains(traitArray[0])) 
+							&& (IngredientFactory.getTraits(contentArray[1]).contains(traitArray[1]))) {
 						return key;
 					}
-					if ((contentArray[0].getAllRelationalTargets("traits").contains(traitArray[1])) 
-							&& (contentArray[1].getAllRelationalTargets("traits").contains(traitArray[0]))) {
+					if ((IngredientFactory.getTraits(contentArray[0]).contains(traitArray[1])) 
+							&& (IngredientFactory.getTraits(contentArray[1]).contains(traitArray[0]))) {
 						return key;
 					}
 				}
 			}
 		}
+		// no combination found, return an empty string.
 		return "";
 	}
 	//TODO: Find a better place for this method -- totes. Mix method should actually work I reckon?

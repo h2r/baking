@@ -2,7 +2,6 @@ package edu.brown.cs.h2r.baking.Experiments;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
@@ -41,7 +40,6 @@ import edu.brown.cs.h2r.baking.PropositionalFunctions.AllowPouring;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
 import edu.brown.cs.h2r.baking.Recipes.Brownies;
-import edu.brown.cs.h2r.baking.Recipes.BrowniesSubGoals;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.actions.MixAction;
 import edu.brown.cs.h2r.baking.actions.MoveAction;

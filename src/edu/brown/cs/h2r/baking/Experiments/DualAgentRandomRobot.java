@@ -39,7 +39,6 @@ import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
 import edu.brown.cs.h2r.baking.Recipes.Brownies;
-import edu.brown.cs.h2r.baking.Recipes.BrowniesSubGoals;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.actions.MixAction;
 import edu.brown.cs.h2r.baking.actions.MoveAction;
@@ -163,7 +162,6 @@ public class DualAgentRandomRobot  implements DomainGenerator {
 		State endState = startingState;
 		List<GroundedAction> fullActions = new ArrayList<GroundedAction>();
 		List<Double> fullReward = new ArrayList<Double>();
-		boolean currentAgent = false;
 		while (!finished) {
 			
 			GroundedAction robotAction = ExperimentHelper.getRandomGroundedAction(domain, currentState, "robot");

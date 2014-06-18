@@ -287,17 +287,12 @@ public class IngredientFactory {
 	}
 	
 	public static Set<String> getRecursiveContentsForIngredient(State state, ObjectInstance ingredient) {
-		//return new TreeSet<String>(ingredient.getAllRelationalTargets(IngredientFactory.attributeContains));
 		Set<String> contents = new TreeSet<String>();
-		for (String content_name : ingredient.getAllRelationalTargets(IngredientFactory.attributeContains)) {
+		for (String content_name : IngredientFactory.getIngredientContents(ingredient)) {
 			ObjectInstance content = state.getObject(content_name);
 			if (IngredientFactory.isSimple(content)) {
 				contents.add(content_name);
 			} else {
-				/*Set<String> toAdd = getContentsForIngredient(state, content);
-				if (!toAdd.isEmpty()) {
-					
-				}*/
 				contents.addAll(getRecursiveContentsForIngredient(state, content));
 			}
 		}
