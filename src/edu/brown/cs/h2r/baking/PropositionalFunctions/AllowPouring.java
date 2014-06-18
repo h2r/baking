@@ -96,15 +96,33 @@ public class AllowPouring extends BakingPropositionalFunction {
 			current_match = false;
 			for (IngredientRecipe ing : necessary_ings) {
 				if (ing.getName().equals(content.getName())) {
-					current_match = true;
-					break;
+					if (ing.AttributesMatch(content)) {
+						current_match = true;
+						break;
+					}
 				}
 			}
 			if (!current_match) {
 				for (String trait : necessary_traits.keySet()) {
 					if (IngredientFactory.getTraits(content).contains(trait)) {
-						current_match = necessary_traits.get(trait).AttributesMatch(content);
-						if (current_match) {
+						// Check that this trait ingredient hasn't been added to some other bowl
+						boolean trait_used = false;
+						for (ObjectInstance container : s.getObjectsOfTrueClass(ContainerFactory.ClassName)) {
+							if (!ContainerFactory.isMixingContainer(pouringContainer)) {
+								if (ContainerFactory.isMixingContainer(container) && !ContainerFactory.isEmptyContainer(container)) {
+									for (String name : ContainerFactory.getConstituentContentNames(container, s)) {
+										ObjectInstance obj = s.getObject(name);
+										if (IngredientFactory.getTraits(obj).contains(trait)) {
+											trait_used = true;
+											break;
+										}
+									}
+									
+								}
+							}
+						}
+						if (!trait_used) {
+							current_match = necessary_traits.get(trait).AttributesMatch(content);
 							break;
 						}
 					}

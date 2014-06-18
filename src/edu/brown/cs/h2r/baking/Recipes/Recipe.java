@@ -23,12 +23,14 @@ public abstract class Recipe {
 	public IngredientRecipe topLevelIngredient;
 	protected IngredientKnowledgebase knowledgebase;
 	
-	protected final Boolean NOTMIXED= false;
-	protected final Boolean NOTMELTED= false;
-	protected final Boolean NOTBAKED= false;
-	protected final Boolean MIXED= true;
-	protected final Boolean MELTED= true;
-	protected final Boolean BAKED= true;;
+	protected final Boolean NOTMIXED = false;
+	protected final Boolean NOTMELTED = false;
+	protected final Boolean NOTBAKED = false;
+	protected final Boolean NOTSWAPPED = false;
+	protected final Boolean MIXED = true;
+	protected final Boolean MELTED = true;
+	protected final Boolean BAKED = true;
+	protected final Boolean SWAPPED = true;
 	
 	public Recipe()
 	{
@@ -100,7 +102,7 @@ public abstract class Recipe {
 		List<IngredientRecipe> recipeContents = ingredientRecipe.getContents();
 		Set<String> compulsoryTraits = ingredientRecipe.getNecessaryTraits().keySet();
 		AbstractMap<String, IngredientRecipe> compulsoryTraitMap = ingredientRecipe.getNecessaryTraits();
-		Set<String> objContents = IngredientFactory.getIngredientContents(object);
+		Set<String> objContents = IngredientFactory.getRecursiveContentsAndSwapped(state, object);
 		Set<String> contents = IngredientFactory.getRecursiveContentsForIngredient(state, object);
 		
 		// First, take care of the "swapped" ingredients and evaluate those.
@@ -145,6 +147,12 @@ public abstract class Recipe {
 					// we're not "double counting" those ingredients!
 					for (String name : IngredientFactory.getRecursiveContentsForIngredient(state, swappedObj)) {
 						contents.remove(name);
+						for (String trait : compulsoryTraits) {
+							if (IngredientFactory.getTraits(state.getObject(name)).contains(trait)) {
+								compulsoryTraits.remove(trait);
+								break;
+							}
+						}
 					}
 				}
 			}

@@ -20,6 +20,7 @@ public class IngredientRecipe {
 	private String name;
 	private Boolean swapped;
 	private List<IngredientRecipe> contents;
+	private int useCount;
 	private AbstractMap<String, IngredientRecipe> necessaryTraits;
 	
 	public IngredientRecipe (String name, Boolean mixed, Boolean melted, Boolean baked) {
@@ -28,6 +29,7 @@ public class IngredientRecipe {
 		this.melted = melted;
 		this.baked = baked;
 		this.traits = new TreeSet<String>();
+		this.useCount = 1;
 	}
 	
 	public IngredientRecipe (String name, Boolean mixed, Boolean melted, Boolean baked, List<IngredientRecipe> contents) {
@@ -39,6 +41,19 @@ public class IngredientRecipe {
 		this.traits = new TreeSet<String>();
 		this.swapped = false;
 		this.necessaryTraits = new HashMap<String, IngredientRecipe>();
+		this.useCount = 1;
+	}
+	
+	public IngredientRecipe (String name, Boolean mixed, Boolean melted, Boolean baked, Boolean swapped, List<IngredientRecipe> contents) {
+		this.name = name;
+		this.mixed = mixed;
+		this.melted = melted;
+		this.baked = baked;
+		this.swapped = swapped;
+		this.contents = contents;
+		this.traits = new TreeSet<String>();
+		this.necessaryTraits = new HashMap<String, IngredientRecipe>();
+		this.useCount = 1;
 	}
 	
 	public Boolean isSimple() {
@@ -56,8 +71,16 @@ public class IngredientRecipe {
 		return this.melted;
 	}
 	
+	public void setMelted() {
+		this.melted = true;
+	}
+	
 	public Boolean getBaked () {
 		return this.baked;
+	}
+	
+	public void setBaked() {
+		this.baked = true;
 	}
 	
 	public String getName() {
@@ -74,6 +97,15 @@ public class IngredientRecipe {
 	public void setSwapped() {
 		this.swapped = true;
 	}
+	
+	public int getUseCount() {
+		return this.useCount;
+	}
+	
+	public void setUseCount(int count) {
+		this.useCount = count;
+	}
+
 	/* traits */
 	public Boolean hasTraits() {
 		return !this.traits.isEmpty();
@@ -125,7 +157,7 @@ public class IngredientRecipe {
 			}
 			else
 			{
-				subIngredients.addAll(ingredient.getContents());
+				subIngredients.addAll(ingredient.getConstituentIngredients());
 			}
 			
 		}

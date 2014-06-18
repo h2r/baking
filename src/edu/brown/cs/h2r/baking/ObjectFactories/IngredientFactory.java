@@ -26,6 +26,7 @@ public class IngredientFactory {
 	private static final String attributeContains = "contents";
 	private static final String attributeTraits = "traits";
 	private static final String attributeSwapped = "swapped";
+	private static final String attributeUseCount = "useCount";
 
 	private static ObjectClass createObjectClass(Domain domain, String className) {
 		ObjectClass objectClass = new ObjectClass(domain, className);
@@ -43,6 +44,11 @@ public class IngredientFactory {
 				new Attribute(domain, IngredientFactory.attributeMixed, Attribute.AttributeType.DISC);
 		receivingAttribute.setDiscValuesForRange(0,1,1);
 		objectClass.addAttribute(receivingAttribute);
+		
+		Attribute countAttribute = 
+				new Attribute(domain, IngredientFactory.attributeUseCount, Attribute.AttributeType.DISC);
+		countAttribute.setDiscValuesForRange(0,10,1);
+		objectClass.addAttribute(countAttribute);
 
 		Attribute traitAttribute = new Attribute(domain, IngredientFactory.attributeTraits, Attribute.AttributeType.MULTITARGETRELATIONAL);
 		objectClass.addAttribute(traitAttribute);
@@ -99,6 +105,24 @@ public class IngredientFactory {
 		newInstance.setValue(IngredientFactory.attributeBaked, baked ? 1 : 0);
 		newInstance.setValue(IngredientFactory.attributeMelted, melted ? 1 : 0);
 		newInstance.setValue(IngredientFactory.attributeMixed, mixed ? 1 : 0);
+		newInstance.setValue(IngredientFactory.attributeUseCount, 1);
+		for (String trait : traits) {
+			newInstance.addRelationalTarget("traits", trait);
+		}
+		if (ingredientContainer != null || ingredientContainer != "")
+		{
+			newInstance.addRelationalTarget(IngredientFactory.attributeContainer, ingredientContainer);
+		}
+		return newInstance;		
+	}
+	
+	public static ObjectInstance getNewSimpleIngredientObjectInstance(ObjectClass simpleIngredientClass, String name, 
+			Boolean baked, Boolean melted, Boolean mixed, int useCount, Set<String> traits, String ingredientContainer) {
+		ObjectInstance newInstance = new ObjectInstance(simpleIngredientClass, name);
+		newInstance.setValue(IngredientFactory.attributeBaked, baked ? 1 : 0);
+		newInstance.setValue(IngredientFactory.attributeMelted, melted ? 1 : 0);
+		newInstance.setValue(IngredientFactory.attributeMixed, mixed ? 1 : 0);
+		newInstance.setValue(IngredientFactory.attributeUseCount, useCount);
 		for (String trait : traits) {
 			newInstance.addRelationalTarget("traits", trait);
 		}
@@ -115,6 +139,7 @@ public class IngredientFactory {
 		newInstance.setValue(IngredientFactory.attributeBaked, baked ? 1 : 0);
 		newInstance.setValue(IngredientFactory.attributeMelted, melted ? 1 : 0);
 		newInstance.setValue(IngredientFactory.attributeMixed, mixed ? 1 : 0);
+		newInstance.setValue(IngredientFactory.attributeUseCount, 1);
 		newInstance.setValue(IngredientFactory.attributeSwapped, swapped ? 1 : 0);
 		
 		if (ingredientContainer != null || ingredientContainer != "") {
@@ -244,6 +269,10 @@ public class IngredientFactory {
 		return ingredient.getAllRelationalTargets(IngredientFactory.attributeTraits);
 	}
 	
+	public static int getUseCount(ObjectInstance ingredient) {
+		return ingredient.getDiscValForAttribute(IngredientFactory.attributeUseCount);
+	}
+	
 	public static Boolean isBakedIngredient(ObjectInstance ingredient) {
 		return ingredient.getDiscValForAttribute(IngredientFactory.attributeBaked) == 1;
 	}
@@ -268,6 +297,9 @@ public class IngredientFactory {
 		ingredient.setValue(IngredientFactory.attributeMelted, 1);
 	}
 	
+	public static void setUseCount(ObjectInstance ingredient, int count) {
+		ingredient.setValue(IngredientFactory.attributeUseCount, count);
+	}
 	public static Boolean isSimple(ObjectInstance ingredient) {
 		return (ingredient.getObjectClass().name == IngredientFactory.ClassNameSimple ||
 				ingredient.getObjectClass().name == IngredientFactory.ClassNameSimpleHidden);
@@ -294,6 +326,19 @@ public class IngredientFactory {
 				contents.add(content_name);
 			} else {
 				contents.addAll(getRecursiveContentsForIngredient(state, content));
+			}
+		}
+		return contents;
+	}
+	
+	public static Set<String> getRecursiveContentsAndSwapped(State state, ObjectInstance ingredient) {
+		Set<String> contents = new TreeSet<String>();
+		for (String content_name : IngredientFactory.getIngredientContents(ingredient)) {
+			ObjectInstance content = state.getObject(content_name);
+			if (IngredientFactory.isSimple(content) || IngredientFactory.isSwapped(content)) {
+				contents.add(content_name);
+			} else {
+				contents.addAll(getRecursiveContentsAndSwapped(state, content));
 			}
 		}
 		return contents;

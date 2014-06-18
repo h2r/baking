@@ -32,7 +32,7 @@ public class AllowMelting extends BakingPropositionalFunction {
 					//return false;
 				//}
 				// Is this a necessary ingredient in the recipe?
-				for (IngredientRecipe content : this.topLevelIngredient.getContents()) {
+				for (IngredientRecipe content : this.topLevelIngredient.getConstituentIngredients()) {
 					if (content.getName().equals(toMelt.getName())) {
 						// If it is, then make sure it needs to be melted in the first place
 						return content.getMelted();

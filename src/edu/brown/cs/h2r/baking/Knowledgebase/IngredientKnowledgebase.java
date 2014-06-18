@@ -86,6 +86,32 @@ public class IngredientKnowledgebase {
 		}
 		return ingredients;
 	}
+	
+	/*
+	public List<IngredientRecipe> getPotentialIngredientList(State s, Domain domain, IngredientRecipe tlIngredient) {
+		List<IngredientRecipe> ingredients = new ArrayList<IngredientRecipe>();
+		for (IngredientRecipe ingredient : tlIngredient.getContents()) {
+			if (ingredient.isSimple()) {
+				if (ingredients.contains(ingredient)) {
+					IngredientRecipe ing = ingredients.get(ingredients.indexOf(ingredient));
+					ing.setUseCount(ing.getUseCount()+1);
+				} else {
+					ingredients.add(ingredient);
+				}
+			} else {
+				List<IngredientRecipe> toAdd = getPotentialIngredientList(s, domain, ingredient);
+				for (IngredientRecipe i : toAdd) {
+					if (ingredients.contains(i)) {
+						IngredientRecipe ing = ingredients.get(ingredients.indexOf(i));
+						ing.setUseCount(ing.getUseCount()+1);
+					} else {
+						ingredients.add(i);
+					}
+				}
+			}
+		}
+		return ingredients;
+	}*/
 	private AbstractMap<String,Set<String>> generateAllTraitMap() {
 		AbstractMap<String, Set<String>> allTraits = new HashMap<String, Set<String>>();
 		allTraits.putAll(this.traitMap);

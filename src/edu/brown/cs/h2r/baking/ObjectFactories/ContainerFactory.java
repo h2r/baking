@@ -8,6 +8,7 @@ import burlap.oomdp.core.Attribute;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
+import burlap.oomdp.core.State;
 
 
 public class ContainerFactory {
@@ -168,5 +169,18 @@ public class ContainerFactory {
 	
 	public static Boolean isEmptyContainer(ObjectInstance container) {
 		return getContentNames(container).isEmpty();
+	}
+	
+	public static Set<String> getConstituentContentNames(ObjectInstance container, State state) {
+		Set<String> names = new TreeSet<String>();
+		for (String name : container.getAllRelationalTargets(ContainerFactory.attributeContains)) {
+			ObjectInstance ing = state.getObject(name);
+			if (IngredientFactory.isSimple(ing)) {
+				names.add(name);
+			} else {
+				names.addAll(IngredientFactory.getRecursiveContentsForIngredient(state, ing));
+			}
+		}
+		return names;
 	}
 }

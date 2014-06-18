@@ -9,16 +9,23 @@ public class PeanutButterCookies extends Recipe {
 	public PeanutButterCookies() {
 		super();
 		List<IngredientRecipe> ingredientList = new ArrayList<IngredientRecipe>();
-		ingredientList.add(new IngredientRecipe("peanut_butter", false, false, false));
-		ingredientList.add(new IngredientRecipe("butter", false, false, false));
-		ingredientList.add(new IngredientRecipe("brown_sugar", false, false, false));
-		ingredientList.add(new IngredientRecipe("white_sugar", false, false, false));
-		ingredientList.add(new IngredientRecipe("vanilla_extract", false, false, false));
-		ingredientList.add(new IngredientRecipe("eggs", false, false, false));
-		ingredientList.add(new IngredientRecipe("flour", false, false, false));
-		ingredientList.add(new IngredientRecipe("baking_soda", false, false, false));
-		ingredientList.add(new IngredientRecipe("baking_powder", false, false, false));
-		ingredientList.add(new IngredientRecipe("salt", false, false, false));
-		this.topLevelIngredient = new IngredientRecipe("PeanutButterCookies", false, false, false, ingredientList);
+		ingredientList.add(knowledgebase.getIngredient("butter"));
+		ingredientList.add(knowledgebase.getIngredient("peanut_butter"));
+		IngredientRecipe creamed = new IngredientRecipe("creamed_ingredients", NOTMIXED, NOTMELTED, NOTBAKED, SWAPPED, ingredientList);
+		creamed.addNecessaryTrait("sugar", NOTMIXED, NOTMELTED, NOTBAKED);
+		
+		List<IngredientRecipe> ingredientList2 = new ArrayList<IngredientRecipe>();
+		ingredientList2.add(creamed);
+		ingredientList2.add(knowledgebase.getIngredient("eggs"));
+		IngredientRecipe wet_ingredients = new IngredientRecipe("wet_ingredients", NOTMIXED, NOTMELTED, NOTBAKED, SWAPPED, ingredientList2);
+		
+		List<IngredientRecipe> ingredientList3 = new ArrayList<IngredientRecipe>();
+		ingredientList3.add(wet_ingredients);
+		ingredientList3.add(knowledgebase.getIngredient("baking_soda"));
+		ingredientList3.add(knowledgebase.getIngredient("baking_powder"));
+		IngredientRecipe cookies = new IngredientRecipe("peanutButterCookies", NOTMIXED, NOTMELTED, NOTBAKED, SWAPPED, ingredientList3);
+		cookies.addNecessaryTrait("salt", NOTMIXED, NOTMELTED, NOTBAKED);
+		cookies.addNecessaryTrait("flour", NOTMIXED, NOTMELTED, NOTBAKED);
+		this.topLevelIngredient = cookies;
 	}
 }
