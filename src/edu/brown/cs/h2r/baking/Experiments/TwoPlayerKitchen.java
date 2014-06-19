@@ -81,8 +81,8 @@ public class TwoPlayerKitchen implements DomainGenerator {
 		
 		
 		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
+		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "shelf", null, null));
 		
-		state.addObject(SpaceFactory.getNewObjectInstance(domain, "shelf", false, false, false, null, "" ));
 		
 		return state;
 	}

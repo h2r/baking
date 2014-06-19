@@ -17,12 +17,14 @@ public class IngredientRecipe {
 	private Boolean melted;
 	private Boolean baked;
 	private Set<String> traits;
+	private Boolean peeled;
 	private String name;
 	private Boolean swapped;
 	private List<IngredientRecipe> contents;
 	private int useCount;
 	private AbstractMap<String, IngredientRecipe> necessaryTraits;
 	
+	/*@Deprecated
 	public IngredientRecipe (String name, Boolean mixed, Boolean melted, Boolean baked) {
 		this.name = name;
 		this.mixed = mixed;
@@ -30,13 +32,35 @@ public class IngredientRecipe {
 		this.baked = baked;
 		this.traits = new TreeSet<String>();
 		this.useCount = 1;
+		this.peeled = false;
 	}
 	
+	@Deprecated
 	public IngredientRecipe (String name, Boolean mixed, Boolean melted, Boolean baked, List<IngredientRecipe> contents) {
 		this.name = name;
 		this.mixed = mixed;
 		this.melted = melted;
 		this.baked = baked;
+		this.peeled = false;
+		this.contents = contents;
+	}*/
+	
+	public IngredientRecipe(String name, Boolean mixed, Boolean melted, Boolean baked, Boolean peeled) {
+		this.name = name;
+		this.mixed = mixed;
+		this.melted = melted;
+		this.baked = baked;
+		this.peeled = peeled;
+		this.swapped = false;
+		this.contents = null;
+	}
+	
+	public IngredientRecipe(String name, Boolean mixed, Boolean melted, Boolean baked, Boolean peeled, Boolean swapped, List<IngredientRecipe> contents) {
+		this.name = name;
+		this.mixed = mixed;
+		this.melted = melted;
+		this.baked = baked;
+		this.peeled = peeled;
 		this.contents = contents;
 		this.traits = new TreeSet<String>();
 		this.swapped = false;
@@ -44,7 +68,7 @@ public class IngredientRecipe {
 		this.useCount = 1;
 	}
 	
-	public IngredientRecipe (String name, Boolean mixed, Boolean melted, Boolean baked, Boolean swapped, List<IngredientRecipe> contents) {
+	/*public IngredientRecipe (String name, Boolean mixed, Boolean melted, Boolean baked, Boolean swapped, List<IngredientRecipe> contents) {
 		this.name = name;
 		this.mixed = mixed;
 		this.melted = melted;
@@ -54,7 +78,7 @@ public class IngredientRecipe {
 		this.traits = new TreeSet<String>();
 		this.necessaryTraits = new HashMap<String, IngredientRecipe>();
 		this.useCount = 1;
-	}
+	}*/
 	
 	public Boolean isSimple() {
 		if (this.necessaryTraits == null || this.necessaryTraits.size() == 0) {
@@ -81,6 +105,10 @@ public class IngredientRecipe {
 	
 	public void setBaked() {
 		this.baked = true;
+	}
+	
+	public Boolean getPeeled() {
+		return this.peeled;
 	}
 	
 	public String getName() {
@@ -175,8 +203,8 @@ public class IngredientRecipe {
 		return new HashMap<String, IngredientRecipe>();
 	}
 	
-	public void addNecessaryTrait(String trait, boolean mixed, boolean melted, boolean baked) {
-		IngredientRecipe ing = new IngredientRecipe(trait, mixed, melted, baked);
+	public void addNecessaryTrait(String trait, boolean mixed, boolean melted, boolean baked, boolean peeled) {
+		IngredientRecipe ing = new IngredientRecipe(trait, mixed, melted, baked, peeled);
 		this.necessaryTraits.put(trait, ing);
 	}
 	
