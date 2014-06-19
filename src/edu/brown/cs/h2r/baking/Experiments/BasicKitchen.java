@@ -16,8 +16,8 @@ import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.SADomain;
-import edu.brown.cs.h2r.baking.RecipeBotched;
-import edu.brown.cs.h2r.baking.RecipeFinished;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
@@ -62,17 +62,21 @@ public class BasicKitchen implements DomainGenerator {
 		domain.addObjectClass(AgentFactory.getObjectClass(domain));
 		domain.addObjectClass(MakeSpanFactory.getObjectClass(domain));
 		
-		Action mix = new MixAction(domain);
-		Action turnOnOff = new SwitchAction(domain);
-		Action use = new UseAction(domain);
+		Action mix = new MixAction(domain, recipe.topLevelIngredient);
 		//Action bake = new BakeAction(domain);
-		Action pour = new PourAction(domain);
-		Action move = new MoveAction(domain);
+		Action pour = new PourAction(domain, recipe.topLevelIngredient);
+		Action move = new MoveAction(domain, recipe.topLevelIngredient);
+		Action turnOnOff = new SwitchAction(domain);
+		Action use = new UseAction(domain, recipe.topLevelIngredient);
 		return domain;
 	}
 	
 	private State getInitialState() {
 		State state = new State();
+		//Action mix = new MixAction(domain, recipe.topLevelIngredient);
+		//Action bake = new BakeAction(domain);
+		//Action pour = new PourAction(domain, recipe.topLevelIngredient);
+		//Action move = new MoveAction(domain, recipe.topLevelIngredient);
 		state.addObject(SpaceFactory.getNewBakingSpaceObjectInstance(this.domain, "Oven", null, ""));
 		state.addObject(SpaceFactory.getNewHeatingSpaceObjectInstance(this.domain, "Stove", null, ""));
 		
@@ -97,7 +101,7 @@ public class BasicKitchen implements DomainGenerator {
 		containers.addAll(heatingContainers);
 		containers.addAll(bakingContainers);
 		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter", containers, "human"));
-		//state.addObject(SpaceFactory.getNewObjectInstance(domain, "shelf", false, false, false, null, ""));
+		state.addObject(SpaceFactory.getNewObjectInstance(domain, "shelf", false, false, false, false, null, ""));
 		
 		
 		ObjectClass simpleIngredientClass = domain.getObjectClass(IngredientFactory.ClassNameSimple);

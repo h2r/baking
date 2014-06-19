@@ -15,6 +15,7 @@ import burlap.behavior.statehashing.NameDependentStateHashFactory;
 import burlap.behavior.statehashing.StateHashFactory;
 import burlap.oomdp.auxiliary.DomainGenerator;
 import burlap.oomdp.core.Domain;
+//import edu.brown.cs.h2r.baking.Domain;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.PropositionalFunction;
@@ -27,8 +28,6 @@ import burlap.oomdp.singleagent.SADomain;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.RecipeAgentSpecificMakeSpanRewardFunction;
 import edu.brown.cs.h2r.baking.RecipeAgentSpecificRewardFunction;
-import edu.brown.cs.h2r.baking.RecipeBotched;
-import edu.brown.cs.h2r.baking.RecipeFinished;
 import edu.brown.cs.h2r.baking.RecipeTerminalFunction;
 import edu.brown.cs.h2r.baking.GoalCondition.RecipeGoalCondition;
 import edu.brown.cs.h2r.baking.Heuristics.RecipeHeuristic;
@@ -37,12 +36,16 @@ import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.MakeSpanFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.AllowPouring;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
 import edu.brown.cs.h2r.baking.Recipes.Brownies;
-import edu.brown.cs.h2r.baking.Recipes.BrowniesSubGoals;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.actions.MixAction;
 import edu.brown.cs.h2r.baking.actions.MoveAction;
 import edu.brown.cs.h2r.baking.actions.PourAction;
+
+
 /*
 The issue here, appears to be that our makespan calculation can't account for subgoals. Because we plan subgoals
 sequentially, a plan that optimally uses the two agents won't be computed. Instead, we need to change the task to
@@ -55,7 +58,12 @@ speed up the total time t1o solve the problem.
 */
 public class DualAgentPerfectRobot  implements DomainGenerator {
 
+	/*IngredientRecipe current_ing = null;
+	HashMap<String, Boolean> affordance;*/
 	public DualAgentPerfectRobot() {
+		/*this.current_ing = null;
+		this.affordance = new HashMap<String,Boolean>();*/
+		
 		// TODO Auto-generated constructor stub
 	}
 	@Override
@@ -64,14 +72,12 @@ public class DualAgentPerfectRobot  implements DomainGenerator {
 		domain.addObjectClass(ContainerFactory.createObjectClass(domain));
 		domain.addObjectClass(IngredientFactory.createSimpleIngredientObjectClass(domain));
 		domain.addObjectClass(IngredientFactory.createComplexIngredientObjectClass(domain));
+		domain.addObjectClass(IngredientFactory.createSimpleHiddenIngredientObjectClass(domain));
+		domain.addObjectClass(IngredientFactory.createComplexHiddenIngredientObjectClass(domain));
 		domain.addObjectClass(SpaceFactory.createObjectClass(domain));		
 		domain.addObjectClass(AgentFactory.getObjectClass(domain));
 		domain.addObjectClass(MakeSpanFactory.getObjectClass(domain));
-		
-		Action mix = new MixAction(domain);
-		//Action bake = new BakeAction(domain);
-		Action pour = new PourAction(domain);
-		Action move = new MoveAction(domain);
+
 		return domain;
 	}
 	
@@ -79,6 +85,10 @@ public class DualAgentPerfectRobot  implements DomainGenerator {
 	{
 		System.out.println("Creating two-agent initial start state");
 		State state = new State();
+		Action mix = new MixAction(domain, recipe.topLevelIngredient);
+		//Action bake = new BakeAction(domain);
+		Action pour = new PourAction(domain, recipe.topLevelIngredient);
+		Action move = new MoveAction(domain, recipe.topLevelIngredient);
 		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
 		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "robot"));
 		state.addObject(MakeSpanFactory.getNewObjectInstance(domain, "makeSpan", 2));
@@ -107,11 +117,17 @@ public class DualAgentPerfectRobot  implements DomainGenerator {
 		}
 		
 		ObjectClass simpleIngredientClass = domain.getObjectClass(IngredientFactory.ClassNameSimple);
+		ObjectClass complexIngredientClass = domain.getObjectClass(IngredientFactory.ClassNameComplex);
 		ObjectClass containerClass = domain.getObjectClass(ContainerFactory.ClassName);		
 		ObjectInstance shelfSpace = currentState.getObject("shelf");
 		
 		List<ObjectInstance> ingredientInstances = 
 				IngredientFactory.getSimpleIngredients(simpleIngredientClass, ingredient);
+		/* Adding complex? */
+		for (ObjectInstance obj : IngredientFactory.getComplexIngredients(complexIngredientClass, ingredient)) {
+			ingredientInstances.add(obj);
+		}
+		/* */
 		List<ObjectInstance> containerInstances = 
 				Recipe.getContainers(containerClass, ingredientInstances, shelfSpace.getName());
 		
@@ -128,7 +144,13 @@ public class DualAgentPerfectRobot  implements DomainGenerator {
 				currentState.addObject(containerInstance);
 			}
 		}
-		
+		if (domain.getPropFunction("affordances") == null) {
+			final PropositionalFunction newProp = new AllowPouring("pourPF", domain, ingredient);
+		} else {
+			System.out.println(ingredient.getTraits());
+			((AllowPouring)(domain.getPropFunction("pourPF"))).changeTopLevelIngredient(ingredient);
+			
+		}
 		
 		final PropositionalFunction isSuccess = new RecipeFinished("success", domain, ingredient);
 		PropositionalFunction isFailure = new RecipeBotched("botched", domain, ingredient);
@@ -145,7 +167,15 @@ public class DualAgentPerfectRobot  implements DomainGenerator {
 		StateHashFactory hashFactory = new NameDependentStateHashFactory();
 		StateConditionTest goalCondition = new RecipeGoalCondition(isSuccess);
 		//final int numSteps = Recipe.getNumberSteps(ingredient);
-		Heuristic heuristic = new RecipeHeuristic();
+		
+		RecipeHeuristic heuristic = new RecipeHeuristic();
+		/*this.current_ing = ingredient;
+		if (has_affordance()) {
+			domain.setAffordances(getAffordances());
+		}
+		if (ingredient.has_affordance()) {
+			domain.setAffordances(ingredient.get_affordances());
+		}*/
 		List<EpisodeAnalysis> episodes = new ArrayList<EpisodeAnalysis>();
 				
 		return planIngredient(domain, startingState, ingredient,
@@ -161,17 +191,23 @@ public class DualAgentPerfectRobot  implements DomainGenerator {
 		RewardFunction humanRewardFunction = rewardFunctions.get(0);
 		RewardFunction robotRewardFunction = rewardFunctions.get(0);
 		
+		
 		boolean finished = false;
 		State endState = startingState;
 		List<GroundedAction> fullActions = new ArrayList<GroundedAction>();
 		List<Double> fullReward = new ArrayList<Double>();
 		//boolean currentAgent = false;
 		while (!finished) {
+			
 			//currentAgent = !currentAgent;
 			//RewardFunction recipeRewardFunction = (currentAgent) ? humanRewardFunction : robotRewardFunction;
 			
 			State humanCurrentState = ExperimentHelper.setPrimaryAgent(currentState, "robot");
 			State robotCurrentState = ExperimentHelper.setPrimaryAgent(currentState, "robot");
+			
+			/*State humanCurrentState = ExperimentHelper.setPrimaryAgent(currentState, "robot", ingredient);
+			State robotCurrentState = ExperimentHelper.setPrimaryAgent(currentState, "robot", ingredient);*/
+			
 			AStar robotAgent = new AStar(domain, robotRewardFunction, goalCondition, hashFactory, heuristic);
 			AStar humanAgent = new AStar(domain, humanRewardFunction, goalCondition, hashFactory, heuristic);
 			robotAgent.planFromState(robotCurrentState);
@@ -232,8 +268,28 @@ public class DualAgentPerfectRobot  implements DomainGenerator {
 			currentState = nextState;
 		}
 		ExperimentHelper.printResults(fullActions, fullReward);
+		
+		/* */
+		endState.addObject(IngredientFactory.getNewIngredientInstance(ingredient, ingredient.getName(), domain.getObjectClass(IngredientFactory.ClassNameComplex)));
+		ObjectInstance container = ContainerFactory.getNewIngredientContainerObjectInstance(domain, ingredient.getName()+"_bowl", ingredient.getName(), "shelf");
+		endState.getObject(ingredient.getName()).addRelationalTarget("container", container.getName());
+		endState.addObject(container);
+		
+		/* test */
 		return endState;
 	}
+	
+	/*
+	public HashMap<String,Boolean> getAffordances(IngredientRecipe ing) {
+		if (ing.has_affordance()) {
+			return ing.get_affordances();
+		}
+		return null;
+	}
+	
+	public Boolean has_affordance() {
+		return this.current_ing.has_affordance();
+	}*/
 	
 	public static void main(String[] args) throws IOException {
 		DualAgentPerfectRobot kitchen = new DualAgentPerfectRobot();

@@ -1,13 +1,8 @@
 package edu.brown.cs.h2r.baking.Recipes;
 
-import java.util.Arrays;
 
-import burlap.oomdp.core.Domain;
-import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
-import edu.brown.cs.h2r.baking.Experiments.SingleAgentKitchen;
-import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 
 
 public class Test {
@@ -38,7 +33,7 @@ public class Test {
 	
 	public static void main(String[] args)
 	{
-		SingleAgentKitchen kitchen = new SingleAgentKitchen();
+		/*SingleAgentKitchen kitchen = new SingleAgentKitchen();
 		Domain domain = kitchen.generateDomain();
 		State state = SingleAgentKitchen.getOneAgent(domain);
 		
@@ -159,7 +154,7 @@ public class Test {
 		failures += Test.testContains(p3, p5, false);
 		
 		*/
-		System.out.println(failures + " failures");
+		//System.out.println(failures + " failures");
 	}
 	
 	

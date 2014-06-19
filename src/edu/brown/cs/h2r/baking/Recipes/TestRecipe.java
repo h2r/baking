@@ -7,7 +7,7 @@ import java.util.List;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 
 
-
+/*
 public class TestRecipe extends Recipe {
 
 	public TestRecipe(String ingredient1) {
@@ -56,4 +56,4 @@ public class TestRecipe extends Recipe {
 	}
 
 
-}
+}*/

@@ -1,6 +1,5 @@
 package edu.brown.cs.h2r.baking.Experiments;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,18 +26,15 @@ import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.SADomain;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.RecipeAgentSpecificMakeSpanRewardFunction;
-import edu.brown.cs.h2r.baking.RecipeBotched;
-import edu.brown.cs.h2r.baking.RecipeFinished;
-import edu.brown.cs.h2r.baking.RecipeRewardFunction;
 import edu.brown.cs.h2r.baking.RecipeTerminalFunction;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
 import edu.brown.cs.h2r.baking.Recipes.Brownies;
-import edu.brown.cs.h2r.baking.Recipes.BrowniesSubGoals;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
-import edu.brown.cs.h2r.baking.Recipes.TestSubGoals;
 import edu.brown.cs.h2r.baking.actions.MixAction;
 import edu.brown.cs.h2r.baking.actions.MoveAction;
 import edu.brown.cs.h2r.baking.actions.PourAction;
@@ -59,17 +55,16 @@ public class SingleAgentKitchen implements DomainGenerator {
 		domain.addObjectClass(SpaceFactory.createObjectClass(domain));		
 		domain.addObjectClass(AgentFactory.getObjectClass(domain));
 		
-		Action mix = new MixAction(domain);
-		//Action bake = new BakeAction(domain);
-		Action pour = new PourAction(domain);
-		Action move = new MoveAction(domain);
 		return domain;
 	}
 	
 	public void PlanRecipeOneAgent(Domain domain, Recipe recipe)
 	{
 		State state = new State();
-		
+		Action mix = new MixAction(domain, recipe.topLevelIngredient);
+		//Action bake = new BakeAction(domain);
+		Action pour = new PourAction(domain, recipe.topLevelIngredient);
+		Action move = new MoveAction(domain, recipe.topLevelIngredient);
 		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
 		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2");
 		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "shelf", null, null));
@@ -118,7 +113,6 @@ public class SingleAgentKitchen implements DomainGenerator {
 		
 		final PropositionalFunction isSuccess = new RecipeFinished("success", domain, ingredient);
 		PropositionalFunction isFailure = new RecipeBotched("botched", domain, ingredient);
-		//RewardFunction recipeRewardFunction = new RecipeRewardFunction(brownies);
 		RewardFunction recipeRewardFunction = new RecipeAgentSpecificMakeSpanRewardFunction("human");
 		TerminalFunction recipeTerminalFunction = new RecipeTerminalFunction(isSuccess, isFailure);
 		
@@ -129,38 +123,11 @@ public class SingleAgentKitchen implements DomainGenerator {
 				return s.somePFGroundingIsTrue(isSuccess);
 			}
 		};
-		//final int numSteps = Recipe.getNumberSteps(ingredient);
 		Heuristic heuristic = new Heuristic() {
 			@Override
 			public double h(State state) {
 				return 0;
-				//List<ObjectInstance> objects = state.getObjectsOfTrueClass(Recipe.ComplexIngredient.className);
-				//double max = 0;
-				//for (ObjectInstance object : objects)
-				//{
-				//	max = Math.max(max, this.getSubIngredients(state, object));
-				//}
-				//return numSteps - max;
 			}
-			/*
-			public int getSubIngredients(State state, ObjectInstance object)
-			{
-				int count = 0;
-				count += IngredientFactory.isBakedIngredient(object) ? 1 : 0;
-				count += IngredientFactory.isMixedIngredient(object) ? 1 : 0;
-				count += IngredientFactory.isMeltedIngredient(object) ? 1 : 0; 
-				
-				if (IngredientFactory.isSimple(object))
-				{
-					return count;
-				}
-				Set<String> contents = IngredientFactory.getContentsForIngredient(object);
-				for (String str: contents)
-				{
-					count += this.getSubIngredients(state, state.getObject(str));
-				}
-				return count;
-			}*/
 		};
 		AStar aStar = new AStar(domain, recipeRewardFunction, goalCondition, hashFactory, heuristic);
 		aStar.planFromState(currentState);
@@ -206,109 +173,5 @@ public class SingleAgentKitchen implements DomainGenerator {
 		SingleAgentKitchen kitchen = new SingleAgentKitchen();
 		Domain domain = kitchen.generateDomain();
 		kitchen.PlanRecipeOneAgent(domain, new Brownies());
-		
-		
-		//kitchen.PlanRecipeOneAgent(domain, new TestSubGoals(8, 2));
-		//kitchen.PlanRecipeTwoAgents(domain, new FruitSalad());
-		/*
-		FileWriter writer = null;
-		try {
-			writer = new FileWriter("time_wo_subgoals.txt");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}*/
-		/*
-		for (int i = 1; i < 20; i++) {
-			SingleAgentKitchen kitchen = new SingleAgentKitchen();
-			Domain domain = kitchen.generateDomain();
-			long start = System.currentTimeMillis();
-			kitchen.PlanRecipeOneAgent(domain, new TestSubGoals(i,i));
-			long end = System.currentTimeMillis();
-			System.out.println("sg: " + i + " g:" + i + ((start - end) / 1000f));
-			if (end - start > 10*60*1000) {
-				break;
-			}
-		}*/
-		/*
-		for (int j = 2; j < 5; j++) {
-			SingleAgentKitchen kitchen = new SingleAgentKitchen();
-			Domain domain = kitchen.generateDomain();
-			long start = System.currentTimeMillis();
-			kitchen.PlanRecipeOneAgent(domain, new TestSubGoals(j*2,2));
-			long end = System.currentTimeMillis();
-			System.out.println("sg: " + 2 + " g: " + j + ", " +  ((end - start) / 1000f));
-			try {
-				writer.write("sg: " + 2 + " g: " + j + ", " + ((end - start) / 1000f));
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		
-		for (int j = 2; j < 10; j++) {
-			SingleAgentKitchen kitchen = new SingleAgentKitchen();
-			Domain domain = kitchen.generateDomain();
-			long start = System.currentTimeMillis();
-			kitchen.PlanRecipeOneAgent(domain, new TestSubGoals(4*j,2));
-			long end = System.currentTimeMillis();
-			System.out.println("sg: " + 2 + " g:" + 4*j + ((end - start) / 1000f));
-			try {
-				writer.write("sg: " + 2 + " g:" + 4*j + ((end - start) / 1000f));
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		
-		*/
-		/*
-		State state = SingleAgentKitchen.getOneAgent(domain);
-		
-		final Recipe brownies = new Brownies();
-		final PropositionalFunction isSuccess = new RecipeFinished("success", domain, brownies.topLevelIngredient);
-		PropositionalFunction isFailure = new RecipeBotched("botched", domain, brownies.topLevelIngredient);
-		//RewardFunction recipeRewardFunction = new RecipeRewardFunction(brownies);
-		RewardFunction recipeRewardFunction = new RecipeRewardFunction();
-		TerminalFunction recipeTerminalFunction = new RecipeTerminalFunction(isSuccess, isFailure);
-		
-		StateHashFactory hashFactory = new NameDependentStateHashFactory();
-		
-		StateConditionTest goalCondition = new StateConditionTest()
-		{
-			@Override
-			public boolean satisfies(State s) {
-				return s.somePFGroundingIsTrue(isSuccess);
-			}
-		};
-		Heuristic heuristic = new Heuristic() {
-			@Override
-			public double h(State state) {
-				return 0;
-			}
-		};
-		AStar aStar = new AStar(domain, recipeRewardFunction, goalCondition, 
-				hashFactory, heuristic);
-		aStar.planFromState(state);
-		Policy policy = new DDPlannerPolicy(aStar);
-		
-		EpisodeAnalysis episodeAnalysis = 
-				policy.evaluateBehavior(state, recipeRewardFunction, recipeTerminalFunction);
-		for (int i =0 ; i < episodeAnalysis.actionSequence.size(); ++i)
-		{
-			GroundedAction action = episodeAnalysis.actionSequence.get(i);
-			
-			double reward = episodeAnalysis.rewardSequence.get(i);
-			System.out.print("Cost: " + reward + " " + action.action.getName() + " ");
-			for (int j = 0; j < action.params.length; ++j)
-			{
-				System.out.print(action.params[j] + " ");
-			}
-			System.out.print("\n");
-		}
-		//System.out.println("Action Sequence\n" + 
-		//		episodeAnalysis.getActionSequenceString());
-		 * 
-		 */
 	}
 }
