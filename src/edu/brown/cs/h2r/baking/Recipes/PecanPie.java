@@ -24,7 +24,7 @@ public class PecanPie extends Recipe {
 		List<IngredientRecipe> ingredientList3 = new ArrayList<IngredientRecipe>();
 		ingredientList3.add(knowledgebase.getIngredient("eggs"));
 		ingredientList3.add(flaky_crust);
-		IngredientRecipe pie_curst = new IngredientRecipe("pie_crust", NOTMIXED, NOTMELTED, NOTBAKED, SWAPPED, ingredientList3);
+		IngredientRecipe pie_crust = new IngredientRecipe("pie_crust", NOTMIXED, NOTMELTED, NOTBAKED, SWAPPED, ingredientList3);
 
 		
 		List<IngredientRecipe> ingredientList4 = new ArrayList<IngredientRecipe>();
@@ -36,15 +36,15 @@ public class PecanPie extends Recipe {
 		
 		
 		List<IngredientRecipe> ingredientList5 = new ArrayList<IngredientRecipe>();
-		ingredientList4.add(knowledgebase.getIngredient("pecans"));
-		ingredientList4.add(knowledgebase.getIngredient("bourbon"));
-		ingredientList4.add(knowledgebase.getIngredient("vanilla"));
-		ingredientList4.add(pie_mix);
+		ingredientList5.add(knowledgebase.getIngredient("pecans"));
+		ingredientList5.add(knowledgebase.getIngredient("bourbon"));
+		ingredientList5.add(knowledgebase.getIngredient("vanilla"));
+		ingredientList5.add(pie_mix);
 		IngredientRecipe filling = new IngredientRecipe("filling", NOTMIXED, NOTMELTED, NOTBAKED, SWAPPED, ingredientList5);
 		
 		List<IngredientRecipe> ingredientList6 = new ArrayList<IngredientRecipe>();
 		ingredientList6.add(filling);
-		ingredientList6.add(flaky_crust);
+		ingredientList6.add(pie_crust);
 		this.topLevelIngredient = new IngredientRecipe("PecanPie", false, false, false, ingredientList6);
 	}
 

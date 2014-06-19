@@ -21,7 +21,7 @@ import edu.brown.cs.h2r.baking.PropositionalFunctions.IngredientNecessaryForReci
 public class IngredientKnowledgebase {
 	
 	private final String TRAITFILE = "IngredientTraits.txt";
-	private final String COMBINATIONFILE = "IngredientCombinations.txt";
+	private final String COMBINATIONFILE = "FakeCombinations.txt";
 	private final String COMBINATIONTRAITFILE = "CombinationTraits.txt";
 	
 	private final Boolean NOTMIXED= false;
@@ -74,7 +74,7 @@ public class IngredientKnowledgebase {
 	}
 	
 	//TODO: Will move this out soon, here to see if it works!
-	public List<ObjectInstance>getPotentialIngredientObjectInstanceList(State s, Domain domain, IngredientRecipe tlIngredient) {
+	/*public List<ObjectInstance>getPotentialIngredientObjectInstanceList(State s, Domain domain, IngredientRecipe tlIngredient) {
 		List<ObjectInstance> ingredients = new ArrayList<ObjectInstance>();
 		IngredientNecessaryForRecipe necessary = new IngredientNecessaryForRecipe(AffordanceCreator.INGREDIENTPF, domain, tlIngredient);
 		for (IngredientRecipe ing : getIngredientList()) {
@@ -85,11 +85,34 @@ public class IngredientKnowledgebase {
 			}
 		}
 		return ingredients;
+	}*/
+	
+	public List<ObjectInstance>getPotentialIngredientObjectInstanceList(State s, Domain domain, IngredientRecipe tlIngredient) {
+		List<ObjectInstance> ingredients = new ArrayList<ObjectInstance>();
+		for (IngredientRecipe ing : getPotentialIngredientList(s, domain, tlIngredient)) {
+			ObjectClass oc = ing.isSimple() ? domain.getObjectClass(IngredientFactory.ClassNameSimple) : domain.getObjectClass(IngredientFactory.ClassNameComplex);
+			ObjectInstance obj = IngredientFactory.getNewIngredientInstance(ing, ing.getName(), oc);
+			IngredientFactory.clearBooleanAttributes(obj);
+			ingredients.add(obj);
+		}
+		return ingredients;
 	}
 	
-	/*
+	
 	public List<IngredientRecipe> getPotentialIngredientList(State s, Domain domain, IngredientRecipe tlIngredient) {
 		List<IngredientRecipe> ingredients = new ArrayList<IngredientRecipe>();
+		for (String trait : tlIngredient.getNecessaryTraits().keySet()) {
+			for (IngredientRecipe ing : this.allIngredients.values()) {
+				if (ing.getTraits().contains(trait)) {
+					if (ingredients.contains(ing)) {
+						IngredientRecipe i = ingredients.get(ingredients.indexOf(ing));
+						i.setUseCount(i.getUseCount()+1);
+					} else {
+						ingredients.add(ing);
+					}
+				}
+			}
+		}
 		for (IngredientRecipe ingredient : tlIngredient.getContents()) {
 			if (ingredient.isSimple()) {
 				if (ingredients.contains(ingredient)) {
@@ -103,7 +126,7 @@ public class IngredientKnowledgebase {
 				for (IngredientRecipe i : toAdd) {
 					if (ingredients.contains(i)) {
 						IngredientRecipe ing = ingredients.get(ingredients.indexOf(i));
-						ing.setUseCount(ing.getUseCount()+1);
+						ing.setUseCount(ing.getUseCount()+i.getUseCount());
 					} else {
 						ingredients.add(i);
 					}
@@ -111,7 +134,7 @@ public class IngredientKnowledgebase {
 			}
 		}
 		return ingredients;
-	}*/
+	}
 	private AbstractMap<String,Set<String>> generateAllTraitMap() {
 		AbstractMap<String, Set<String>> allTraits = new HashMap<String, Set<String>>();
 		allTraits.putAll(this.traitMap);
@@ -194,7 +217,9 @@ public class IngredientKnowledgebase {
 		Set<ObjectInstance> hidden_copies = new HashSet<ObjectInstance>();
 		for (String name : ings) {
 			ObjectInstance ob = state.getObject(name);
-			hidden_copies.add(IngredientFactory.makeHiddenObjectCopy(state, domain, ob));
+			if (!IngredientFactory.isSimple(ob)) {
+				hidden_copies.add(IngredientFactory.makeHiddenObjectCopy(state, domain, ob));
+			}
 		}
 		ContainerFactory.removeContents(container);
 		for (String name : ings) {

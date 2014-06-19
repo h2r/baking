@@ -27,10 +27,11 @@ public class AllowPouring extends BakingPropositionalFunction {
 		
 		// Get what our subgoal is looking for and make copies
 		List<IngredientRecipe> necessary_ings = new ArrayList<IngredientRecipe>(); 
-		for (IngredientRecipe ing : this.topLevelIngredient.getConstituentIngredients()) {
+		for (IngredientRecipe ing : this.topLevelIngredient.getContents()) {
 			necessary_ings.add(ing);
 		}
-		AbstractMap<String, IngredientRecipe> actual_ing_traits = this.topLevelIngredient.getConstituentNecessaryTraits();
+		AbstractMap<String, IngredientRecipe> actual_ing_traits = this.topLevelIngredient.getNecessaryTraits();
+		//AbstractMap<String, IngredientRecipe> actual_ing_traits = this.topLevelIngredient.getConstituentNecessaryTraits();
 		AbstractMap<String, IngredientRecipe> necessary_traits = new HashMap<String, IngredientRecipe>();
 		for (String name : actual_ing_traits.keySet()) {
 			necessary_traits.put(name, actual_ing_traits.get(name));
@@ -38,15 +39,9 @@ public class AllowPouring extends BakingPropositionalFunction {
 		
 		// Look to see what trait/necessary ingredients we have already fulfilled in our bowl
 		Set<ObjectInstance> receiving_contents = new HashSet<ObjectInstance>();
-		for (String content_name : ContainerFactory.getContentNames(receivingContainer)) {
+		for (String content_name : ContainerFactory.getConstituentSwappedContentNames(receivingContainer, s)) {
 			ObjectInstance obj = s.getObject(content_name);
-			if (IngredientFactory.isSimple(obj)) {
-				receiving_contents.add(obj);
-			} else {
-				for (String n :IngredientFactory.getRecursiveContentsForIngredient(s, obj)) {
-					receiving_contents.add(s.getObject(n));
-				}
-			}
+			receiving_contents.add(obj);
 		}
 		// Check that everything in our bowl is either a necessary ingredient or a trait
 		// ingredient for our current subgoal.
@@ -80,16 +75,9 @@ public class AllowPouring extends BakingPropositionalFunction {
 		}
 		// Get all of the ingredients in our pouring bowl.
 		Set<ObjectInstance> pour_contents = new HashSet<ObjectInstance>();
-		for (String content_name : ContainerFactory.getContentNames(pouringContainer)) {
-			ObjectInstance obj = s.getObject(content_name);
-			if (IngredientFactory.isSimple(obj)) {
-				pour_contents.add(obj);
-			} else {
-				for (String n :IngredientFactory.getRecursiveContentsForIngredient(s, obj)) {
-					pour_contents.add(s.getObject(n));
-				}
-			}
-		}	
+		for (String name : ContainerFactory.getConstituentSwappedContentNames(pouringContainer, s)) {
+			pour_contents.add(s.getObject(name));
+		}
 		// Now, lets see if our pouring container has ingredients that are actually needed;
 		Boolean current_match;
 		for (ObjectInstance content : pour_contents) {
@@ -110,7 +98,7 @@ public class AllowPouring extends BakingPropositionalFunction {
 						for (ObjectInstance container : s.getObjectsOfTrueClass(ContainerFactory.ClassName)) {
 							if (!ContainerFactory.isMixingContainer(pouringContainer)) {
 								if (ContainerFactory.isMixingContainer(container) && !ContainerFactory.isEmptyContainer(container)) {
-									for (String name : ContainerFactory.getConstituentContentNames(container, s)) {
+									for (String name : ContainerFactory.getConstituentSwappedContentNames(container, s)) {
 										ObjectInstance obj = s.getObject(name);
 										if (IngredientFactory.getTraits(obj).contains(trait)) {
 											trait_used = true;

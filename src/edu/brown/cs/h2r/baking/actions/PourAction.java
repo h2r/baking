@@ -1,6 +1,7 @@
 package edu.brown.cs.h2r.baking.actions;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import burlap.oomdp.core.Domain;
@@ -14,9 +15,11 @@ import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 
 public class PourAction extends BakingAction {
 	public static final String className = "pour";
+	private List<ObjectInstance> allIngredients;
 	public PourAction(Domain domain, IngredientRecipe ingredient) {
 		super(PourAction.className, domain, ingredient, new String[] {AgentFactory.ClassName, ContainerFactory.ClassName, ContainerFactory.ClassName});
 		this.domain = domain;
+		//this.allIngredients = ings;
 	}
 	
 	@Override
@@ -84,11 +87,28 @@ public class PourAction extends BakingAction {
 	{
 		Set<String> ingredients = new HashSet<String>(ContainerFactory.getContentNames(pouringContainer));
 		ContainerFactory.addIngredients(receivingContainer, ingredients);
+		//if (shouldRemove(state, pouringContainer)) {
+			//ContainerFactory.removeContents(pouringContainer);
+		//}
 		ContainerFactory.removeContents(pouringContainer);
 		for (String ingredient : ingredients) {
 			ObjectInstance ingredientInstance = state.getObject(ingredient); 
 			IngredientFactory.changeIngredientContainer(ingredientInstance, receivingContainer.getName());
 		}
 		
+	}
+	
+	public void addAllIngredients(List<ObjectInstance> ings) {
+		this.allIngredients = ings;
+	}
+	
+	//TODO: Make this a PF?
+	private boolean shouldRemove(State state, ObjectInstance container) {
+		ObjectInstance obj = null;
+		for (String name :ContainerFactory.getContentNames(container)) {
+			obj = state.getObject(name);
+			break;
+		}
+		return IngredientFactory.getUseCount(obj) == 1;
 	}
 }

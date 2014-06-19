@@ -183,4 +183,21 @@ public class ContainerFactory {
 		}
 		return names;
 	}
+	
+	public static Set<String> getConstituentSwappedContentNames(ObjectInstance container, State state) {
+		Set<String> ingredients = new TreeSet<String>();
+		for (String name : ContainerFactory.getContentNames(container)) {
+			ObjectInstance ing = state.getObject(name);
+			if (IngredientFactory.isSimple(ing) || IngredientFactory.isSwapped(ing)) {
+				ingredients.add(name);
+			} else {
+				ingredients.addAll(IngredientFactory.getRecursiveContentsAndSwapped(state, state.getObject(name)));
+			}
+		}
+		return ingredients;
+	}
+	
+	public static void removeIngredient(ObjectInstance container, String name) {
+		container.removeRelationalTarget(ContainerFactory.attributeContains, name);
+	}
 }

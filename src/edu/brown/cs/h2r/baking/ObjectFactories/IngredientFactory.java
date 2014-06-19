@@ -158,6 +158,31 @@ public class IngredientFactory {
 		return newInstance;
 	}
 	
+	public static ObjectInstance getNewComplexIngredientObjectInstance(ObjectClass complexIngredientClass, String name, 
+			Boolean baked, Boolean melted, Boolean mixed, Boolean swapped, int useCount, String ingredientContainer, Set<String> traits, Iterable<String> contents) {
+		ObjectInstance newInstance = new ObjectInstance(complexIngredientClass, name);
+		newInstance.setValue(IngredientFactory.attributeBaked, baked ? 1 : 0);
+		newInstance.setValue(IngredientFactory.attributeMelted, melted ? 1 : 0);
+		newInstance.setValue(IngredientFactory.attributeMixed, mixed ? 1 : 0);
+		newInstance.setValue(IngredientFactory.attributeUseCount, useCount);
+		newInstance.setValue(IngredientFactory.attributeSwapped, swapped ? 1 : 0);
+		
+		if (ingredientContainer != null || ingredientContainer != "") {
+			newInstance.addRelationalTarget(IngredientFactory.attributeContainer, ingredientContainer);
+		}
+		for (String trait : traits) {
+			newInstance.addRelationalTarget("traits", trait);
+		}
+		
+		if (contents != null) {
+			for (String ingredient : contents) {
+				newInstance.addRelationalTarget(IngredientFactory.attributeContains, ingredient);
+			}
+		}
+		
+		return newInstance;
+	}
+	
 	public static ObjectInstance getNewIngredientInstance(ObjectClass simpleIngredientClass, 
 			IngredientRecipe ingredientRecipe, String ingredientContainer) {
 		
@@ -185,16 +210,17 @@ public class IngredientFactory {
 		Boolean mixed = ingredient.getMixed();
 		Boolean melted = ingredient.getMelted();
 		Boolean swapped = ingredient.getSwapped();
+		int useCount = ingredient.getUseCount();
 		Set<String> contents = new TreeSet<String>();
 		String container = "";
 		Set<String> traits = ingredient.getTraits();
 		if (ingredient.isSimple()) {
-			return IngredientFactory.getNewSimpleIngredientObjectInstance(oc, name, baked, melted, mixed, traits, container);
+			return IngredientFactory.getNewSimpleIngredientObjectInstance(oc, name, baked, melted, mixed, useCount, traits, container);
 		}
 		for (IngredientRecipe ing : ingredient.getContents()) {
 			contents.add(ing.getName());
 		}
-		return IngredientFactory.getNewComplexIngredientObjectInstance(oc, name, baked, melted, mixed, swapped, container, traits, contents);
+		return IngredientFactory.getNewComplexIngredientObjectInstance(oc, name, baked, melted, mixed, swapped, useCount, container, traits, contents);
 	}
 	
 	public static List<ObjectInstance> getIngredientInstancesList(ObjectClass simpleIngredientClass,
@@ -333,6 +359,10 @@ public class IngredientFactory {
 	
 	public static Set<String> getRecursiveContentsAndSwapped(State state, ObjectInstance ingredient) {
 		Set<String> contents = new TreeSet<String>();
+		if (IngredientFactory.isSimple(ingredient)) {
+			contents.add(ingredient.getName());
+			return contents;
+		}
 		for (String content_name : IngredientFactory.getIngredientContents(ingredient)) {
 			ObjectInstance content = state.getObject(content_name);
 			if (IngredientFactory.isSimple(content) || IngredientFactory.isSwapped(content)) {
@@ -369,43 +399,42 @@ public class IngredientFactory {
 		return hidden;
 	}
 	
-	public static void removeUnecessaryTraitIngredients(State state, Domain domain, IngredientRecipe topLevelIngredient, IngredientRecipe currentGoal) {
-		AbstractMap<String, IngredientRecipe> goalTraits = currentGoal.getConstituentNecessaryTraits();
-		List<IngredientRecipe> necessaryIngredients = topLevelIngredient.getConstituentIngredients();
-		List<ObjectInstance> toHide = new ArrayList<ObjectInstance>();
+	public static void hideUnecessaryIngredients(State state, Domain domain, IngredientRecipe goal, List<ObjectInstance>allIngredients) {
 		Boolean match;
-		for (ObjectInstance obj : state.getObjectsOfTrueClass(ClassNameSimple)) {
+		for (ObjectInstance obj : allIngredients) {
 			match = false;
-			String name = obj.getName();
-			// Check if this is a required ingredient in recipe that hasn't yet been used
-			for (IngredientRecipe ing : necessaryIngredients) {
-				if (ing.getName().equals(name)) {
+			for (IngredientRecipe ing : goal.getContents()) {
+				if (ing.getName().equals(obj.getName())) {
 					match = true;
 					break;
 				}
 			}
-			// Check this ingredient could've fulfilled a trait at this step, but it wasn't
-			// used. (perhaps there was another ingredient that could fill the same trait,
-			// e.x. white and brown sugar.
 			if (!match) {
-				Set<String> objectTraits = IngredientFactory.getTraits(obj);
-				for (String trait : goalTraits.keySet()) {
-					if (objectTraits.contains(trait)) {
+				for (String trait : goal.getNecessaryTraits().keySet()) {
+					if (IngredientFactory.getTraits(obj).contains(trait)) {
 						match = true;
 						break;
 					}
 				}
-				if (match) {
-					toHide.add(obj);
-				}
-				
+			}
+			if (match) {
+				if (IngredientFactory.getUseCount(obj) == 1) {
+					ObjectInstance hidden = makeHiddenObjectCopy(state, domain, obj);
+					ObjectInstance container = state.getObject(IngredientFactory.getContainer(hidden));
+					ContainerFactory.removeIngredient(container, hidden.getName());
+					state.removeObject(obj);
+					state.addObject(hidden);
+				} //else {
+					IngredientFactory.setUseCount(obj, IngredientFactory.getUseCount(obj) -1);
+				//}
 			}
 		}
-		for (ObjectInstance hide : toHide) {
-			ObjectInstance hidden = makeHiddenObjectCopy(state, domain, hide);
-			ContainerFactory.removeContents(state.getObject(getContainer(hidden)));
-			state.removeObject(hidden.getName());
-			state.addObject(hidden);
-		}
+		
+	}
+	
+	public static void clearBooleanAttributes(ObjectInstance obj) {
+		obj.setValue(attributeBaked, 0);
+		obj.setValue(attributeMixed, 0);
+		obj.setValue(attributeMelted, 0);
 	}
 }
