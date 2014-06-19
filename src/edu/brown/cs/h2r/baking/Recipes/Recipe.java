@@ -28,6 +28,10 @@ public abstract class Recipe {
 		return Arrays.asList("Recipe not implemented");
 	}
 	
+	public List<Boolean> getRecipeProceduresStatus() {
+		return new ArrayList<Boolean>(this.getRecipeProcedures().size());
+	}
+	
 	public int getNumberSteps()
 	{
 		return Recipe.getNumberSteps(this.topLevelIngredient);
