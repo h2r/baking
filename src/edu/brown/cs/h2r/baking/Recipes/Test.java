@@ -45,11 +45,11 @@ public class Test {
 		ObjectClass simpleClass = IngredientFactory.createSimpleIngredientObjectClass(domain);
 		ObjectClass complexClass = IngredientFactory.createComplexIngredientObjectClass(domain);
 		
-		ObjectInstance s1 = IngredientFactory.getNewSimpleIngredientObjectInstance(simpleClass, "s1", false, false, false, "");
-		ObjectInstance s2 = IngredientFactory.getNewSimpleIngredientObjectInstance(simpleClass, "s2", false, false, false, "");
-		ObjectInstance s3 = IngredientFactory.getNewSimpleIngredientObjectInstance(simpleClass, "s1", false, false, false, "");
-		ObjectInstance s4 = IngredientFactory.getNewSimpleIngredientObjectInstance(simpleClass, "s4", false, false, false, "");
-		ObjectInstance s5 = IngredientFactory.getNewSimpleIngredientObjectInstance(simpleClass, "s5", false, false, false, "");
+		ObjectInstance s1 = IngredientFactory.getNewSimpleIngredientObjectInstance(simpleClass, "s1", false, false, false, false, "");
+		ObjectInstance s2 = IngredientFactory.getNewSimpleIngredientObjectInstance(simpleClass, "s2", false, false, false, false, "");
+		ObjectInstance s3 = IngredientFactory.getNewSimpleIngredientObjectInstance(simpleClass, "s1", false, false, false, false, "");
+		ObjectInstance s4 = IngredientFactory.getNewSimpleIngredientObjectInstance(simpleClass, "s4", false, false, false, false, "");
+		ObjectInstance s5 = IngredientFactory.getNewSimpleIngredientObjectInstance(simpleClass, "s5", false, false, false, false, "");
 		state.addObject(s1);
 		state.addObject(s2);
 		state.addObject(s3);
@@ -58,13 +58,13 @@ public class Test {
 		
 		ObjectInstance p1 = 
 				IngredientFactory.getNewComplexIngredientObjectInstance(
-						complexClass, "p1", false, false, false, "", Arrays.asList("s1", "s2"));
+						complexClass, "p1", false, false, false, false, "", Arrays.asList("s1", "s2"));
 		ObjectInstance p2 = 
 				IngredientFactory.getNewComplexIngredientObjectInstance(
-						complexClass, "p2", false, false, false, "", Arrays.asList("s1", "s3"));
+						complexClass, "p2", false, false, false, false, "", Arrays.asList("s1", "s3"));
 		ObjectInstance p3 = 
 				IngredientFactory.getNewComplexIngredientObjectInstance(
-						complexClass, "p3", false, false, false, "", Arrays.asList("s1", "s2", "s4"));
+						complexClass, "p3", false, false, false, false, "", Arrays.asList("s1", "s2", "s4"));
 		state.addObject(p1);
 		state.addObject(p2);
 		state.addObject(p3);

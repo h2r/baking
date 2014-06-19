@@ -75,7 +75,7 @@ public class MixAction extends BakingAction {
 		Set<String> contents = ContainerFactory.getContentNames(container);
 		ObjectInstance newIngredient = 
 				IngredientFactory.getNewComplexIngredientObjectInstance(complexIngredientClass, 
-						Integer.toString(rando.nextInt()), false, false, false, container.getName(), contents);
+						Integer.toString(rando.nextInt()), false, false, false, false, container.getName(), contents);
 		state.addObject(newIngredient);
 		ContainerFactory.removeContents(container);
 		ContainerFactory.addIngredient(container, newIngredient.getName());
