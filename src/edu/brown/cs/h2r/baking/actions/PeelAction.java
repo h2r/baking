@@ -8,8 +8,9 @@ import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 
 public class PeelAction extends BakingAction {
+	public static final String className = "peel";
 	public PeelAction(Domain domain, IngredientRecipe ingredient) {
-		super("peel", domain, ingredient, new String[] {AgentFactory.ClassName, IngredientFactory.ClassNameSimple});
+		super(PeelAction.className, domain, ingredient, new String[] {AgentFactory.ClassName, IngredientFactory.ClassNameSimple});
 	}
 
 	@Override
@@ -21,6 +22,10 @@ public class PeelAction extends BakingAction {
 		ObjectInstance agent =  state.getObject(params[0]);
 		
 		ObjectInstance ingredientInstance = state.getObject(params[1]);
+		
+		if (IngredientFactory.isPeeledIngredient(ingredientInstance)) {
+			return false;
+		}
 		
 		return true;
 	}

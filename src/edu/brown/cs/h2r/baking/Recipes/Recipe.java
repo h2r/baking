@@ -24,16 +24,16 @@ public abstract class Recipe {
 	public IngredientRecipe topLevelIngredient;
 	protected IngredientKnowledgebase knowledgebase;
 	
-	protected final Boolean NOTMIXED = false;
-	protected final Boolean NOTMELTED = false;
-	protected final Boolean NOTBAKED = false;
-	protected final Boolean NOTSWAPPED = false;
-	protected final Boolean NOTPEELED = false;
-	protected final Boolean MIXED = true;
-	protected final Boolean MELTED = true;
-	protected final Boolean BAKED = true;
-	protected final Boolean SWAPPED = true;
-	protected final Boolean PEELED = true;
+	public static final Boolean NOT_MIXED = false;
+	public static final Boolean NOT_MELTED = false;
+	public static final Boolean NOT_BAKED = false;
+	public static final Boolean NOT_SWAPPED = false;
+	public static final Boolean NOT_PEELED = false;
+	public static final Boolean MIXED = true;
+	public static final Boolean MELTED = true;
+	public static final Boolean BAKED = true;
+	public static final Boolean SWAPPED = true;
+	public static final Boolean PEELED = true;
 	
 	public Recipe()
 	{

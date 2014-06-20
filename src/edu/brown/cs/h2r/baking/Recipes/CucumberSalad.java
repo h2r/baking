@@ -14,19 +14,19 @@ public class CucumberSalad extends Recipe {
 		ingredientList.add(knowledgebase.getIngredient("red_onions"));
 		ingredientList.add(knowledgebase.getIngredient("tomatoes"));
 		ingredientList.add(knowledgebase.getIngredient("cucumbers"));
-		IngredientRecipe salad = new IngredientRecipe("Salad", NOTMIXED, NOTMELTED, NOTBAKED, NOTPEELED, SWAPPED, ingredientList);
+		IngredientRecipe salad = new IngredientRecipe("Salad", Recipe.NOT_MIXED, Recipe.NOT_MELTED, Recipe.NOT_BAKED, Recipe.NOT_PEELED, Recipe.SWAPPED, ingredientList);
 		
 		List<IngredientRecipe> ingredientList2 = new ArrayList<IngredientRecipe>();
 		ingredientList2.add(knowledgebase.getIngredient("pepper"));
 		ingredientList2.add(knowledgebase.getIngredient("olive_oil"));
-		IngredientRecipe dressing = new IngredientRecipe("dressing", NOTMIXED, NOTMELTED, NOTBAKED, NOTPEELED, SWAPPED, ingredientList2);
-		dressing.addNecessaryTrait("lemon", NOTMIXED, NOTMELTED, NOTBAKED, NOTPEELED);
-		dressing.addNecessaryTrait("salt", NOTMIXED, NOTMELTED, NOTBAKED, NOTPEELED);
+		IngredientRecipe dressing = new IngredientRecipe("dressing", Recipe.NOT_MIXED, Recipe.NOT_MELTED, Recipe.NOT_BAKED, Recipe.NOT_PEELED, Recipe.SWAPPED, ingredientList2);
+		dressing.addNecessaryTrait("lemon", Recipe.NOT_MIXED, Recipe.NOT_MELTED, Recipe.NOT_BAKED, Recipe.NOT_PEELED);
+		dressing.addNecessaryTrait("salt", Recipe.NOT_MIXED, Recipe.NOT_MELTED, Recipe.NOT_BAKED, Recipe.NOT_PEELED);
 		
 		List<IngredientRecipe> ingredientList3= new ArrayList<IngredientRecipe>();
 		ingredientList3.add(salad);
 		ingredientList3.add(dressing);
-		this.topLevelIngredient = new IngredientRecipe("CucumberSalad", NOTMIXED, NOTMELTED, NOTBAKED, NOTPEELED, SWAPPED, ingredientList3);
+		this.topLevelIngredient = new IngredientRecipe("CucumberSalad", Recipe.NOT_MIXED, Recipe.NOT_MELTED, Recipe.NOT_BAKED, Recipe.NOT_PEELED, Recipe.SWAPPED, ingredientList3);
 		
 	}
 }

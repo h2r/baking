@@ -18,7 +18,6 @@ public class AllowMelting extends BakingPropositionalFunction {
 	}
 	@Override
 	public boolean isTrue(State s, String[] params) {
-		// TODO Auto-generated method stub
 		if (!params[1].equalsIgnoreCase("")) {
 			ObjectInstance container = s.getObject(params[1]);
 			// Melting only simple ingredients, and not trying to melt empty bowl!

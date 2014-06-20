@@ -119,7 +119,7 @@ public class KevinsKitchen implements DomainGenerator {
 		ObjectClass containerClass = domain.getObjectClass(ContainerFactory.ClassName);		
 		ObjectInstance counterSpace = currentState.getObject("counter");
 
-		List<ObjectInstance> ingredientInstances = allIngredients;
+		List<ObjectInstance> ingredientInstances = this.allIngredients;
 		List<ObjectInstance> containerInstances = Recipe.getContainers(containerClass, ingredientInstances, counterSpace.getName());
 		
 		
@@ -145,16 +145,13 @@ public class KevinsKitchen implements DomainGenerator {
 			}
 		}
 		
-		//final PropositionalFunction isSuccess = new RecipeFinished(AffordanceCreator.FINISHPF, domain, ingredient);
-		//final PropositionalFunction isFailure = new RecipeBotched(AffordanceCreator.BOTCHEDPF, domain, ingredient);
-		
 		AffordanceCreator theCreator = new AffordanceCreator(domain, currentState, ingredient);
 		// Add the current top level ingredient so we can properly trim the action space
 		for (PropositionalFunction pf : domain.getPropFunctions()) {
 			((BakingPropositionalFunction)pf).changeTopLevelIngredient(ingredient);
 		}
-		final PropositionalFunction isSuccess = domain.getPropFunction(AffordanceCreator.FINISHPF);
-		final PropositionalFunction isFailure = domain.getPropFunction(AffordanceCreator.BOTCHEDPF);
+		final PropositionalFunction isSuccess = domain.getPropFunction(AffordanceCreator.FINISH_PF);
+		final PropositionalFunction isFailure = domain.getPropFunction(AffordanceCreator.BOTCHED_PF);
 		
 		System.out.println("Planning over ingredients with the traits: "+ingredient.getTraits());
 		
@@ -226,7 +223,6 @@ public class KevinsKitchen implements DomainGenerator {
 		
 		ExperimentHelper.printResults(episodeAnalysis.actionSequence, episodeAnalysis.rewardSequence);
 		
-		//IngredientFactory.removeUnecessaryTraitIngredients(endState, domain, this.topLevelIngredient, ingredient);
 		IngredientFactory.hideUnecessaryIngredients(endState, domain, ingredient, this.allIngredients);
 		
 		return endState;
@@ -236,12 +232,12 @@ public class KevinsKitchen implements DomainGenerator {
 		
 		KevinsKitchen kitchen = new KevinsKitchen();
 		Domain domain = kitchen.generateDomain();
-		kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.Brownies());
-		kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.DeviledEggs());
-		kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.CucumberSalad());
+		//kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.Brownies());
+		//kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.DeviledEggs());
+		//kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.CucumberSalad());
 		kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.MashedPotatoes());
-		kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.MoltenLavaCake());
-		kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.PeanutButterCookies());
-		kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.PecanPie());
+		//kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.MoltenLavaCake());
+		//kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.PeanutButterCookies());
+		//kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.PecanPie());
 	}
 }

@@ -90,6 +90,10 @@ public class IngredientRecipe {
 		this.baked = true;
 	}
 	
+	public void setPeeled() {
+		this.peeled = true;
+	}
+	
 	public Boolean getPeeled() {
 		return this.peeled;
 	}
@@ -227,6 +231,9 @@ public class IngredientRecipe {
 			return false;
 		}
 		if (IngredientFactory.isMixedIngredient(object) != this.getMixed()) {
+			return false;
+		}
+		if (IngredientFactory.isPeeledIngredient(object) != this.getPeeled()) {
 			return false;
 		}
 		return true;

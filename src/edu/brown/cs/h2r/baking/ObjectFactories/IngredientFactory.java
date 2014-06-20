@@ -28,6 +28,8 @@ public class IngredientFactory {
 	private static final String attributeTraits = "traits";
 	private static final String attributeSwapped = "swapped";
 	private static final String attributeUseCount = "useCount";
+	private static final String[] booleanAttributes= {IngredientFactory.attributeBaked, 
+		IngredientFactory.attributeMelted, IngredientFactory.attributeMixed, IngredientFactory.attributePeeled};
 
 	private static ObjectClass createObjectClass(Domain domain, String className) {
 		ObjectClass objectClass = new ObjectClass(domain, className);
@@ -453,10 +455,14 @@ public class IngredientFactory {
 		
 	}
 	
+	/* Rids the object instance of any attrbiutes, such that I can make a recipe require
+	 * a certain attribute for an ingredient but when the object instance is created for planning,
+	 * this attribute is already fulfilled.
+	 */
 	public static void clearBooleanAttributes(ObjectInstance obj) {
-		obj.setValue(attributeBaked, 0);
-		obj.setValue(attributeMixed, 0);
-		obj.setValue(attributeMelted, 0);
+		for (String att_name : IngredientFactory.booleanAttributes) {
+			obj.setValue(att_name, 0);
+		}
 	}
 	public static Set<String> getContentsForIngredient(ObjectInstance ingredient) {
 		return new TreeSet<String>(ingredient.getAllRelationalTargets(IngredientFactory.attributeContains));
