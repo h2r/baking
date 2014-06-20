@@ -15,6 +15,7 @@ import burlap.behavior.statehashing.NameDependentStateHashFactory;
 import burlap.behavior.statehashing.StateHashFactory;
 import burlap.oomdp.auxiliary.DomainGenerator;
 import burlap.oomdp.core.Domain;
+//import edu.brown.cs.h2r.baking.Domain;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.PropositionalFunction;
@@ -27,8 +28,6 @@ import burlap.oomdp.singleagent.SADomain;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.RecipeAgentSpecificMakeSpanRewardFunction;
 import edu.brown.cs.h2r.baking.RecipeAgentSpecificRewardFunction;
-import edu.brown.cs.h2r.baking.RecipeBotched;
-import edu.brown.cs.h2r.baking.RecipeFinished;
 import edu.brown.cs.h2r.baking.RecipeTerminalFunction;
 import edu.brown.cs.h2r.baking.GoalCondition.RecipeGoalCondition;
 import edu.brown.cs.h2r.baking.Heuristics.RecipeHeuristic;
@@ -37,8 +36,9 @@ import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.MakeSpanFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
 import edu.brown.cs.h2r.baking.Recipes.Brownies;
-import edu.brown.cs.h2r.baking.Recipes.BrowniesSubGoals;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.actions.MixAction;
 import edu.brown.cs.h2r.baking.actions.MoveAction;
@@ -68,10 +68,6 @@ public class DualAgentRandomRobot  implements DomainGenerator {
 		domain.addObjectClass(AgentFactory.getObjectClass(domain));
 		domain.addObjectClass(MakeSpanFactory.getObjectClass(domain));
 		
-		Action mix = new MixAction(domain);
-		//Action bake = new BakeAction(domain);
-		Action pour = new PourAction(domain);
-		Action move = new MoveAction(domain);
 		return domain;
 	}
 	
@@ -79,6 +75,10 @@ public class DualAgentRandomRobot  implements DomainGenerator {
 	{
 		System.out.println("Creating two-agent initial start state");
 		State state = new State();
+		Action mix = new MixAction(domain, recipe.topLevelIngredient);
+		//Action bake = new BakeAction(domain);
+		Action pour = new PourAction(domain, recipe.topLevelIngredient);
+		Action move = new MoveAction(domain, recipe.topLevelIngredient);
 		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
 		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "robot"));
 		state.addObject(MakeSpanFactory.getNewObjectInstance(domain, "makeSpan", 2));
@@ -129,7 +129,6 @@ public class DualAgentRandomRobot  implements DomainGenerator {
 			}
 		}
 		
-		
 		final PropositionalFunction isSuccess = new RecipeFinished("success", domain, ingredient);
 		PropositionalFunction isFailure = new RecipeBotched("botched", domain, ingredient);
 		//RewardFunction recipeRewardFunction = new RecipeRewardFunction(brownies);
@@ -163,7 +162,6 @@ public class DualAgentRandomRobot  implements DomainGenerator {
 		State endState = startingState;
 		List<GroundedAction> fullActions = new ArrayList<GroundedAction>();
 		List<Double> fullReward = new ArrayList<Double>();
-		boolean currentAgent = false;
 		while (!finished) {
 			
 			GroundedAction robotAction = ExperimentHelper.getRandomGroundedAction(domain, currentState, "robot");

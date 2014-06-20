@@ -8,6 +8,7 @@ import burlap.oomdp.core.Attribute;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
+import burlap.oomdp.core.State;
 
 
 public class ContainerFactory {
@@ -166,4 +167,37 @@ public class ContainerFactory {
 		return null;
 	}
 	
+	public static Boolean isEmptyContainer(ObjectInstance container) {
+		return getContentNames(container).isEmpty();
+	}
+	
+	public static Set<String> getConstituentContentNames(ObjectInstance container, State state) {
+		Set<String> names = new TreeSet<String>();
+		for (String name : container.getAllRelationalTargets(ContainerFactory.attributeContains)) {
+			ObjectInstance ing = state.getObject(name);
+			if (IngredientFactory.isSimple(ing)) {
+				names.add(name);
+			} else {
+				names.addAll(IngredientFactory.getRecursiveContentsForIngredient(state, ing));
+			}
+		}
+		return names;
+	}
+	
+	public static Set<String> getConstituentSwappedContentNames(ObjectInstance container, State state) {
+		Set<String> ingredients = new TreeSet<String>();
+		for (String name : ContainerFactory.getContentNames(container)) {
+			ObjectInstance ing = state.getObject(name);
+			if (IngredientFactory.isSimple(ing) || IngredientFactory.isSwapped(ing)) {
+				ingredients.add(name);
+			} else {
+				ingredients.addAll(IngredientFactory.getRecursiveContentsAndSwapped(state, state.getObject(name)));
+			}
+		}
+		return ingredients;
+	}
+	
+	public static void removeIngredient(ObjectInstance container, String name) {
+		container.removeRelationalTarget(ContainerFactory.attributeContains, name);
+	}
 }

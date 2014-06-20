@@ -18,6 +18,7 @@ public class RecipeTerminalFunction implements TerminalFunction{
 	public boolean isTerminal(State state) {
 		return (state.somePFGroundingIsTrue(this.recipeSuccess) ||
 				state.somePFGroundingIsTrue(this.recipeFailure));
+		
 	}
 
 }
