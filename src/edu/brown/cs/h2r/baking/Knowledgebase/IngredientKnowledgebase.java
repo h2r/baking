@@ -213,7 +213,7 @@ public class IngredientKnowledgebase {
 			traits.add(trait);
 		}
 		Set<String> ings = ContainerFactory.getContentNames(container);
-		ObjectInstance new_ing = IngredientFactory.getNewComplexIngredientObjectInstance(domain.getObjectClass(IngredientFactory.ClassNameComplex), toswap, false, false, false, true, "", traits, ings);
+		ObjectInstance new_ing = IngredientFactory.getNewComplexIngredientObjectInstance(domain.getObjectClass(IngredientFactory.ClassNameComplex), toswap, NOTMIXED, NOTMELTED, NOTBAKED, NOTPEELED, true, "", traits, ings);
 		// Make the hidden Copies
 		Set<ObjectInstance> hidden_copies = new HashSet<ObjectInstance>();
 		for (String name : ings) {

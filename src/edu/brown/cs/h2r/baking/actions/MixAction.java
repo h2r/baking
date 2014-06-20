@@ -112,10 +112,10 @@ public class MixAction extends BakingAction {
 				}
 			}
 			
-			// TODO: Reevaluate the swapped false here? (4th one)
+			// TODO: Reevaluate the swapped false here? (5th one)
 			ObjectInstance newIngredient = 
 					IngredientFactory.getNewComplexIngredientObjectInstance(complexIngredientClass, 
-							Integer.toString(rando.nextInt()), false, false, false, false, container.getName(), traits, contents);
+							Integer.toString(rando.nextInt()), false, false, false, false, false, container.getName(), traits, contents);
 			state.addObject(newIngredient);
 			ContainerFactory.removeContents(container);
 			

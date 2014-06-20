@@ -44,6 +44,7 @@ import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.actions.MeltAction;
 import edu.brown.cs.h2r.baking.actions.MixAction;
 import edu.brown.cs.h2r.baking.actions.MoveAction;
+import edu.brown.cs.h2r.baking.actions.PeelAction;
 import edu.brown.cs.h2r.baking.actions.PourAction;
 
 public class KevinsKitchen implements DomainGenerator {
@@ -73,6 +74,7 @@ public class KevinsKitchen implements DomainGenerator {
 		Action pour = new PourAction(domain, recipe.topLevelIngredient);
 		Action move = new MoveAction(domain, recipe.topLevelIngredient);
 		Action melt = new MeltAction(domain, recipe.topLevelIngredient);
+		Action peel = new PeelAction(domain, recipe.topLevelIngredient);
 		State state = new State();
 		
 		// Get the "highest" subgoal in our recipe.
@@ -93,7 +95,8 @@ public class KevinsKitchen implements DomainGenerator {
 		this.allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, recipe.topLevelIngredient);
 		for (ObjectInstance ing : this.allIngredients) {
 			System.out.println(ing.getName());
-		}
+		}		
+		//end testing
 		System.out.println("Planner will now plan the "+recipe.topLevelIngredient.getName()+" recipe!");
 		System.out.println("");
 		((PourAction)pour).addAllIngredients(this.allIngredients);

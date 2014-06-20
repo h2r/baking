@@ -3,12 +3,13 @@ package edu.brown.cs.h2r.baking.actions;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
+import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 
 public class PeelAction extends BakingAction {
-	public PeelAction(Domain domain) {
-		super("peel", domain, new String[] {AgentFactory.ClassName, IngredientFactory.ClassNameSimple});
+	public PeelAction(Domain domain, IngredientRecipe ingredient) {
+		super("peel", domain, ingredient, new String[] {AgentFactory.ClassName, IngredientFactory.ClassNameSimple});
 	}
 
 	@Override

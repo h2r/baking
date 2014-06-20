@@ -24,27 +24,6 @@ public class IngredientRecipe {
 	private int useCount;
 	private AbstractMap<String, IngredientRecipe> necessaryTraits;
 	
-	/*@Deprecated
-	public IngredientRecipe (String name, Boolean mixed, Boolean melted, Boolean baked) {
-		this.name = name;
-		this.mixed = mixed;
-		this.melted = melted;
-		this.baked = baked;
-		this.traits = new TreeSet<String>();
-		this.useCount = 1;
-		this.peeled = false;
-	}
-	
-	@Deprecated
-	public IngredientRecipe (String name, Boolean mixed, Boolean melted, Boolean baked, List<IngredientRecipe> contents) {
-		this.name = name;
-		this.mixed = mixed;
-		this.melted = melted;
-		this.baked = baked;
-		this.peeled = false;
-		this.contents = contents;
-	}*/
-	
 	public IngredientRecipe(String name, Boolean mixed, Boolean melted, Boolean baked, Boolean peeled) {
 		this.name = name;
 		this.mixed = mixed;
@@ -52,7 +31,23 @@ public class IngredientRecipe {
 		this.baked = baked;
 		this.peeled = peeled;
 		this.swapped = false;
+		this.traits = new TreeSet<String>();
+		this.useCount = 1;
 		this.contents = null;
+	}
+	
+	
+	public IngredientRecipe (String name, Boolean mixed, Boolean melted, Boolean baked, Boolean peeled, List<IngredientRecipe> contents) {
+		this.name = name;
+		this.mixed = mixed;
+		this.melted = melted;
+		this.baked = baked;
+		this.peeled = peeled;
+		this.swapped = false;
+		this.contents = contents;
+		this.traits = new TreeSet<String>();
+		this.necessaryTraits = new HashMap<String, IngredientRecipe>();
+		this.useCount = 1;
 	}
 	
 	public IngredientRecipe(String name, Boolean mixed, Boolean melted, Boolean baked, Boolean peeled, Boolean swapped, List<IngredientRecipe> contents) {
@@ -63,22 +58,10 @@ public class IngredientRecipe {
 		this.peeled = peeled;
 		this.contents = contents;
 		this.traits = new TreeSet<String>();
-		this.swapped = false;
+		this.swapped = swapped;
 		this.necessaryTraits = new HashMap<String, IngredientRecipe>();
 		this.useCount = 1;
 	}
-	
-	/*public IngredientRecipe (String name, Boolean mixed, Boolean melted, Boolean baked, Boolean swapped, List<IngredientRecipe> contents) {
-		this.name = name;
-		this.mixed = mixed;
-		this.melted = melted;
-		this.baked = baked;
-		this.swapped = swapped;
-		this.contents = contents;
-		this.traits = new TreeSet<String>();
-		this.necessaryTraits = new HashMap<String, IngredientRecipe>();
-		this.useCount = 1;
-	}*/
 	
 	public Boolean isSimple() {
 		if (this.necessaryTraits == null || this.necessaryTraits.size() == 0) {
