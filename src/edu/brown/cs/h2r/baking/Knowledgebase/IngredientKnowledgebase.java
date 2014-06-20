@@ -27,6 +27,7 @@ public class IngredientKnowledgebase {
 	private final Boolean NOTMIXED= false;
 	private final Boolean NOTMELTED= false;
 	private final Boolean NOTBAKED= false;
+	private final Boolean NOTPEELED = false;
 	
 	private AbstractMap<String, Set<String>> traitMap;
 	private AbstractMap<String, Set<String>> combinationTraitMap;
@@ -44,7 +45,7 @@ public class IngredientKnowledgebase {
 	private AbstractMap<String, IngredientRecipe> generateAllIngredients() {
 		AbstractMap<String, IngredientRecipe> allIngredients = new HashMap<String, IngredientRecipe>();
 		for (String name : this.traitMap.keySet()) {
-			IngredientRecipe ing = new IngredientRecipe(name, NOTMIXED, NOTMELTED, NOTBAKED);
+			IngredientRecipe ing = new IngredientRecipe(name, NOTMIXED, NOTMELTED, NOTBAKED, NOTPEELED);
 			ing.addTraits(traitMap.get(name));
 			allIngredients.put(name, ing);
 		}
@@ -212,7 +213,7 @@ public class IngredientKnowledgebase {
 			traits.add(trait);
 		}
 		Set<String> ings = ContainerFactory.getContentNames(container);
-		ObjectInstance new_ing = IngredientFactory.getNewComplexIngredientObjectInstance(domain.getObjectClass(IngredientFactory.ClassNameComplex), toswap, false, false, false, true, "", traits, ings);
+		ObjectInstance new_ing = IngredientFactory.getNewComplexIngredientObjectInstance(domain.getObjectClass(IngredientFactory.ClassNameComplex), toswap, NOTMIXED, NOTMELTED, NOTBAKED, NOTPEELED, true, "", traits, ings);
 		// Make the hidden Copies
 		Set<ObjectInstance> hidden_copies = new HashSet<ObjectInstance>();
 		for (String name : ings) {

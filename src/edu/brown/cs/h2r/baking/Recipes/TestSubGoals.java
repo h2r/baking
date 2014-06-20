@@ -4,7 +4,7 @@ import java.util.List;
 
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 
-
+/*
 public class TestSubGoals extends Recipe {
 	
 	public TestSubGoals(int numIngredients, int numIngredientsPerSubgoal) {
@@ -23,4 +23,4 @@ public class TestSubGoals extends Recipe {
 		}
 		this.topLevelIngredient = new IngredientRecipe("TestSubgoals", false, false, false, ingredientList);
 	}
-}
+}*/

@@ -1,5 +1,6 @@
 package edu.brown.cs.h2r.baking.Recipes;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import edu.brown.cs.h2r.baking.IngredientRecipe;
@@ -13,8 +14,8 @@ public class MashedPotatoes extends Recipe {
 		ingredientList.add(knowledgebase.getIngredient("potatoes"));
 		ingredientList.add(knowledgebase.getIngredient("butter"));
 		ingredientList.add(knowledgebase.getIngredient("eggs"));
-		IngredientRecipe mashed_potatoes = new IngredientRecipe("Mashed_potatoes", false, false, false, ingredientList);
-		mashed_potatoes.addNecessaryTrait("salt", NOTMIXED, NOTMELTED, NOTBAKED);
+		IngredientRecipe mashed_potatoes = new IngredientRecipe("Mashed_potatoes", NOTMIXED, NOTMELTED, NOTBAKED, NOTPEELED, SWAPPED, ingredientList);
+		mashed_potatoes.addNecessaryTrait("salt", NOTMIXED, NOTMELTED, NOTBAKED, NOTPEELED);
 		this.topLevelIngredient = mashed_potatoes;
 	}
 

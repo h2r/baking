@@ -1,5 +1,6 @@
 package edu.brown.cs.h2r.baking.Recipes;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -27,14 +28,24 @@ public abstract class Recipe {
 	protected final Boolean NOTMELTED = false;
 	protected final Boolean NOTBAKED = false;
 	protected final Boolean NOTSWAPPED = false;
+	protected final Boolean NOTPEELED = false;
 	protected final Boolean MIXED = true;
 	protected final Boolean MELTED = true;
 	protected final Boolean BAKED = true;
 	protected final Boolean SWAPPED = true;
+	protected final Boolean PEELED = true;
 	
 	public Recipe()
 	{
 		this.knowledgebase = new IngredientKnowledgebase();
+	}
+	
+	public List<String> getRecipeProcedures() {
+		return Arrays.asList("Recipe not implemented");
+	}
+	
+	public List<Boolean> getRecipeProceduresStatus() {
+		return new ArrayList<Boolean>(this.getRecipeProcedures().size());
 	}
 	
 	public int getNumberSteps()
