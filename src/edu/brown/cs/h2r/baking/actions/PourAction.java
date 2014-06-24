@@ -83,13 +83,14 @@ public class PourAction extends BakingAction {
 		return state;
 	}
 	
-	protected void pour(State state, ObjectInstance pouringContainer, ObjectInstance receivingContainer)
+	public void pour(State state, String pouringContainer, String receivingContainer) {
+		pour(state, state.getObject(pouringContainer), state.getObject(receivingContainer));
+	}
+	
+	public void pour(State state, ObjectInstance pouringContainer, ObjectInstance receivingContainer)
 	{
 		Set<String> ingredients = new HashSet<String>(ContainerFactory.getContentNames(pouringContainer));
 		ContainerFactory.addIngredients(receivingContainer, ingredients);
-		//if (shouldRemove(state, pouringContainer)) {
-			//ContainerFactory.removeContents(pouringContainer);
-		//}
 		ContainerFactory.removeContents(pouringContainer);
 		for (String ingredient : ingredients) {
 			ObjectInstance ingredientInstance = state.getObject(ingredient); 
@@ -102,13 +103,4 @@ public class PourAction extends BakingAction {
 		this.allIngredients = ings;
 	}
 	
-	//TODO: Make this a PF?
-	private boolean shouldRemove(State state, ObjectInstance container) {
-		ObjectInstance obj = null;
-		for (String name :ContainerFactory.getContentNames(container)) {
-			obj = state.getObject(name);
-			break;
-		}
-		return IngredientFactory.getUseCount(obj) == 1;
-	}
 }

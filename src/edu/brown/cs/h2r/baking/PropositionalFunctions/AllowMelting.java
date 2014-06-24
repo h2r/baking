@@ -21,31 +21,28 @@ public class AllowMelting extends BakingPropositionalFunction {
 		if (!params[1].equalsIgnoreCase("")) {
 			ObjectInstance container = s.getObject(params[1]);
 			// Melting only simple ingredients, and not trying to melt empty bowl!
-			if (!ContainerFactory.getContentNames(container).isEmpty() && !ContainerFactory.isMixingContainer(container)) {
+			if (!ContainerFactory.getContentNames(container).isEmpty()) {
 				ObjectInstance toMelt = null;
 				for (String name : ContainerFactory.getContentNames(container)) {
 					toMelt = s.getObject(name);
-					break;
-				}
-				//if (IngredientFactory.isMeltedIngredient(toMelt)) {
-					//return false;
-				//}
+				
 				// Is this a necessary ingredient in the recipe?
-				for (IngredientRecipe content : this.topLevelIngredient.getConstituentIngredients()) {
-					if (content.getName().equals(toMelt.getName())) {
-						// If it is, then make sure it needs to be melted in the first place
-						return content.getMelted();
+					for (IngredientRecipe content : this.topLevelIngredient.getConstituentIngredients()) {
+						if (content.getName().equals(toMelt.getName())) {
+							// If it is, then make sure it needs to be melted in the first place
+							return content.getMelted();
+						}
 					}
-				}
-				// could this potentially fulfill a trait in the recipe?
-				AbstractMap<String, IngredientRecipe> necessaryTraits = this.topLevelIngredient.getNecessaryTraits();
-				Set<String> toMeltTraits = IngredientFactory.getTraits(toMelt);
-				for (String trait : necessaryTraits.keySet()) {
-					if (toMeltTraits.contains(trait)) {
-						// If it could potentially fulfill a trait ingredient, then ensure that 
-						// it has to be melted!
-						if (necessaryTraits.get(trait).getMelted()) {
-							return true;
+					// could this potentially fulfill a trait in the recipe?
+					AbstractMap<String, IngredientRecipe> necessaryTraits = this.topLevelIngredient.getNecessaryTraits();
+					Set<String> toMeltTraits = IngredientFactory.getTraits(toMelt);
+					for (String trait : necessaryTraits.keySet()) {
+						if (toMeltTraits.contains(trait)) {
+							// If it could potentially fulfill a trait ingredient, then ensure that 
+							// it has to be melted!
+							if (necessaryTraits.get(trait).getMelted()) {
+								return true;
+							}
 						}
 					}
 				}

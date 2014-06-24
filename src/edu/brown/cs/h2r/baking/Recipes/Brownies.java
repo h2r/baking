@@ -22,9 +22,9 @@ public class Brownies extends Recipe {
 		// Stir in sugar, eggs, and 1 teaspoon vanilla.
 		List<IngredientRecipe> ingredientList = new ArrayList<IngredientRecipe>();
 		ingredientList.add(knowledgebase.getIngredient("vanilla"));
+		ingredientList.add(knowledgebase.getIngredient("eggs"));
 		
 		IngredientRecipe wet_ings = new IngredientRecipe("wet_ingredients", Recipe.NOT_MIXED, Recipe.NOT_MELTED, Recipe.NOT_BAKED, Recipe.NOT_PEELED, Recipe.SWAPPED, ingredientList);
-		wet_ings.addNecessaryTrait("eggs", Recipe.NOT_MIXED, Recipe.NOT_MELTED, Recipe.NOT_BAKED, Recipe.NOT_PEELED);
 		wet_ings.addNecessaryTrait("sugar", Recipe.NOT_MIXED, Recipe.NOT_MELTED, Recipe.NOT_BAKED, Recipe.NOT_PEELED);
 		wet_ings.addTraits(knowledgebase.getTraits("wet_ingredients"));
 		

@@ -38,7 +38,7 @@ public class PeelAction extends BakingAction {
 		return state;
 	}
 	
-	protected void peel(ObjectInstance objectInstance) {
+	public void peel(ObjectInstance objectInstance) {
 		IngredientFactory.setPeeled(objectInstance, true);
 	}
 }

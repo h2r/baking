@@ -21,6 +21,8 @@ import edu.brown.cs.h2r.baking.Recipes.Recipe;
 
 public class IngredientKnowledgebase {
 	
+	public static final String NONMELTABLE = "unsaturated";
+	
 	private final String TRAITFILE = "IngredientTraits.txt";
 	private final String COMBINATIONFILE = "FakeCombinations.txt";
 	private final String COMBINATIONTRAITFILE = "CombinationTraits.txt";
@@ -214,5 +216,9 @@ public class IngredientKnowledgebase {
 		ContainerFactory.addIngredient(container, toswap);
 		IngredientFactory.changeIngredientContainer(new_ing, container.getName());
 		state.addObject(new_ing);
+	}
+	
+	public void newCombinationMap(String filename) {
+	this.combinationMap = new CombinationParser(filename).getMap();
 	}
 }

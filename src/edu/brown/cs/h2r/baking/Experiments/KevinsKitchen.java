@@ -17,6 +17,7 @@ import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
 //import burlap.behavior.singleagent.planning.deterministic.informed.Heuristic;
 import burlap.behavior.singleagent.planning.stochastic.rtdp.AffordanceRTDP;
 import burlap.behavior.singleagent.planning.stochastic.rtdp.RTDP;
+import burlap.behavior.singleagent.planning.stochastic.valueiteration.ValueIteration;
 import burlap.behavior.statehashing.NameDependentStateHashFactory;
 import burlap.behavior.statehashing.StateHashFactory;
 import burlap.oomdp.auxiliary.DomainGenerator;
@@ -41,6 +42,7 @@ import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
 import edu.brown.cs.h2r.baking.Recipes.Brownies;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
+import edu.brown.cs.h2r.baking.actions.BakeAction;
 import edu.brown.cs.h2r.baking.actions.MeltAction;
 import edu.brown.cs.h2r.baking.actions.MixAction;
 import edu.brown.cs.h2r.baking.actions.MoveAction;
@@ -75,6 +77,7 @@ public class KevinsKitchen implements DomainGenerator {
 		Action move = new MoveAction(domain, recipe.topLevelIngredient);
 		Action melt = new MeltAction(domain, recipe.topLevelIngredient);
 		Action peel = new PeelAction(domain, recipe.topLevelIngredient);
+		//Action bake = new BakeAction(domain, recipe.topLevelIngredient);
 		State state = new State();
 		
 		// Get the "highest" subgoal in our recipe.
@@ -162,7 +165,7 @@ public class KevinsKitchen implements DomainGenerator {
 			@Override
 			public double reward(State s, GroundedAction a, State sprime) {
 				ObjectInstance container = sprime.getObject(a.params[a.params.length-1]);
-				if (container.getObjectClass().equals("container")) {
+				/*if (container.getObjectClass().equals("container")) {
 					Set<String> contents = ContainerFactory.getContentNames(container);
 					if (contents.size() == 0) {
 						return -1;
@@ -173,7 +176,7 @@ public class KevinsKitchen implements DomainGenerator {
 					if (isSuccess.isTrue(sprime, container.getName())) {
 						return 100;
 					}
-				}
+				}*/
 				return -1;
 
 			}
@@ -186,7 +189,7 @@ public class KevinsKitchen implements DomainGenerator {
 		int numRollouts = 5; // RTDP
 		int maxDepth = 20; // RTDP
 		double vInit = 0;
-		double maxDelta = 0.01;
+		double maxDelta = 0.00;
 		double gamma = 0.99;
 		
 		boolean affordanceMode = true;
@@ -206,6 +209,16 @@ public class KevinsKitchen implements DomainGenerator {
 			// Create a Q-greedy policy from the planner
 			p = new GreedyQPolicy((QComputablePlanner)planner);
 		}
+		
+		/* VI is getting to  a reacheable state by running the mashed potato recipe w/o the peel action. It is also
+		 * able to learn the optimal path (5 actions). Adding the peel action seems to make the state analysis reach not 
+		 * finish, which is troublesome.
+		 */
+		
+		
+		/*ValueIteration vi = new ValueIteration(domain, rf, recipeTerminalFunction, gamma, hashFactory, maxDelta, 10);
+		vi.planFromState(currentState);
+		p = new AffordanceGreedyQPolicy(affController, (QComputablePlanner)vi);*/
 		
 		// Print out the planning results
 		EpisodeAnalysis episodeAnalysis = p.evaluateBehavior(currentState, rf, recipeTerminalFunction,100);
@@ -232,12 +245,12 @@ public class KevinsKitchen implements DomainGenerator {
 		
 		KevinsKitchen kitchen = new KevinsKitchen();
 		Domain domain = kitchen.generateDomain();
-		//kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.Brownies());
-		//kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.DeviledEggs());
-		//kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.CucumberSalad());
+		kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.Brownies());
+		kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.DeviledEggs());
+		kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.CucumberSalad());
 		kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.MashedPotatoes());
-		//kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.MoltenLavaCake());
-		//kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.PeanutButterCookies());
-		//kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.PecanPie());
+		kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.MoltenLavaCake());
+		kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.PeanutButterCookies());
+		kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.PecanPie());
 	}
 }

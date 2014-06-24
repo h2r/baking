@@ -12,6 +12,7 @@ import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.Value;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
+import edu.brown.cs.h2r.baking.Knowledgebase.IngredientKnowledgebase;
 
 public class IngredientFactory {
 
@@ -463,6 +464,10 @@ public class IngredientFactory {
 		for (String att_name : IngredientFactory.booleanAttributes) {
 			obj.setValue(att_name, 0);
 		}
+		/*if (IngredientFactory.isMeltedAtRoomTemperature(obj)) {
+			meltIngredient(obj);
+		}*/
+		
 	}
 	public static Set<String> getContentsForIngredient(ObjectInstance ingredient) {
 		return new TreeSet<String>(ingredient.getAllRelationalTargets(IngredientFactory.attributeContains));
@@ -470,5 +475,9 @@ public class IngredientFactory {
 
 	public static void setPeeled(ObjectInstance ingredient, boolean isPeeled) {
 		ingredient.setValue(IngredientFactory.attributePeeled, isPeeled ? 1 : 0);
+	}
+	
+	public static boolean isMeltedAtRoomTemperature(ObjectInstance ingredient) {
+		return IngredientFactory.getTraits(ingredient).contains(IngredientKnowledgebase.NONMELTABLE);
 	}
 }

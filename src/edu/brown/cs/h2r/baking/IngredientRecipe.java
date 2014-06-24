@@ -3,7 +3,6 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
-
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -60,6 +59,19 @@ public class IngredientRecipe {
 		this.traits = new TreeSet<String>();
 		this.swapped = swapped;
 		this.necessaryTraits = new HashMap<String, IngredientRecipe>();
+		this.useCount = 1;
+	}
+	
+	public IngredientRecipe(String name, Boolean mixed, Boolean melted, Boolean baked, Boolean peeled, Boolean swapped, List<IngredientRecipe> contents, AbstractMap<String, IngredientRecipe> necessaryTraits) {
+		this.name = name;
+		this.mixed = mixed;
+		this.melted = melted;
+		this.baked = baked;
+		this.peeled = peeled;
+		this.contents = contents;
+		this.traits = new TreeSet<String>();
+		this.swapped = swapped;
+		this.necessaryTraits = necessaryTraits;
 		this.useCount = 1;
 	}
 	
@@ -227,8 +239,14 @@ public class IngredientRecipe {
 		if (IngredientFactory.isBakedIngredient(object) != this.getBaked()) {
 			return false;
 		}
-		if (IngredientFactory.isMeltedIngredient(object) != this.getMelted()) {
-			return false;
+		if (IngredientFactory.isMeltedIngredient(object) ) { 
+				if (!(this.getMelted() || IngredientFactory.isMeltedAtRoomTemperature(object))) {
+					return false;
+				}
+		} else {
+			if (this.getMelted()) {
+				return false;
+			}
 		}
 		if (IngredientFactory.isMixedIngredient(object) != this.getMixed()) {
 			return false;
@@ -237,5 +255,10 @@ public class IngredientRecipe {
 			return false;
 		}
 		return true;
+	}
+	
+	
+	public IngredientRecipe makeFakeAttributeCopy(ObjectInstance obj) {
+		return new IngredientRecipe(this.getName(), IngredientFactory.isMixedIngredient(obj), IngredientFactory.isMeltedIngredient(obj), IngredientFactory.isBakedIngredient(obj), IngredientFactory.isPeeledIngredient(obj), this.getSwapped(), this.getContents(), this.getNecessaryTraits());
 	}
 }
