@@ -106,7 +106,9 @@ public class TestRecipeSuccess {
 				Recipe.NOT_PEELED, Recipe.SWAPPED, "mixing_bowl_1", new TreeSet<String>(), 
 				contents);
 		
+		IngredientFactory.setPeeled(state.getObject("potatoes"), true);
 		BakingAsserts.assertSuccess(state, topLevelIngredient, mash);
+		
 	}
 	
 	// Test a successful recipe comprised of two swapped objects

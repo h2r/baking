@@ -52,6 +52,7 @@ import edu.brown.cs.h2r.baking.actions.PourAction;
 public class KevinsKitchen implements DomainGenerator {
 	List<ObjectInstance> allIngredients;
 	private IngredientRecipe topLevelIngredient;
+	int num_actions = 0;
 	public KevinsKitchen() {
 
 	}
@@ -165,7 +166,7 @@ public class KevinsKitchen implements DomainGenerator {
 			@Override
 			public double reward(State s, GroundedAction a, State sprime) {
 				ObjectInstance container = sprime.getObject(a.params[a.params.length-1]);
-				/*if (container.getObjectClass().equals("container")) {
+				if (container.getObjectClass().name.equals("container")) {
 					Set<String> contents = ContainerFactory.getContentNames(container);
 					if (contents.size() == 0) {
 						return -1;
@@ -176,21 +177,22 @@ public class KevinsKitchen implements DomainGenerator {
 					if (isSuccess.isTrue(sprime, container.getName())) {
 						return 100;
 					}
-				}*/
+				}
 				return -1;
 
 			}
+			
 		};
 		
 		//List<State> reachableStates = StateReachability.getReachableStates(currentState, domain, hashFactory);
 		//System.out.println("Number of reachable states: " + reachableStates.size());
 		
 		// Trying out new stuff!
-		int numRollouts = 5; // RTDP
+		int numRollouts = 500; // RTDP
 		int maxDepth = 20; // RTDP
 		double vInit = 0;
-		double maxDelta = 0.00;
-		double gamma = 0.99;
+		double maxDelta = 0.01;
+		double gamma = .99;
 		
 		boolean affordanceMode = true;
 		RTDP planner;

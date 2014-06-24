@@ -94,7 +94,7 @@ public abstract class Recipe {
 		if (ingredientRecipe.isSimple())
 		{
 			//TODO: Fix this weird bug. Inelegant solution for now.
-			if (ingredientRecipe.getName() != object.getName()) {
+			/*if (!ingredientRecipe.getName().equals(object.getName())) {
 				String obj_name = object.getName();
 				String ing_name = ingredientRecipe.getName();
 				for (int i = 0; i < ing_name.length(); i++) {
@@ -103,8 +103,8 @@ public abstract class Recipe {
 					}
 				}
 				return true;
-			}
-			return true;
+			}*/
+			return ingredientRecipe.getName().equals(object.getName());
 		}
 		
 		// List of ingredients that fulfill a "trait" rather than a ingredient in recipe
@@ -282,13 +282,13 @@ public abstract class Recipe {
 		
 		if (ingredientRecipe.isSimple())
 		{
-			if ((object.getObjectClass().name != IngredientFactory.ClassNameSimple) || 
-					(object.getObjectClass().name != IngredientFactory.ClassNameSimpleHidden))
+			if ((object.getObjectClass().name.equals(IngredientFactory.ClassNameSimple)) || 
+					(object.getObjectClass().name.equals(IngredientFactory.ClassNameSimpleHidden)))
 			{
 				// Object is not a simple ingredient, but the ingredient we are checking against is. FAIL!
 				return true;
 			}
-			if (ingredientRecipe.getName() != object.getName())
+			if (ingredientRecipe.getName().equals(object.getName()))
 			{
 				// They aren't even the same name. FAIL!
 				return true;
@@ -338,6 +338,7 @@ public abstract class Recipe {
 		for (String trait : ingredientRecipe.getNecessaryTraits().keySet()) {
 			recipeTraits.add(trait);
 		}
+		AbstractMap<String, IngredientRecipe> compulsoryTraitMap = ingredientRecipe.getNecessaryTraits();
 		Set<String> contents = new TreeSet<String>();
 		for (String content :IngredientFactory.getRecursiveContentsAndSwapped(state, object)) {
 			contents.add(content);
@@ -381,8 +382,10 @@ public abstract class Recipe {
 			IngredientRecipe match = null;
 			for (IngredientRecipe recipeContent : recipeContents) {
 				if (recipeContent.getName().equals(name)) {
-					match = recipeContent;
-					break;
+					if (!isFailure(state, recipeContent, state.getObject(name))) {
+						match = recipeContent;
+						break;
+					}
 				}
 			}
 			if (match != null) {
@@ -392,7 +395,9 @@ public abstract class Recipe {
 				String trait_match = null;
 				for (String trait : IngredientFactory.getTraits(ing)) {
 					if (recipeTraits.contains(trait)) {
-						trait_match = trait;
+						if (!isFailure(state, compulsoryTraitMap.get(trait), ing)) {
+							trait_match = trait;
+						}
 						break;
 					}
 				}

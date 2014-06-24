@@ -1,5 +1,7 @@
 package edu.brown.cs.h2r.baking.Testing;
 
+import static org.junit.Assert.assertTrue;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.TreeSet;
@@ -91,6 +93,25 @@ public class TestRecipeFailure {
 			topLevelIngredient = null;
 		}
 
+		// Tests to see if failure is found on bad attributes on a subgoal.
+		@Test
+		public void badAttributesSubgoal() {
+			topLevelIngredient = new MashedPotatoes().topLevelIngredient;
+			knowledgebase = new IngredientKnowledgebase();
+			allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
+			setUpState();
+			
+			List<String> contents = Arrays.asList("butter", "potatoes", "salt", "eggs");
+			
+			ObjectInstance mash = IngredientFactory.getNewComplexIngredientObjectInstance(
+					domain.getObjectClass("complex_ingredient"), "Mashed_potatoes", Recipe.NOT_MIXED, Recipe.NOT_MELTED, Recipe.NOT_BAKED, 
+					Recipe.NOT_PEELED, Recipe.SWAPPED, "mixing_bowl_1", new TreeSet<String>(), 
+					contents);
+			
+			// Potatoes haven't been peeled
+			BakingAsserts.assertFailure(state, topLevelIngredient, mash);
+		}
+		
 		// Test double up on a trait ingredient failure
 		@Test
 		public void extraTraitIngredient() {

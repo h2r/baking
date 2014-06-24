@@ -239,12 +239,12 @@ public class IngredientRecipe {
 		if (IngredientFactory.isBakedIngredient(object) != this.getBaked()) {
 			return false;
 		}
-		if (IngredientFactory.isMeltedIngredient(object) ) { 
-				if (!(this.getMelted() || IngredientFactory.isMeltedAtRoomTemperature(object))) {
-					return false;
-				}
+		if (this.getMelted()) {
+			if (!(IngredientFactory.isMeltedIngredient(object) || IngredientFactory.isMeltedAtRoomTemperature(object))) {
+				return false;
+			}
 		} else {
-			if (this.getMelted()) {
+			if (IngredientFactory.isMeltedIngredient(object)) {
 				return false;
 			}
 		}
