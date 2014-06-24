@@ -13,6 +13,7 @@ import burlap.oomdp.core.State;
 import burlap.oomdp.core.Value;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.Knowledgebase.IngredientKnowledgebase;
+import edu.brown.cs.h2r.baking.Recipes.Recipe;
 
 public class IngredientFactory {
 
@@ -155,6 +156,33 @@ public class IngredientFactory {
 		newInstance.setValue(IngredientFactory.attributeMelted, melted ? 1 : 0);
 		newInstance.setValue(IngredientFactory.attributeMixed, mixed ? 1 : 0);
 		newInstance.setValue(IngredientFactory.attributePeeled, peeled ? 1 : 0);
+		newInstance.setValue(IngredientFactory.attributeUseCount, 1);
+		newInstance.setValue(IngredientFactory.attributeSwapped, swapped ? 1 : 0);
+		
+		if (ingredientContainer != null || ingredientContainer != "") {
+			newInstance.addRelationalTarget(IngredientFactory.attributeContainer, ingredientContainer);
+		}
+		for (String trait : traits) {
+			newInstance.addRelationalTarget("traits", trait);
+		}
+		
+		if (contents != null) {
+			for (String ingredient : contents) {
+				newInstance.addRelationalTarget(IngredientFactory.attributeContains, ingredient);
+			}
+		}
+		
+		return newInstance;
+	}
+	
+	public static ObjectInstance getNewComplexIngredientObjectInstance(ObjectClass complexIngredientClass, String name, 
+			int attributes, Boolean swapped, String ingredientContainer, 
+			Set<String> traits, Iterable<String> contents) {
+		ObjectInstance newInstance = new ObjectInstance(complexIngredientClass, name);
+		newInstance.setValue(IngredientFactory.attributeBaked, ((attributes & Recipe.BAKED) == Recipe.BAKED) ? 1 : 0);
+		newInstance.setValue(IngredientFactory.attributeMelted, ((attributes & Recipe.MELTED) == Recipe.MELTED) ? 1 : 0);
+		newInstance.setValue(IngredientFactory.attributeMixed, ((attributes & Recipe.MIXED) == Recipe.MIXED) ? 1 : 0);
+		newInstance.setValue(IngredientFactory.attributePeeled, ((attributes & Recipe.PEELED) == Recipe.PEELED) ? 1 : 0);
 		newInstance.setValue(IngredientFactory.attributeUseCount, 1);
 		newInstance.setValue(IngredientFactory.attributeSwapped, swapped ? 1 : 0);
 		

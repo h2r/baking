@@ -43,7 +43,7 @@ public class IngredientKnowledgebase {
 	private AbstractMap<String, IngredientRecipe> generateAllIngredients() {
 		AbstractMap<String, IngredientRecipe> allIngredients = new HashMap<String, IngredientRecipe>();
 		for (String name : this.traitMap.keySet()) {
-			IngredientRecipe ing = new IngredientRecipe(name, Recipe.NOT_MIXED, Recipe.NOT_MELTED, Recipe.NOT_BAKED, Recipe.NOT_PEELED);
+			IngredientRecipe ing = new IngredientRecipe(name, Recipe.NO_ATTRIBUTES);
 			ing.addTraits(traitMap.get(name));
 			allIngredients.put(name, ing);
 		}
@@ -197,7 +197,8 @@ public class IngredientKnowledgebase {
 			traits.add(trait);
 		}
 		Set<String> ings = ContainerFactory.getContentNames(container);
-		ObjectInstance new_ing = IngredientFactory.getNewComplexIngredientObjectInstance(domain.getObjectClass(IngredientFactory.ClassNameComplex), toswap, Recipe.NOT_MIXED, Recipe.NOT_MELTED, Recipe.NOT_BAKED, Recipe.NOT_PEELED, true, "", traits, ings);
+		ObjectInstance new_ing = IngredientFactory.getNewComplexIngredientObjectInstance(
+				domain.getObjectClass(IngredientFactory.ClassNameComplex), toswap, Recipe.NO_ATTRIBUTES, true, "", traits, ings);
 		// Make the hidden Copies
 		Set<ObjectInstance> hidden_copies = new HashSet<ObjectInstance>();
 		for (String name : ings) {

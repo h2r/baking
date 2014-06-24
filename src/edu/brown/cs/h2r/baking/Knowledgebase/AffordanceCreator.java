@@ -341,7 +341,6 @@ public class AffordanceCreator {
 		}
 		
 		this.affController = new AffordancesController(affDelegates);
-		//this.affController = new AffordancesController(new ArrayList<AffordanceDelegate>());
 
 	}
 	

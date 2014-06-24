@@ -12,12 +12,12 @@ public class MashedPotatoes extends Recipe {
 		super();
 		List<IngredientRecipe> ingredientList = new ArrayList<IngredientRecipe>();
 		IngredientRecipe potatoes = knowledgebase.getIngredient("potatoes");
-		potatoes.setPeeled();
+		//potatoes.setPeeled();
 		ingredientList.add(potatoes);
 		ingredientList.add(knowledgebase.getIngredient("butter"));
 		ingredientList.add(knowledgebase.getIngredient("eggs"));
-		IngredientRecipe mashed_potatoes = new IngredientRecipe("Mashed_potatoes", Recipe.NOT_MIXED, Recipe.NOT_MELTED, Recipe.NOT_BAKED, Recipe.NOT_PEELED, Recipe.SWAPPED, ingredientList);
-		mashed_potatoes.addNecessaryTrait("salt", Recipe.NOT_MIXED, Recipe.NOT_MELTED, Recipe.NOT_BAKED, Recipe.NOT_PEELED);
+		IngredientRecipe mashed_potatoes = new IngredientRecipe("Mashed_potatoes", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList);
+		mashed_potatoes.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
 		this.topLevelIngredient = mashed_potatoes;
 	}
 

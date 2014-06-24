@@ -102,9 +102,8 @@ public class TestRecipeSuccess {
 		List<String> contents = Arrays.asList("butter", "potatoes", "salt", "eggs");
 		
 		ObjectInstance mash = IngredientFactory.getNewComplexIngredientObjectInstance(
-				domain.getObjectClass("complex_ingredient"), "Mashed_potatoes", Recipe.NOT_MIXED, Recipe.NOT_MELTED, Recipe.NOT_BAKED, 
-				Recipe.NOT_PEELED, Recipe.SWAPPED, "mixing_bowl_1", new TreeSet<String>(), 
-				contents);
+				domain.getObjectClass("complex_ingredient"), "Mashed_potatoes", Recipe.NO_ATTRIBUTES, 
+				Recipe.SWAPPED, "mixing_bowl_1", new TreeSet<String>(), contents);
 		
 		IngredientFactory.setPeeled(state.getObject("potatoes"), true);
 		BakingAsserts.assertSuccess(state, topLevelIngredient, mash);
@@ -124,22 +123,21 @@ public class TestRecipeSuccess {
 		List<String> filling_contents = Arrays.asList("bourbon", "vanilla", "pecans", "brown_sugar", 
 				"butter", "light_corn_syrup", "salt");
 		ObjectInstance filling = IngredientFactory.getNewComplexIngredientObjectInstance(
-				complex_class, "filling", Recipe.NOT_MIXED, Recipe.NOT_MELTED, Recipe.NOT_BAKED,
-				Recipe.NOT_PEELED, Recipe.SWAPPED, "mixing_bowl_2", new TreeSet<String>(), filling_contents);
+				complex_class, "filling", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, "mixing_bowl_2", 
+				new TreeSet<String>(), filling_contents);
 		
 		List<String> crust_contents = Arrays.asList("eggs", "brown_sugar", 
 				"butter", "salt", "flour");
 		ObjectInstance crust = IngredientFactory.getNewComplexIngredientObjectInstance(
-				complex_class, "pie_crust", Recipe.NOT_MIXED, Recipe.NOT_MELTED, Recipe.NOT_BAKED, 
-				Recipe.NOT_PEELED, Recipe.SWAPPED, "mixing_bowl_1", new TreeSet<String>(), crust_contents);
+				complex_class, "pie_crust", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, "mixing_bowl_1",
+				new TreeSet<String>(), crust_contents);
 		
 		state.addObject(filling);
 		state.addObject(crust);
 		// Make the object we're testing!
 		ObjectInstance pie = IngredientFactory.getNewComplexIngredientObjectInstance(
-				complex_class, "PecanPie", Recipe.NOT_MIXED, Recipe.NOT_MELTED, Recipe.NOT_BAKED, 
-				Recipe.NOT_PEELED, Recipe.SWAPPED, "mixing_bowl_1", new TreeSet<String>(), 
-				Arrays.asList("filling", "pie_crust"));
+				complex_class, "PecanPie", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, "mixing_bowl_1", 
+				new TreeSet<String>(), Arrays.asList("filling", "pie_crust"));
 		
 		BakingAsserts.assertSuccess(state, topLevelIngredient, pie);
 	}
@@ -153,15 +151,15 @@ public class TestRecipeSuccess {
 		setUpState();
 		
 		ObjectInstance finished_mix = IngredientFactory.getNewComplexIngredientObjectInstance(
-				domain.getObjectClass("complex_ingredient"), "finished_mix", Recipe.NOT_MIXED, Recipe.NOT_MELTED, 
-				Recipe.NOT_BAKED, Recipe.NOT_PEELED, Recipe.SWAPPED, "mixing_bowl_2", new TreeSet<String>(),
-				Arrays.asList("egg_yolks", "salt", "pepper", "dijon_mustard", "sweet_gherkins", "chopped_tarragon", "shallots"));
+				domain.getObjectClass("complex_ingredient"), "finished_mix", Recipe.NO_ATTRIBUTES,
+				Recipe.SWAPPED, "mixing_bowl_2", new TreeSet<String>(), Arrays.asList("egg_yolks", 
+						"salt", "pepper", "dijon_mustard", "sweet_gherkins", "chopped_tarragon", "shallots"));
 		
 		state.addObject(finished_mix);
 		
 		ObjectInstance deviled_eggs = IngredientFactory.getNewComplexIngredientObjectInstance(
-				domain.getObjectClass("complex_ingredient"), "DeviledEggs", Recipe.NOT_MIXED, Recipe.NOT_MELTED, 
-				Recipe.NOT_BAKED, Recipe.NOT_PEELED, Recipe.SWAPPED, "mixing_bowl_1", new TreeSet<String>(),
+				domain.getObjectClass("complex_ingredient"), "DeviledEggs", Recipe.NO_ATTRIBUTES, 
+				Recipe.SWAPPED, "mixing_bowl_1", new TreeSet<String>(),
 				Arrays.asList("egg_whites", "finished_mix"));
 
 		BakingAsserts.assertSuccess(state, topLevelIngredient, deviled_eggs);

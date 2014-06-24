@@ -198,7 +198,7 @@ public class KevinsKitchen implements DomainGenerator {
 		RTDP planner;
 		Policy p;
 		AffordancesController affController = theCreator.getAffController();
-		if(affordanceMode) {
+		/*if(affordanceMode) {
 			planner = new AffordanceRTDP(domain, rf, recipeTerminalFunction, gamma, hashFactory, vInit, numRollouts, maxDelta, maxDepth, affController);
 			planner.planFromState(currentState);
 			
@@ -210,7 +210,7 @@ public class KevinsKitchen implements DomainGenerator {
 			
 			// Create a Q-greedy policy from the planner
 			p = new GreedyQPolicy((QComputablePlanner)planner);
-		}
+		}*/
 		
 		/* VI is getting to  a reacheable state by running the mashed potato recipe w/o the peel action. It is also
 		 * able to learn the optimal path (5 actions). Adding the peel action seems to make the state analysis reach not 
@@ -218,9 +218,9 @@ public class KevinsKitchen implements DomainGenerator {
 		 */
 		
 		
-		/*ValueIteration vi = new ValueIteration(domain, rf, recipeTerminalFunction, gamma, hashFactory, maxDelta, 10);
+		ValueIteration vi = new ValueIteration(domain, rf, recipeTerminalFunction, gamma, hashFactory, maxDelta, 10);
 		vi.planFromState(currentState);
-		p = new AffordanceGreedyQPolicy(affController, (QComputablePlanner)vi);*/
+		p = new AffordanceGreedyQPolicy(affController, (QComputablePlanner)vi);
 		
 		// Print out the planning results
 		EpisodeAnalysis episodeAnalysis = p.evaluateBehavior(currentState, rf, recipeTerminalFunction,100);
@@ -247,12 +247,12 @@ public class KevinsKitchen implements DomainGenerator {
 		
 		KevinsKitchen kitchen = new KevinsKitchen();
 		Domain domain = kitchen.generateDomain();
-		kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.Brownies());
-		kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.DeviledEggs());
-		kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.CucumberSalad());
+		//kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.Brownies());
+		//kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.DeviledEggs());
+		//kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.CucumberSalad());
 		kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.MashedPotatoes());
-		kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.MoltenLavaCake());
-		kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.PeanutButterCookies());
-		kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.PecanPie());
+		//kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.MoltenLavaCake());
+		//kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.PeanutButterCookies());
+		//kitchen.PlanRecipeOneAgent(domain, new edu.brown.cs.h2r.baking.Recipes.PecanPie());
 	}
 }
