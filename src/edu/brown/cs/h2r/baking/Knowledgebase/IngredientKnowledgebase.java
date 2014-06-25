@@ -16,18 +16,17 @@ import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.IngredientNecessaryForRecipe;
+import edu.brown.cs.h2r.baking.Recipes.Recipe;
 
 
 public class IngredientKnowledgebase {
 	
+	public static final String NONMELTABLE = "unsaturated";
+	public static final String LUBRICANT = "lubricant";
+	
 	private final String TRAITFILE = "IngredientTraits.txt";
 	private final String COMBINATIONFILE = "FakeCombinations.txt";
 	private final String COMBINATIONTRAITFILE = "CombinationTraits.txt";
-	
-	private final Boolean NOTMIXED= false;
-	private final Boolean NOTMELTED= false;
-	private final Boolean NOTBAKED= false;
-	private final Boolean NOTPEELED = false;
 	
 	private AbstractMap<String, Set<String>> traitMap;
 	private AbstractMap<String, Set<String>> combinationTraitMap;
@@ -45,7 +44,7 @@ public class IngredientKnowledgebase {
 	private AbstractMap<String, IngredientRecipe> generateAllIngredients() {
 		AbstractMap<String, IngredientRecipe> allIngredients = new HashMap<String, IngredientRecipe>();
 		for (String name : this.traitMap.keySet()) {
-			IngredientRecipe ing = new IngredientRecipe(name, NOTMIXED, NOTMELTED, NOTBAKED, NOTPEELED);
+			IngredientRecipe ing = new IngredientRecipe(name, Recipe.NO_ATTRIBUTES);
 			ing.addTraits(traitMap.get(name));
 			allIngredients.put(name, ing);
 		}
@@ -73,20 +72,6 @@ public class IngredientKnowledgebase {
 		}
 		return ingredients;
 	}
-	
-	//TODO: Will move this out soon, here to see if it works!
-	/*public List<ObjectInstance>getPotentialIngredientObjectInstanceList(State s, Domain domain, IngredientRecipe tlIngredient) {
-		List<ObjectInstance> ingredients = new ArrayList<ObjectInstance>();
-		IngredientNecessaryForRecipe necessary = new IngredientNecessaryForRecipe(AffordanceCreator.INGREDIENTPF, domain, tlIngredient);
-		for (IngredientRecipe ing : getIngredientList()) {
-			if (necessary.isTrue(s, new String[] {ing.getName()})) {
-				ObjectClass oc = ing.isSimple() ? domain.getObjectClass(IngredientFactory.ClassNameSimple) : domain.getObjectClass(IngredientFactory.ClassNameComplex);
-				ObjectInstance obj = IngredientFactory.getNewIngredientInstance(ing, ing.getName(), oc);
-				ingredients.add(obj);
-			}
-		}
-		return ingredients;
-	}*/
 	
 	public List<ObjectInstance>getPotentialIngredientObjectInstanceList(State s, Domain domain, IngredientRecipe tlIngredient) {
 		List<ObjectInstance> ingredients = new ArrayList<ObjectInstance>();
@@ -213,7 +198,8 @@ public class IngredientKnowledgebase {
 			traits.add(trait);
 		}
 		Set<String> ings = ContainerFactory.getContentNames(container);
-		ObjectInstance new_ing = IngredientFactory.getNewComplexIngredientObjectInstance(domain.getObjectClass(IngredientFactory.ClassNameComplex), toswap, NOTMIXED, NOTMELTED, NOTBAKED, NOTPEELED, true, "", traits, ings);
+		ObjectInstance new_ing = IngredientFactory.getNewComplexIngredientObjectInstance(
+				domain.getObjectClass(IngredientFactory.ClassNameComplex), toswap, Recipe.NO_ATTRIBUTES, true, "", traits, ings);
 		// Make the hidden Copies
 		Set<ObjectInstance> hidden_copies = new HashSet<ObjectInstance>();
 		for (String name : ings) {
@@ -232,5 +218,9 @@ public class IngredientKnowledgebase {
 		ContainerFactory.addIngredient(container, toswap);
 		IngredientFactory.changeIngredientContainer(new_ing, container.getName());
 		state.addObject(new_ing);
+	}
+	
+	public void newCombinationMap(String filename) {
+	this.combinationMap = new CombinationParser(filename).getMap();
 	}
 }

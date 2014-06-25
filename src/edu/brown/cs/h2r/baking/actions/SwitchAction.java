@@ -8,8 +8,9 @@ import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 
 public class SwitchAction extends BakingAction {
+	public static final String className = "switch";
 	public SwitchAction(Domain domain) {
-		super("switch", domain, new String[] {AgentFactory.ClassName, SpaceFactory.ClassName});
+		super(SwitchAction.className, domain, new String[] {AgentFactory.ClassName, SpaceFactory.ClassName});
 	}
 	
 	@Override
@@ -24,7 +25,6 @@ public class SwitchAction extends BakingAction {
 		if (!SpaceFactory.isSwitchable(spaceInstance)) {
 			return false;
 		}
-		
 		
 		return true;
 	}
