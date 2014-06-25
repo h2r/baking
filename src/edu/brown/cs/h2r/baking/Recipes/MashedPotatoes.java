@@ -21,7 +21,7 @@ public class MashedPotatoes extends Recipe {
 		this.topLevelIngredient = mashed_potatoes;
 	}
 
-	/*@Override
+	@Override
 	public List<String> getRecipeProcedures() {
 		return Arrays.asList("Recipe: Mashed Potatoes",
 		"Bring a large pot of salted water to a boil.\n",										//0
@@ -29,5 +29,5 @@ public class MashedPotatoes extends Recipe {
 		"Let cool and mash.\n",																	//2
 		"Combine mashed potato, butter and egg in a large bowl.\n");								//3
 			//8
-	}*/
+	}
 }
