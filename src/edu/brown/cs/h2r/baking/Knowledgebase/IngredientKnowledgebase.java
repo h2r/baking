@@ -22,6 +22,7 @@ import edu.brown.cs.h2r.baking.Recipes.Recipe;
 public class IngredientKnowledgebase {
 	
 	public static final String NONMELTABLE = "unsaturated";
+	public static final String LUBRICANT = "lubricant";
 	
 	private final String TRAITFILE = "IngredientTraits.txt";
 	private final String COMBINATIONFILE = "FakeCombinations.txt";

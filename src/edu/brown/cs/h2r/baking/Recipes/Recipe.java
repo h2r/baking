@@ -3,12 +3,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
 import edu.brown.cs.h2r.baking.Knowledgebase.IngredientKnowledgebase;
+import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
@@ -23,6 +25,7 @@ public abstract class Recipe {
 	
 	public IngredientRecipe topLevelIngredient;
 	protected IngredientKnowledgebase knowledgebase;
+	protected Set<BakingSubgoal> subgoals;
 	
 	/*public static final Boolean NOT_MIXED = false;
 	public static final Boolean NOT_MELTED = false;
@@ -45,6 +48,7 @@ public abstract class Recipe {
 	public Recipe()
 	{
 		this.knowledgebase = new IngredientKnowledgebase();
+		this.subgoals = new HashSet<BakingSubgoal>();
 	}
 	
 	public List<String> getRecipeProcedures() {
@@ -509,4 +513,6 @@ public abstract class Recipe {
 		// This object doesn't match anything in the two lists of sub ingredients. We've failed.
 		return true;
 	}
+	
+	
 }

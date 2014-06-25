@@ -36,23 +36,19 @@ public class IngredientFactory {
 	private static ObjectClass createObjectClass(Domain domain, String className) {
 		ObjectClass objectClass = new ObjectClass(domain, className);
 		Attribute mixingAttribute = 
-				new Attribute(domain, IngredientFactory.attributeBaked, Attribute.AttributeType.DISC);
-		mixingAttribute.setDiscValuesForRange(0,1,1);
+				new Attribute(domain, IngredientFactory.attributeBaked, Attribute.AttributeType.BOOLEAN);
 		objectClass.addAttribute(mixingAttribute);
 		
 		Attribute heatingAttribute = 
-				new Attribute(domain, IngredientFactory.attributeMelted, Attribute.AttributeType.DISC);
-		heatingAttribute.setDiscValuesForRange(0,1,1);
+				new Attribute(domain, IngredientFactory.attributeMelted, Attribute.AttributeType.BOOLEAN);
 		objectClass.addAttribute(heatingAttribute);
 		
 		Attribute receivingAttribute =
-				new Attribute(domain, IngredientFactory.attributeMixed, Attribute.AttributeType.DISC);
-		receivingAttribute.setDiscValuesForRange(0,1,1);
+				new Attribute(domain, IngredientFactory.attributeMixed, Attribute.AttributeType.BOOLEAN);
 		objectClass.addAttribute(receivingAttribute);
 		
 		Attribute peelAttribute =
-				new Attribute(domain, IngredientFactory.attributePeeled, Attribute.AttributeType.DISC);
-		peelAttribute.setDiscValuesForRange(0,1,1);
+				new Attribute(domain, IngredientFactory.attributePeeled, Attribute.AttributeType.BOOLEAN);
 		objectClass.addAttribute(peelAttribute);
 		
 		Attribute countAttribute = 
@@ -80,8 +76,7 @@ public class IngredientFactory {
 		ObjectClass objectClass = IngredientFactory.createObjectClass(domain, IngredientFactory.ClassNameComplexHidden);
 		
 		Attribute swappedAttribute =
-				new Attribute(domain, IngredientFactory.attributeSwapped, Attribute.AttributeType.DISC);
-		swappedAttribute.setDiscValuesForRange(0,1,1);
+				new Attribute(domain, IngredientFactory.attributeSwapped, Attribute.AttributeType.BOOLEAN);
 		objectClass.addAttribute(swappedAttribute);
 		
 		objectClass.addAttribute(
@@ -100,8 +95,7 @@ public class IngredientFactory {
 		ObjectClass objectClass = IngredientFactory.createObjectClass(domain, IngredientFactory.ClassNameComplex);
 		
 		Attribute swappedAttribute =
-				new Attribute(domain, IngredientFactory.attributeSwapped, Attribute.AttributeType.DISC);
-		swappedAttribute.setDiscValuesForRange(0,1,1);
+				new Attribute(domain, IngredientFactory.attributeSwapped, Attribute.AttributeType.BOOLEAN);
 		objectClass.addAttribute(swappedAttribute);
 		
 		objectClass.addAttribute(
@@ -507,5 +501,9 @@ public class IngredientFactory {
 	
 	public static boolean isMeltedAtRoomTemperature(ObjectInstance ingredient) {
 		return IngredientFactory.getTraits(ingredient).contains(IngredientKnowledgebase.NONMELTABLE);
+	}
+	
+	public static boolean isLubricant(ObjectInstance ingredient) {
+		return IngredientFactory.getTraits(ingredient).contains(IngredientKnowledgebase.LUBRICANT);
 	}
 }
