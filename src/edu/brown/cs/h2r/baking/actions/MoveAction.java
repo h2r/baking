@@ -31,6 +31,14 @@ public class MoveAction extends BakingAction {
 			return false;
 		}
 		
+		if (SpaceFactory.isBaking(space) && !ContainerFactory.isBakingContainer(container)) {
+			return false;
+		}
+		
+		if (SpaceFactory.isHeating(space) && !ContainerFactory.isHeatingContainer(container)) {
+			return false;
+		}
+		
 		return true;
 	
 	}

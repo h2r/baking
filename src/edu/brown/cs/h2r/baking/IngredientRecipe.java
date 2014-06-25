@@ -263,7 +263,7 @@ public class IngredientRecipe {
 		this.peeled = ((attributes & Recipe.PEELED) == Recipe.PEELED) ? true : false;
 	}
 	
-	public int generateAttributeNumber(Boolean mixed, Boolean melted, Boolean baked, Boolean peeled) {
+	public static int generateAttributeNumber(Boolean mixed, Boolean melted, Boolean baked, Boolean peeled) {
 		int mixed_int = mixed ? Recipe.MIXED : 0;
 		int melted_int = melted ? Recipe.MELTED : 0;
 		int baked_int = baked ? Recipe.BAKED : 0;

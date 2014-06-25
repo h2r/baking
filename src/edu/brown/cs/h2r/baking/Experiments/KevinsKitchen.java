@@ -191,7 +191,7 @@ public class KevinsKitchen implements DomainGenerator {
 		AffordancesController affController = theCreator.getAffController();
 		if(affordanceMode) {
 			planner = new AffordanceRTDP(domain, rf, recipeTerminalFunction, gamma, hashFactory, vInit, numRollouts, maxDelta, maxDepth, affController);
-			planner.setMinNumRolloutsWithSmallValueChange(500);
+			//planner.setMinNumRolloutsWithSmallValueChange(500);
 			planner.toggleDebugPrinting(false);
 			planner.planFromState(currentState);
 			
