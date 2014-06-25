@@ -16,8 +16,8 @@ public class IngredientRecipe {
 	private Boolean mixed;
 	private Boolean melted;
 	private Boolean baked;
-	private Set<String> traits;
 	private Boolean peeled;
+	private Set<String> traits;
 	private String name;
 	private Boolean swapped;
 	private List<IngredientRecipe> contents;
@@ -34,6 +34,9 @@ public class IngredientRecipe {
 		this.traits = new TreeSet<String>();
 		this.useCount = 1;
 		this.contents = null;
+		this.peeled = false;
+		this.traits = new TreeSet<String>();
+		this.useCount = 1;
 	}
 	
 	
@@ -93,7 +96,7 @@ public class IngredientRecipe {
 	public Boolean getPeeled() {
 		return this.peeled;
 	}
-	
+		
 	public String getName() {
 		return this.name;
 	}
