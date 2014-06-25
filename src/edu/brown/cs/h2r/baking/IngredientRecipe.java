@@ -3,12 +3,12 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
-
 import java.util.Set;
 import java.util.TreeSet;
 
 import burlap.oomdp.core.ObjectInstance;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
+import edu.brown.cs.h2r.baking.Recipes.Recipe;
 
 
 public class IngredientRecipe {
@@ -16,33 +16,30 @@ public class IngredientRecipe {
 	private Boolean mixed;
 	private Boolean melted;
 	private Boolean baked;
-	private Set<String> traits;
 	private Boolean peeled;
+	private Set<String> traits;
 	private String name;
 	private Boolean swapped;
 	private List<IngredientRecipe> contents;
 	private int useCount;
 	private AbstractMap<String, IngredientRecipe> necessaryTraits;
 	
-	public IngredientRecipe(String name, Boolean mixed, Boolean melted, Boolean baked, Boolean peeled) {
+	public IngredientRecipe(String name, int attributes) {
 		this.name = name;
-		this.mixed = mixed;
-		this.melted = melted;
-		this.baked = baked;
-		this.peeled = peeled;
+		this.setAttributes(attributes);
 		this.swapped = false;
 		this.traits = new TreeSet<String>();
 		this.useCount = 1;
 		this.contents = null;
+		this.peeled = false;
+		this.traits = new TreeSet<String>();
+		this.useCount = 1;
 	}
 	
 	
-	public IngredientRecipe (String name, Boolean mixed, Boolean melted, Boolean baked, Boolean peeled, List<IngredientRecipe> contents) {
+	public IngredientRecipe (String name, int attributes, List<IngredientRecipe> contents) {
 		this.name = name;
-		this.mixed = mixed;
-		this.melted = melted;
-		this.baked = baked;
-		this.peeled = peeled;
+		this.setAttributes(attributes);
 		this.swapped = false;
 		this.contents = contents;
 		this.traits = new TreeSet<String>();
@@ -50,16 +47,23 @@ public class IngredientRecipe {
 		this.useCount = 1;
 	}
 	
-	public IngredientRecipe(String name, Boolean mixed, Boolean melted, Boolean baked, Boolean peeled, Boolean swapped, List<IngredientRecipe> contents) {
+	public IngredientRecipe(String name, int attributes, Boolean swapped, List<IngredientRecipe> contents) {
 		this.name = name;
-		this.mixed = mixed;
-		this.melted = melted;
-		this.baked = baked;
-		this.peeled = peeled;
+		this.setAttributes(attributes);
 		this.contents = contents;
 		this.traits = new TreeSet<String>();
 		this.swapped = swapped;
 		this.necessaryTraits = new HashMap<String, IngredientRecipe>();
+		this.useCount = 1;
+	}
+	
+	public IngredientRecipe(String name, int attributes, Boolean swapped, List<IngredientRecipe> contents, AbstractMap<String, IngredientRecipe> necessaryTraits) {
+		this.name = name;
+		this.setAttributes(attributes);
+		this.contents = contents;
+		this.traits = new TreeSet<String>();
+		this.swapped = swapped;
+		this.necessaryTraits = necessaryTraits;
 		this.useCount = 1;
 	}
 	
@@ -90,10 +94,14 @@ public class IngredientRecipe {
 		this.baked = true;
 	}
 	
+	public void setPeeled() {
+		this.peeled = true;
+	}
+	
 	public Boolean getPeeled() {
 		return this.peeled;
 	}
-	
+		
 	public String getName() {
 		return this.name;
 	}
@@ -186,8 +194,8 @@ public class IngredientRecipe {
 		return new HashMap<String, IngredientRecipe>();
 	}
 	
-	public void addNecessaryTrait(String trait, boolean mixed, boolean melted, boolean baked, boolean peeled) {
-		IngredientRecipe ing = new IngredientRecipe(trait, mixed, melted, baked, peeled);
+	public void addNecessaryTrait(String trait, int attributes) {
+		IngredientRecipe ing = new IngredientRecipe(trait, attributes);
 		this.necessaryTraits.put(trait, ing);
 	}
 	
@@ -223,12 +231,43 @@ public class IngredientRecipe {
 		if (IngredientFactory.isBakedIngredient(object) != this.getBaked()) {
 			return false;
 		}
-		if (IngredientFactory.isMeltedIngredient(object) != this.getMelted()) {
-			return false;
+		if (this.getMelted()) {
+			if (!(IngredientFactory.isMeltedIngredient(object) || IngredientFactory.isMeltedAtRoomTemperature(object))) {
+				return false;
+			}
+		} else {
+			if (IngredientFactory.isMeltedIngredient(object)) {
+				return false;
+			}
 		}
 		if (IngredientFactory.isMixedIngredient(object) != this.getMixed()) {
 			return false;
 		}
+		if (IngredientFactory.isPeeledIngredient(object) != this.getPeeled()) {
+			return false;
+		}
 		return true;
+	}
+	
+	
+	public IngredientRecipe makeFakeAttributeCopy(ObjectInstance obj) {
+		return new IngredientRecipe(this.getName(), generateAttributeNumber(IngredientFactory.isMixedIngredient(obj), 
+				IngredientFactory.isMeltedIngredient(obj), IngredientFactory.isBakedIngredient(obj), 
+				IngredientFactory.isPeeledIngredient(obj)), this.getSwapped(), this.getContents(), this.getNecessaryTraits());
+	}
+	
+	public void setAttributes(int attributes) {
+		this.baked = ((attributes & Recipe.BAKED) == Recipe.BAKED) ? true : false;
+		this.melted = ((attributes & Recipe.MELTED) == Recipe.MELTED) ? true : false;
+		this.mixed = ((attributes & Recipe.MIXED) == Recipe.MIXED) ? true : false;
+		this.peeled = ((attributes & Recipe.PEELED) == Recipe.PEELED) ? true : false;
+	}
+	
+	public int generateAttributeNumber(Boolean mixed, Boolean melted, Boolean baked, Boolean peeled) {
+		int mixed_int = mixed ? Recipe.MIXED : 0;
+		int melted_int = melted ? Recipe.MELTED : 0;
+		int baked_int = baked ? Recipe.BAKED : 0;
+		int peeled_int = peeled ? Recipe.PEELED : 0;
+		return mixed_int|melted_int|baked_int|peeled_int;
 	}
 }

@@ -22,14 +22,14 @@ public class Brownies extends Recipe {
 		// Stir in sugar, eggs, and 1 teaspoon vanilla.
 		List<IngredientRecipe> ingredientList = new ArrayList<IngredientRecipe>();
 		ingredientList.add(knowledgebase.getIngredient("vanilla"));
+		ingredientList.add(knowledgebase.getIngredient("eggs"));
 		
-		IngredientRecipe wet_ings = new IngredientRecipe("wet_ingredients", NOTMIXED, NOTMELTED, NOTBAKED, NOTPEELED, SWAPPED, ingredientList);
-		wet_ings.addNecessaryTrait("eggs", NOTMIXED, NOTMELTED, NOTBAKED, NOTPEELED);
-		wet_ings.addNecessaryTrait("sugar", NOTMIXED, NOTMELTED, NOTBAKED, NOTPEELED);
+		IngredientRecipe wet_ings = new IngredientRecipe("wet_ingredients", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList);
+		wet_ings.addNecessaryTrait("sugar", Recipe.NO_ATTRIBUTES);
 		wet_ings.addTraits(knowledgebase.getTraits("wet_ingredients"));
 		
 		// In a large saucepan, melt 1/2 cup butter.
-		wet_ings.addNecessaryTrait("fat", NOTMIXED, MELTED, NOTBAKED, NOTPEELED);
+		wet_ings.addNecessaryTrait("fat", Recipe.MELTED);
 		
 		// Add to compulsory Ingredient List
 		// Beat in 1/3 cup cocoa, 1/2 cup flour, salt, and baking powder.
@@ -39,16 +39,16 @@ public class Brownies extends Recipe {
 		
 		
 		// Make the subgoal
-		IngredientRecipe dry_ings = new IngredientRecipe ("dry_ingredients", NOTMIXED, NOTMELTED, NOTBAKED, NOTPEELED, SWAPPED, ingredientList2);
+		IngredientRecipe dry_ings = new IngredientRecipe ("dry_ingredients", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList2);
 		// Add the necessaryTraits and their respective attributes
-		dry_ings.addNecessaryTrait("flour", NOTMIXED, NOTMELTED, NOTBAKED, NOTPEELED);
-		dry_ings.addNecessaryTrait("salt", NOTMIXED, NOTMELTED, NOTBAKED, NOTPEELED);
+		dry_ings.addNecessaryTrait("flour", Recipe.NO_ATTRIBUTES);
+		dry_ings.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
 		dry_ings.addTraits(knowledgebase.getTraits("dry_ingredients"));
 		
 		List<IngredientRecipe> ingredientList3 = new ArrayList<IngredientRecipe>();
 		ingredientList3.add(dry_ings);
 		ingredientList3.add(wet_ings);
-		IngredientRecipe brownies = new IngredientRecipe("brownies", NOTMIXED, NOTMELTED, NOTBAKED, NOTPEELED, SWAPPED, ingredientList3);
+		IngredientRecipe brownies = new IngredientRecipe("brownies", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList3);
 		brownies.addTraits(knowledgebase.getTraits("brownies"));
 		
 		this.topLevelIngredient = brownies;

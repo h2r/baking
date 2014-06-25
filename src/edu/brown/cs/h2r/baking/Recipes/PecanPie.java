@@ -11,28 +11,28 @@ public class PecanPie extends Recipe {
 		super();
 		List<IngredientRecipe> ingredientList = new ArrayList<IngredientRecipe>();
 		ingredientList.add(knowledgebase.getIngredient("flour"));
-		IngredientRecipe dry_crust = new IngredientRecipe("dry_crust", NOTMIXED, NOTMELTED, NOTBAKED, NOTPEELED, SWAPPED, ingredientList);
-		dry_crust.addNecessaryTrait("salt", NOTMIXED, NOTMELTED, NOTBAKED, NOTPEELED);
-		dry_crust.addNecessaryTrait("sugar", NOTMIXED, NOTMELTED, NOTBAKED, NOTPEELED);
+		IngredientRecipe dry_crust = new IngredientRecipe("dry_crust", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList);
+		dry_crust.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
+		dry_crust.addNecessaryTrait("sugar", Recipe.NO_ATTRIBUTES);
 		
 		List<IngredientRecipe> ingredientList2 = new ArrayList<IngredientRecipe>();
 		ingredientList2.add(knowledgebase.getIngredient("butter"));
 		ingredientList2.add(dry_crust);
-		IngredientRecipe flaky_crust = new IngredientRecipe("flaky_crust", NOTMIXED, NOTMELTED, NOTBAKED, NOTPEELED, SWAPPED, ingredientList2);
+		IngredientRecipe flaky_crust = new IngredientRecipe("flaky_crust", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList2);
 
 		
 		List<IngredientRecipe> ingredientList3 = new ArrayList<IngredientRecipe>();
 		ingredientList3.add(knowledgebase.getIngredient("eggs"));
 		ingredientList3.add(flaky_crust);
-		IngredientRecipe pie_crust = new IngredientRecipe("pie_crust", NOTMIXED, NOTMELTED, NOTBAKED, NOTPEELED, SWAPPED, ingredientList3);
+		IngredientRecipe pie_crust = new IngredientRecipe("pie_crust", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList3);
 
 		
 		List<IngredientRecipe> ingredientList4 = new ArrayList<IngredientRecipe>();
 		ingredientList4.add(knowledgebase.getIngredient("butter"));
 		ingredientList4.add(knowledgebase.getIngredient("light_corn_syrup"));
-		IngredientRecipe pie_mix = new IngredientRecipe("pie_mix", NOTMIXED, NOTMELTED, NOTBAKED, NOTPEELED, SWAPPED, ingredientList4);
-		pie_mix.addNecessaryTrait("salt", NOTMIXED, NOTMELTED, NOTBAKED, NOTPEELED);
-		pie_mix.addNecessaryTrait("sugar", NOTMIXED, NOTMELTED, NOTBAKED, NOTPEELED);
+		IngredientRecipe pie_mix = new IngredientRecipe("pie_mix", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList4);
+		pie_mix.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
+		pie_mix.addNecessaryTrait("sugar", Recipe.NO_ATTRIBUTES);
 		
 		
 		List<IngredientRecipe> ingredientList5 = new ArrayList<IngredientRecipe>();
@@ -40,12 +40,12 @@ public class PecanPie extends Recipe {
 		ingredientList5.add(knowledgebase.getIngredient("bourbon"));
 		ingredientList5.add(knowledgebase.getIngredient("vanilla"));
 		ingredientList5.add(pie_mix);
-		IngredientRecipe filling = new IngredientRecipe("filling", NOTMIXED, NOTMELTED, NOTBAKED, NOTPEELED, SWAPPED, ingredientList5);
+		IngredientRecipe filling = new IngredientRecipe("filling", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList5);
 		
 		List<IngredientRecipe> ingredientList6 = new ArrayList<IngredientRecipe>();
 		ingredientList6.add(filling);
 		ingredientList6.add(pie_crust);
-		this.topLevelIngredient = new IngredientRecipe("PecanPie", NOTMIXED, NOTMELTED, NOTBAKED, NOTPEELED, SWAPPED, ingredientList6);
+		this.topLevelIngredient = new IngredientRecipe("PecanPie", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList6);
 	}
 
 }

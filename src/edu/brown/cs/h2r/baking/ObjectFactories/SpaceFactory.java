@@ -2,6 +2,7 @@ package edu.brown.cs.h2r.baking.ObjectFactories;
 import java.util.List;
 import java.util.Set;
 
+import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import burlap.oomdp.core.Attribute;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
@@ -19,6 +20,11 @@ public class SpaceFactory {
 	private static final String attributeContains = "contains";
 	private static final String attributeAgent = "agent";
 
+	public static final int NO_ATTRIBUTES= 0 ;
+	public static final int BAKING = 1;
+	public static final int HEATING = 2;
+	public static final int WORKING = 4;
+	public static final int SWITCHABLE = 8;
 	
 	public static ObjectClass createObjectClass(Domain domain)
 	{
@@ -57,12 +63,9 @@ public class SpaceFactory {
 	}
 	
 	public static ObjectInstance getNewObjectInstance(ObjectClass spaceClass, String name, 
-			Boolean baking, Boolean heating, Boolean working, Boolean switchable, List<String> containers, String agent) {
+			int attributes, List<String> containers, String agent) {
 		ObjectInstance newInstance = new ObjectInstance(spaceClass, name);
-		newInstance.setValue(SpaceFactory.attributeBaking, baking ? 1 : 0);
-		newInstance.setValue(SpaceFactory.attributeHeating, heating ? 1 : 0);
-		newInstance.setValue(SpaceFactory.attributeWorking, working ? 1 : 0);
-		newInstance.setValue(SpaceFactory.attributeSwitchable, switchable ? 1 : 0);
+		setAttributes(newInstance, attributes);
 		newInstance.setValue(SpaceFactory.attributeOnOff, 0);
 		if (agent == null) {
 			agent = "";
@@ -79,43 +82,46 @@ public class SpaceFactory {
 		return newInstance;
 	}
 	
-	public static ObjectInstance getNewObjectInstance(Domain domain, String name, Boolean baking, 
-			Boolean heating, Boolean working, Boolean switchable, List<String> containers, String agent) {
+	public static ObjectInstance getNewObjectInstance(Domain domain, String name,int attributes, List<String> containers, String agent) {
 		return SpaceFactory.getNewObjectInstance(
-				domain.getObjectClass(SpaceFactory.ClassName), name, baking, heating, working, switchable, containers, agent);
+				domain.getObjectClass(SpaceFactory.ClassName), name, attributes,containers, agent);
 	}
+	
+	
 	
 	public static ObjectInstance getNewWorkingSpaceObjectInstance(ObjectClass spaceClass, 
 			String name, List<String> containers, String agent) {
-		return SpaceFactory.getNewObjectInstance(spaceClass, name, false, false, true, false, containers, agent);
+		return SpaceFactory.getNewObjectInstance(spaceClass, name, SpaceFactory.WORKING, containers, agent);
 	}
 	
 	public static ObjectInstance getNewWorkingSpaceObjectInstance(Domain domain, 
 			String name, List<String> containers, String agent) {
 		return SpaceFactory.getNewObjectInstance(
-				SpaceFactory.createObjectClass(domain), name, false, false, true, false, containers, agent);
+				SpaceFactory.createObjectClass(domain), name, SpaceFactory.WORKING, containers, agent);
 	}
 	
 	public static ObjectInstance getNewHeatingSpaceObjectInstance(ObjectClass spaceClass, 
 			String name, List<String> containers, String agent) {
-		return SpaceFactory.getNewObjectInstance(spaceClass, name, false, true, false, true, containers, agent);
+		return SpaceFactory.getNewObjectInstance(spaceClass, name, SpaceFactory.HEATING, containers, agent);
 	}
 	
 	public static ObjectInstance getNewHeatingSpaceObjectInstance(Domain domain, 
 			String name, List<String> containers, String agent) {
 		return SpaceFactory.getNewObjectInstance(
-				domain.getObjectClass(SpaceFactory.ClassName), name, false, true, false, true, containers, agent);
+				domain.getObjectClass(SpaceFactory.ClassName), name, SpaceFactory.HEATING, containers, agent);
 	}
 	
 	public static ObjectInstance getNewBakingSpaceObjectInstance(ObjectClass spaceClass, 
 			String name, List<String> containers, String agent) {
-		return SpaceFactory.getNewObjectInstance(spaceClass, name, true, false, false, true, containers, agent);
+		return SpaceFactory.getNewObjectInstance(spaceClass, name, SpaceFactory.BAKING|SpaceFactory.SWITCHABLE, 
+				containers, agent);
 	}
 
 	public static ObjectInstance getNewBakingSpaceObjectInstance(Domain domain, 
 			String name, List<String> containers, String agent) {
 		return SpaceFactory.getNewObjectInstance(
-				domain.getObjectClass(SpaceFactory.ClassName), name, true, false, false, true, containers, agent);
+				domain.getObjectClass(SpaceFactory.ClassName), name, SpaceFactory.BAKING|SpaceFactory.SWITCHABLE, 
+				containers, agent);
 	}
 	
 	public static void addContainer(ObjectInstance space, ObjectInstance container) {
@@ -152,5 +158,20 @@ public class SpaceFactory {
 	
 	public static void setOnOff(ObjectInstance objectInstance, boolean isOn) {
 		objectInstance.setValue(SpaceFactory.attributeOnOff, isOn ? 1 : 0);
+	}
+	
+	public static void setAttributes(ObjectInstance object, int attributes) {
+		object.setValue(SpaceFactory.attributeBaking, ((attributes & SpaceFactory.BAKING) == SpaceFactory.BAKING) ? 1: 0);
+		object.setValue(SpaceFactory.attributeHeating, ((attributes & SpaceFactory.HEATING) == SpaceFactory.HEATING) ? 1: 0);
+		object.setValue(SpaceFactory.attributeWorking, ((attributes & SpaceFactory.WORKING) == SpaceFactory.WORKING) ? 1: 0);
+		object.setValue(SpaceFactory.attributeSwitchable, ((attributes & SpaceFactory.SWITCHABLE) == SpaceFactory.SWITCHABLE) ? 1: 0);
+	}
+	
+	public static int generateAttributeNumber(Boolean baking, Boolean heating, Boolean working, Boolean switchable) {
+		int baking_int = baking ? SpaceFactory.BAKING : 0;
+		int heating_int = heating ? SpaceFactory.HEATING : 0;
+		int working_int = working ? SpaceFactory.WORKING : 0;
+		int switchable_int = switchable ? SpaceFactory.SWITCHABLE : 0;
+		return baking_int|heating_int|working_int|switchable_int;
 	}
 }

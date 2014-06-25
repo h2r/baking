@@ -25,7 +25,8 @@ public class MeltAction extends BakingAction {
 			return false;
 		}
 		for (String ingredientName : ContainerFactory.getContentNames(containerInstance)) {
-			if (IngredientFactory.isMeltedIngredient(state.getObject(ingredientName))) {
+			if (IngredientFactory.isMeltedIngredient(state.getObject(ingredientName)) ||
+					IngredientFactory.isMeltedAtRoomTemperature(state.getObject(ingredientName))) {
 				return false;
 			}
 		}

@@ -13,22 +13,22 @@ public class DeviledEggs extends Recipe {
 		ingredientList.add(knowledgebase.getIngredient("egg_yolks"));
 		ingredientList.add(knowledgebase.getIngredient("pepper"));
 		
-		IngredientRecipe yolk_mix = new IngredientRecipe("yolk_mix", NOTMIXED, NOTMELTED, NOTBAKED, NOTPEELED, SWAPPED, ingredientList);
-		yolk_mix.addNecessaryTrait("salt", NOTMIXED, NOTMELTED, NOTBAKED, NOTPEELED);
-		yolk_mix.addNecessaryTrait("mustard", NOTMIXED, NOTMELTED, NOTBAKED, NOTPEELED);
+		IngredientRecipe yolk_mix = new IngredientRecipe("yolk_mix", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList);
+		yolk_mix.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
+		yolk_mix.addNecessaryTrait("mustard", Recipe.NO_ATTRIBUTES);
 		
 		List<IngredientRecipe> ingredientList2 = new ArrayList<IngredientRecipe>();
-		ingredientList2.add(new IngredientRecipe("chopped_tarragon", NOTMIXED, NOTMELTED, NOTBAKED,NOTPEELED));
-		ingredientList2.add(new IngredientRecipe("sweet_gherkins", NOTMIXED, NOTMELTED, NOTBAKED, NOTPEELED));
-		ingredientList2.add(new IngredientRecipe("shallots", NOTMIXED, NOTMELTED, NOTBAKED,NOTPEELED));
+		ingredientList2.add(knowledgebase.getIngredient("chopped_tarragon"));
+		ingredientList2.add(knowledgebase.getIngredient("sweet_gherkins"));
+		ingredientList2.add(knowledgebase.getIngredient("shallots"));
 		ingredientList2.add(yolk_mix);
-		IngredientRecipe finished_mix = new IngredientRecipe("finished_mix", NOTMIXED, NOTMELTED, NOTBAKED, NOTPEELED, SWAPPED, ingredientList2);
+		IngredientRecipe finished_mix = new IngredientRecipe("finished_mix", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList2);
 
 		List<IngredientRecipe> ingredientList3 = new ArrayList<IngredientRecipe>();
-		ingredientList3.add(new IngredientRecipe("egg_whites", NOTMIXED, NOTMELTED, NOTBAKED, NOTPEELED));
+		ingredientList3.add(knowledgebase.getIngredient("egg_whites"));
 		ingredientList3.add(finished_mix);
 		
-		this.topLevelIngredient = new IngredientRecipe("DeviledEggs", NOTMIXED, NOTMELTED, NOTBAKED, NOTPEELED, SWAPPED, ingredientList3);
+		this.topLevelIngredient = new IngredientRecipe("DeviledEggs", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList3);
 
 	}
 }
