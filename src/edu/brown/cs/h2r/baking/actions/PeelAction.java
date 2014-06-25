@@ -13,7 +13,7 @@ import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 public class PeelAction extends BakingAction {
 	public static final String className = "peel";
 	public PeelAction(Domain domain, IngredientRecipe ingredient) {
-		super(PeelAction.className, domain, ingredient, new String[] {AgentFactory.ClassName, IngredientFactory.ClassNameSimple});
+		super(PeelAction.className, domain, ingredient, new String[] {AgentFactory.ClassName, ContainerFactory.ClassName});
 	}
 
 	@Override
