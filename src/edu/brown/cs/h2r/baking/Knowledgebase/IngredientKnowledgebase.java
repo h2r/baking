@@ -73,7 +73,22 @@ public class IngredientKnowledgebase {
 		return ingredients;
 	}
 	
-	public List<ObjectInstance>getPotentialIngredientObjectInstanceList(State s, Domain domain, IngredientRecipe tlIngredient) {
+	/*public List<ObjectInstance>getPotentialIngredientObjectInstanceList(State s, Domain domain, IngredientRecipe tlIngredient) {
+	//TODO: Will move this out soon, here to see if it works!
+	/*public List<ObjectInstance>getPotentialIngredientObjectInstanceList(State s, Domain domain, IngredientRecipe tlIngredient) {
+		List<ObjectInstance> ingredients = new ArrayList<ObjectInstance>();
+		IngredientNecessaryForRecipe necessary = new IngredientNecessaryForRecipe(AffordanceCreator.INGREDIENTPF, domain, tlIngredient);
+		for (IngredientRecipe ing : getIngredientList()) {
+			if (necessary.isTrue(s, new String[] {ing.getName()})) {
+				ObjectClass oc = ing.isSimple() ? domain.getObjectClass(IngredientFactory.ClassNameSimple) : domain.getObjectClass(IngredientFactory.ClassNameComplex);
+				ObjectInstance obj = IngredientFactory.getNewIngredientInstance(ing, ing.getName(), oc);
+				ingredients.add(obj);
+			}
+		}
+		return ingredients;
+	}*/
+	
+	public List<ObjectInstance> getPotentialIngredientObjectInstanceList(State s, Domain domain, IngredientRecipe tlIngredient) {
 		List<ObjectInstance> ingredients = new ArrayList<ObjectInstance>();
 		for (IngredientRecipe ing : getPotentialIngredientList(s, domain, tlIngredient)) {
 			ObjectClass oc = ing.isSimple() ? domain.getObjectClass(IngredientFactory.ClassNameSimple) : domain.getObjectClass(IngredientFactory.ClassNameComplex);

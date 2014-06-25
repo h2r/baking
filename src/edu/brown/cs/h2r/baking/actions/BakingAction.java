@@ -54,6 +54,18 @@ public class BakingAction extends Action {
 
 	@Override
 	public boolean applicableInState(State state, String[] params) {
+		for (int i = 0; i < params.length; i++) {
+			String objectName = params[i];
+			ObjectInstance object = state.getObject(objectName);
+			if (object == null) {
+				return false;
+			}
+			String className = object.getObjectClass().name;
+			if (!className.equalsIgnoreCase(this.parameterClasses[i])) {
+				return false;
+			}
+		}
+		
 		return this.canAgentGo(state, params);
 	}
 
