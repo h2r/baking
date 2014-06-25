@@ -23,7 +23,7 @@ public class MoveAction extends BakingAction {
 		String spaceName = params[2];
 		ObjectInstance space = s.getObject(spaceName);
 		String agentName = SpaceFactory.getAgent(space).iterator().next();
-		if (agentName != params[0]) {
+		if (!agentName.isEmpty() && agentName != params[0]) {
 			return false;
 		}
 		ObjectInstance container = s.getObject(params[1]);

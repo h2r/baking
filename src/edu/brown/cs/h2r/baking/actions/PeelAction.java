@@ -5,6 +5,7 @@ import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 
 public class PeelAction extends BakingAction {
@@ -28,8 +29,13 @@ public class PeelAction extends BakingAction {
 	@Override
 	protected State performActionHelper(State state, String[] params) {
 		super.performActionHelper(state, params);
-		ObjectInstance spaceInstance = state.getObject(params[1]);
-		this.peel(spaceInstance);
+		
+		ObjectInstance container = state.getObject(params[1]);
+		Set<String> contents = ContainerFactory.getContentNames(container);
+		for (String ingredient : contents) {
+			ObjectInstance ingredientObject = IngredientFactory.isPeelable
+		}
+		this.peel(ingredientContainer);
 		return state;
 	}
 	
