@@ -256,7 +256,7 @@ public class IngredientFactory {
 		for (IngredientRecipe ing : ingredient.getContents()) {
 			contents.add(ing.getName());
 		}
-		return IngredientFactory.getNewComplexIngredientObjectInstance(oc, name, baked, melted, mixed, swapped, useCount, container, traits, contents);
+		return IngredientFactory.getNewComplexIngredientObjectInstance(oc, name, baked, melted, mixed, peeled, swapped, useCount, container, traits, contents);
 	}
 	
 	public static List<ObjectInstance> getIngredientInstancesList(ObjectClass simpleIngredientClass,
@@ -491,14 +491,6 @@ public class IngredientFactory {
 		}		
 	}
 
-	public static Set<String> getContentsForIngredient(ObjectInstance ingredient) {
-		return new TreeSet<String>(ingredient.getAllRelationalTargets(IngredientFactory.attributeContains));
-	}
-
-	public static void setPeeled(ObjectInstance ingredient, boolean isPeeled) {
-		ingredient.setValue(IngredientFactory.attributePeeled, isPeeled ? 1 : 0);
-	}
-	
 	public static boolean isMeltedAtRoomTemperature(ObjectInstance ingredient) {
 		return IngredientFactory.getTraits(ingredient).contains(IngredientKnowledgebase.NONMELTABLE);
 	}

@@ -1,5 +1,7 @@
 package edu.brown.cs.h2r.baking.actions;
 
+import java.util.Set;
+
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
@@ -22,10 +24,13 @@ public class PeelAction extends BakingAction {
 		
 		ObjectInstance agent =  state.getObject(params[0]);
 		
-		ObjectInstance ingredientInstance = state.getObject(params[1]);
-		
-		if (IngredientFactory.isPeeledIngredient(ingredientInstance)) {
-			return false;
+		ObjectInstance container = state.getObject(params[1]);
+		Set<String> contents = ContainerFactory.getContentNames(container);
+		for (String ingredient : contents) {
+			ObjectInstance ingredientObject = state.getObject(ingredient);
+			if (!IngredientFactory.isPeeledIngredient(ingredientObject)) {
+				return false;
+			}
 		}
 		
 		return true;
@@ -38,9 +43,10 @@ public class PeelAction extends BakingAction {
 		ObjectInstance container = state.getObject(params[1]);
 		Set<String> contents = ContainerFactory.getContentNames(container);
 		for (String ingredient : contents) {
-			ObjectInstance ingredientObject = IngredientFactory.isPeelable
+			ObjectInstance ingredientObject = state.getObject(ingredient);
+			this.peel(ingredientObject);
 		}
-		this.peel(ingredientContainer);
+		
 		return state;
 	}
 	
