@@ -17,7 +17,6 @@ import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
 //import burlap.behavior.singleagent.planning.deterministic.informed.Heuristic;
 import burlap.behavior.singleagent.planning.stochastic.rtdp.AffordanceRTDP;
 import burlap.behavior.singleagent.planning.stochastic.rtdp.RTDP;
-import burlap.behavior.singleagent.planning.stochastic.valueiteration.ValueIteration;
 import burlap.behavior.statehashing.NameDependentStateHashFactory;
 import burlap.behavior.statehashing.StateHashFactory;
 import burlap.oomdp.auxiliary.DomainGenerator;
@@ -33,6 +32,7 @@ import burlap.oomdp.singleagent.SADomain;
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
 import edu.brown.cs.h2r.baking.Knowledgebase.IngredientKnowledgebase;
 import burlap.oomdp.core.Domain;
+import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.RecipeTerminalFunction;
 import edu.brown.cs.h2r.baking.ObjectFactories.*;
@@ -43,7 +43,6 @@ import edu.brown.cs.h2r.baking.actions.*;
 public class KevinsKitchen implements DomainGenerator {
 	List<ObjectInstance> allIngredients;
 	private IngredientRecipe topLevelIngredient;
-	int num_actions = 0;
 	public KevinsKitchen() {
 
 	}
@@ -85,8 +84,9 @@ public class KevinsKitchen implements DomainGenerator {
 		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2");
 		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter", containers, "human"));
 
+		state.addObject(ContainerFactory.getNewBakingContainerObjectInstance(domain, "baking_dish", null, "counter"));
 		state.addObject(SpaceFactory.getNewBakingSpaceObjectInstance(domain, "oven", null, ""));
-		state.addObject(SpaceFactory.getNewHeatingSpaceObjectInstance(domain, "stove", null, ""));
+		//state.addObject(SpaceFactory.getNewHeatingSpaceObjectInstance(domain, "stove", null, ""));
 		for (String container : containers) { 
 			state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "counter"));
 		}
@@ -100,20 +100,37 @@ public class KevinsKitchen implements DomainGenerator {
 		System.out.println("\n\nPlanner will now plan the "+recipe.topLevelIngredient.getName()+" recipe!");
 		((PourAction)pour).addAllIngredients(this.allIngredients);
 		
-
-		this.PlanIngredient(domain, state, recipe.topLevelIngredient);
-	}
-	
-	public State PlanIngredient(Domain domain, State startingState, IngredientRecipe ingredient)
-	{
-		State currentState = new State(startingState);
-		
-		List<IngredientRecipe> contents = ingredient.getContents();
-		for (IngredientRecipe subIngredient : contents) {
-			if (!subIngredient.isSimple()) {
-				currentState = this.PlanIngredient(domain, currentState, subIngredient);
+		Set<BakingSubgoal> subgoals = recipe.getSubgoals();
+		BakingSubgoal completed = null;
+		while (!subgoals.isEmpty()) {
+			for (BakingSubgoal sg : subgoals) {
+				if (sg.allPreconditionsCompleted(state)) {
+					state = this.PlanIngredient(domain, state, sg.getIngredient(), sg);
+					completed = sg;
+					break;
+				}
+			}
+			subgoals.remove(completed);
+			for (BakingSubgoal sg : subgoals) {
+				BakingSubgoal todelete = null;
+				for (BakingSubgoal pc : sg.getPreconditions()) {
+					if (pc.equals(completed)) {
+						todelete = pc;
+						break;
+					}
+				}
+				if (todelete != null) {
+					sg.getPreconditions().remove(todelete);
+				}
 			}
 		}
+		
+		//this.PlanIngredient(domain, state, recipe.topLevelIngredient);
+	}
+	
+	public State PlanIngredient(Domain domain, State startingState, IngredientRecipe ingredient, BakingSubgoal subgoal)
+	{
+		State currentState = new State(startingState);
 		
 		ObjectClass containerClass = domain.getObjectClass(ContainerFactory.ClassName);		
 		ObjectInstance counterSpace = currentState.getObject("counter");
@@ -134,8 +151,7 @@ public class KevinsKitchen implements DomainGenerator {
 				currentState.addObject(containerInstance);
 			}
 		}
-		
-		/* Trying stuff */
+
 		for (ObjectInstance ingredientInstance : ingredientInstances) {
 			if (IngredientFactory.getUseCount(ingredientInstance) >= 1) {
 				ObjectInstance ing = currentState.getObject(ingredientInstance.getName());
@@ -148,11 +164,10 @@ public class KevinsKitchen implements DomainGenerator {
 		// Add the current top level ingredient so we can properly trim the action space
 		for (PropositionalFunction pf : domain.getPropFunctions()) {
 			((BakingPropositionalFunction)pf).changeTopLevelIngredient(ingredient);
+			((BakingPropositionalFunction)pf).setSubgoal(subgoal);
 		}
-		final PropositionalFunction isSuccess = domain.getPropFunction(AffordanceCreator.FINISH_PF);
+		final PropositionalFunction isSuccess = subgoal.getGoal();
 		final PropositionalFunction isFailure = domain.getPropFunction(AffordanceCreator.BOTCHED_PF);
-		
-		//System.out.println("Planning over ingredients with the traits: "+ingredient.getTraits());
 		
 		TerminalFunction recipeTerminalFunction = new RecipeTerminalFunction(isSuccess, isFailure);
 		
@@ -160,23 +175,29 @@ public class KevinsKitchen implements DomainGenerator {
 		RewardFunction rf = new RewardFunction() {
 			@Override
 			public double reward(State s, GroundedAction a, State sprime) {
-				ObjectInstance container = sprime.getObject(a.params[a.params.length-1]);
-				if (container.getObjectClass().name.equals("container")) {
-					Set<String> contents = ContainerFactory.getContentNames(container);
-					if (contents.size() == 0) {
-						return -1;
-					}
-					if (isFailure.isTrue(sprime, container.getName())) {
-						return -100;
-					}
-					if (isSuccess.isTrue(sprime, container.getName())) {
+				if (isFailure.isTrue(sprime, a.params[a.params.length-1])) {
+					return -100;
+				}
+				String success_name = isSuccess.getClassName();
+				if (success_name.equals(AffordanceCreator.FINISH_PF)) {
+					if (isSuccess.isTrue(sprime, a.params[a.params.length-1])) {
 						return 100;
 					}
+				} else if (success_name.equals(AffordanceCreator.CONTAINERGREASED_PF)
+							 && a.actionName().equals(GreaseAction.className)) {
+					if (isSuccess.isTrue(sprime, a.params)) {
+						return 100;
+					}
+						
+				} else if (success_name.equals(AffordanceCreator.SPACEON_PF) &&
+						a.actionName().equals(SwitchAction.className)){
+					if (isSuccess.isTrue(sprime, a.params)) {
+						return 100;
+					}
+					
 				}
 				return -1;
-
 			}
-			
 		};
 		
 		//List<State> reachableStates = StateReachability.getReachableStates(currentState, domain, hashFactory);
@@ -210,16 +231,6 @@ public class KevinsKitchen implements DomainGenerator {
 			p = new GreedyQPolicy((QComputablePlanner)planner);
 		}
 		
-		/* VI is getting to  a reacheable state by running the mashed potato recipe w/o the peel action. It is also
-		 * able to learn the optimal path (5 actions). Adding the peel action seems to make the state analysis reach not 
-		 * finish, which is troublesome.
-		 */
-		
-		
-		/*ValueIteration vi = new ValueIteration(domain, rf, recipeTerminalFunction, gamma, hashFactory, maxDelta, 10);
-		vi.planFromState(currentState);
-		p = new AffordanceGreedyQPolicy(affController, (QComputablePlanner)vi);*/
-		
 		// Print out the planning results
 		EpisodeAnalysis episodeAnalysis = p.evaluateBehavior(currentState, rf, recipeTerminalFunction,100);
 
@@ -238,18 +249,18 @@ public class KevinsKitchen implements DomainGenerator {
 		IngredientFactory.hideUnecessaryIngredients(endState, domain, ingredient, this.allIngredients);
 		
 		return endState;
-	}	
+	}
 	
 	public static void main(String[] args) throws IOException {
 		
 		KevinsKitchen kitchen = new KevinsKitchen();
 		Domain domain = kitchen.generateDomain();
 		kitchen.PlanRecipeOneAgent(domain, new Brownies());
-		kitchen.PlanRecipeOneAgent(domain, new DeviledEggs());
-		kitchen.PlanRecipeOneAgent(domain, new CucumberSalad());
-		kitchen.PlanRecipeOneAgent(domain, new MashedPotatoes());
-		kitchen.PlanRecipeOneAgent(domain, new MoltenLavaCake());
-		kitchen.PlanRecipeOneAgent(domain, new PeanutButterCookies());
-		kitchen.PlanRecipeOneAgent(domain, new PecanPie());
+		//kitchen.PlanRecipeOneAgent(domain, new DeviledEggs());
+		//kitchen.PlanRecipeOneAgent(domain, new CucumberSalad());
+		//kitchen.PlanRecipeOneAgent(domain, new MashedPotatoes());
+		//kitchen.PlanRecipeOneAgent(domain, new MoltenLavaCake());
+		//kitchen.PlanRecipeOneAgent(domain, new PeanutButterCookies());
+		//kitchen.PlanRecipeOneAgent(domain, new PecanPie());
 	}
 }

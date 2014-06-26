@@ -17,7 +17,7 @@ public class AllowMoving extends BakingPropositionalFunction {
 	@Override
 	// Default true, since only logic needed is in moveAction's isApplicableInState().
 	public boolean isTrue(State s, String[] params) {
-		String spaceName = params[2];
+		/*String spaceName = params[2];
 		ObjectInstance space = s.getObject(spaceName);
 		ObjectInstance container = s.getObject(params[1]);
 		if (SpaceFactory.isBaking(space) && !ContainerFactory.isBakingContainer(container)) {
@@ -27,7 +27,8 @@ public class AllowMoving extends BakingPropositionalFunction {
 		if (SpaceFactory.isHeating(space) && !ContainerFactory.isHeatingContainer(container)) {
 			return false;
 		}
-		return true;
+		return true;*/
+		return false;
 	}
 
 }

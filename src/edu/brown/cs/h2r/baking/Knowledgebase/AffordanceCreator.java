@@ -24,7 +24,7 @@ public class AffordanceCreator {
 	public static final String MOVE_PF = "movePF";
 	public static final String POUR_PF = "pourPF";
 	public static final String PEEL_PF = "peelPF";
-	public static final String SWITCH_PF = "swtichPF";
+	public static final String SWITCH_PF = "switchPF";
 	public static final String GREASE_PF = "greasePF";
 	public static final String FINISH_PF = "success";
 	public static final String BOTCHED_PF = "botched";

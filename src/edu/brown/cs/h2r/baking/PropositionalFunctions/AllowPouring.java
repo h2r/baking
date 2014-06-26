@@ -25,6 +25,14 @@ public class AllowPouring extends BakingPropositionalFunction {
 		ObjectInstance pouringContainer = s.getObject(params[1]);
 		ObjectInstance receivingContainer = s.getObject(params[2]);
 		
+		if (ContainerFactory.isBakingContainer(receivingContainer)) {
+			for (String name :ContainerFactory.getContentNames(pouringContainer)) {
+				if (IngredientFactory.isSimple(s.getObject(name))) {
+					return false;
+				}
+			}
+		}
+		
 		// Get what our subgoal is looking for and make copies
 		List<IngredientRecipe> necessary_ings = new ArrayList<IngredientRecipe>(); 
 		for (IngredientRecipe ing : this.topLevelIngredient.getContents()) {

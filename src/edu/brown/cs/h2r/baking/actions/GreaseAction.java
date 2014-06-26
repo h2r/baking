@@ -29,7 +29,7 @@ public class GreaseAction extends BakingAction {
 			return false;
 		}
 		
-		if (!ContainerFactory.isGreasedContainer(container)) {
+		if (ContainerFactory.isGreasedContainer(container)) {
 			return false;
 		}
 		

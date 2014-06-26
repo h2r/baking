@@ -507,5 +507,9 @@ public abstract class Recipe {
 	
 	public abstract void setUpSubgoals(Domain domain);
 	
+	public Set<BakingSubgoal> getSubgoals() {
+		return this.subgoals;
+	}
+	
 	
 }

@@ -102,14 +102,27 @@ public class ContainerFactory {
 	
 	public static ObjectInstance getNewHeatingContainerObjectInstance(ObjectClass containerClass, 
 			String name, List<String> contents, String containerSpace) {
-		return ContainerFactory.getNewObjectInstance(containerClass, name, ContainerFactory.MIXING|
+		return ContainerFactory.getNewObjectInstance(containerClass, name,
 				SpaceFactory.HEATING|ContainerFactory.RECEIVING, contents, containerSpace);
 	}
 	
 	public static ObjectInstance getNewHeatingContainerObjectInstance(Domain domain, 
 			String name, List<String> contents, String containerSpace) {
 		return ContainerFactory.getNewObjectInstance(domain.getObjectClass(ContainerFactory.ClassName), 
-				name, ContainerFactory.MIXING| SpaceFactory.HEATING|ContainerFactory.RECEIVING, 
+				name, SpaceFactory.HEATING|ContainerFactory.RECEIVING, 
+				contents, containerSpace);
+	}
+	
+	public static ObjectInstance getNewBakingContainerObjectInstance(ObjectClass containerClass, 
+			String name, List<String> contents, String containerSpace) {
+		return ContainerFactory.getNewObjectInstance(containerClass, name,
+				SpaceFactory.BAKING|ContainerFactory.RECEIVING, contents, containerSpace);
+	}
+	
+	public static ObjectInstance getNewBakingContainerObjectInstance(Domain domain, 
+			String name, List<String> contents, String containerSpace) {
+		return ContainerFactory.getNewObjectInstance(domain.getObjectClass(ContainerFactory.ClassName), 
+				name, SpaceFactory.BAKING|ContainerFactory.RECEIVING, 
 				contents, containerSpace);
 	}
 	
