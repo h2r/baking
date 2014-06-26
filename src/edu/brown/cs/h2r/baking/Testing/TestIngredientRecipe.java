@@ -149,7 +149,7 @@ public class TestIngredientRecipe {
 	public void testBrownies() {
 		topLevelIngredient = new Brownies().topLevelIngredient;
 		setUp();
-		swappedIngredientList = Arrays.asList("melted_fat", "dry_ingredients", "wet_ingredients", "brownies");
+		swappedIngredientList = Arrays.asList("dry_ingredients", "wet_ingredients", "brownies");
 		constituentNecessaryTraits = Arrays.asList("salt", "sugar", "flour", "fat");
 		constituentIngredients = new ArrayList<IngredientRecipe>();
 		constituentIngredientList = Arrays.asList("baking_powder", "cocoa", "vanilla", "eggs");
