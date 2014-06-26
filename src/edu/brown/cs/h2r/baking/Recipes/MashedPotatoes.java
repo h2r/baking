@@ -3,6 +3,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import burlap.oomdp.core.Domain;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 
 
@@ -29,5 +30,9 @@ public class MashedPotatoes extends Recipe {
 		"Let cool and mash.\n",																	//2
 		"Combine mashed potato, butter and egg in a large bowl.\n");								//3
 			//8
+	}
+	
+	public void setUpSubgoals(Domain domain) {
+		
 	}
 }

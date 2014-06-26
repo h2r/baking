@@ -181,8 +181,22 @@ public class BakingAsserts {
 	public static void assertSwappedIngredientsMatch(ObjectInstance ing, State s, List<String> ings) {
 		Set<String> swappedIngredients = IngredientFactory.getRecursiveContentsAndSwapped(s, ing);
 		Boolean match = true;
+		assertEquals(swappedIngredients.size(), ings.size());
 		for (String i : ings) {
 			if (!swappedIngredients.contains(i)) {
+				match = false;
+				break;
+			}
+		}
+		assertTrue(match);
+	}
+	
+	public static void assertSwappedIngredientsMatch(IngredientRecipe ing, List<String> ings) {
+		Set<String> names = IngredientRecipe.getRecursiveSwappedIngredients(ing).keySet();
+		Boolean match = true;
+		assertEquals(names.size(), ings.size());
+		for (String name : names) {
+			if (!ings.contains(name)) {
 				match = false;
 				break;
 			}

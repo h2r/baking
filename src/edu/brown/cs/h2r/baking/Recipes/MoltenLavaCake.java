@@ -3,6 +3,7 @@ package edu.brown.cs.h2r.baking.Recipes;
 import java.util.ArrayList;
 import java.util.List;
 
+import burlap.oomdp.core.Domain;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 
 public class MoltenLavaCake extends Recipe {
@@ -37,6 +38,10 @@ public class MoltenLavaCake extends Recipe {
 		ingredientList4.add(knowledgebase.getIngredient("orange_liqueur"));
 		this.topLevelIngredient = new IngredientRecipe("molten_lava_cake", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList4);
 
+	}
+	
+	public void setUpSubgoals(Domain domain) {
+		
 	}
 
 }

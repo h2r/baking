@@ -69,6 +69,8 @@ public class KevinsKitchen implements DomainGenerator {
 		Action move = new MoveAction(domain, recipe.topLevelIngredient);
 		Action melt = new MeltAction(domain, recipe.topLevelIngredient);
 		Action peel = new PeelAction(domain, recipe.topLevelIngredient);
+		Action grease = new GreaseAction(domain);
+		Action a_switch = new SwitchAction(domain);
 		//Action bake = new BakeAction(domain, recipe.topLevelIngredient);
 		State state = new State();
 		
@@ -76,6 +78,8 @@ public class KevinsKitchen implements DomainGenerator {
 		if (this.topLevelIngredient == null) {
 			this.topLevelIngredient = recipe.topLevelIngredient;
 		}
+		
+		recipe.setUpSubgoals(domain);
 		
 		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
 		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2");

@@ -3,6 +3,7 @@ package edu.brown.cs.h2r.baking.Recipes;
 import java.util.ArrayList;
 import java.util.List;
 
+import burlap.oomdp.core.Domain;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 
 public class PecanPie extends Recipe {
@@ -46,6 +47,10 @@ public class PecanPie extends Recipe {
 		ingredientList6.add(filling);
 		ingredientList6.add(pie_crust);
 		this.topLevelIngredient = new IngredientRecipe("PecanPie", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList6);
+	}
+	
+	public void setUpSubgoals(Domain domain) {
+		
 	}
 
 }

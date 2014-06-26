@@ -17,6 +17,7 @@ import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
+import burlap.oomdp.core.Domain;
 
 import java.util.AbstractMap;
 
@@ -503,6 +504,8 @@ public abstract class Recipe {
 		// This object doesn't match anything in the two lists of sub ingredients. We've failed.
 		return true;
 	}
+	
+	public abstract void setUpSubgoals(Domain domain);
 	
 	
 }

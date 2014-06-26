@@ -2,6 +2,7 @@ package edu.brown.cs.h2r.baking.Recipes;
 import java.util.ArrayList;
 import java.util.List;
 
+import burlap.oomdp.core.Domain;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 
 
@@ -28,5 +29,9 @@ public class PeanutButterCookies extends Recipe {
 		cookies.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
 		cookies.addNecessaryTrait("flour", Recipe.NO_ATTRIBUTES);
 		this.topLevelIngredient = cookies;
+	}
+	
+	public void setUpSubgoals(Domain domain) {
+		
 	}
 }

@@ -3,6 +3,7 @@ package edu.brown.cs.h2r.baking.Recipes;
 import java.util.ArrayList;
 import java.util.List;
 
+import burlap.oomdp.core.Domain;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 
 public class DeviledEggs extends Recipe {
@@ -30,5 +31,9 @@ public class DeviledEggs extends Recipe {
 		
 		this.topLevelIngredient = new IngredientRecipe("DeviledEggs", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList3);
 
+	}
+	
+	public void setUpSubgoals(Domain domain) {
+		
 	}
 }

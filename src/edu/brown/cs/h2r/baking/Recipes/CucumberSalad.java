@@ -3,6 +3,7 @@ package edu.brown.cs.h2r.baking.Recipes;
 import java.util.ArrayList;
 import java.util.List;
 
+import burlap.oomdp.core.Domain;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 
 public class CucumberSalad extends Recipe {
@@ -27,6 +28,10 @@ public class CucumberSalad extends Recipe {
 		ingredientList3.add(salad);
 		ingredientList3.add(dressing);
 		this.topLevelIngredient = new IngredientRecipe("CucumberSalad", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList3);
+		
+	}
+	
+	public void setUpSubgoals(Domain domain) {
 		
 	}
 }
