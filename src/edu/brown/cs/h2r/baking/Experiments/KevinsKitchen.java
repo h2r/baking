@@ -94,9 +94,7 @@ public class KevinsKitchen implements DomainGenerator {
 		// Out of all the ingredients in our kitchen, plan over only those that might be useful!
 		IngredientKnowledgebase knowledgebase = new IngredientKnowledgebase();
 		this.allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, recipe.topLevelIngredient);
-		/*for (ObjectInstance ing : this.allIngredients) {
-			System.out.println(ing.getName());
-		}	*/	
+	
 		System.out.println("\n\nPlanner will now plan the "+recipe.topLevelIngredient.getName()+" recipe!");
 		((PourAction)pour).addAllIngredients(this.allIngredients);
 		
@@ -130,6 +128,7 @@ public class KevinsKitchen implements DomainGenerator {
 	
 	public State PlanIngredient(Domain domain, State startingState, IngredientRecipe ingredient, BakingSubgoal subgoal)
 	{
+		System.out.println(""+ingredient.getName());
 		State currentState = new State(startingState);
 		
 		ObjectClass containerClass = domain.getObjectClass(ContainerFactory.ClassName);		
@@ -246,7 +245,9 @@ public class KevinsKitchen implements DomainGenerator {
 		System.out.println(episodeAnalysis.getActionSequenceString(" \n"));
 		ExperimentHelper.printResults(episodeAnalysis.actionSequence, episodeAnalysis.rewardSequence);
 		
-		IngredientFactory.hideUnecessaryIngredients(endState, domain, ingredient, this.allIngredients);
+		if (subgoal.getGoal().getClassName().equals(AffordanceCreator.FINISH_PF)) {
+			IngredientFactory.hideUnecessaryIngredients(endState, domain, ingredient, this.allIngredients);
+		}
 		
 		return endState;
 	}
@@ -256,11 +257,11 @@ public class KevinsKitchen implements DomainGenerator {
 		KevinsKitchen kitchen = new KevinsKitchen();
 		Domain domain = kitchen.generateDomain();
 		kitchen.PlanRecipeOneAgent(domain, new Brownies());
-		//kitchen.PlanRecipeOneAgent(domain, new DeviledEggs());
-		//kitchen.PlanRecipeOneAgent(domain, new CucumberSalad());
-		//kitchen.PlanRecipeOneAgent(domain, new MashedPotatoes());
-		//kitchen.PlanRecipeOneAgent(domain, new MoltenLavaCake());
-		//kitchen.PlanRecipeOneAgent(domain, new PeanutButterCookies());
-		//kitchen.PlanRecipeOneAgent(domain, new PecanPie());
+		kitchen.PlanRecipeOneAgent(domain, new DeviledEggs());
+		kitchen.PlanRecipeOneAgent(domain, new CucumberSalad());
+		kitchen.PlanRecipeOneAgent(domain, new MashedPotatoes());
+		kitchen.PlanRecipeOneAgent(domain, new MoltenLavaCake());
+		kitchen.PlanRecipeOneAgent(domain, new PeanutButterCookies());
+		kitchen.PlanRecipeOneAgent(domain, new PecanPie());
 	}
 }

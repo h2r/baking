@@ -1,10 +1,15 @@
 package edu.brown.cs.h2r.baking.Recipes;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import burlap.oomdp.core.Domain;
+import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
+import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
 
 
 public class MashedPotatoes extends Recipe {
@@ -33,6 +38,9 @@ public class MashedPotatoes extends Recipe {
 	}
 	
 	public void setUpSubgoals(Domain domain) {
-		
+		AbstractMap<String, IngredientRecipe> swappedIngredients = IngredientRecipe.getRecursiveSwappedIngredients(this.topLevelIngredient);
+		BakingPropositionalFunction pf1 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.topLevelIngredient);
+		BakingSubgoal sg1 = new BakingSubgoal(pf1, this.topLevelIngredient);
+		this.subgoals.add(sg1);
 	}
 }

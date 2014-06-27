@@ -73,23 +73,23 @@ public class Brownies extends Recipe {
 		BakingSubgoal sg2 = new BakingSubgoal(pf2, this.topLevelIngredient);
 		this.subgoals.add(sg2);
 
-		BakingPropositionalFunction pf4 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("wet_ingredients"));
-		BakingSubgoal sg4 = new BakingSubgoal(pf4, swappedIngredients.get("wet_ingredients"));
+		BakingPropositionalFunction pf3 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("wet_ingredients"));
+		BakingSubgoal sg3 = new BakingSubgoal(pf3, swappedIngredients.get("wet_ingredients"));
+		sg3.addPrecondition(sg1);
+		sg3.addPrecondition(sg2);
+		this.subgoals.add(sg3);
+		
+		BakingPropositionalFunction pf4 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("dry_ingredients"));
+		BakingSubgoal sg4 = new BakingSubgoal(pf4, swappedIngredients.get("dry_ingredients"));
 		sg4.addPrecondition(sg1);
 		sg4.addPrecondition(sg2);
 		this.subgoals.add(sg4);
 		
-		BakingPropositionalFunction pf5 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("dry_ingredients"));
-		BakingSubgoal sg5 = new BakingSubgoal(pf5, swappedIngredients.get("dry_ingredients"));
-		sg5.addPrecondition(sg1);
-		sg5.addPrecondition(sg2);
+		BakingPropositionalFunction pf5 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("brownies"));
+		BakingSubgoal sg5 = new BakingSubgoal(pf5, swappedIngredients.get("brownies"));
+		sg5.addPrecondition(sg3);
+		sg5.addPrecondition(sg4);
 		this.subgoals.add(sg5);
-		
-		BakingPropositionalFunction pf6 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("brownies"));
-		BakingSubgoal sg6 = new BakingSubgoal(pf6, swappedIngredients.get("brownies"));
-		sg6.addPrecondition(sg4);
-		sg6.addPrecondition(sg5);
-		this.subgoals.add(sg6);
 	}
 	
 	@Override
