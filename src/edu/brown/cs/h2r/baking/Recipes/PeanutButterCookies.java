@@ -39,7 +39,7 @@ public class PeanutButterCookies extends Recipe {
 		ingredientList4.add(wet_ingredients);
 		ingredientList4.add(dry_ingredients);
 		
-		IngredientRecipe cookies = new IngredientRecipe("peanutButterCookies", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList4);
+		IngredientRecipe cookies = new IngredientRecipe("peanutButterCookies", Recipe.BAKED, Recipe.SWAPPED, ingredientList4);
 		this.topLevelIngredient = cookies;
 	}
 	

@@ -32,7 +32,7 @@ public class PecanPie extends Recipe {
 		List<IngredientRecipe> ingredientList3 = new ArrayList<IngredientRecipe>();
 		ingredientList3.add(knowledgebase.getIngredient("eggs"));
 		ingredientList3.add(flaky_crust);
-		IngredientRecipe pie_crust = new IngredientRecipe("pie_crust", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList3);
+		IngredientRecipe pie_crust = new IngredientRecipe("pie_crust", Recipe.BAKED, Recipe.SWAPPED, ingredientList3);
 
 		
 		List<IngredientRecipe> ingredientList4 = new ArrayList<IngredientRecipe>();
@@ -59,7 +59,7 @@ public class PecanPie extends Recipe {
 		List<IngredientRecipe> ingredientList7 = new ArrayList<IngredientRecipe>();
 		ingredientList7.add(finished_filling);
 		ingredientList7.add(pie_crust);
-		this.topLevelIngredient = new IngredientRecipe("PecanPie", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList7);
+		this.topLevelIngredient = new IngredientRecipe("PecanPie", Recipe.BAKED, Recipe.SWAPPED, ingredientList7);
 	}
 	
 	public void setUpSubgoals(Domain domain) {

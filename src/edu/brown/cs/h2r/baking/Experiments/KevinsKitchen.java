@@ -70,7 +70,7 @@ public class KevinsKitchen implements DomainGenerator {
 		Action peel = new PeelAction(domain, recipe.topLevelIngredient);
 		Action grease = new GreaseAction(domain);
 		Action a_switch = new SwitchAction(domain);
-		//Action bake = new BakeAction(domain, recipe.topLevelIngredient);
+		Action bake = new BakeAction(domain, recipe.topLevelIngredient);
 		State state = new State();
 		
 		// Get the "highest" subgoal in our recipe.
@@ -159,6 +159,9 @@ public class KevinsKitchen implements DomainGenerator {
 			}
 		}
 		
+		for (Action action : domain.getActions()) {
+			((BakingAction)action).changePlanningIngredient(ingredient);
+		}
 		AffordanceCreator theCreator = new AffordanceCreator(domain, currentState, ingredient);
 		// Add the current top level ingredient so we can properly trim the action space
 		for (PropositionalFunction pf : domain.getPropFunctions()) {
@@ -203,8 +206,8 @@ public class KevinsKitchen implements DomainGenerator {
 		//System.out.println("Number of reachable states: " + reachableStates.size());
 		
 		// Trying out new stuff!
-		int numRollouts = 5000; // RTDP
-		int maxDepth = 20; // RTDP
+		int numRollouts = 1500; // RTDP
+		int maxDepth = 10; // RTDP
 		double vInit = 0;
 		double maxDelta = 0.01;
 		double gamma = 1;
@@ -215,7 +218,7 @@ public class KevinsKitchen implements DomainGenerator {
 		AffordancesController affController = theCreator.getAffController();
 		if(affordanceMode) {
 			planner = new AffordanceRTDP(domain, rf, recipeTerminalFunction, gamma, hashFactory, vInit, numRollouts, maxDelta, maxDepth, affController);
-			//planner.setMinNumRolloutsWithSmallValueChange(500);
+			planner.setMinNumRolloutsWithSmallValueChange(300);
 			planner.toggleDebugPrinting(false);
 			planner.planFromState(currentState);
 			

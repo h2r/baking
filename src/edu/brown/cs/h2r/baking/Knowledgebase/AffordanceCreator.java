@@ -63,7 +63,7 @@ public class AffordanceCreator {
 		final PropositionalFunction isFailure = new RecipeBotched(AffordanceCreator.BOTCHED_PF, domain, ingredient);
 		final PropositionalFunction spaceOn = new SpaceOn(AffordanceCreator.SPACEON_PF, domain, ingredient);
 		final PropositionalFunction containerGreased = new ContainerGreased(AffordanceCreator.CONTAINERGREASED_PF, domain, ingredient);
-		//final PropositionalFunction allowBaking = new AllowBaking(AffordanceCreator.BAKE_PF, domain, ingredient);
+		final PropositionalFunction allowBaking = new AllowBaking(AffordanceCreator.BAKE_PF, domain, ingredient);
 		//final PropositionalFunction ingNecessary = new IngredientNecessaryForRecipe(AffordanceCreator.INGREDIENTPF, domain, ingredient);
 		
 		setupPFAtoms(domain, state);
@@ -85,12 +85,12 @@ public class AffordanceCreator {
 			this.mixPFAtoms.add(new PFAtom(mixGroundedProp));
 		}
 		
-		/*PropositionalFunction bakePF = domain.getPropFunction(AffordanceCreator.BAKE_PF);
+		PropositionalFunction bakePF = domain.getPropFunction(AffordanceCreator.BAKE_PF);
 		this.bakePFAtoms = new ArrayList<PFAtom>();
 		List<GroundedProp> bakeGroundedProps = state.getAllGroundedPropsFor(bakePF);
 		for (GroundedProp bakeGroundedProp : bakeGroundedProps) {
 			this.bakePFAtoms.add( new PFAtom(bakeGroundedProp));
-		}*/
+		}
 		
 		PropositionalFunction movePF = domain.getPropFunction(AffordanceCreator.MOVE_PF);
 		this.movePFAtoms = new ArrayList<PFAtom>();
@@ -168,14 +168,15 @@ public class AffordanceCreator {
 	
 	public void setupAffordances(Domain domain, State state) {
 		List<AffordanceDelegate> affDelegates = new ArrayList<AffordanceDelegate>();
-		/*for (PFAtom bakePFAtom : bakePFAtoms) {
+		
+		for (PFAtom bakePFAtom : bakePFAtoms) {
 			AbstractGroundedAction act = new GroundedAction(domain.getAction(BakeAction.className), bakePFAtom.getGroundedProp().params);
 			List<AbstractGroundedAction> list = new ArrayList<AbstractGroundedAction>();
 			list.add(act);
 			HardAffordance bakeAff= new HardAffordance(bakePFAtom, finishedPFAtom, list);
 			AffordanceDelegate bakeDelegate = new AffordanceDelegate(bakeAff);
 			affDelegates.add(bakeDelegate);
-		}*/
+		}
 		
 		for (PFAtom meltPFAtom : meltPFAtoms) {
 			AbstractGroundedAction act = new GroundedAction(domain.getAction(MeltAction.className), meltPFAtom.getGroundedProp().params);

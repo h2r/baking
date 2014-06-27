@@ -30,7 +30,21 @@ public class AllowPouring extends BakingPropositionalFunction {
 				if (IngredientFactory.isSimple(s.getObject(name))) {
 					return false;
 				}
+				if (this.topLevelIngredient.getName().equals(name)) {
+					return topLevelIngredient.getBaked();
+				}
+				for (IngredientRecipe contents : this.topLevelIngredient.getConstituentIngredients()) {
+					if (contents.getName().equals(name)) {
+						return contents.getBaked();
+					}
+				}
 			}
+			return false;
+		}
+		
+		if (ContainerFactory.isMixingContainer(pouringContainer) && 
+				ContainerFactory.isMixingContainer(receivingContainer) && ContainerFactory.isEmptyContainer(receivingContainer)) {
+			return false;
 		}
 		
 		// Get what our subgoal is looking for and make copies

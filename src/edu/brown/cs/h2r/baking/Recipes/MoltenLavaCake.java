@@ -43,7 +43,7 @@ public class MoltenLavaCake extends Recipe {
 		ingredientList4.add(unflavored_batter);
 		ingredientList4.add(knowledgebase.getIngredient("vanilla"));
 		ingredientList4.add(knowledgebase.getIngredient("orange_liqueur"));
-		this.topLevelIngredient = new IngredientRecipe("molten_lava_cake", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList4);
+		this.topLevelIngredient = new IngredientRecipe("molten_lava_cake", Recipe.BAKED, Recipe.SWAPPED, ingredientList4);
 
 	}
 	
