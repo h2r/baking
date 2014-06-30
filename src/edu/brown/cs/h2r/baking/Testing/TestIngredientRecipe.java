@@ -119,7 +119,7 @@ public class TestIngredientRecipe {
 	public void testPecanPie() {
 		topLevelIngredient = new PecanPie().topLevelIngredient;
 		setUp();
-		swappedIngredientList = Arrays.asList("dry_crust", "flaky_crust", "pie_crust", "pie_mix", "filling", "PecanPie");
+		swappedIngredientList = Arrays.asList("dry_crust", "flaky_crust", "pie_crust", "pie_mix", "filling", "finished_filling", "PecanPie");
 		constituentNecessaryTraits = Arrays.asList("salt", "sugar");
 		constituentIngredients = new ArrayList<IngredientRecipe>();
 		constituentIngredientList = Arrays.asList("butter", "light_corn_syrup", "eggs", "flour", "pecans", "bourbon", "vanilla");
@@ -131,7 +131,7 @@ public class TestIngredientRecipe {
 		useCount = new HashMap<String, Integer>();
 		useCount.put("butter", 2);
 		useCount.put("light_corn_syrup", 1);
-		useCount.put("eggs", 1);
+		useCount.put("eggs", 2);
 		useCount.put("flour", 1);
 		useCount.put("pecans", 1);
 		useCount.put("vanilla", 1);
@@ -285,7 +285,7 @@ public class TestIngredientRecipe {
 	public void testPeanutButterCookies() {
 		topLevelIngredient = new PeanutButterCookies().topLevelIngredient;
 		setUp();
-		swappedIngredientList = Arrays.asList("creamed_ingredients", "wet_ingredients", "peanutButterCookies");
+		swappedIngredientList = Arrays.asList("creamed_ingredients", "wet_ingredients", "peanutButterCookies", "dry_ingredients");
 		constituentNecessaryTraits = Arrays.asList("salt", "sugar", "flour");
 		constituentIngredients = new ArrayList<IngredientRecipe>();
 		constituentIngredientList = Arrays.asList("baking_powder", "baking_soda", "peanut_butter", "eggs", "butter");

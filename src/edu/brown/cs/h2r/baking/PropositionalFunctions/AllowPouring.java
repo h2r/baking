@@ -42,6 +42,24 @@ public class AllowPouring extends BakingPropositionalFunction {
 			return false;
 		}
 		
+		if (ContainerFactory.isHeatingContainer(receivingContainer)) {
+			for (String name :ContainerFactory.getContentNames(pouringContainer)) {
+				if (IngredientFactory.isMeltedIngredient(s.getObject(name))) {
+					return false;
+				}
+				if (this.topLevelIngredient.getName().equals(name)) {
+					return topLevelIngredient.getMelted();
+				}
+				for (IngredientRecipe content : this.topLevelIngredient.getContents()) {
+					if (content.getName().equals(name)) {
+						return content.getMelted();
+					}
+				}
+			}
+			return false;
+		}
+		
+		
 		if (ContainerFactory.isMixingContainer(pouringContainer) && 
 				ContainerFactory.isMixingContainer(receivingContainer) && ContainerFactory.isEmptyContainer(receivingContainer)) {
 			return false;

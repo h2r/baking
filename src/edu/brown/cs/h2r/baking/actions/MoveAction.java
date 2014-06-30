@@ -6,6 +6,7 @@ import burlap.oomdp.core.State;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 
 public class MoveAction extends BakingAction {
@@ -53,8 +54,23 @@ public class MoveAction extends BakingAction {
 		return state;
 	}
 	
-	protected void move(State state, ObjectInstance containerInstance, ObjectInstance spaceInstance) {
+	public static void move(State state, ObjectInstance containerInstance, ObjectInstance spaceInstance) {
 		ContainerFactory.changeContainerSpace(containerInstance, spaceInstance.getName());
 		SpaceFactory.addContainer(spaceInstance, containerInstance);
+		
+		if (SpaceFactory.getOnOff(spaceInstance) && !ContainerFactory.isEmptyContainer(containerInstance)) {
+			if (SpaceFactory.isHeating(spaceInstance) && ContainerFactory.isHeatingContainer(containerInstance)) {
+				for (String name : ContainerFactory.getContentNames(containerInstance)) {
+					if (!IngredientFactory.isMeltedAtRoomTemperature(state.getObject(name))) {
+						IngredientFactory.meltIngredient(state.getObject(name));
+					}
+				}
+			}
+			else if (SpaceFactory.isBaking(spaceInstance) && ContainerFactory.isBakingContainer(containerInstance)) {
+				for (String name : ContainerFactory.getContentNames(containerInstance)) {
+					IngredientFactory.bakeIngredient(state.getObject(name));
+				}
+			}
+		}
 	}
 }

@@ -121,9 +121,9 @@ public class TestRecipeSuccess {
 		
 		// Make the two swapped objects
 		List<String> filling_contents = Arrays.asList("bourbon", "vanilla", "pecans", "brown_sugar", 
-				"butter", "light_corn_syrup", "salt");
-		ObjectInstance filling = IngredientFactory.getNewComplexIngredientObjectInstance(
-				complex_class, "filling", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, "mixing_bowl_2", 
+				"butter", "light_corn_syrup", "salt", "eggs");
+		ObjectInstance finished_filling = IngredientFactory.getNewComplexIngredientObjectInstance(
+				complex_class, "finished_filling", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, "mixing_bowl_2", 
 				new TreeSet<String>(), filling_contents);
 		
 		List<String> crust_contents = Arrays.asList("eggs", "brown_sugar", 
@@ -132,13 +132,14 @@ public class TestRecipeSuccess {
 				complex_class, "pie_crust", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, "mixing_bowl_1",
 				new TreeSet<String>(), crust_contents);
 		
-		state.addObject(filling);
+		state.addObject(finished_filling);
 		state.addObject(crust);
 		// Make the object we're testing!
 		ObjectInstance pie = IngredientFactory.getNewComplexIngredientObjectInstance(
 				complex_class, "PecanPie", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, "mixing_bowl_1", 
-				new TreeSet<String>(), Arrays.asList("filling", "pie_crust"));
+				new TreeSet<String>(), Arrays.asList("finished_filling", "pie_crust"));
 		
+		IngredientFactory.bakeIngredient(pie);
 		BakingAsserts.assertSuccess(state, topLevelIngredient, pie);
 	}
 	

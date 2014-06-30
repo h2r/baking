@@ -1,5 +1,8 @@
 package edu.brown.cs.h2r.baking.PropositionalFunctions;
 
+import java.util.List;
+import java.util.Set;
+
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
@@ -18,11 +21,12 @@ public class AllowMoving extends BakingPropositionalFunction {
 	@Override
 	// Default true, since only logic needed is in moveAction's isApplicableInState().
 	public boolean isTrue(State s, String[] params) {
-		/*String spaceName = params[2];
-		ObjectInstance space = s.getObject(spaceName);
+		ObjectInstance space = s.getObject(params[2]);
 		ObjectInstance container = s.getObject(params[1]);
 		
-		if (ContainerFactory.isEmptyContainer(container)) {
+		Set<String> contents = ContainerFactory.getContentNames(container);
+		
+		/*if (ContainerFactory.isEmptyContainer(container)) {
 			return false;
 		}
 		
@@ -32,30 +36,49 @@ public class AllowMoving extends BakingPropositionalFunction {
 			break;
 		}
 		
-		if (SpaceFactory.isBaking(space)) {
-			if (!ContainerFactory.isBakingContainer(container)) {
-				return false;
-			}
-			if (IngredientFactory.isSimple(content)) {
-				return false;
-			}
-			if (IngredientFactory.isBakedIngredient(content)) {
-				return false;
-			}
-		}
-		
 		if (SpaceFactory.isWorking(space)) {
 			ObjectInstance curr_space = s.getObject(ContainerFactory.getSpaceName(container));
 			if (SpaceFactory.isBaking(curr_space) && !IngredientFactory.isBakedIngredient(content)) {
 				return false;
 			}
 		}
-		
-		if (SpaceFactory.isHeating(space) && !ContainerFactory.isHeatingContainer(container)) {
-			return false;
+*/
+		// TODO: Consider adding a check to type of container? Also the check for is melted at room temp!
+		if (!ContainerFactory.isEmptyContainer(container)) {
+			if (SpaceFactory.isBaking(space)) {
+				if (this.topLevelIngredient.getBaked() && contents.contains(this.topLevelIngredient.getName()) ) {
+					if (!IngredientFactory.isBakedIngredient(s.getObject(topLevelIngredient.getName()))) {
+						return true;
+					}
+				} else {
+					for (IngredientRecipe ing : this.topLevelIngredient.getContents()) {
+						if (ing.getBaked() && contents.contains(ing.getName())) {
+							if (!IngredientFactory.isBakedIngredient(s.getObject(ing.getName()))) {
+								return true;
+							}
+						}
+					}
+				}
+			} else if (SpaceFactory.isHeating(space)) {
+				if (this.topLevelIngredient.getMelted() && contents.contains(this.topLevelIngredient.getName()) ) {
+					if (!IngredientFactory.isMeltedIngredient(s.getObject(topLevelIngredient.getName()))) {
+						if (!IngredientFactory.isMeltedAtRoomTemperature(s.getObject(this.topLevelIngredient.getName()))) {
+							return true;
+						}
+					}
+				} else {
+					for (IngredientRecipe ing : this.topLevelIngredient.getContents()) {
+						if (ing.getMelted() && contents.contains(ing.getName())) {
+							if (!IngredientFactory.isMeltedIngredient(s.getObject(ing.getName()))) {
+								if (!IngredientFactory.isMeltedAtRoomTemperature(s.getObject(ing.getName()))) {
+									return true;
+								}
+							}
+						}
+					}
+				}
+			}
 		}
-		
-		return true;*/
 		return false;
 	}
 

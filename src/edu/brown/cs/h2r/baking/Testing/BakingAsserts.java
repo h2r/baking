@@ -11,6 +11,7 @@ import static org.junit.Assert.*;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 
 public class BakingAsserts {
@@ -220,5 +221,13 @@ public class BakingAsserts {
 	
 	public static void assertActionNotApplicable(Action a, State s, String[] params) {
 		assertFalse(a.applicableInState(s, params));
+	}
+	
+	public static void assertSpaceOn(ObjectInstance space) {
+		assertTrue(SpaceFactory.getOnOff(space));
+	}
+	
+	public static void assertSpaceOff(ObjectInstance space) {
+		assertFalse(SpaceFactory.getOnOff(space));
 	}
 }

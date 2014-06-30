@@ -103,38 +103,38 @@ public class ContainerFactory {
 	public static ObjectInstance getNewHeatingContainerObjectInstance(ObjectClass containerClass, 
 			String name, List<String> contents, String containerSpace) {
 		return ContainerFactory.getNewObjectInstance(containerClass, name,
-				SpaceFactory.HEATING|ContainerFactory.RECEIVING, contents, containerSpace);
+				ContainerFactory.HEATING|ContainerFactory.RECEIVING, contents, containerSpace);
 	}
 	
 	public static ObjectInstance getNewHeatingContainerObjectInstance(Domain domain, 
 			String name, List<String> contents, String containerSpace) {
 		return ContainerFactory.getNewObjectInstance(domain.getObjectClass(ContainerFactory.ClassName), 
-				name, SpaceFactory.HEATING|ContainerFactory.RECEIVING, 
+				name, ContainerFactory.HEATING|ContainerFactory.RECEIVING, 
 				contents, containerSpace);
 	}
 	
 	public static ObjectInstance getNewBakingContainerObjectInstance(ObjectClass containerClass, 
 			String name, List<String> contents, String containerSpace) {
 		return ContainerFactory.getNewObjectInstance(containerClass, name,
-				SpaceFactory.BAKING|ContainerFactory.RECEIVING, contents, containerSpace);
+				ContainerFactory.BAKING|ContainerFactory.RECEIVING, contents, containerSpace);
 	}
 	
 	public static ObjectInstance getNewBakingContainerObjectInstance(Domain domain, 
 			String name, List<String> contents, String containerSpace) {
 		return ContainerFactory.getNewObjectInstance(domain.getObjectClass(ContainerFactory.ClassName), 
-				name, SpaceFactory.BAKING|ContainerFactory.RECEIVING, 
+				name, ContainerFactory.BAKING|ContainerFactory.RECEIVING, 
 				contents, containerSpace);
 	}
 	
 	public static ObjectInstance getNewIngredientContainerObjectInstance(ObjectClass containerClass, 
 			String name, String ingredient, String containerSpace) {
-		return ContainerFactory.getNewObjectInstance(containerClass, name, SpaceFactory.NO_ATTRIBUTES, Arrays.asList(ingredient), containerSpace);
+		return ContainerFactory.getNewObjectInstance(containerClass, name, ContainerFactory.NO_ATTRIBUTES, Arrays.asList(ingredient), containerSpace);
 	}
 	
 	public static ObjectInstance getNewIngredientContainerObjectInstance(Domain domain, 
 			String name, String ingredient, String containerSpace) {
 		return ContainerFactory.getNewObjectInstance(domain.getObjectClass(ContainerFactory.ClassName), 
-				name, SpaceFactory.NO_ATTRIBUTES, Arrays.asList(ingredient), containerSpace);
+				name, ContainerFactory.NO_ATTRIBUTES, Arrays.asList(ingredient), containerSpace);
 	}
 
 	public static void addIngredient(ObjectInstance container, String ingredient) {
