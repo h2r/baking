@@ -3,9 +3,7 @@ package edu.brown.cs.h2r.baking.PropositionalFunctions;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
-import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import burlap.oomdp.core.Domain;
-import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 
 public class AllowMixing extends BakingPropositionalFunction {

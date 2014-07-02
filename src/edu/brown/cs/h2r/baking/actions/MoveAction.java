@@ -57,6 +57,7 @@ public class MoveAction extends BakingAction {
 	public static void move(State state, ObjectInstance containerInstance, ObjectInstance spaceInstance) {
 		ContainerFactory.changeContainerSpace(containerInstance, spaceInstance.getName());
 		SpaceFactory.addContainer(spaceInstance, containerInstance);
+		SpaceFactory.removeContainer(state.getObject(ContainerFactory.getSpaceName(containerInstance)), containerInstance);
 		
 		if (SpaceFactory.getOnOff(spaceInstance) && !ContainerFactory.isEmptyContainer(containerInstance)) {
 			if (SpaceFactory.isHeating(spaceInstance) && ContainerFactory.isHeatingContainer(containerInstance)) {

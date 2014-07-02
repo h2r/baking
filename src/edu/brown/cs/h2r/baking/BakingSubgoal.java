@@ -35,7 +35,7 @@ public class BakingSubgoal {
 	public Boolean goalCompleted(State state) {
 		this.goal.changeTopLevelIngredient(this.ingredient);
 		Boolean completed = false;
-		for (GroundedProp gp : state.getAllGroundedPropsFor(this.goal)) {
+		for (GroundedProp gp : this.goal.getAllGroundedPropsForState(state)) {
 			if (gp.isTrue(state)) {
 				completed = true;
 				break;
@@ -53,7 +53,7 @@ public class BakingSubgoal {
 			BakingPropositionalFunction pf = sg.getGoal();
 			pf.changeTopLevelIngredient(sg.getIngredient());
 			Boolean completed = false;
-			for (GroundedProp gp : state.getAllGroundedPropsFor(pf)) {
+			for (GroundedProp gp : pf.getAllGroundedPropsForState(state)) {
 				if (gp.isTrue(state)) {
 					completed = true;
 					//toDelete = ing;

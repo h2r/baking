@@ -16,9 +16,8 @@ public class RecipeTerminalFunction implements TerminalFunction{
 
 	@Override
 	public boolean isTerminal(State state) {
-		return (state.somePFGroundingIsTrue(this.recipeSuccess) ||
-				state.somePFGroundingIsTrue(this.recipeFailure));
-		
+		return (this.recipeSuccess.somePFGroundingIsTrue(state) ||
+				this.recipeFailure.somePFGroundingIsTrue(state));
 	}
 
 }

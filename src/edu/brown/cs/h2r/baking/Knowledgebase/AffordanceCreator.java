@@ -80,7 +80,7 @@ public class AffordanceCreator {
 		
 		PropositionalFunction mixPF = domain.getPropFunction(AffordanceCreator.MIX_PF);
 		this.mixPFAtoms = new ArrayList<PFAtom>();
-		List<GroundedProp> mixGroundedProps = state.getAllGroundedPropsFor(mixPF);
+		List<GroundedProp> mixGroundedProps = mixPF.getAllGroundedPropsForState(state);
 		for (GroundedProp mixGroundedProp : mixGroundedProps) {
 			this.mixPFAtoms.add(new PFAtom(mixGroundedProp));
 		}
@@ -94,42 +94,42 @@ public class AffordanceCreator {
 		
 		PropositionalFunction movePF = domain.getPropFunction(AffordanceCreator.MOVE_PF);
 		this.movePFAtoms = new ArrayList<PFAtom>();
-		List<GroundedProp> moveGroundedProps = state.getAllGroundedPropsFor(movePF);
+		List<GroundedProp> moveGroundedProps = movePF.getAllGroundedPropsForState(state);
 		for (GroundedProp moveGroundedProp : moveGroundedProps) {
 			this.movePFAtoms.add(new PFAtom(moveGroundedProp));
 		}
 		
 		PropositionalFunction pourPF = domain.getPropFunction(AffordanceCreator.POUR_PF);
 		this.pourPFAtoms = new ArrayList<PFAtom>();
-		List<GroundedProp> pourGroundedProps = state.getAllGroundedPropsFor(pourPF);
+		List<GroundedProp> pourGroundedProps = pourPF.getAllGroundedPropsForState(state);
 		for (GroundedProp pourGroundedProp : pourGroundedProps) {
 			this.pourPFAtoms.add(new PFAtom(pourGroundedProp));
 		}
 		
 		PropositionalFunction peelPF = domain.getPropFunction(AffordanceCreator.PEEL_PF);
 		this.peelPFAtoms = new ArrayList<PFAtom>();
-		List<GroundedProp> peelGroundedProps = state.getAllGroundedPropsFor(peelPF);
+		List<GroundedProp> peelGroundedProps = peelPF.getAllGroundedPropsForState(state);
 		for (GroundedProp peelGroundedProp : peelGroundedProps) {
 			this.peelPFAtoms.add(new PFAtom(peelGroundedProp));
 		}
 		
 		PropositionalFunction greasePF = domain.getPropFunction(AffordanceCreator.GREASE_PF);
 		this.greasePFAtoms = new ArrayList<PFAtom>();
-		List<GroundedProp> greaseGroundedProps = state.getAllGroundedPropsFor(greasePF);
+		List<GroundedProp> greaseGroundedProps = greasePF.getAllGroundedPropsForState(state);
 		for (GroundedProp greaseGroundedProp : greaseGroundedProps) {
 			this.greasePFAtoms.add(new PFAtom(greaseGroundedProp));
 		}
 		
 		PropositionalFunction switchPF = domain.getPropFunction(AffordanceCreator.SWITCH_PF);
 		this.switchPFAtoms = new ArrayList<PFAtom>();
-		List<GroundedProp> switchGroundedProps = state.getAllGroundedPropsFor(switchPF);
+		List<GroundedProp> switchGroundedProps = switchPF.getAllGroundedPropsForState(state);
 		for (GroundedProp switchGroundedProp : switchGroundedProps) {
 			this.switchPFAtoms.add(new PFAtom(switchGroundedProp));
 		}
 		
 		PropositionalFunction finishedPF = domain.getPropFunction(AffordanceCreator.FINISH_PF);
 		this.finishedPFAtoms = new ArrayList<PFAtom>();
-		List<GroundedProp> finishedGroundedProps = state.getAllGroundedPropsFor(finishedPF);
+		List<GroundedProp> finishedGroundedProps = finishedPF.getAllGroundedPropsForState(state);
 		for (GroundedProp finishedGroundedProp : finishedGroundedProps) {
 			this.finishedPFAtoms.add(new PFAtom(finishedGroundedProp));
 		}
@@ -137,7 +137,7 @@ public class AffordanceCreator {
 		
 		PropositionalFunction botchedPF = domain.getPropFunction(AffordanceCreator.BOTCHED_PF);
 		this.botchedPFAtoms = new ArrayList<PFAtom>();
-		List<GroundedProp> botchedGroundedProps = state.getAllGroundedPropsFor(botchedPF);
+		List<GroundedProp> botchedGroundedProps = botchedPF.getAllGroundedPropsForState(state);
 		for (GroundedProp botchedGroundedProp : botchedGroundedProps) {
 			this.botchedPFAtoms.add(new PFAtom(botchedGroundedProp));
 		}
@@ -145,7 +145,7 @@ public class AffordanceCreator {
 		
 		PropositionalFunction spaceOnPF = domain.getPropFunction(AffordanceCreator.SPACEON_PF);
 		this.spaceOnPFAtoms = new ArrayList<PFAtom>();
-		List<GroundedProp> spaceOnGroundedProps = state.getAllGroundedPropsFor(spaceOnPF);
+		List<GroundedProp> spaceOnGroundedProps = spaceOnPF.getAllGroundedPropsForState(state);
 		for (GroundedProp spaceOnGroundedProp : spaceOnGroundedProps) {
 			this.spaceOnPFAtoms.add(new PFAtom(spaceOnGroundedProp));
 		}
@@ -153,7 +153,7 @@ public class AffordanceCreator {
 		
 		PropositionalFunction containerGreasedPF = domain.getPropFunction(AffordanceCreator.CONTAINERGREASED_PF);
 		this.containerGreasedPFAtoms = new ArrayList<PFAtom>();
-		List<GroundedProp> containerGreasedGroundedProps = state.getAllGroundedPropsFor(containerGreasedPF);
+		List<GroundedProp> containerGreasedGroundedProps = containerGreasedPF.getAllGroundedPropsForState(state);
 		for (GroundedProp containerGreasedGroundedProp : containerGreasedGroundedProps) {
 			this.containerGreasedPFAtoms.add(new PFAtom(containerGreasedGroundedProp));
 		}

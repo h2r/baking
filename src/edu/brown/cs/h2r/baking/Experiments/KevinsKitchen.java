@@ -9,6 +9,7 @@ import java.util.Set;
 import burlap.behavior.affordances.AffordancesController;
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.Policy;
+import burlap.behavior.singleagent.QValue;
 //import burlap.behavior.singleagent.auxiliary.StateReachability;
 import burlap.behavior.singleagent.planning.QComputablePlanner;
 //import burlap.behavior.singleagent.planning.StateConditionTest;
@@ -57,7 +58,7 @@ public class KevinsKitchen implements DomainGenerator {
 		domain.addObjectClass(IngredientFactory.createComplexHiddenIngredientObjectClass(domain));
 		domain.addObjectClass(SpaceFactory.createObjectClass(domain));		
 		domain.addObjectClass(AgentFactory.getObjectClass(domain));
-		
+		domain.setObjectIdentiferDependence(true);
 		return domain;
 	}
 	
@@ -123,8 +124,6 @@ public class KevinsKitchen implements DomainGenerator {
 				}
 			}
 		}
-		
-		//this.PlanIngredient(domain, state, recipe.topLevelIngredient);
 	}
 	
 	public State PlanIngredient(Domain domain, State startingState, IngredientRecipe ingredient, BakingSubgoal subgoal)
@@ -207,11 +206,11 @@ public class KevinsKitchen implements DomainGenerator {
 		//System.out.println("Number of reachable states: " + reachableStates.size());
 		
 		// Trying out new stuff!
-		int numRollouts = 2000; // RTDP
-		int maxDepth = 20; // RTDP
+		int numRollouts = 1500; // RTDP
+		int maxDepth = 10; // RTDP
 		double vInit = 0;
 		double maxDelta = .01;
-		double gamma = 1;
+		double gamma = 0.99;
 		
 		boolean affordanceMode = true;
 		RTDP planner;
@@ -219,12 +218,40 @@ public class KevinsKitchen implements DomainGenerator {
 		AffordancesController affController = theCreator.getAffController();
 		if(affordanceMode) {
 			planner = new AffordanceRTDP(domain, rf, recipeTerminalFunction, gamma, hashFactory, vInit, numRollouts, maxDelta, maxDepth, affController);
-			planner.setMinNumRolloutsWithSmallValueChange(100);
+			//planner.setMinNumRolloutsWithSmallValueChange(300);
 			planner.toggleDebugPrinting(false);
 			planner.planFromState(currentState);
 			
 			// Create a Q-greedy policy from the planner
 			p = new AffordanceGreedyQPolicy(affController, (QComputablePlanner)planner);
+			
+			/*if (isSuccess.getClassName().equals(AffordanceCreator.FINISH_PF)) {
+				List<QValue>  qvalues;
+				State s2 = domain.getAction(SwitchAction.className).performAction(currentState, new String[] {"human", "stove"});
+				s2 = domain.getAction(PourAction.className).performAction(s2, new String[] {"human", "butter_bowl", "melting_pot"});
+				qvalues = planner.getQs(s2);
+				s2 = domain.getAction(PourAction.className).performAction(s2, new String[] {"human", "chocolate_squares_bowl", "melting_pot"});
+				qvalues = planner.getQs(s2);
+				s2 = domain.getAction(MoveAction.className).performAction(s2, new String[] {"human", "melting_pot", "stove"});
+				qvalues = planner.getQs(s2);
+				s2 = domain.getAction(MoveAction.className).performAction(s2, new String[] {"human", "melting_pot", "counter"});
+				qvalues = planner.getQs(s2);
+				s2 = domain.getAction(PourAction.className).performAction(s2, new String[] {"human", "melting_pot", "mixing_bowl_1"});
+				qvalues = planner.getQs(s2);
+				s2 = domain.getAction(MixAction.className).performAction(s2, new String[] {"human", "mixing_bowl_1"});
+				qvalues = planner.getQs(s2);
+				s2 = domain.getAction(PourAction.className).performAction(s2, new String[] {"human", "flour_bowl", "mixing_bowl_1"});
+				qvalues = planner.getQs(s2);
+				s2 = domain.getAction(PourAction.className).performAction(s2, new String[] {"human", "brown_sugar_bowl", "mixing_bowl1"});
+				qvalues = planner.getQs(s2);
+				//s2 = domain.getAction(MixAction.className).performAction(s2, new String[] {"human", "mixing_bowl_1"});
+			
+				qvalues = planner.getQs(s2);
+				//System.out.println(p.getAction(s2).toString());
+			}*/
+		
+
+
 		} else {
 			planner = new RTDP(domain, rf, recipeTerminalFunction, gamma, hashFactory, vInit, numRollouts, maxDelta, maxDepth);
 			planner.setMinNumRolloutsWithSmallValueChange(30);
@@ -232,6 +259,7 @@ public class KevinsKitchen implements DomainGenerator {
 			
 			// Create a Q-greedy policy from the planner
 			p = new GreedyQPolicy((QComputablePlanner)planner);
+			//p = new AffordanceGreedyQPolicy(affController,(QComputablePlanner)planner)
 		}
 		
 		// Print out the planning results
