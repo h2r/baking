@@ -173,7 +173,6 @@ public class TestActions {
 	}
 	
 	@Test
-	//TODO: Write tests?
 	public void testMoveAction() {	
 		topLevelIngredient = new Brownies().topLevelIngredient;
 		knowledgebase = new IngredientKnowledgebase();
@@ -183,6 +182,7 @@ public class TestActions {
 		
 		ObjectInstance oven = SpaceFactory.getNewBakingSpaceObjectInstance(domain, "oven", null, "");
 		ObjectInstance stove = SpaceFactory.getNewHeatingSpaceObjectInstance(domain, "stove", null, "");
+		ObjectInstance counter = state.getObject("counter");
 		state.addObject(oven);
 		state.addObject(stove);
 
@@ -196,15 +196,25 @@ public class TestActions {
 		BakingAsserts.assertActionNotApplicable(move, state, new String[] {"human", "melting_pot", "oven"});
 		BakingAsserts.assertActionNotApplicable(move, state, new String[] {"human", "mixing_bowl_1", "oven"});
 		
+		int counterObjects = SpaceFactory.getContents(counter).size();
 		assertEquals(SpaceFactory.getContents(oven).size(), 0);
+		assertEquals(SpaceFactory.getContents(counter).size(), counterObjects);
 		((MoveAction)move).move(state, baking_pan, oven);
 		assertEquals(ContainerFactory.getSpaceName(baking_pan), "oven");
+		assertEquals(SpaceFactory.getContents(counter).size(), counterObjects-1);
 		assertEquals(SpaceFactory.getContents(oven).size(), 1);
 		
 		assertEquals(SpaceFactory.getContents(stove).size(), 0);
 		((MoveAction)move).move(state, melting_pot, stove);
 		assertEquals(ContainerFactory.getSpaceName(melting_pot), "stove");
+		assertEquals(SpaceFactory.getContents(counter).size(), counterObjects-2);
 		assertEquals(SpaceFactory.getContents(stove).size(), 1);
+		
+		((MoveAction)move).move(state, melting_pot, counter);
+		((MoveAction)move).move(state, baking_pan, counter);
+		assertEquals(SpaceFactory.getContents(stove).size(), 0);
+		assertEquals(SpaceFactory.getContents(oven).size(), 0);
+		assertEquals(SpaceFactory.getContents(counter).size(), counterObjects);
 	}
 	
 	@Test
