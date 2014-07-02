@@ -47,8 +47,10 @@ public class MoveAction extends BakingAction {
 	}
 	
 	protected void move(State state, ObjectInstance containerInstance, ObjectInstance spaceInstance) {
+		String oldSpace = ContainerFactory.getSpaceName(containerInstance);
+		ObjectInstance oldSpaceObject = state.getObject(oldSpace);
 		ContainerFactory.changeContainerSpace(containerInstance, spaceInstance.getName());
 		SpaceFactory.addContainer(spaceInstance, containerInstance);
-		SpaceFactory.removeContainer(state.getObject(ContainerFactory.getSpaceName(containerInstance)), containerInstance);
+		SpaceFactory.removeContainer(oldSpaceObject, containerInstance);
 	}
 }
