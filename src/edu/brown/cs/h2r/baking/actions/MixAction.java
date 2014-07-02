@@ -64,7 +64,7 @@ public class MixAction extends BakingAction {
 		}
 		
 		String agentOfSpace = SpaceFactory.getAgent(pouringContainerSpaceObject).iterator().next();
-		if (agentOfSpace != agent.getName())
+		if (agentOfSpace.equalsIgnoreCase(agent.getName()))
 		{		
 			return false;
 		}
