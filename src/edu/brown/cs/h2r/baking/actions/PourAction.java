@@ -53,7 +53,7 @@ public class PourAction extends BakingAction {
 			throw new RuntimeException("One of the pouring containers is not in any space");
 		}
 		
-		if (pouringContainerSpace.equalsIgnoreCase(receivingContainerSpace))
+		if (!pouringContainerSpace.equalsIgnoreCase(receivingContainerSpace))
 		{
 			return false;
 		}
