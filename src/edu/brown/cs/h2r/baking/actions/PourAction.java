@@ -60,7 +60,7 @@ public class PourAction extends BakingAction {
 		ObjectInstance pouringContainerSpaceObject = state.getObject(pouringContainerSpace);
 		
 		String agentOfSpace = SpaceFactory.getAgent(pouringContainerSpaceObject).iterator().next();
-		if (agentOfSpace.equalsIgnoreCase(agent.getName()))
+		if (!agentOfSpace.equalsIgnoreCase(agent.getName()))
 		{		
 			return false;
 		}
