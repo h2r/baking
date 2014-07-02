@@ -61,6 +61,10 @@ public class BasicKitchen implements DomainGenerator {
 		return this.parser.stateToString(this.currentState);
 	}
 	
+	public Recipe getRecipe() {
+		return this.recipe;
+	}
+	
 	@Override
 	public Domain generateDomain() {
 		Domain domain = new SADomain();

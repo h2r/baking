@@ -80,11 +80,11 @@ public class BakingAction extends Action {
 		if (!makeSpanObjects.isEmpty()) {
 			ObjectInstance makeSpanObject = makeSpanObjects.get(0);
 			String primaryAgent = MakeSpanFactory.getPrimaryAgent(makeSpanObject);
-			if (primaryAgent == "")
+			if (primaryAgent.isEmpty())
 			{
 				return true;
 			}
-			if (params[0] == primaryAgent) {
+			if (params[0].equalsIgnoreCase(primaryAgent)) {
 				return true;
 			}
 			Set<String> agents = MakeSpanFactory.getOccupiedAgentNames(makeSpanObject);
