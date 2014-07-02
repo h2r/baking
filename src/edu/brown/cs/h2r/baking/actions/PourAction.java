@@ -53,14 +53,14 @@ public class PourAction extends BakingAction {
 			throw new RuntimeException("One of the pouring containers is not in any space");
 		}
 		
-		if (pouringContainerSpace != receivingContainerSpace)
+		if (pouringContainerSpace.equalsIgnoreCase(receivingContainerSpace))
 		{
 			return false;
 		}
 		ObjectInstance pouringContainerSpaceObject = state.getObject(pouringContainerSpace);
 		
 		String agentOfSpace = SpaceFactory.getAgent(pouringContainerSpaceObject).iterator().next();
-		if (agentOfSpace != agent.getName())
+		if (!agentOfSpace.equalsIgnoreCase(agent.getName()))
 		{		
 			return false;
 		}
