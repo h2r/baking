@@ -133,7 +133,7 @@ public class SpaceFactory {
 	public static void removeContainer(ObjectInstance space, ObjectInstance container) {
 		space.removeRelationalTarget(SpaceFactory.attributeContains, container.getName());
 	}
-	
+
 	public static Boolean isBaking(ObjectInstance objectInstance) {
 		return (objectInstance.getDiscValForAttribute(SpaceFactory.attributeBaking) == 1);
 	}
