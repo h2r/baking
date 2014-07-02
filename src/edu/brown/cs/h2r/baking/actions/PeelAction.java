@@ -25,10 +25,27 @@ public class PeelAction extends BakingAction {
 		ObjectInstance agent =  state.getObject(params[0]);
 		
 		ObjectInstance container = state.getObject(params[1]);
+		
+		if (ContainerFactory.isEmptyContainer(container)) {
+			return false;
+		}
+		
+		if (ContainerFactory.isReceivingContainer(container)) { 
+			return false;
+		}
+		
+		if (ContainerFactory.isMixingContainer(container)) {
+			return false;
+		}
+		
+		if (ContainerFactory.getContentNames(container).size() != 1) {
+			return false;
+		}
+		
 		Set<String> contents = ContainerFactory.getContentNames(container);
 		for (String ingredient : contents) {
 			ObjectInstance ingredientObject = state.getObject(ingredient);
-			if (!IngredientFactory.isPeeledIngredient(ingredientObject)) {
+			if (IngredientFactory.isPeeledIngredient(ingredientObject)) {
 				return false;
 			}
 		}

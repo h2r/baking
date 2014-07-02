@@ -120,7 +120,7 @@ public class SingleAgentKitchen implements DomainGenerator {
 		StateConditionTest goalCondition = new StateConditionTest() {
 			@Override
 			public boolean satisfies(State s) {
-				return s.somePFGroundingIsTrue(isSuccess);
+				return isSuccess.somePFGroundingIsTrue(s);
 			}
 		};
 		Heuristic heuristic = new Heuristic() {
