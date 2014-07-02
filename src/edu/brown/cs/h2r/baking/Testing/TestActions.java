@@ -190,6 +190,8 @@ public class TestActions {
 		ObjectInstance baking_pan = ContainerFactory.getNewBakingContainerObjectInstance(domain, "baking_pan", null, "counter");
 		state.addObject(melting_pot);
 		state.addObject(baking_pan);
+		SpaceFactory.addContainer(counter, melting_pot);
+		SpaceFactory.addContainer(counter, baking_pan);
 		
 		BakingAsserts.assertActionNotApplicable(move, state, new String[] {"human", "baking_pan", "stove"});
 		BakingAsserts.assertActionNotApplicable(move, state, new String[] {"human", "mixing_bowl_1", "stove"});
@@ -342,7 +344,6 @@ public class TestActions {
 		
 		//pouring into a non-mixing container
 		BakingAsserts.assertActionNotApplicable(pour, state, new String[] {"human",  "mixing_bowl_1", "flour_bowl"});
-		
 	}
 	
 	@Test
