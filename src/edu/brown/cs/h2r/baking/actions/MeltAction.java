@@ -41,7 +41,7 @@ public class MeltAction extends BakingAction {
 		return state;
 	}
 	
-	public void melt(State state, ObjectInstance container)
+	public static void melt(State state, ObjectInstance container)
 	{
 		for (String ingredientName : ContainerFactory.getContentNames(container)) {
 			ObjectInstance ingredient = state.getObject(ingredientName);

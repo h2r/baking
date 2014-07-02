@@ -78,7 +78,7 @@ public class ExperimentHelper {
 		
 		List<GroundedAction> gas = new ArrayList<GroundedAction>();
 		for (Action action : actions) {
-			List<GroundedAction> groundedActions = currentState.getAllGroundedActionsFor(action);
+			List<GroundedAction> groundedActions = action.getAllApplicableGroundedActions(currentState);
 			gas.addAll(groundedActions);
 		}
 		Random r = new Random();

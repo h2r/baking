@@ -11,7 +11,7 @@ public class RecipeGoalCondition implements StateConditionTest {
 	}
 	@Override
 	public boolean satisfies(State s) {
-		return s.somePFGroundingIsTrue(this.propositionalFunction);
+		return this.propositionalFunction.somePFGroundingIsTrue(s);
 	}
 
 }

@@ -20,6 +20,9 @@ public class AllowBaking extends BakingPropositionalFunction {
 		// TODO Auto-generated method stub
 		if (!params[0].equalsIgnoreCase("")) {
 			ObjectInstance toBake = s.getObject(params[1]);
+			if (this.topLevelIngredient.getName().equals(toBake.getName())) {
+				return (topLevelIngredient.getBaked() && !IngredientFactory.isBakedIngredient(toBake));
+			}
 			for (IngredientRecipe content : this.topLevelIngredient.getConstituentIngredients()) {
 				if (content.getName().equals(toBake.getName())) {
 					// If it is, then make sure it needs to be peeled in the first place

@@ -14,12 +14,21 @@ import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 public class AllowPeeling extends BakingPropositionalFunction {
 
 	public AllowPeeling(String name, Domain domain, IngredientRecipe ingredient) {
-		super(name, domain, new String[] {AgentFactory.ClassName, IngredientFactory.ClassNameSimple} ,ingredient);
+		super(name, domain, new String[] {AgentFactory.ClassName, ContainerFactory.ClassName} ,ingredient);
 	}
 	
 	public boolean isTrue(State state, String[] params) {
 		if (!params[1].equalsIgnoreCase("")) {
-			ObjectInstance toPeel = state.getObject(params[1]);
+			ObjectInstance container = state.getObject(params[1]);
+			Set<String> contents = ContainerFactory.getContentNames(container);
+			if (contents.isEmpty()) {
+				return false;
+			}
+			ObjectInstance toPeel = null;
+			for (String name : contents) {
+				toPeel = state.getObject(name);
+				break;
+			}
 			// Is this a necessary ingredient in the recipe?
 			for (IngredientRecipe content : this.topLevelIngredient.getConstituentIngredients()) {
 				if (content.getName().equals(toPeel.getName())) {

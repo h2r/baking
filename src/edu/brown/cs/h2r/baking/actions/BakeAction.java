@@ -4,6 +4,7 @@ import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 
 
@@ -22,6 +23,11 @@ public class BakeAction extends BakingAction {
 		ObjectInstance ingredientInstance = s.getObject(params[1]);
 		
 		if (IngredientFactory.isBakedIngredient(ingredientInstance)) {
+			return false;
+		}
+		
+		ObjectInstance container = s.getObject(IngredientFactory.getContainer(ingredientInstance));
+		if (!ContainerFactory.isBakingContainer(container)) {
 			return false;
 		}
 		return true;
