@@ -16,14 +16,24 @@ public class MashedPotatoes extends Recipe {
 
 	public MashedPotatoes() {
 		super();
+		
+		List<IngredientRecipe> saltedWaterList = new ArrayList<IngredientRecipe>();
+		saltedWaterList.add(knowledgebase.getIngredient("water"));
+		IngredientRecipe saltedWater = 
+				new IngredientRecipe("salted_water", Recipe.MELTED, Recipe.SWAPPED, saltedWaterList);
+		saltedWater.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
+		
+		
 		List<IngredientRecipe> ingredientList = new ArrayList<IngredientRecipe>();
 		IngredientRecipe potatoes = knowledgebase.getIngredient("potatoes");
 		potatoes.setPeeled();
 		ingredientList.add(potatoes);
 		ingredientList.add(knowledgebase.getIngredient("butter"));
 		ingredientList.add(knowledgebase.getIngredient("eggs"));
+		ingredientList.add(saltedWater);
 		IngredientRecipe mashed_potatoes = new IngredientRecipe("Mashed_potatoes", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList);
-		mashed_potatoes.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
+		
+		
 		this.topLevelIngredient = mashed_potatoes;
 	}
 
@@ -39,8 +49,15 @@ public class MashedPotatoes extends Recipe {
 	
 	public void setUpSubgoals(Domain domain) {
 		AbstractMap<String, IngredientRecipe> swappedIngredients = IngredientRecipe.getRecursiveSwappedIngredients(this.topLevelIngredient);
+		
+		BakingPropositionalFunction saltedWaterPf = 
+				new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("salted_water"));
+		BakingSubgoal saltedWaterSubgoal = new BakingSubgoal(saltedWaterPf, swappedIngredients.get("salted_water"));
+		
 		BakingPropositionalFunction pf1 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.topLevelIngredient);
 		BakingSubgoal sg1 = new BakingSubgoal(pf1, this.topLevelIngredient);
+		sg1.addPrecondition(saltedWaterSubgoal);
+		
 		this.subgoals.add(sg1);
 	}
 }
