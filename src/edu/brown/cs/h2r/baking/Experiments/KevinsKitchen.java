@@ -17,6 +17,7 @@ import burlap.behavior.singleagent.planning.commonpolicies.AffordanceGreedyQPoli
 import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
 //import burlap.behavior.singleagent.planning.deterministic.informed.Heuristic;
 import burlap.behavior.singleagent.planning.stochastic.rtdp.AffordanceRTDP;
+import edu.brown.cs.h2r.baking.BellmanAffordanceRTDP;
 import burlap.behavior.singleagent.planning.stochastic.rtdp.RTDP;
 import burlap.behavior.statehashing.NameDependentStateHashFactory;
 import burlap.behavior.statehashing.StateHashFactory;
@@ -67,11 +68,9 @@ public class KevinsKitchen implements DomainGenerator {
 		Action mix = new MixAction(domain, recipe.topLevelIngredient);
 		Action pour = new PourAction(domain, recipe.topLevelIngredient);
 		Action move = new MoveAction(domain, recipe.topLevelIngredient);
-		//Action melt = new MeltAction(domain, recipe.topLevelIngredient);
 		Action peel = new PeelAction(domain, recipe.topLevelIngredient);
 		Action grease = new GreaseAction(domain);
 		Action a_switch = new SwitchAction(domain);
-		//Action bake = new BakeAction(domain, recipe.topLevelIngredient);
 		State state = new State();
 		
 		// Get the "highest" subgoal in our recipe.
@@ -82,13 +81,14 @@ public class KevinsKitchen implements DomainGenerator {
 		recipe.setUpSubgoals(domain);
 		
 		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
-		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2");
+		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2", "baking_dish", "melting_pot");
 		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter", containers, "human"));
 
 		state.addObject(ContainerFactory.getNewBakingContainerObjectInstance(domain, "baking_dish", null, "counter"));
 		state.addObject(ContainerFactory.getNewHeatingContainerObjectInstance(domain, "melting_pot", null, "counter"));
 		state.addObject(SpaceFactory.getNewBakingSpaceObjectInstance(domain, "oven", null, ""));
 		state.addObject(SpaceFactory.getNewHeatingSpaceObjectInstance(domain, "stove", null, ""));
+		
 		for (String container : containers) { 
 			state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "counter"));
 		}
@@ -100,6 +100,7 @@ public class KevinsKitchen implements DomainGenerator {
 		System.out.println("\n\nPlanner will now plan the "+recipe.topLevelIngredient.getName()+" recipe!");
 		((PourAction)pour).addAllIngredients(this.allIngredients);
 		
+		// High level planner that plans through the recipe's subgoals
 		Set<BakingSubgoal> subgoals = recipe.getSubgoals();
 		BakingSubgoal completed = null;
 		while (!subgoals.isEmpty()) {
@@ -156,6 +157,7 @@ public class KevinsKitchen implements DomainGenerator {
 				ObjectInstance ing = currentState.getObject(ingredientInstance.getName());
 				IngredientFactory.changeIngredientContainer(ing, ing.getName()+"_bowl");
 				ContainerFactory.addIngredient(currentState.getObject(ing.getName()+"_bowl"), ing.getName());
+				SpaceFactory.addContainer(currentState.getObject("counter"), currentState.getObject(ing.getName()+"_bowl"));
 			}
 		}
 		
@@ -176,34 +178,11 @@ public class KevinsKitchen implements DomainGenerator {
 		StateHashFactory hashFactory = new NameDependentStateHashFactory();
 		RewardFunction rf = new RewardFunction() {
 			@Override
+			// Uniform cost function for an optimistic algorithm that guarantees convergence.
 			public double reward(State s, GroundedAction a, State sprime) {
-				if (isFailure.isTrue(sprime, a.params[a.params.length-1])) {
-					return -10;
-				}
-				String success_name = isSuccess.getClassName();
-				if (success_name.equals(AffordanceCreator.FINISH_PF)) {
-					if (isSuccess.isTrue(sprime, a.params[a.params.length-1])) {
-						return 10;
-					}
-				} else if (success_name.equals(AffordanceCreator.CONTAINERGREASED_PF)
-							 && a.actionName().equals(GreaseAction.className)) {
-					if (isSuccess.isTrue(sprime, a.params)) {
-						return 10;
-					}
-						
-				} else if (success_name.equals(AffordanceCreator.SPACEON_PF) &&
-						a.actionName().equals(SwitchAction.className)){
-					if (isSuccess.isTrue(sprime, a.params)) {
-						return 10;
-					}
-					
-				}
 				return -1;
 			}
 		};
-		
-		//List<State> reachableStates = StateReachability.getReachableStates(currentState, domain, hashFactory);
-		//System.out.println("Number of reachable states: " + reachableStates.size());
 		
 		// Trying out new stuff!
 		int numRollouts = 1500; // RTDP
@@ -217,40 +196,13 @@ public class KevinsKitchen implements DomainGenerator {
 		Policy p;
 		AffordancesController affController = theCreator.getAffController();
 		if(affordanceMode) {
-			planner = new AffordanceRTDP(domain, rf, recipeTerminalFunction, gamma, hashFactory, vInit, numRollouts, maxDelta, maxDepth, affController);
-			//planner.setMinNumRolloutsWithSmallValueChange(300);
+			// RTDP planner that also uses affordances to trim action space during the Bellman update
+			planner = new BellmanAffordanceRTDP(domain, rf, recipeTerminalFunction, gamma, hashFactory, vInit, numRollouts, maxDelta, maxDepth, affController);
 			planner.toggleDebugPrinting(false);
 			planner.planFromState(currentState);
 			
 			// Create a Q-greedy policy from the planner
 			p = new AffordanceGreedyQPolicy(affController, (QComputablePlanner)planner);
-			
-			/*if (isSuccess.getClassName().equals(AffordanceCreator.FINISH_PF)) {
-				List<QValue>  qvalues;
-				State s2 = domain.getAction(SwitchAction.className).performAction(currentState, new String[] {"human", "stove"});
-				s2 = domain.getAction(PourAction.className).performAction(s2, new String[] {"human", "butter_bowl", "melting_pot"});
-				qvalues = planner.getQs(s2);
-				s2 = domain.getAction(PourAction.className).performAction(s2, new String[] {"human", "chocolate_squares_bowl", "melting_pot"});
-				qvalues = planner.getQs(s2);
-				s2 = domain.getAction(MoveAction.className).performAction(s2, new String[] {"human", "melting_pot", "stove"});
-				qvalues = planner.getQs(s2);
-				s2 = domain.getAction(MoveAction.className).performAction(s2, new String[] {"human", "melting_pot", "counter"});
-				qvalues = planner.getQs(s2);
-				s2 = domain.getAction(PourAction.className).performAction(s2, new String[] {"human", "melting_pot", "mixing_bowl_1"});
-				qvalues = planner.getQs(s2);
-				s2 = domain.getAction(MixAction.className).performAction(s2, new String[] {"human", "mixing_bowl_1"});
-				qvalues = planner.getQs(s2);
-				s2 = domain.getAction(PourAction.className).performAction(s2, new String[] {"human", "flour_bowl", "mixing_bowl_1"});
-				qvalues = planner.getQs(s2);
-				s2 = domain.getAction(PourAction.className).performAction(s2, new String[] {"human", "brown_sugar_bowl", "mixing_bowl1"});
-				qvalues = planner.getQs(s2);
-				//s2 = domain.getAction(MixAction.className).performAction(s2, new String[] {"human", "mixing_bowl_1"});
-			
-				qvalues = planner.getQs(s2);
-				//System.out.println(p.getAction(s2).toString());
-			}*/
-		
-
 
 		} else {
 			planner = new RTDP(domain, rf, recipeTerminalFunction, gamma, hashFactory, vInit, numRollouts, maxDelta, maxDepth);
@@ -288,12 +240,12 @@ public class KevinsKitchen implements DomainGenerator {
 		
 		KevinsKitchen kitchen = new KevinsKitchen();
 		Domain domain = kitchen.generateDomain();
-		//kitchen.PlanRecipeOneAgent(domain, new Brownies());
-		//kitchen.PlanRecipeOneAgent(domain, new DeviledEggs());
-		//kitchen.PlanRecipeOneAgent(domain, new CucumberSalad());
-		//kitchen.PlanRecipeOneAgent(domain, new MashedPotatoes());
+		kitchen.PlanRecipeOneAgent(domain, new Brownies());
+		kitchen.PlanRecipeOneAgent(domain, new DeviledEggs());
+		kitchen.PlanRecipeOneAgent(domain, new CucumberSalad());
+		kitchen.PlanRecipeOneAgent(domain, new MashedPotatoes());
 		kitchen.PlanRecipeOneAgent(domain, new MoltenLavaCake());
-		//kitchen.PlanRecipeOneAgent(domain, new PeanutButterCookies());
-		//kitchen.PlanRecipeOneAgent(domain, new PecanPie());
+		kitchen.PlanRecipeOneAgent(domain, new PeanutButterCookies());
+		kitchen.PlanRecipeOneAgent(domain, new PecanPie());
 	}
 }
