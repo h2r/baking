@@ -24,20 +24,23 @@ public class IngredientKnowledgebase {
 	public static final String NONMELTABLE = "unsaturated";
 	public static final String LUBRICANT = "lubricant";
 	
-	private final String TRAITFILE = "IngredientTraits.txt";
-	private final String COMBINATIONFILE = "FakeCombinations.txt";
-	private final String COMBINATIONTRAITFILE = "CombinationTraits.txt";
+	private static final String TRAITFILE = "IngredientTraits.txt";
+	private static final String COMBINATIONFILE = "FakeCombinations.txt";
+	private static final String COMBINATIONTRAITFILE = "CombinationTraits.txt";
+	private static final String TOOLTRAITFILE = "IngredientToolTraits.txt";
 	
 	private AbstractMap<String, Set<String>> traitMap;
 	private AbstractMap<String, Set<String>> combinationTraitMap;
 	private AbstractMap<String, Set<String>> allTraits;
 	private AbstractMap<String, ArrayList<Set<String>>> combinationMap;
 	private AbstractMap<String, IngredientRecipe> allIngredients;
+	private AbstractMap<String, Set<String>> toolTraitMap;
 	public IngredientKnowledgebase() {
-		this.traitMap = new TraitParser(TRAITFILE).getMap();
-		this.combinationTraitMap = new TraitParser(COMBINATIONTRAITFILE).getMap();
+		this.traitMap = new TraitParser(IngredientKnowledgebase.TRAITFILE).getMap();
+		this.toolTraitMap = new TraitParser(IngredientKnowledgebase.TOOLTRAITFILE).getMap();
+		this.combinationTraitMap = new TraitParser(IngredientKnowledgebase.COMBINATIONTRAITFILE).getMap();
 		this.allTraits = generateAllTraitMap();
-		this.combinationMap = new CombinationParser(COMBINATIONFILE).getMap();
+		this.combinationMap = new CombinationParser(IngredientKnowledgebase.COMBINATIONFILE).getMap();
 		this.allIngredients = generateAllIngredients();
 	}
 	
@@ -46,6 +49,7 @@ public class IngredientKnowledgebase {
 		for (String name : this.traitMap.keySet()) {
 			IngredientRecipe ing = new IngredientRecipe(name, Recipe.NO_ATTRIBUTES);
 			ing.addTraits(traitMap.get(name));
+			ing.addToolTraits(this.toolTraitMap.get(name));
 			allIngredients.put(name, ing);
 		}
 		return allIngredients;

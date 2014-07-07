@@ -20,11 +20,11 @@ public class ToolFactory {
 		
 		objectClass.addAttribute(
 				new Attribute(domain, ToolFactory.attributeToolTrait, 
-						Attribute.AttributeType.MULTITARGETRELATIONAL));
+						Attribute.AttributeType.RELATIONAL));
 		
 		objectClass.addAttribute(
 				new Attribute(domain, ToolFactory.attributeToolAttribute, 
-						Attribute.AttributeType.MULTITARGETRELATIONAL));
+						Attribute.AttributeType.RELATIONAL));
 		
 		objectClass.addAttribute(
 				new Attribute(domain, ToolFactory.attributeSpace,
@@ -32,15 +32,17 @@ public class ToolFactory {
 		return objectClass;
 	}
 	
-	public static ObjectInstance getNewObjectInstance(ObjectClass toolClass, String name, 
-			Set<String> traits, Set<String> attributes, String containerSpace) {
+	public static ObjectInstance getNewToolObjectInstance(Domain domain, String name, 
+			String trait, String attribute, String containerSpace) {
+		ObjectClass oc = domain.getObjectClass(ToolFactory.ClassName);
+		return getNewToolObjectInstance(oc, name, trait, attribute, containerSpace);
+	}
+	
+	private static ObjectInstance getNewToolObjectInstance(ObjectClass toolClass, String name, 
+			String trait, String attribute, String containerSpace) {
 		ObjectInstance newInstance = new ObjectInstance(toolClass, name);
-		for (String trait : traits) {
-			newInstance.addRelationalTarget(ToolFactory.attributeToolTrait, trait);
-		}
-		for (String attribute : attributes) {
-			newInstance.addRelationalTarget(ToolFactory.attributeToolAttribute, attribute);
-		}
+		newInstance.addRelationalTarget(ToolFactory.attributeToolTrait, trait);
+		newInstance.addRelationalTarget(ToolFactory.attributeToolAttribute, attribute);
 		
 		if (containerSpace != null || containerSpace != "")
 		{
@@ -49,12 +51,20 @@ public class ToolFactory {
 		return newInstance;
 	}
 	
-	public static Set<String> getToolTraits(ObjectInstance tool) {
-		return tool.getAllRelationalTargets(ToolFactory.attributeToolTrait);
+	public static String getToolTrait(ObjectInstance tool) {
+		Set<String> traits = tool.getAllRelationalTargets(ToolFactory.attributeToolTrait);
+		if (traits != null && !traits.isEmpty()) {
+			return traits.iterator().next();
+		}
+		return null;
 	}
 	
-	public static Set<String> getToolAttributes(ObjectInstance tool) {
-		return tool.getAllRelationalTargets(ToolFactory.attributeToolAttribute);
+	public static String getToolAttribute(ObjectInstance tool) {
+		Set<String> attributes = tool.getAllRelationalTargets(ToolFactory.attributeToolAttribute);
+		if (attributes != null && !attributes.isEmpty()) {
+			return attributes.iterator().next();
+		}
+		return null;
 	}
 	
 	public static String getSpaceName(ObjectInstance tool) {
