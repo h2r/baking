@@ -52,28 +52,28 @@ public class BakingAction extends Action {
 		// TODO Auto-generated constructor stub
 	}
 	
-	public ApplicableInStateResult checkActionIsApplicableInState(State state, String[] params) {
+	public BakingActionResult checkActionIsApplicableInState(State state, String[] params) {
 		for (int i = 0; i < params.length; i++) {
 			String objectName = params[i];
 			ObjectInstance object = state.getObject(objectName);
 			if (object == null) {
-				return ApplicableInStateResult.False(objectName + " does not exist");
+				return BakingActionResult.failure(objectName + " does not exist");
 			}
 			String className = object.getObjectClass().name;
 			if (!className.equalsIgnoreCase(this.parameterClasses[i])) {
-				return ApplicableInStateResult.False(objectName + " is not valid for this action");
+				return BakingActionResult.failure(objectName + " is not valid for this action");
 			}
 		}
 		if (!this.canAgentGo(state, params)) {
-			return ApplicableInStateResult.False(params[0] + " is not a valid agent to take this action");
+			return BakingActionResult.failure(params[0] + " is not a valid agent to take this action");
 		}
 		
-		return ApplicableInStateResult.True();
+		return BakingActionResult.success();
 	}
 
 	@Override
 	public boolean applicableInState(State state, String[] params) {
-		return this.checkActionIsApplicableInState(state, params).getIsApplicable();
+		return this.checkActionIsApplicableInState(state, params).getIsSuccess();
 	}
 
 	@Override

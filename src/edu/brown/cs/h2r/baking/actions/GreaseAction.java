@@ -15,10 +15,10 @@ public class GreaseAction extends BakingAction {
 	}
 	
 	@Override
-	public ApplicableInStateResult checkActionIsApplicableInState(State state, String[] params) {
-		ApplicableInStateResult superResult = super.checkActionIsApplicableInState(state, params);
+	public BakingActionResult checkActionIsApplicableInState(State state, String[] params) {
+		BakingActionResult superResult = super.checkActionIsApplicableInState(state, params);
 		
-		if (!superResult.getIsApplicable()) {
+		if (!superResult.getIsSuccess()) {
 			return superResult;
 		}
 		String containerName = params[1];
@@ -26,27 +26,27 @@ public class GreaseAction extends BakingAction {
 		ObjectInstance grease = state.getObject(params[2]);
 		
 		if (!ContainerFactory.isEmptyContainer(container)) {
-			return ApplicableInStateResult.False(containerName + " is not an empty container");
+			return BakingActionResult.failure(containerName + " is not an empty container");
 		}
 		
 		if (!ContainerFactory.isBakingContainer(container)) {
-			return ApplicableInStateResult.False(containerName + " is not an baking container");
+			return BakingActionResult.failure(containerName + " is not an baking container");
 		}
 		
 		if (ContainerFactory.isGreasedContainer(container)) {
-			return ApplicableInStateResult.False(containerName + " is not an greased container");
+			return BakingActionResult.failure(containerName + " is not an greased container");
 		}
 		
 		if (!IngredientFactory.isLubricant(grease)) {
-			return ApplicableInStateResult.False(containerName + " is not an greased container");
+			return BakingActionResult.failure(containerName + " is not an greased container");
 		}
 		
-		return ApplicableInStateResult.True();
+		return BakingActionResult.success();
 	}
 	
 	@Override
 	public boolean applicableInState(State state, String[] params) {
-		return this.checkActionIsApplicableInState(state, params).getIsApplicable();
+		return this.checkActionIsApplicableInState(state, params).getIsSuccess();
 	}
 
 	@Override

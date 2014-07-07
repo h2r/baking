@@ -16,10 +16,10 @@ public class MoveAction extends BakingAction {
 	}
 	
 	@Override
-	public ApplicableInStateResult checkActionIsApplicableInState(State state, String[] params) {
-		ApplicableInStateResult superResult = super.checkActionIsApplicableInState(state, params);
+	public BakingActionResult checkActionIsApplicableInState(State state, String[] params) {
+		BakingActionResult superResult = super.checkActionIsApplicableInState(state, params);
 		
-		if (!superResult.getIsApplicable()) {
+		if (!superResult.getIsSuccess()) {
 			return superResult;
 		}
 		
@@ -28,29 +28,29 @@ public class MoveAction extends BakingAction {
 		String agentName = SpaceFactory.getAgent(space).iterator().next();
 		String paramAgentName = params[0];
 		if (!agentName.isEmpty() && !agentName.equalsIgnoreCase(paramAgentName)) {
-			return ApplicableInStateResult.False(paramAgentName + " cannot move objects to the " + spaceName);
+			return BakingActionResult.failure(paramAgentName + " cannot move objects to the " + spaceName);
 		}
 		
 		String containerName = params[1];
 		ObjectInstance container = state.getObject(containerName);
 		if (ContainerFactory.getSpaceName(container).equals(spaceName)) {
-			return ApplicableInStateResult.False(containerName + " is already in " + spaceName);
+			return BakingActionResult.failure(containerName + " is already in " + spaceName);
 		}
 		
 		if (SpaceFactory.isBaking(space) && !ContainerFactory.isBakingContainer(container)) {
-			return ApplicableInStateResult.False(spaceName + " can only contain baking containers");
+			return BakingActionResult.failure(spaceName + " can only contain baking containers");
 		}
 		
 		if (SpaceFactory.isHeating(space) && !ContainerFactory.isHeatingContainer(container)) {
-			return ApplicableInStateResult.False(spaceName + " can only contain heating containers");
+			return BakingActionResult.failure(spaceName + " can only contain heating containers");
 		}
 		
-		return ApplicableInStateResult.True();		
+		return BakingActionResult.success();		
 	}
 	
 	@Override
 	public boolean applicableInState(State s, String[] params) {
-		return this.checkActionIsApplicableInState(s, params).getIsApplicable();
+		return this.checkActionIsApplicableInState(s, params).getIsSuccess();
 	
 	}
 	

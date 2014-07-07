@@ -27,7 +27,7 @@ import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
-import edu.brown.cs.h2r.baking.actions.ApplicableInStateResult;
+import edu.brown.cs.h2r.baking.actions.BakingActionResult;
 import edu.brown.cs.h2r.baking.actions.BakingAction;
 import edu.brown.cs.h2r.baking.actions.MixAction;
 import edu.brown.cs.h2r.baking.actions.MoveAction;
@@ -167,17 +167,17 @@ public class BasicKitchen implements DomainGenerator {
 		return this.parser.stateToString(this.currentState);
 	}
 	
-	public ApplicableInStateResult takeAction(String actionName, String[] params) {
+	public BakingActionResult takeAction(String actionName, String[] params) {
 		this.init();
 		
 		StateHashTuple previousTuple = this.stateHashFactory.hashState(this.currentState);
 		BakingAction action = (BakingAction)this.domain.getAction(actionName);
 		if (action == null) {
-			return ApplicableInStateResult.False(actionName + " is not a valid action");
+			return BakingActionResult.failure(actionName + " is not a valid action");
 		}
 		
-		ApplicableInStateResult result = action.checkActionIsApplicableInState(this.currentState, params);
-		if (!result.getIsApplicable()) {
+		BakingActionResult result = action.checkActionIsApplicableInState(this.currentState, params);
+		if (!result.getIsSuccess()) {
 			return result;
 		}
 
@@ -186,9 +186,9 @@ public class BasicKitchen implements DomainGenerator {
 		StateHashTuple newTuple = this.stateHashFactory.hashState(this.currentState);
 		
 		if (previousTuple.hashCode() == newTuple.hashCode()) {
-			return ApplicableInStateResult.False(actionName + " had no effect");
+			return BakingActionResult.failure(actionName + " had no effect");
 		}
-		return ApplicableInStateResult.True();
+		return BakingActionResult.success();
 	}
 	
 	protected void removeEmptyIngredientContainers(State state) {

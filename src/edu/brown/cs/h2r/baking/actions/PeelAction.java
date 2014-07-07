@@ -18,10 +18,10 @@ public class PeelAction extends BakingAction {
 	}
 	
 	@Override
-	public ApplicableInStateResult checkActionIsApplicableInState(State state, String[] params) {
-		ApplicableInStateResult superResult = super.checkActionIsApplicableInState(state, params);
+	public BakingActionResult checkActionIsApplicableInState(State state, String[] params) {
+		BakingActionResult superResult = super.checkActionIsApplicableInState(state, params);
 		
-		if (!superResult.getIsApplicable()) {
+		if (!superResult.getIsSuccess()) {
 			return superResult;
 		}
 		
@@ -32,23 +32,23 @@ public class PeelAction extends BakingAction {
 		ObjectInstance container = state.getObject(containerName);
 		
 		if (ContainerFactory.isEmptyContainer(container)) {
-			return ApplicableInStateResult.False(containerName + " is empty");
+			return BakingActionResult.failure(containerName + " is empty");
 		}
 		
 		Set<String> contents = ContainerFactory.getContentNames(container);
 		for (String ingredient : contents) {
 			ObjectInstance ingredientObject = state.getObject(ingredient);
 			if (IngredientFactory.isPeeledIngredient(ingredientObject)) {
-				return ApplicableInStateResult.False(ingredient + " is already peeled");
+				return BakingActionResult.failure(ingredient + " is already peeled");
 			}
 		}
 		
-		return ApplicableInStateResult.True();
+		return BakingActionResult.success();
 	}
 
 	@Override
 	public boolean applicableInState(State state, String[] params) {
-		return this.checkActionIsApplicableInState(state, params).getIsApplicable();
+		return this.checkActionIsApplicableInState(state, params).getIsSuccess();
 	}
 
 	@Override
