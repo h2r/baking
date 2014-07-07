@@ -40,18 +40,7 @@ public class TraitParser {
 		if (in == null) {
 			throw new RuntimeException("File " + filename + " does not exist in directory " + CLDR.getResource(".").getFile());
 		}
-	    //InputStream in = CLDR.getResourceAsStream(filename);
-	    
-	    /*
-		File traitFile = new File(filename);
-		if (!traitFile.exists()) {
-			Path currentRelativePath = Paths.get("");
-			String currentPath = currentRelativePath.toAbsolutePath().toString();
-			throw new RuntimeException("File " + filename  + " does not exist in directory " + currentPath);
-		}*/
-		
-		
-		//InputStream in = this.getClass().getResourceAsStream(filename);
+
 		BufferedReader br = null;
 		try {
 			br = new BufferedReader(new InputStreamReader(in));
