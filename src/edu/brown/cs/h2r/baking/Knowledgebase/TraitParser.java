@@ -1,9 +1,13 @@
 package edu.brown.cs.h2r.baking.Knowledgebase;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Set;
@@ -19,7 +23,24 @@ public class TraitParser {
 
 	private AbstractMap<String,Set<String>> generateMap(String filename) {
 		HashMap<String,Set<String>> ingredients = new HashMap<String,Set<String>>();
-		InputStream in = this.getClass().getResourceAsStream(filename);
+		ClassLoader CLDR = this.getClass().getClassLoader();
+		
+		URL resourceURL = CLDR.getResource(filename);
+		if (resourceURL == null) {
+			throw new RuntimeException("File " + filename + " does not exist in directory " + CLDR.getResource(".").getFile());
+		}
+		
+		InputStream in;
+		try {
+			in = resourceURL.openStream();
+		} catch (IOException e) {
+			throw new RuntimeException(e.getMessage());
+			
+		}
+		if (in == null) {
+			throw new RuntimeException("File " + filename + " does not exist in directory " + CLDR.getResource(".").getFile());
+		}
+
 		BufferedReader br = null;
 		try {
 			br = new BufferedReader(new InputStreamReader(in));
