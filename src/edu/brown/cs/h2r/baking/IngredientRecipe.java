@@ -18,12 +18,13 @@ public class IngredientRecipe {
 	private Boolean baked;
 	private Boolean peeled;
 	private Set<String> traits;
+	private Set<String> toolTraits;
+	private Set<String> toolAttributes;
 	private String name;
 	private Boolean swapped;
 	private List<IngredientRecipe> contents;
 	private int useCount;
 	private AbstractMap<String, IngredientRecipe> necessaryTraits;
-	//private List<BakingSubgoal> subgoals;
 	
 	public IngredientRecipe(String name, int attributes) {
 		this.name = name;
@@ -32,13 +33,12 @@ public class IngredientRecipe {
 		this.traits = new TreeSet<String>();
 		this.useCount = 1;
 		this.contents = null;
-		this.peeled = false;
-		this.traits = new TreeSet<String>();
-		this.useCount = 1;
-		//this.subgoals = new ArrayList<BakingSubgoal>();
+		this.necessaryTraits = null;
+		this.toolTraits = new TreeSet<String>();
+		this.toolAttributes = new TreeSet<String>();
 	}
 	
-	
+	@Deprecated
 	public IngredientRecipe (String name, int attributes, List<IngredientRecipe> contents) {
 		this.name = name;
 		this.setAttributes(attributes);
@@ -47,7 +47,6 @@ public class IngredientRecipe {
 		this.traits = new TreeSet<String>();
 		this.necessaryTraits = new HashMap<String, IngredientRecipe>();
 		this.useCount = 1;
-		//this.subgoals = new ArrayList<BakingSubgoal>();
 	}
 	
 	public IngredientRecipe(String name, int attributes, Boolean swapped, List<IngredientRecipe> contents) {
@@ -58,9 +57,11 @@ public class IngredientRecipe {
 		this.swapped = swapped;
 		this.necessaryTraits = new HashMap<String, IngredientRecipe>();
 		this.useCount = 1;
-		//this.subgoals = new ArrayList<BakingSubgoal>();
+		this.toolTraits = new TreeSet<String>();
+		this.toolAttributes = new TreeSet<String>();
 	}
 	
+	@Deprecated
 	public IngredientRecipe(String name, int attributes, Boolean swapped, List<IngredientRecipe> contents, AbstractMap<String, IngredientRecipe> necessaryTraits) {
 		this.name = name;
 		this.setAttributes(attributes);
@@ -69,7 +70,6 @@ public class IngredientRecipe {
 		this.swapped = swapped;
 		this.necessaryTraits = necessaryTraits;
 		this.useCount = 1;
-		//this.subgoals = new ArrayList<BakingSubgoal>();
 	}
 	
 	public Boolean isSimple() {
@@ -111,6 +111,14 @@ public class IngredientRecipe {
 		return this.name;
 	}
 	
+	public Set<String> getToolTraits() {
+		return this.toolTraits;
+	}
+	
+	public Set<String> getToolAttributes() {
+		return this.toolAttributes;
+	}
+	
 	public Boolean getSwapped() {
 		if (this.isSimple()) {
 			return false;
@@ -129,9 +137,24 @@ public class IngredientRecipe {
 	public void setUseCount(int count) {
 		this.useCount = count;
 	}
+	
+	public void addToolTraits(Set<String> traits) {
+		this.toolTraits.addAll(traits);
+	}
+	
+	public void addToolAttribute(String attribute) {
+		this.toolAttributes.add(attribute);
+	}
+	
+	public boolean hasToolTrait(String trait) {
+		return this.toolTraits.contains(trait);
+	}
+	
+	public boolean hasToolAttribute(String attribute) {
+		return this.toolAttributes.contains(attribute);
+	}
 
-	/* traits */
-	public Boolean hasTraits() {
+	public boolean hasTraits() {
 		return !this.traits.isEmpty();
 	}
 	
@@ -204,6 +227,9 @@ public class IngredientRecipe {
 		this.necessaryTraits.put(trait, ing);
 	}
 	
+	public void addNecessaryTraits(AbstractMap<String, IngredientRecipe> necessaryTraits) {
+		this.necessaryTraits.putAll(necessaryTraits);
+	}
 	
 	public AbstractMap<String, IngredientRecipe> getConstituentNecessaryTraits() {
 		AbstractMap<String, IngredientRecipe> toRet = this.getNecessaryTraits();
@@ -256,9 +282,13 @@ public class IngredientRecipe {
 	
 	
 	public IngredientRecipe makeFakeAttributeCopy(ObjectInstance obj) {
-		return new IngredientRecipe(this.getName(), generateAttributeNumber(IngredientFactory.isMixedIngredient(obj), 
+		int attributes = generateAttributeNumber(IngredientFactory.isMixedIngredient(obj), 
 				IngredientFactory.isMeltedIngredient(obj), IngredientFactory.isBakedIngredient(obj), 
-				IngredientFactory.isPeeledIngredient(obj)), this.getSwapped(), this.getContents(), this.getNecessaryTraits());
+				IngredientFactory.isPeeledIngredient(obj));
+		IngredientRecipe newIng = new IngredientRecipe(this.getName(), attributes, this.getSwapped(),
+				this.getContents());
+		newIng.addNecessaryTraits(this.getNecessaryTraits());
+		return newIng;
 	}
 	
 	public void setAttributes(int attributes) {
