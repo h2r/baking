@@ -23,16 +23,24 @@ public class PourAction extends BakingAction {
 	}
 	
 	@Override
-	public boolean applicableInState(State state, String[] params) {
-		if (!super.applicableInState(state, params)) {
-			return false;
-		}
-		ObjectInstance agent = state.getObject(params[0]);
-		if (AgentFactory.isRobot(agent)) {
-			return false;
+	public ApplicableInStateResult checkActionIsApplicableInState(State state, String[] params) {
+		ApplicableInStateResult superResult = super.checkActionIsApplicableInState(state, params);
+		
+		if (!superResult.getIsApplicable()) {
+			return superResult;
 		}
 		
+		String agentName = params[0];
+		ObjectInstance agent =  state.getObject(agentName);
+		
+		if (AgentFactory.isRobot(agent)) {
+			return ApplicableInStateResult.False(agentName + " cannot perform this action");
+		}
+		
+		String pouringContainerName = params[1];
 		ObjectInstance pouringContainer = state.getObject(params[1]);
+		
+		String receivingContainerName = params[2];
 		ObjectInstance receivingContainer = state.getObject(params[2]);
 
 		
@@ -41,11 +49,11 @@ public class PourAction extends BakingAction {
 		String receivingContainerSpace = ContainerFactory.getSpaceName(receivingContainer);
 		
 		if (ContainerFactory.isEmptyContainer(pouringContainer)) {
-			return false;
+			return ApplicableInStateResult.False(pouringContainerName + " is empty");
 		}
 		
 		if (!ContainerFactory.isReceivingContainer(receivingContainer)) {
-			return false;
+			return ApplicableInStateResult.False(receivingContainerName + " cannot be poured into");
 		}
 		
 		if (pouringContainerSpace == null || receivingContainerSpace == null)
@@ -55,19 +63,24 @@ public class PourAction extends BakingAction {
 		
 		if (!pouringContainerSpace.equalsIgnoreCase(receivingContainerSpace))
 		{
-			return false;
+			return ApplicableInStateResult.False(receivingContainerName + " cannot be poured into");
 		}
 		ObjectInstance pouringContainerSpaceObject = state.getObject(pouringContainerSpace);
 		
 		String agentOfSpace = SpaceFactory.getAgent(pouringContainerSpaceObject).iterator().next();
-		if (!agentOfSpace.equalsIgnoreCase(agent.getName()))
+		if (!agentOfSpace.equalsIgnoreCase(agentName))
 		{		
-			return false;
+			return ApplicableInStateResult.False(agentName + " cannot work in " + pouringContainerSpace);
 		}
 		if (!SpaceFactory.isWorking(pouringContainerSpaceObject)) {
-			return false;
+			return ApplicableInStateResult.False("Pouring cannot be performed in the " + pouringContainerSpaceObject);
 		}
-		return true;
+		return ApplicableInStateResult.True();
+	}
+	
+	@Override
+	public boolean applicableInState(State state, String[] params) {
+		return this.checkActionIsApplicableInState(state, params).getIsApplicable();
 	}
 
 	@Override

@@ -27,6 +27,8 @@ import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
+import edu.brown.cs.h2r.baking.actions.ApplicableInStateResult;
+import edu.brown.cs.h2r.baking.actions.BakingAction;
 import edu.brown.cs.h2r.baking.actions.MixAction;
 import edu.brown.cs.h2r.baking.actions.MoveAction;
 import edu.brown.cs.h2r.baking.actions.PeelAction;
@@ -165,18 +167,28 @@ public class BasicKitchen implements DomainGenerator {
 		return this.parser.stateToString(this.currentState);
 	}
 	
-	public boolean takeAction(String actionName, String[] params) {
+	public ApplicableInStateResult takeAction(String actionName, String[] params) {
 		this.init();
 		
 		StateHashTuple previousTuple = this.stateHashFactory.hashState(this.currentState);
-		Action action = this.domain.getAction(actionName);
-		if (action != null && action.applicableInState(this.currentState, params)) {
-			this.currentState = action.performAction(this.currentState, params);
-			this.removeEmptyIngredientContainers(this.currentState);
+		BakingAction action = (BakingAction)this.domain.getAction(actionName);
+		if (action == null) {
+			return ApplicableInStateResult.False(actionName + " is not a valid action");
 		}
+		
+		ApplicableInStateResult result = action.checkActionIsApplicableInState(this.currentState, params);
+		if (!result.getIsApplicable()) {
+			return result;
+		}
+
+		this.currentState = action.performAction(this.currentState, params);
+		this.removeEmptyIngredientContainers(this.currentState);
 		StateHashTuple newTuple = this.stateHashFactory.hashState(this.currentState);
 		
-		return previousTuple.hashCode() != newTuple.hashCode();
+		if (previousTuple.hashCode() == newTuple.hashCode()) {
+			return ApplicableInStateResult.False(actionName + " had no effect");
+		}
+		return ApplicableInStateResult.True();
 	}
 	
 	protected void removeEmptyIngredientContainers(State state) {

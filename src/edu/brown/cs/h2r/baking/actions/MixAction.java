@@ -4,8 +4,8 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
-import static java.util.Arrays.asList;
 
+import static java.util.Arrays.asList;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
@@ -29,50 +29,60 @@ public class MixAction extends BakingAction {
 	}
 	
 	@Override
-	public boolean applicableInState(State state, String[] params) {
-		if (!super.applicableInState(state, params)) {
-			return false;
-		}
+	public ApplicableInStateResult checkActionIsApplicableInState(State state, String[] params) {
+		ApplicableInStateResult superResult = super.checkActionIsApplicableInState(state, params);
 		
+		if (!superResult.getIsApplicable()) {
+			return superResult;
+		}
+
+		String agentName = params[0];
 		ObjectInstance agent =  state.getObject(params[0]);
 		
 		if (AgentFactory.isRobot(agent)) {
-			return false;
+			return ApplicableInStateResult.False("Robot cannot perform this action");
 		}
-		ObjectInstance containerInstance = state.getObject(params[1]);
+		
+		String containerName = params[1];
+		ObjectInstance containerInstance = state.getObject(containerName);
 		
 		if (ContainerFactory.getContentNames(containerInstance).isEmpty()) {
-			return false;
+			return ApplicableInStateResult.False(containerName + " is empty");
 		}
 		
 		if (!ContainerFactory.isMixingContainer(containerInstance)) {
-			return false;
+			return ApplicableInStateResult.False(containerName + " is not a mixing container");
 		}
 		// move to should mix probably!
 		if (ContainerFactory.getContentNames(containerInstance).size() < 2) {
-			return false;
+			return ApplicableInStateResult.False(containerName + " containers only one ingredient");
 		}
 		
 		String containerSpaceName = ContainerFactory.getSpaceName(containerInstance);
 		if (containerSpaceName == null) {
-			return false;
+			return ApplicableInStateResult.False(containerName + " is not in any space");
 		}
 
-		ObjectInstance pouringContainerSpaceObject = state.getObject(containerSpaceName);
-		if (pouringContainerSpaceObject == null) {
-			return false;
+		ObjectInstance mixingContainerSpaceName = state.getObject(containerSpaceName);
+		if (mixingContainerSpaceName == null) {
+			return ApplicableInStateResult.False(containerSpaceName + " does not exist");
 		}
 		
-		String agentOfSpace = SpaceFactory.getAgent(pouringContainerSpaceObject).iterator().next();
+		String agentOfSpace = SpaceFactory.getAgent(mixingContainerSpaceName).iterator().next();
 		if (!agentOfSpace.equalsIgnoreCase(agent.getName()))
 		{		
-			return false;
+			return ApplicableInStateResult.False(agentName + " cannot perform actions in " + containerSpaceName);
 		}
 				
-		if (!SpaceFactory.isWorking(pouringContainerSpaceObject)) {
-			return false;
+		if (!SpaceFactory.isWorking(mixingContainerSpaceName)) {
+			return ApplicableInStateResult.False(containerSpaceName + " is not suitable for mixing");
 		}
-		return true;
+		return ApplicableInStateResult.True();
+	}
+	
+	@Override
+	public boolean applicableInState(State state, String[] params) {
+		return this.checkActionIsApplicableInState(state, params).getIsApplicable();
 	}
 
 	@Override

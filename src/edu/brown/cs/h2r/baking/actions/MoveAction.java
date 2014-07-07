@@ -16,32 +16,41 @@ public class MoveAction extends BakingAction {
 	}
 	
 	@Override
-	public boolean applicableInState(State s, String[] params) {
-		if (!super.applicableInState(s, params)) {
-			return false;
+	public ApplicableInStateResult checkActionIsApplicableInState(State state, String[] params) {
+		ApplicableInStateResult superResult = super.checkActionIsApplicableInState(state, params);
+		
+		if (!superResult.getIsApplicable()) {
+			return superResult;
 		}
 		
 		String spaceName = params[2];
-		ObjectInstance space = s.getObject(spaceName);
+		ObjectInstance space = state.getObject(spaceName);
 		String agentName = SpaceFactory.getAgent(space).iterator().next();
 		String paramAgentName = params[0];
 		if (!agentName.isEmpty() && !agentName.equalsIgnoreCase(paramAgentName)) {
-			return false;
+			return ApplicableInStateResult.False(paramAgentName + " cannot move objects to the " + spaceName);
 		}
-		ObjectInstance container = s.getObject(params[1]);
+		
+		String containerName = params[1];
+		ObjectInstance container = state.getObject(containerName);
 		if (ContainerFactory.getSpaceName(container).equals(spaceName)) {
-			return false;
+			return ApplicableInStateResult.False(containerName + " is already in " + spaceName);
 		}
 		
 		if (SpaceFactory.isBaking(space) && !ContainerFactory.isBakingContainer(container)) {
-			return false;
+			return ApplicableInStateResult.False(spaceName + " can only contain baking containers");
 		}
 		
 		if (SpaceFactory.isHeating(space) && !ContainerFactory.isHeatingContainer(container)) {
-			return false;
+			return ApplicableInStateResult.False(spaceName + " can only contain heating containers");
 		}
 		
-		return true;
+		return ApplicableInStateResult.True();		
+	}
+	
+	@Override
+	public boolean applicableInState(State s, String[] params) {
+		return this.checkActionIsApplicableInState(s, params).getIsApplicable();
 	
 	}
 	

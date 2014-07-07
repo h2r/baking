@@ -9,48 +9,46 @@ import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 
 public class PeelAction extends BakingAction {
 	public static final String className = "peel";
 	public PeelAction(Domain domain, IngredientRecipe ingredient) {
 		super(PeelAction.className, domain, ingredient, new String[] {AgentFactory.ClassName, ContainerFactory.ClassName});
 	}
-
+	
 	@Override
-	public boolean applicableInState(State state, String[] params) {
-		if (!super.applicableInState(state, params)) {
-			return false;
+	public ApplicableInStateResult checkActionIsApplicableInState(State state, String[] params) {
+		ApplicableInStateResult superResult = super.checkActionIsApplicableInState(state, params);
+		
+		if (!superResult.getIsApplicable()) {
+			return superResult;
 		}
 		
-		ObjectInstance agent =  state.getObject(params[0]);
+		String agentName = params[0];
+		ObjectInstance agent =  state.getObject(agentName);
 		
-		ObjectInstance container = state.getObject(params[1]);
+		String containerName = params[1];
+		ObjectInstance container = state.getObject(containerName);
 		
 		if (ContainerFactory.isEmptyContainer(container)) {
-			return false;
-		}
-		
-		if (ContainerFactory.isReceivingContainer(container)) { 
-			return false;
-		}
-		
-		if (ContainerFactory.isMixingContainer(container)) {
-			return false;
-		}
-		
-		if (ContainerFactory.getContentNames(container).size() != 1) {
-			return false;
+			return ApplicableInStateResult.False(containerName + " is empty");
 		}
 		
 		Set<String> contents = ContainerFactory.getContentNames(container);
 		for (String ingredient : contents) {
 			ObjectInstance ingredientObject = state.getObject(ingredient);
 			if (IngredientFactory.isPeeledIngredient(ingredientObject)) {
-				return false;
+				return ApplicableInStateResult.False(ingredient + " is already peeled");
 			}
 		}
 		
-		return true;
+		return ApplicableInStateResult.True();
+	}
+
+	@Override
+	public boolean applicableInState(State state, String[] params) {
+		return this.checkActionIsApplicableInState(state, params).getIsApplicable();
 	}
 
 	@Override
