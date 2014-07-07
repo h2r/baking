@@ -7,6 +7,8 @@
     
     <path id="external.classpath">
         <pathelement path="${lib.dir}/burlap.jar" />
+        <pathelement path="${lib.dir}/junit-4.11.jar" />
+	<pathelement path="${lib.dir}/hamcrest-core-1.3.jar" />
     </path>
     
     <target name="all" depends="h2r-baking" />
@@ -32,6 +34,7 @@
         <sleep seconds="1"/>
         <jar destfile="${ant.project.name}.jar" basedir="${classes.dir}">
             <zipfileset src="${classes.dir}/external-libs.jar"/>
+            <fileset dir="resources"/>
         </jar>
     </target>
 </project>
