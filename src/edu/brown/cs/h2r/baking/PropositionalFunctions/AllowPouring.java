@@ -25,6 +25,46 @@ public class AllowPouring extends BakingPropositionalFunction {
 		ObjectInstance pouringContainer = s.getObject(params[1]);
 		ObjectInstance receivingContainer = s.getObject(params[2]);
 		
+		if (ContainerFactory.isBakingContainer(receivingContainer)) {
+			for (String name :ContainerFactory.getContentNames(pouringContainer)) {
+				if (IngredientFactory.isSimple(s.getObject(name))) {
+					return false;
+				}
+				if (this.topLevelIngredient.getName().equals(name)) {
+					return topLevelIngredient.getBaked();
+				}
+				for (IngredientRecipe contents : this.topLevelIngredient.getConstituentIngredients()) {
+					if (contents.getName().equals(name)) {
+						return contents.getBaked();
+					}
+				}
+			}
+			return false;
+		}
+		
+		if (ContainerFactory.isHeatingContainer(receivingContainer)) {
+			for (String name :ContainerFactory.getContentNames(pouringContainer)) {
+				if (IngredientFactory.isMeltedIngredient(s.getObject(name))) {
+					return false;
+				}
+				if (this.topLevelIngredient.getName().equals(name)) {
+					return topLevelIngredient.getMelted();
+				}
+				for (IngredientRecipe content : this.topLevelIngredient.getContents()) {
+					if (content.getName().equals(name)) {
+						return content.getMelted();
+					}
+				}
+			}
+			return false;
+		}
+		
+		
+		if (ContainerFactory.isMixingContainer(pouringContainer) && 
+				ContainerFactory.isMixingContainer(receivingContainer) && ContainerFactory.isEmptyContainer(receivingContainer)) {
+			return false;
+		}
+		
 		// Get what our subgoal is looking for and make copies
 		List<IngredientRecipe> necessary_ings = new ArrayList<IngredientRecipe>(); 
 		for (IngredientRecipe ing : this.topLevelIngredient.getContents()) {

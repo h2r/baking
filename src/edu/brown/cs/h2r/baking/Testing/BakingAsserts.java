@@ -11,6 +11,7 @@ import static org.junit.Assert.*;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 
 public class BakingAsserts {
@@ -181,8 +182,22 @@ public class BakingAsserts {
 	public static void assertSwappedIngredientsMatch(ObjectInstance ing, State s, List<String> ings) {
 		Set<String> swappedIngredients = IngredientFactory.getRecursiveContentsAndSwapped(s, ing);
 		Boolean match = true;
+		assertEquals(swappedIngredients.size(), ings.size());
 		for (String i : ings) {
 			if (!swappedIngredients.contains(i)) {
+				match = false;
+				break;
+			}
+		}
+		assertTrue(match);
+	}
+	
+	public static void assertSwappedIngredientsMatch(IngredientRecipe ing, List<String> ings) {
+		Set<String> names = IngredientRecipe.getRecursiveSwappedIngredients(ing).keySet();
+		Boolean match = true;
+		assertEquals(names.size(), ings.size());
+		for (String name : names) {
+			if (!ings.contains(name)) {
 				match = false;
 				break;
 			}
@@ -206,5 +221,13 @@ public class BakingAsserts {
 	
 	public static void assertActionNotApplicable(Action a, State s, String[] params) {
 		assertFalse(a.applicableInState(s, params));
+	}
+	
+	public static void assertSpaceOn(ObjectInstance space) {
+		assertTrue(SpaceFactory.getOnOff(space));
+	}
+	
+	public static void assertSpaceOff(ObjectInstance space) {
+		assertFalse(SpaceFactory.getOnOff(space));
 	}
 }

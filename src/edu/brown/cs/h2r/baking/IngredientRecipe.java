@@ -23,6 +23,7 @@ public class IngredientRecipe {
 	private List<IngredientRecipe> contents;
 	private int useCount;
 	private AbstractMap<String, IngredientRecipe> necessaryTraits;
+	//private List<BakingSubgoal> subgoals;
 	
 	public IngredientRecipe(String name, int attributes) {
 		this.name = name;
@@ -34,6 +35,7 @@ public class IngredientRecipe {
 		this.peeled = false;
 		this.traits = new TreeSet<String>();
 		this.useCount = 1;
+		//this.subgoals = new ArrayList<BakingSubgoal>();
 	}
 	
 	
@@ -45,6 +47,7 @@ public class IngredientRecipe {
 		this.traits = new TreeSet<String>();
 		this.necessaryTraits = new HashMap<String, IngredientRecipe>();
 		this.useCount = 1;
+		//this.subgoals = new ArrayList<BakingSubgoal>();
 	}
 	
 	public IngredientRecipe(String name, int attributes, Boolean swapped, List<IngredientRecipe> contents) {
@@ -55,6 +58,7 @@ public class IngredientRecipe {
 		this.swapped = swapped;
 		this.necessaryTraits = new HashMap<String, IngredientRecipe>();
 		this.useCount = 1;
+		//this.subgoals = new ArrayList<BakingSubgoal>();
 	}
 	
 	public IngredientRecipe(String name, int attributes, Boolean swapped, List<IngredientRecipe> contents, AbstractMap<String, IngredientRecipe> necessaryTraits) {
@@ -65,6 +69,7 @@ public class IngredientRecipe {
 		this.swapped = swapped;
 		this.necessaryTraits = necessaryTraits;
 		this.useCount = 1;
+		//this.subgoals = new ArrayList<BakingSubgoal>();
 	}
 	
 	public Boolean isSimple() {
@@ -263,11 +268,33 @@ public class IngredientRecipe {
 		this.peeled = ((attributes & Recipe.PEELED) == Recipe.PEELED) ? true : false;
 	}
 	
-	public int generateAttributeNumber(Boolean mixed, Boolean melted, Boolean baked, Boolean peeled) {
+	public static int generateAttributeNumber(Boolean mixed, Boolean melted, Boolean baked, Boolean peeled) {
 		int mixed_int = mixed ? Recipe.MIXED : 0;
 		int melted_int = melted ? Recipe.MELTED : 0;
 		int baked_int = baked ? Recipe.BAKED : 0;
 		int peeled_int = peeled ? Recipe.PEELED : 0;
 		return mixed_int|melted_int|baked_int|peeled_int;
 	}
+	
+	public static AbstractMap<String, IngredientRecipe> getRecursiveSwappedIngredients(IngredientRecipe ingredient) {
+		AbstractMap<String, IngredientRecipe> swapped = new HashMap<String, IngredientRecipe>();
+		if (ingredient.isSimple()) {
+			return swapped;
+		}
+		if (ingredient.getSwapped()) {
+			swapped.put(ingredient.getName(), ingredient);
+		}
+		for (IngredientRecipe ing : ingredient.getContents()) {
+			swapped.putAll(getRecursiveSwappedIngredients(ing));
+		}
+		return swapped;
+	}
+	
+	/*public List<BakingSubgoal> getSubgoals() {
+		return this.subgoals;
+	}
+	
+	public void addSubgoal(BakingSubgoal sg) {
+		this.subgoals.add(sg);
+	}*/
 }

@@ -67,10 +67,6 @@ public class PourAction extends BakingAction {
 		if (!SpaceFactory.isWorking(pouringContainerSpaceObject)) {
 			return false;
 		}
-		
-		if (ContainerFactory.isMixingContainer(pouringContainer) && (ContainerFactory.isEmptyContainer(receivingContainer))) {
-			return false;
-		}
 		return true;
 	}
 

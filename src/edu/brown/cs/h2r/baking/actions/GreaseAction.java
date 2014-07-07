@@ -1,6 +1,5 @@
 package edu.brown.cs.h2r.baking.actions;
 
-import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
@@ -10,8 +9,8 @@ import burlap.oomdp.core.State;
 
 public class GreaseAction extends BakingAction {
 	public static final String className = "grease";
-	public GreaseAction(Domain domain, IngredientRecipe ingredient) {
-		super(GreaseAction.className, domain, ingredient, new String[] 
+	public GreaseAction(Domain domain) {
+		super(GreaseAction.className, domain, new String[] 
 				{AgentFactory.ClassName, ContainerFactory.ClassName, IngredientFactory.ClassNameSimple});
 	}
 	
@@ -30,7 +29,7 @@ public class GreaseAction extends BakingAction {
 			return false;
 		}
 		
-		if (!ContainerFactory.isGreasedContainer(container)) {
+		if (ContainerFactory.isGreasedContainer(container)) {
 			return false;
 		}
 		
