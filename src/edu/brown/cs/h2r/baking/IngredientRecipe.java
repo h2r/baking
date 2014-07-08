@@ -23,7 +23,6 @@ public class IngredientRecipe {
 	private List<IngredientRecipe> contents;
 	private int useCount;
 	private AbstractMap<String, IngredientRecipe> necessaryTraits;
-	//private List<BakingSubgoal> subgoals;
 	
 	public IngredientRecipe(String name, int attributes) {
 		this.name = name;
@@ -35,7 +34,6 @@ public class IngredientRecipe {
 		this.peeled = false;
 		this.traits = new TreeSet<String>();
 		this.useCount = 1;
-		//this.subgoals = new ArrayList<BakingSubgoal>();
 	}
 	
 	
@@ -47,7 +45,6 @@ public class IngredientRecipe {
 		this.traits = new TreeSet<String>();
 		this.necessaryTraits = new HashMap<String, IngredientRecipe>();
 		this.useCount = 1;
-		//this.subgoals = new ArrayList<BakingSubgoal>();
 	}
 	
 	public IngredientRecipe(String name, int attributes, Boolean swapped, List<IngredientRecipe> contents) {
@@ -58,7 +55,6 @@ public class IngredientRecipe {
 		this.swapped = swapped;
 		this.necessaryTraits = new HashMap<String, IngredientRecipe>();
 		this.useCount = 1;
-		//this.subgoals = new ArrayList<BakingSubgoal>();
 	}
 	
 	public IngredientRecipe(String name, int attributes, Boolean swapped, List<IngredientRecipe> contents, AbstractMap<String, IngredientRecipe> necessaryTraits) {
@@ -69,7 +65,6 @@ public class IngredientRecipe {
 		this.swapped = swapped;
 		this.necessaryTraits = necessaryTraits;
 		this.useCount = 1;
-		//this.subgoals = new ArrayList<BakingSubgoal>();
 	}
 	
 	public Boolean isSimple() {
@@ -130,7 +125,6 @@ public class IngredientRecipe {
 		this.useCount = count;
 	}
 
-	/* traits */
 	public Boolean hasTraits() {
 		return !this.traits.isEmpty();
 	}
@@ -289,12 +283,4 @@ public class IngredientRecipe {
 		}
 		return swapped;
 	}
-	
-	/*public List<BakingSubgoal> getSubgoals() {
-		return this.subgoals;
-	}
-	
-	public void addSubgoal(BakingSubgoal sg) {
-		this.subgoals.add(sg);
-	}*/
 }

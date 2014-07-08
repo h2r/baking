@@ -52,7 +52,6 @@ speed up the total time to solve the problem.
 public class DualAgentIndependentPlan  implements DomainGenerator {
 
 	public DualAgentIndependentPlan() {
-		// TODO Auto-generated constructor stub
 	}
 	@Override
 	public Domain generateDomain() {

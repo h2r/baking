@@ -15,7 +15,6 @@ import burlap.oomdp.core.State;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
-import edu.brown.cs.h2r.baking.PropositionalFunctions.IngredientNecessaryForRecipe;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 
 
@@ -72,21 +71,6 @@ public class IngredientKnowledgebase {
 		}
 		return ingredients;
 	}
-	
-	/*public List<ObjectInstance>getPotentialIngredientObjectInstanceList(State s, Domain domain, IngredientRecipe tlIngredient) {
-	//TODO: Will move this out soon, here to see if it works!
-	/*public List<ObjectInstance>getPotentialIngredientObjectInstanceList(State s, Domain domain, IngredientRecipe tlIngredient) {
-		List<ObjectInstance> ingredients = new ArrayList<ObjectInstance>();
-		IngredientNecessaryForRecipe necessary = new IngredientNecessaryForRecipe(AffordanceCreator.INGREDIENTPF, domain, tlIngredient);
-		for (IngredientRecipe ing : getIngredientList()) {
-			if (necessary.isTrue(s, new String[] {ing.getName()})) {
-				ObjectClass oc = ing.isSimple() ? domain.getObjectClass(IngredientFactory.ClassNameSimple) : domain.getObjectClass(IngredientFactory.ClassNameComplex);
-				ObjectInstance obj = IngredientFactory.getNewIngredientInstance(ing, ing.getName(), oc);
-				ingredients.add(obj);
-			}
-		}
-		return ingredients;
-	}*/
 	
 	public List<ObjectInstance> getPotentialIngredientObjectInstanceList(State s, Domain domain, IngredientRecipe tlIngredient) {
 		List<ObjectInstance> ingredients = new ArrayList<ObjectInstance>();
@@ -156,7 +140,6 @@ public class IngredientKnowledgebase {
 		return new TreeSet<String>();
 	}
 	
-	// TODO: Update/fix logic when trying to mix 3+ ingredients? Finding all permutations or something!
 	// Determine whether the ingredient in the container can be swapped out (flour + liquid -> flour).
 	// If a match is found, return the name of the combination found.
 	public String canCombine(State state, ObjectInstance container) {
@@ -204,35 +187,6 @@ public class IngredientKnowledgebase {
 		}
 		// no combination found, return an empty string.
 		return "";
-	}
-	//TODO: Find a better place for this method -- totes. Mix method should actually work I reckon?
-	public void combineIngredients(State state, Domain domain, IngredientRecipe recipe, ObjectInstance container, String toswap) {
-		Set<String> traits = new TreeSet<String>();
-		//get the actual traits from the trait thing
-		for (String trait : recipe.getTraits()) {
-			traits.add(trait);
-		}
-		Set<String> ings = ContainerFactory.getContentNames(container);
-		ObjectInstance new_ing = IngredientFactory.getNewComplexIngredientObjectInstance(
-				domain.getObjectClass(IngredientFactory.ClassNameComplex), toswap, Recipe.NO_ATTRIBUTES, true, "", traits, ings);
-		// Make the hidden Copies
-		Set<ObjectInstance> hidden_copies = new HashSet<ObjectInstance>();
-		for (String name : ings) {
-			ObjectInstance ob = state.getObject(name);
-			if (!IngredientFactory.isSimple(ob)) {
-				hidden_copies.add(IngredientFactory.makeHiddenObjectCopy(state, domain, ob));
-			}
-		}
-		ContainerFactory.removeContents(container);
-		for (String name : ings) {
-			state.removeObject(state.getObject(name));
-		}
-		for (ObjectInstance ob : hidden_copies) {
-			state.addObject(ob);
-		}
-		ContainerFactory.addIngredient(container, toswap);
-		IngredientFactory.changeIngredientContainer(new_ing, container.getName());
-		state.addObject(new_ing);
 	}
 	
 	public void newCombinationMap(String filename) {

@@ -16,7 +16,6 @@ public class BakingPropositionalFunction extends PropositionalFunction {
 	}
 	@Override
 	public boolean isTrue(State s, String[] params) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 	

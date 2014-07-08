@@ -31,12 +31,10 @@ public class Brownies extends Recipe {
 		List<IngredientRecipe> ingredientList = new ArrayList<IngredientRecipe>();
 		ingredientList.add(knowledgebase.getIngredient("vanilla"));
 		ingredientList.add(knowledgebase.getIngredient("eggs"));
-		//ingredientList.add(melted_fat);
 		
 		IngredientRecipe wet_ings = new IngredientRecipe("wet_ingredients", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList);
 		wet_ings.addNecessaryTrait("sugar", Recipe.NO_ATTRIBUTES);
 		wet_ings.addNecessaryTrait("fat", Recipe.MELTED);
-		//wet_ings.addTraits(knowledgebase.getTraits("wet_ingredients"));
 		
 		// In a large saucepan, melt 1/2 cup butter.
 		
@@ -52,19 +50,11 @@ public class Brownies extends Recipe {
 		// Add the necessaryTraits and their respective attributes
 		dry_ings.addNecessaryTrait("flour", Recipe.NO_ATTRIBUTES);
 		dry_ings.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
-		//dry_ings.addTraits(knowledgebase.getTraits("dry_ingredients"));
 		
 		List<IngredientRecipe> ingredientList3 = new ArrayList<IngredientRecipe>();
 		ingredientList3.add(dry_ings);
 		ingredientList3.add(wet_ings);
-		/*IngredientRecipe raw_brownies = new IngredientRecipe("raw_brownies", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList3);
-		//brownies.addTraits(knowledgebase.getTraits("brownies"));
-		
-		List<IngredientRecipe> ingredientList4 = new ArrayList<IngredientRecipe>();
-		//raw_brownies.setBaked();
-		ingredientList4.add(raw_brownies);*/
 		IngredientRecipe brownies = new IngredientRecipe("brownies", Recipe.BAKED, Recipe.SWAPPED, ingredientList3);
-		
 		
 		this.topLevelIngredient = brownies;
 	}
@@ -97,12 +87,6 @@ public class Brownies extends Recipe {
 		sg5.addPrecondition(sg3);
 		sg5.addPrecondition(sg4);
 		this.subgoals.add(sg5);
-		
-		/*BakingPropositionalFunction pf6 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("brownies"));
-		BakingSubgoal sg6 = new BakingSubgoal(pf6, swappedIngredients.get("brownies"));
-		sg6.addPrecondition(sg1);
-		sg6.addPrecondition(sg5);
-		this.subgoals.add(sg6);*/
 	}
 	
 	@Override

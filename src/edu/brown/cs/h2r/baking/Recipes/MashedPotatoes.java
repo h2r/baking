@@ -1,5 +1,4 @@
 package edu.brown.cs.h2r.baking.Recipes;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -26,6 +25,12 @@ public class MashedPotatoes extends Recipe {
 		mashed_potatoes.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
 		this.topLevelIngredient = mashed_potatoes;
 	}
+	
+	public void setUpSubgoals(Domain domain) {
+		BakingPropositionalFunction pf1 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.topLevelIngredient);
+		BakingSubgoal sg1 = new BakingSubgoal(pf1, this.topLevelIngredient);
+		this.subgoals.add(sg1);
+	}
 
 	@Override
 	public List<String> getRecipeProcedures() {
@@ -34,13 +39,5 @@ public class MashedPotatoes extends Recipe {
 		"Peel potatoes and add to pot.  Cook until tender and drain.\n",							//1
 		"Let cool and mash.\n",																	//2
 		"Combine mashed potato, butter and egg in a large bowl.\n");								//3
-			//8
-	}
-	
-	public void setUpSubgoals(Domain domain) {
-		AbstractMap<String, IngredientRecipe> swappedIngredients = IngredientRecipe.getRecursiveSwappedIngredients(this.topLevelIngredient);
-		BakingPropositionalFunction pf1 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.topLevelIngredient);
-		BakingSubgoal sg1 = new BakingSubgoal(pf1, this.topLevelIngredient);
-		this.subgoals.add(sg1);
 	}
 }

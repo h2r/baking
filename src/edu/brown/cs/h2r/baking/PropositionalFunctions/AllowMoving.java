@@ -17,7 +17,6 @@ public class AllowMoving extends BakingPropositionalFunction {
 		super(name, domain, new String[]{AgentFactory.ClassName, ContainerFactory.ClassName, SpaceFactory.ClassName}, ingredient) ;
 	}
 	@Override
-	// Default true, since only logic needed is in moveAction's isApplicableInState().
 	public boolean isTrue(State s, String[] params) {
 		ObjectInstance space = s.getObject(params[2]);
 		ObjectInstance container = s.getObject(params[1]);
@@ -25,24 +24,7 @@ public class AllowMoving extends BakingPropositionalFunction {
 		
 		Set<String> contents = ContainerFactory.getContentNames(container);
 		
-		/*if (ContainerFactory.isEmptyContainer(container)) {
-			return false;
-		}
 		
-		ObjectInstance content = null;
-		for (String name : ContainerFactory.getContentNames(container)) {
-			content = s.getObject(name);
-			break;
-		}
-		
-		if (SpaceFactory.isWorking(space)) {
-			ObjectInstance curr_space = s.getObject(ContainerFactory.getSpaceName(container));
-			if (SpaceFactory.isBaking(curr_space) && !IngredientFactory.isBakedIngredient(content)) {
-				return false;
-			}
-		}
-*/
-		// TODO: Consider adding a check to type of container? Also the check for is melted at room temp!
 		if (!ContainerFactory.isEmptyContainer(container)) {
 			if (SpaceFactory.isBaking(space)) {
 				if (this.topLevelIngredient.getBaked() && contents.contains(this.topLevelIngredient.getName()) ) {

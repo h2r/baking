@@ -107,7 +107,7 @@ public class IngredientFactory {
 	public static ObjectInstance getNewSimpleIngredientObjectInstance(ObjectClass simpleIngredientClass, String name, 
 			int attributes, Set<String> traits, String ingredientContainer) {
 		ObjectInstance newInstance = new ObjectInstance(simpleIngredientClass, name);
-		setAttributes(newInstance, attributes);
+		IngredientFactory.setAttributes(newInstance, attributes);
 		newInstance.setValue(IngredientFactory.attributeUseCount, 1);
 		for (String trait : traits) {
 			newInstance.addRelationalTarget("traits", trait);
@@ -122,7 +122,7 @@ public class IngredientFactory {
 	public static ObjectInstance getNewSimpleIngredientObjectInstance(ObjectClass simpleIngredientClass, String name, 
 			int attributes, int useCount, Set<String> traits, String ingredientContainer) {
 		ObjectInstance newInstance = new ObjectInstance(simpleIngredientClass, name);
-		setAttributes(newInstance, attributes);
+		IngredientFactory.setAttributes(newInstance, attributes);
 		newInstance.setValue(IngredientFactory.attributeUseCount, useCount);
 		for (String trait : traits) {
 			newInstance.addRelationalTarget("traits", trait);
@@ -137,7 +137,7 @@ public class IngredientFactory {
 	public static ObjectInstance getNewComplexIngredientObjectInstance(ObjectClass complexIngredientClass, String name, 
 			int attributes, boolean swapped, String ingredientContainer, Set<String> traits, Iterable<String> contents) {
 		ObjectInstance newInstance = new ObjectInstance(complexIngredientClass, name);
-		setAttributes(newInstance, attributes);
+		IngredientFactory.setAttributes(newInstance, attributes);
 		newInstance.setValue(IngredientFactory.attributeUseCount, 1);
 		newInstance.setValue(IngredientFactory.attributeSwapped, swapped ? 1 : 0);
 		
@@ -225,9 +225,9 @@ public class IngredientFactory {
 	
 	public static ObjectInstance getNewIngredientInstance(ObjectClass simpleIngredientClass, 
 			IngredientRecipe ingredientRecipe, String ingredientContainer) {
-			int attributes = ingredientRecipe.generateAttributeNumber(ingredientRecipe.getBaked(), 
-					ingredientRecipe.getMelted(),  ingredientRecipe.getMixed(), 
-					ingredientRecipe.getPeeled());
+		int attributes = IngredientRecipe.generateAttributeNumber(ingredientRecipe.getBaked(), 
+				ingredientRecipe.getMelted(), ingredientRecipe.getMixed(), 
+				ingredientRecipe.getPeeled());
 		if (ingredientRecipe.isSimple()) {
 			return IngredientFactory.getNewSimpleIngredientObjectInstance(simpleIngredientClass, ingredientRecipe.getName(), 
 					attributes, ingredientRecipe.getTraits(), ingredientContainer);

@@ -56,7 +56,6 @@ speed up the total time t1o solve the problem.
 public class DualAgentRandomRobot  implements DomainGenerator {
 
 	public DualAgentRandomRobot() {
-		// TODO Auto-generated constructor stub
 	}
 	@Override
 	public Domain generateDomain() {

@@ -104,8 +104,6 @@ public class TestIngredientRecipe {
 		allIngredients = null;
 		useCount = null;
 		topLevelIngredient = null;
-		//success = null;
-		//failure = null;
 	}
 	
 	public void testRecipe() {
@@ -118,7 +116,7 @@ public class TestIngredientRecipe {
 	@Test
 	public void testPecanPie() {
 		topLevelIngredient = new PecanPie().topLevelIngredient;
-		setUp();
+		this.setUp();
 		swappedIngredientList = Arrays.asList("dry_crust", "flaky_crust", "pie_crust", "pie_mix", "filling", "finished_filling", "PecanPie");
 		constituentNecessaryTraits = Arrays.asList("salt", "sugar");
 		constituentIngredients = new ArrayList<IngredientRecipe>();
@@ -142,13 +140,13 @@ public class TestIngredientRecipe {
 		useCount.put("salt", 2);
 		useCount.put("sea_salt", 2);
 		
-		testRecipe();
+		this.testRecipe();
 	}
 	
 	@Test
 	public void testBrownies() {
 		topLevelIngredient = new Brownies().topLevelIngredient;
-		setUp();
+		this.setUp();
 		swappedIngredientList = Arrays.asList("dry_ingredients", "wet_ingredients", "brownies");
 		constituentNecessaryTraits = Arrays.asList("salt", "sugar", "flour", "fat");
 		constituentIngredients = new ArrayList<IngredientRecipe>();
@@ -172,13 +170,13 @@ public class TestIngredientRecipe {
 		useCount.put("olive_oil", 1);
 		useCount.put("cocoa", 1);
 		
-		testRecipe();
+		this.testRecipe();
 	}
 	
 	@Test
 	public void testCucumberSalad() {
 		topLevelIngredient = new CucumberSalad().topLevelIngredient;
-		setUp();
+		this.setUp();
 		swappedIngredientList = Arrays.asList("Salad", "dressing", "CucumberSalad");
 		constituentNecessaryTraits = Arrays.asList("lemon", "salt");
 		constituentIngredients = new ArrayList<IngredientRecipe>();
@@ -198,13 +196,13 @@ public class TestIngredientRecipe {
 		useCount.put("sea_salt", 1);
 		useCount.put("olive_oil", 1);
 		
-		testRecipe();
+		this.testRecipe();
 	}
 	
 	@Test
 	public void testDeviledEggs() {
 		topLevelIngredient = new DeviledEggs().topLevelIngredient;
-		setUp();
+		this.setUp();
 		swappedIngredientList = Arrays.asList("yolk_mix", "finished_mix", "DeviledEggs");
 		constituentNecessaryTraits = Arrays.asList("salt", "mustard") ;
 		constituentIngredients = new ArrayList<IngredientRecipe>();
@@ -226,13 +224,13 @@ public class TestIngredientRecipe {
 		useCount.put("salt", 1);
 		useCount.put("sea_salt", 1);
 		
-		testRecipe();
+		this.testRecipe();
 	}
 	
 	@Test
 	public void testMashedPotatoes() {
 		topLevelIngredient = new MashedPotatoes().topLevelIngredient;
-		setUp();
+		this.setUp();
 		swappedIngredientList = Arrays.asList("Mashed_potatoes");
 		constituentNecessaryTraits = Arrays.asList("salt");
 		constituentIngredients = new ArrayList<IngredientRecipe>();
@@ -249,13 +247,13 @@ public class TestIngredientRecipe {
 		useCount.put("salt", 1);
 		useCount.put("sea_salt", 1);
 		
-		testRecipe();
+		this.testRecipe();
 	}
 	
 	@Test
 	public void testMoltenLavaCake() {
 		topLevelIngredient = new MoltenLavaCake().topLevelIngredient;
-		setUp();
+		this.setUp();
 		swappedIngredientList = Arrays.asList("melted_stuff", "batter", "unflavored_batter", "molten_lava_cake");
 		constituentNecessaryTraits = Arrays.asList("flour", "sugar");
 		constituentIngredients = new ArrayList<IngredientRecipe>();
@@ -278,13 +276,13 @@ public class TestIngredientRecipe {
 		useCount.put("chocolate_squares", 1);
 		useCount.put("orange_liqueur", 1);
 		
-		testRecipe();
+		this.testRecipe();
 	}
 	
 	@Test
 	public void testPeanutButterCookies() {
 		topLevelIngredient = new PeanutButterCookies().topLevelIngredient;
-		setUp();
+		this.setUp();
 		swappedIngredientList = Arrays.asList("creamed_ingredients", "wet_ingredients", "peanutButterCookies", "dry_ingredients");
 		constituentNecessaryTraits = Arrays.asList("salt", "sugar", "flour");
 		constituentIngredients = new ArrayList<IngredientRecipe>();
@@ -307,6 +305,6 @@ public class TestIngredientRecipe {
 		useCount.put("sea_salt", 1);
 		useCount.put("peanut_butter", 1);
 		
-		testRecipe();
+		this.testRecipe();
 	}
 }

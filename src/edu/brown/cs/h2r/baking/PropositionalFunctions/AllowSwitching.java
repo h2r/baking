@@ -23,7 +23,8 @@ public class AllowSwitching extends BakingPropositionalFunction {
 		if (this.subgoal == null) {
 			return false;
 		}
-		if (this.subgoal.getGoal().getClassName().equals(AffordanceCreator.SPACEON_PF)) {
+		String subgoalClassName = this.subgoal.getGoal().getClassName();
+		if (subgoalClassName.equals(AffordanceCreator.SPACEON_PF)) {
 			// If the subgoal hasn't been fulfilled by some binding on the state
 			if (!this.subgoal.goalCompleted(state)) {
 				return true;
@@ -76,7 +77,8 @@ public class AllowSwitching extends BakingPropositionalFunction {
 		// Else, check the preconditions for the subgoal
 		for (BakingSubgoal precondition : this.subgoal.getPreconditions()) {
 			// If the preconditions are related to the grease action
-			if (precondition.getGoal().getClassName().equals(AffordanceCreator.SPACEON_PF)) {
+			String preconditionClassName = precondition.getGoal().getClassName();
+			if (preconditionClassName.equals(AffordanceCreator.SPACEON_PF)) {
 				// If the precondition hans't been filled up by some binding in the state
 				if (!precondition.goalCompleted(state)) {
 					return true;
