@@ -15,17 +15,27 @@ public class SwitchAction extends BakingAction {
 	}
 	
 	@Override
-	public boolean applicableInState(State state, String[] params) {
-		if (!super.applicableInState(state, params)) {
-			return false;
+	public BakingActionResult checkActionIsApplicableInState(State state, String[] params) {
+		BakingActionResult superResult = super.checkActionIsApplicableInState(state, params);
+		
+		if (!superResult.getIsSuccess()) {
+			return superResult;
 		}
 		
-		ObjectInstance spaceInstance = state.getObject(params[1]);
+		ObjectInstance agent =  state.getObject(params[0]);
+		
+		String spaceName = params[1];
+		ObjectInstance spaceInstance = state.getObject(spaceName);
 		if (!SpaceFactory.isSwitchable(spaceInstance)) {
-			return false;
+			return BakingActionResult.failure(spaceName + " does not have the capability to be turned on/off");
 		}
 		
-		return true;
+		return BakingActionResult.success();
+	}
+	
+	@Override
+	public boolean applicableInState(State state, String[] params) {
+		return this.checkActionIsApplicableInState(state, params).getIsSuccess();
 	}
 
 	@Override
