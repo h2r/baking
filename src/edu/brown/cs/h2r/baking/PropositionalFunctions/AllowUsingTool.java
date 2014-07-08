@@ -34,11 +34,11 @@ public class AllowUsingTool extends BakingPropositionalFunction {
 				for (IngredientRecipe content : this.topLevelIngredient.getConstituentIngredients()) {
 					if (content.getName().equals(ingredient.getName())) {
 						// Check to see if it can be used by the tool
-						if (!ToolFactory.toolCanBeUsed(tool, ingredient)) {
+						if (!ToolFactory.toolCanBeUsed(tool, content)) {
 							return false;
 						}
 						// If it is, then make sure it needs to have the tool used on it in the first place
-						if (!ToolFactory.toolHasBeenUsed(tool, ingredient)) {
+						if (!ToolFactory.toolHasBeenUsed(tool, content)) {
 							return false;
 						}
 						match = true;
@@ -66,7 +66,7 @@ public class AllowUsingTool extends BakingPropositionalFunction {
 					}
 				}
 			}
-			return false;
+			return true;
 		} else {
 			// If no specific ingredient has been given to check, then allow use action
 			// Iff there exists some ingredient or trait ingredient that hs the trait!

@@ -82,6 +82,7 @@ public class IngredientKnowledgebase {
 			ObjectClass oc = ing.isSimple() ? domain.getObjectClass(IngredientFactory.ClassNameSimple) : domain.getObjectClass(IngredientFactory.ClassNameComplex);
 			ObjectInstance obj = IngredientFactory.getNewIngredientInstance(ing, ing.getName(), oc);
 			IngredientFactory.clearBooleanAttributes(obj);
+			IngredientFactory.clearToolAttributes(obj);
 			ingredients.add(obj);
 		}
 		return ingredients;

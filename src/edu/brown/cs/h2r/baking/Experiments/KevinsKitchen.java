@@ -67,7 +67,6 @@ public class KevinsKitchen implements DomainGenerator {
 		Action mix = new MixAction(domain, recipe.topLevelIngredient);
 		Action pour = new PourAction(domain, recipe.topLevelIngredient);
 		Action move = new MoveAction(domain, recipe.topLevelIngredient);
-		//Action peel = new PeelAction(domain, recipe.topLevelIngredient);
 		Action grease = new GreaseAction(domain);
 		Action a_switch = new SwitchAction(domain);
 		Action use = new UseAction(domain, recipe.topLevelIngredient);
@@ -99,7 +98,7 @@ public class KevinsKitchen implements DomainGenerator {
 		for (String name : toolMap.keySet()) {
 			String toolTrait = toolMap.get(name)[0];
 			String toolAttribute = toolMap.get(name)[1];
-			state.addObject(ToolFactory.getNewToolObjectInstance(domain, name, toolTrait, toolAttribute, "container"));
+			state.addObject(ToolFactory.getNewToolObjectInstance(domain, name, toolTrait, toolAttribute, "counter"));
 		}
 		
 		// Out of all the ingredients in our kitchen, plan over only those that might be useful!
@@ -240,12 +239,12 @@ public class KevinsKitchen implements DomainGenerator {
 		
 		KevinsKitchen kitchen = new KevinsKitchen();
 		Domain domain = kitchen.generateDomain();
-		//kitchen.PlanRecipeOneAgent(domain, new Brownies());
-		//kitchen.PlanRecipeOneAgent(domain, new DeviledEggs());
-		//kitchen.PlanRecipeOneAgent(domain, new CucumberSalad());
+		kitchen.PlanRecipeOneAgent(domain, new Brownies());
+		kitchen.PlanRecipeOneAgent(domain, new DeviledEggs());
+		kitchen.PlanRecipeOneAgent(domain, new CucumberSalad());
 		kitchen.PlanRecipeOneAgent(domain, new MashedPotatoes());
-		//kitchen.PlanRecipeOneAgent(domain, new MoltenLavaCake());
-		//kitchen.PlanRecipeOneAgent(domain, new PeanutButterCookies());
-		//kitchen.PlanRecipeOneAgent(domain, new PecanPie());
+		kitchen.PlanRecipeOneAgent(domain, new MoltenLavaCake());
+		kitchen.PlanRecipeOneAgent(domain, new PeanutButterCookies());
+		kitchen.PlanRecipeOneAgent(domain, new PecanPie());
 	}
 }

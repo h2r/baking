@@ -280,6 +280,16 @@ public class IngredientRecipe {
 		if (IngredientFactory.isPeeledIngredient(object) != this.getPeeled()) {
 			return false;
 		}
+		Set<String> ingToolAttributes = this.getToolAttributes();
+		Set<String> objToolAttributes = IngredientFactory.getToolAttributes(object);
+		if (ingToolAttributes.size() != objToolAttributes.size()) {
+			return false;
+		}
+		for (String attribute : ingToolAttributes) {
+			if (!objToolAttributes.contains(attribute)) {
+				return false;
+			}
+		}
 		return true;
 	}
 	

@@ -36,7 +36,7 @@ public class AffordanceCreator {
 	private ArrayList<PFAtom> mixPFAtoms;
 	private ArrayList<PFAtom> movePFAtoms;
 	private ArrayList<PFAtom> pourPFAtoms;
-	private ArrayList<PFAtom> peelPFAtoms;
+	//private ArrayList<PFAtom> peelPFAtoms;
 	private ArrayList<PFAtom> greasePFAtoms;
 	private ArrayList<PFAtom> switchPFAtoms;
 	private ArrayList<PFAtom> usePFAtoms;
@@ -56,7 +56,7 @@ public class AffordanceCreator {
 		final PropositionalFunction allowMixing = new AllowMixing(AffordanceCreator.MIX_PF, domain, ingredient);
 		final PropositionalFunction allowPouring= new AllowPouring(AffordanceCreator.POUR_PF, domain, ingredient);
 		final PropositionalFunction allowMoving = new AllowMoving(AffordanceCreator.MOVE_PF, domain, ingredient);
-		final PropositionalFunction allowPeeling = new AllowPeeling(AffordanceCreator.PEEL_PF, domain, ingredient);
+		//final PropositionalFunction allowPeeling = new AllowPeeling(AffordanceCreator.PEEL_PF, domain, ingredient);
 		final PropositionalFunction allowGreasing = new AllowGreasing(AffordanceCreator.GREASE_PF, domain, ingredient);
 		final PropositionalFunction allowSwitching = new AllowSwitching(AffordanceCreator.SWITCH_PF, domain, ingredient);
 		final PropositionalFunction allowUsing = new AllowUsingTool(AffordanceCreator.USE_PF, domain, ingredient);
@@ -92,12 +92,12 @@ public class AffordanceCreator {
 			this.pourPFAtoms.add(new PFAtom(pourGroundedProp));
 		}
 		
-		PropositionalFunction peelPF = domain.getPropFunction(AffordanceCreator.PEEL_PF);
+		/*PropositionalFunction peelPF = domain.getPropFunction(AffordanceCreator.PEEL_PF);
 		this.peelPFAtoms = new ArrayList<PFAtom>();
 		List<GroundedProp> peelGroundedProps = peelPF.getAllGroundedPropsForState(state);
 		for (GroundedProp peelGroundedProp : peelGroundedProps) {
 			this.peelPFAtoms.add(new PFAtom(peelGroundedProp));
-		}
+		}*/
 		
 		PropositionalFunction greasePF = domain.getPropFunction(AffordanceCreator.GREASE_PF);
 		this.greasePFAtoms = new ArrayList<PFAtom>();
@@ -170,7 +170,7 @@ public class AffordanceCreator {
 		setupDelegate(domain, mixPFAtoms, MixAction.className, finishedPFAtom);
 		setupDelegate(domain, movePFAtoms, MoveAction.className, finishedPFAtom);
 		setupDelegate(domain, pourPFAtoms, PourAction.className, finishedPFAtom);
-		setupDelegate(domain, peelPFAtoms, PeelAction.className, finishedPFAtom);
+		//setupDelegate(domain, peelPFAtoms, PeelAction.className, finishedPFAtom);
 		setupDelegate(domain, usePFAtoms, UseAction.className, finishedPFAtom);
 		setupDelegate(domain, greasePFAtoms, GreaseAction.className, containerGreasedPFAtom);
 		setupDelegate(domain, switchPFAtoms, SwitchAction.className, spaceOnPFAtom);

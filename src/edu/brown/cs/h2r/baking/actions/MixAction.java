@@ -119,7 +119,7 @@ public class MixAction extends BakingAction {
 			ObjectInstance newIngredient = 
 					IngredientFactory.getNewComplexIngredientObjectInstance(complexIngredientClass, 
 							Integer.toString(rando.nextInt()), Recipe.NO_ATTRIBUTES, false, container.getName(),
-							new TreeSet<String>(), new TreeSet<String>(), traits, contents);
+							traits, new TreeSet<String>(), new TreeSet<String>(), contents);
 			state.addObject(newIngredient);
 			ContainerFactory.removeContents(container);
 			for (ObjectInstance ob : hidden_copies) {

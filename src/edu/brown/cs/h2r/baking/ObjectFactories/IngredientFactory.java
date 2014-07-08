@@ -529,6 +529,10 @@ public class IngredientFactory {
 			obj.setValue(att_name, 0);
 		}		
 	}
+	
+	public static void clearToolAttributes(ObjectInstance obj) {
+		obj.clearRelationalTargets(IngredientFactory.attributeToolAttributes);
+	}
 
 	public static boolean isMeltedAtRoomTemperature(ObjectInstance ingredient) {
 		return IngredientFactory.getTraits(ingredient).contains(IngredientKnowledgebase.NONMELTABLE);
