@@ -80,7 +80,6 @@ public class BasicKitchen implements DomainGenerator {
 		Action peel = new PeelAction(domain, recipe.topLevelIngredient);
 		Action turnOnOff = new SwitchAction(domain);
 		Action use = new UseAction(domain, recipe.topLevelIngredient);
-		Action peel = new PeelAction(domain, recipe.topLevelIngredient);
 		return domain;
 	}
 	
