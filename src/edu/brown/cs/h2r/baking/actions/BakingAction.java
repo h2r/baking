@@ -14,42 +14,35 @@ import edu.brown.cs.h2r.baking.ObjectFactories.MakeSpanFactory;
 public abstract class BakingAction extends Action {
 	IngredientRecipe ingredient;
 	public BakingAction() {
-		// TODO Auto-generated constructor stub
 	}
 
 	public BakingAction(String name, Domain domain, String parameterClasses) {
 		super(name, domain, parameterClasses);
-		// TODO Auto-generated constructor stub
 	}
 
 	public BakingAction(String name, Domain domain, String[] parameterClasses) {
 		super(name, domain, parameterClasses);
-		// TODO Auto-generated constructor stub
 	}
 
 	public BakingAction(String name, Domain domain, String[] parameterClasses,
 			String[] parameterOrderGroups) {
 		super(name, domain, parameterClasses, parameterOrderGroups);
-		// TODO Auto-generated constructor stub
 	}
 	
 	public BakingAction(String name, Domain domain, IngredientRecipe ingredient, String parameterClasses) {
 		super(name, domain, parameterClasses);
 		this.ingredient = ingredient;
-		// TODO Auto-generated constructor stub
 	}
 
 	public BakingAction(String name, Domain domain, IngredientRecipe ingredient, String[] parameterClasses) {
 		super(name, domain, parameterClasses);
 		this.ingredient = ingredient;
-		// TODO Auto-generated constructor stub
 	}
 
 	public BakingAction(String name, Domain domain, IngredientRecipe ingredient, String[] parameterClasses,
 			String[] parameterOrderGroups) {
 		super(name, domain, parameterClasses, parameterOrderGroups);
 		this.ingredient = ingredient;
-		// TODO Auto-generated constructor stub
 	}
 	
 	public BakingActionResult checkActionIsApplicableInState(State state, String[] params) {

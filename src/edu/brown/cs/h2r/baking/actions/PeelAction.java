@@ -20,7 +20,7 @@ public class PeelAction extends BakingAction {
 	@Override
 	public BakingActionResult checkActionIsApplicableInState(State state, String[] params) {
 		BakingActionResult superResult = super.checkActionIsApplicableInState(state, params);
-		
+
 		if (!superResult.getIsSuccess()) {
 			return superResult;
 		}
@@ -65,7 +65,7 @@ public class PeelAction extends BakingAction {
 		return state;
 	}
 	
-	public void peel(ObjectInstance objectInstance) {
+	private void peel(ObjectInstance objectInstance) {
 		IngredientFactory.setPeeled(objectInstance, true);
 	}
 }

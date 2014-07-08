@@ -46,7 +46,7 @@ public class SwitchAction extends BakingAction {
 		return state;
 	}
 	
-	public void switchOnOff(State state, ObjectInstance space) {
+	private void switchOnOff(State state, ObjectInstance space) {
 		boolean isOn = SpaceFactory.getOnOff(space);
 		SpaceFactory.setOnOff(space, !isOn);
 		

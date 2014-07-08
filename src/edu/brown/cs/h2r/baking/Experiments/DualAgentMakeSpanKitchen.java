@@ -44,7 +44,6 @@ import edu.brown.cs.h2r.baking.actions.PourAction;
 public class DualAgentMakeSpanKitchen  implements DomainGenerator {
 
 	public DualAgentMakeSpanKitchen() {
-		// TODO Auto-generated constructor stub
 	}
 	@Override
 	public Domain generateDomain() {

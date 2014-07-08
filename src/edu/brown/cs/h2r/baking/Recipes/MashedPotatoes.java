@@ -44,7 +44,6 @@ public class MashedPotatoes extends Recipe {
 		"Peel potatoes and add to pot.  Cook until tender and drain.\n",							//1
 		"Let cool and mash.\n",																	//2
 		"Combine mashed potato, butter and egg in a large bowl.\n");								//3
-			//8
 	}
 	
 	public void setUpSubgoals(Domain domain) {

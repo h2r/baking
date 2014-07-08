@@ -1,6 +1,6 @@
 package edu.brown.cs.h2r.baking.Testing;
 
-import static org.junit.Assert.*;
+import org.junit.Assert;
 
 import java.util.Arrays;
 import java.util.List;
@@ -34,7 +34,7 @@ public class TestActions {
 	@Before
 	public void setUp() {
 		domain = new SADomain();
-		setUpDomain();
+		this.setUpDomain();
 		state = new State();
 		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
 		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2");
@@ -94,35 +94,6 @@ public class TestActions {
 		topLevelIngredient = null;
 	}
 	
-	/*@Test
-	public void testMeltAction() {
-		topLevelIngredient = new Brownies().topLevelIngredient;
-		knowledgebase = new IngredientKnowledgebase();
-		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
-		setUpState();
-		Action melt = new MeltAction(domain, topLevelIngredient);
-		
-		// Can't melt an empty bowl
-		BakingAsserts.assertActionNotApplicable(melt, state, new String[] {"human", "mixing_bowl_1"});
-		
-		// can't melt a non-meltable ingredient
-		ObjectInstance olive_oil = state.getObject("olive_oil");
-		BakingAsserts.assertHasTrait(olive_oil, IngredientKnowledgebase.NONMELTABLE);
-		BakingAsserts.assertIsNotMelted(olive_oil);
-		BakingAsserts.assertActionNotApplicable(melt, state, new String[] {"human", "olive_oil_bowl"});
-		
-		
-		// can melt an ingredient
-		ObjectInstance butter = state.getObject("butter");
-		BakingAsserts.assertIsNotMelted(butter);
-		((MeltAction)melt).melt(state, state.getObject(IngredientFactory.getContainer(butter)));
-		BakingAsserts.assertIsMelted(butter);
-		
-		// can't melt a melted ingredient
-		BakingAsserts.assertActionNotApplicable(melt, state, new String[] {"human", "butter_bowl"});
-		BakingAsserts.assertIsMelted(butter);
-	}*/
-	
 	@Test
 	public void testMixAction() {
 		topLevelIngredient = new Brownies().topLevelIngredient;
@@ -131,30 +102,31 @@ public class TestActions {
 		knowledgebase.newCombinationMap("IngredientCombinations.txt");
 		allIngredients.add(IngredientFactory.getNewIngredientInstance(knowledgebase.
 				getIngredient("orange_juice"), "orange_juice", domain.getObjectClass("simple_ingredient")));
-		setUpState();
+		this.setUpState();
 		Action mix = new MixAction(domain, topLevelIngredient);
 		((MixAction)mix).changeKnowledgebase(knowledgebase);
 		Action pour = new PourAction(domain, topLevelIngredient);
 		
 		// can't mix an empty bowl
-		assertEquals(ContainerFactory.getContentNames(state.getObject("mixing_bowl_1")).size(), 0);
+		Assert.assertEquals(ContainerFactory.getContentNames(state.getObject("mixing_bowl_1")).size(), 0);
 		BakingAsserts.assertActionNotApplicable(mix, state, new String[] {"human", "mixing_bowl_1"});
 		
 		// can't mix a bowl with just 1 ingredient
-		((PourAction)pour).pour(state, "flour_bowl", "mixing_bowl_1");
-		assertEquals(ContainerFactory.getContentNames(state.getObject("mixing_bowl_1")).size(), 1);
+		state = pour.performAction(state, new String[] {"human", "flour_bowl", "mixing_bowl_1"});
+		Assert.assertEquals(ContainerFactory.getContentNames(state.getObject("mixing_bowl_1")).size(), 1);
 		BakingAsserts.assertActionNotApplicable(mix, state, new String[] {"human", "mixing_bowl_1"});
 
 		// can't mix a non-mixing bowl
 		BakingAsserts.assertActionNotApplicable(mix, state, new String[] {"human", "cocoa_bowl"});
 		
 		// Mix a bowl with two random (non-combinable) ingredients
-		((PourAction)pour).pour(state, "cocoa_bowl", "mixing_bowl_2");
-		((PourAction)pour).pour(state, "baking_powder_bowl", "mixing_bowl_2");
-		assertEquals(ContainerFactory.getContentNames(state.getObject("mixing_bowl_2")).size(), 2);
+		state = pour.performAction(state, new String[] {"human", "baking_powder_bowl", "mixing_bowl_2"});
+		state = pour.performAction(state, new String[] {"human", "cocoa_bowl", "mixing_bowl_2"});
+		Assert.assertEquals(ContainerFactory.getContentNames(state.getObject("mixing_bowl_2")).size(), 2);
 		BakingAsserts.assertActionApplicable(mix, state, new String[] {"human", "mixing_bowl_2"});
-		((MixAction)mix).mix(state, "mixing_bowl_2");
-		assertEquals(ContainerFactory.getContentNames(state.getObject("mixing_bowl_2")).size(), 1);
+
+		state = mix.performAction(state, new String[] {"human", "mixing_bowl_2"});
+		Assert.assertEquals(ContainerFactory.getContentNames(state.getObject("mixing_bowl_2")).size(), 1);
 		ObjectInstance named_ing = null;
 		for (String name : ContainerFactory.getContentNames(state.getObject("mixing_bowl_2"))) {
 			named_ing = state.getObject(name);
@@ -162,13 +134,11 @@ public class TestActions {
 		}
 		BakingAsserts.assertIngredientContains(named_ing, Arrays.asList("cocoa", "baking_powder"));
 		
-		
-		// TODO: Test the swapping out here.
-		((PourAction)pour).pour(state, "orange_juice_bowl", "mixing_bowl_1");
-		assertEquals(ContainerFactory.getContentNames(state.getObject("mixing_bowl_1")).size(), 2);
+		state = pour.performAction(state, new String[] {"human", "orange_juice_bowl", "mixing_bowl_1"});
+		Assert.assertEquals(ContainerFactory.getContentNames(state.getObject("mixing_bowl_1")).size(), 2);
 		BakingAsserts.assertActionApplicable(mix, state, new String[] {"human", "mixing_bowl_1"});
-		((MixAction)mix).mix(state, "mixing_bowl_1");
-		assertEquals(ContainerFactory.getContentNames(state.getObject("mixing_bowl_1")).size(), 1);
+		state = mix.performAction(state, new String[] {"human", "mixing_bowl_1"});
+		Assert.assertEquals(ContainerFactory.getContentNames(state.getObject("mixing_bowl_1")).size(), 1);
 		BakingAsserts.assertContainerContains(state.getObject("mixing_bowl_1"), "dough");
 	}
 	
@@ -177,7 +147,7 @@ public class TestActions {
 		topLevelIngredient = new Brownies().topLevelIngredient;
 		knowledgebase = new IngredientKnowledgebase();
 		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
-		setUpState();
+		this.setUpState();
 		Action move = new MoveAction(domain, topLevelIngredient);
 		
 		ObjectInstance oven = SpaceFactory.getNewBakingSpaceObjectInstance(domain, "oven", null, "");
@@ -198,25 +168,25 @@ public class TestActions {
 		BakingAsserts.assertActionNotApplicable(move, state, new String[] {"human", "melting_pot", "oven"});
 		BakingAsserts.assertActionNotApplicable(move, state, new String[] {"human", "mixing_bowl_1", "oven"});
 		
-		int counterObjects = SpaceFactory.getContents(counter).size();
-		assertEquals(SpaceFactory.getContents(oven).size(), 0);
-		assertEquals(SpaceFactory.getContents(counter).size(), counterObjects);
-		((MoveAction)move).move(state, baking_pan, oven);
-		assertEquals(ContainerFactory.getSpaceName(baking_pan), "oven");
-		assertEquals(SpaceFactory.getContents(counter).size(), counterObjects-1);
-		assertEquals(SpaceFactory.getContents(oven).size(), 1);
+		int counterObjects = SpaceFactory.getContents(state.getObject("counter")).size();
+		Assert.assertEquals(SpaceFactory.getContents(state.getObject("oven")).size(), 0);
+		Assert.assertEquals(SpaceFactory.getContents(state.getObject("counter")).size(), counterObjects);
+		state = move.performAction(state, new String[] {"human", "baking_pan", "oven"});
+		Assert.assertEquals(ContainerFactory.getSpaceName(state.getObject("baking_pan")), "oven");
+		Assert.assertEquals(SpaceFactory.getContents(state.getObject("counter")).size(), counterObjects-1);
+		Assert.assertEquals(SpaceFactory.getContents(state.getObject("oven")).size(), 1);
 		
-		assertEquals(SpaceFactory.getContents(stove).size(), 0);
-		((MoveAction)move).move(state, melting_pot, stove);
-		assertEquals(ContainerFactory.getSpaceName(melting_pot), "stove");
-		assertEquals(SpaceFactory.getContents(counter).size(), counterObjects-2);
-		assertEquals(SpaceFactory.getContents(stove).size(), 1);
+		Assert.assertEquals(SpaceFactory.getContents(state.getObject("stove")).size(), 0);
+		state = move.performAction(state, new String[] {"human", "melting_pot", "stove"});
+		Assert.assertEquals(ContainerFactory.getSpaceName(state.getObject("melting_pot")), "stove");
+		Assert.assertEquals(SpaceFactory.getContents(state.getObject("counter")).size(), counterObjects-2);
+		Assert.assertEquals(SpaceFactory.getContents(state.getObject("stove")).size(), 1);
 		
-		((MoveAction)move).move(state, melting_pot, counter);
-		((MoveAction)move).move(state, baking_pan, counter);
-		assertEquals(SpaceFactory.getContents(stove).size(), 0);
-		assertEquals(SpaceFactory.getContents(oven).size(), 0);
-		assertEquals(SpaceFactory.getContents(counter).size(), counterObjects);
+		state = move.performAction(state, new String[] {"human", "melting_pot", "counter"});
+		state = move.performAction(state, new String[] {"human", "baking_pan", "counter"});
+		Assert.assertEquals(SpaceFactory.getContents(state.getObject("stove")).size(), 0);
+		Assert.assertEquals(SpaceFactory.getContents(state.getObject("oven")).size(), 0);
+		Assert.assertEquals(SpaceFactory.getContents(state.getObject("counter")).size(), counterObjects);
 	}
 	
 	@Test
@@ -224,7 +194,7 @@ public class TestActions {
 		topLevelIngredient = new Brownies().topLevelIngredient;
 		knowledgebase = new IngredientKnowledgebase();
 		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
-		setUpState();
+		this.setUpState();
 		Action move = new MoveAction(domain, topLevelIngredient);
 		Action switch_a = new SwitchAction(domain);
 		
@@ -242,16 +212,16 @@ public class TestActions {
 		
 		
 		//move into an oven that's turned off!
-		((MoveAction)move).move(state, baking_pan, oven);
-		((MoveAction)move).move(state, baking_pan, state.getObject("counter"));
-		BakingAsserts.assertIsNotBaked(brownies);
+		state = move.performAction(state, new String[] {"human", "baking_pan", "oven"});
+		state = move.performAction(state, new String[] {"human", "baking_pan", "counter"});
+		BakingAsserts.assertIsNotBaked(state.getObject("brownies"));
 		
 		
 		//turn oven on
-		((SwitchAction)switch_a).switchOnOff(state, oven);
-		((MoveAction)move).move(state, baking_pan, oven);
-		((MoveAction)move).move(state, baking_pan, state.getObject("counter"));
-		BakingAsserts.assertIsBaked(brownies);
+		state = switch_a.performAction(state, new String[] {"human", "oven"});
+		state = move.performAction(state, new String[] {"human", "baking_pan", "oven"});
+		state = move.performAction(state, new String[] {"human", "baking_pan", "counter"});
+		BakingAsserts.assertIsBaked(state.getObject("brownies"));
 	}
 	
 	@Test
@@ -259,7 +229,7 @@ public class TestActions {
 		topLevelIngredient = new Brownies().topLevelIngredient;
 		knowledgebase = new IngredientKnowledgebase();
 		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
-		setUpState();
+		this.setUpState();
 		Action move = new MoveAction(domain, topLevelIngredient);
 		Action switch_a = new SwitchAction(domain);
 		
@@ -271,17 +241,16 @@ public class TestActions {
 		
 		ContainerFactory.addIngredient(melting_pot, "butter");
 		
-		ObjectInstance butter = state.getObject("butter");
 		
-		BakingAsserts.assertIsNotMelted(butter);
-		((MoveAction)move).move(state, melting_pot, stove);
-		((MoveAction)move).move(state, melting_pot, state.getObject("counter"));
-		BakingAsserts.assertIsNotMelted(butter);
+		BakingAsserts.assertIsNotMelted(state.getObject("butter"));
+		state = move.performAction(state, new String[] {"human", "melting_pot", "stove"});
+		state = move.performAction(state, new String[] {"human", "melting_pot", "counter"});
+		BakingAsserts.assertIsNotMelted(state.getObject("butter"));
 		
-		((SwitchAction)switch_a).switchOnOff(state, stove);
-		((MoveAction)move).move(state, melting_pot, stove);
-		((MoveAction)move).move(state, melting_pot, state.getObject("counter"));
-		BakingAsserts.assertIsMelted(butter);
+		state = switch_a.performAction(state, new String[] {"human", "stove"});
+		state = move.performAction(state, new String[] {"human", "melting_pot", "stove"});
+		state = move.performAction(state, new String[] {"human", "melting_pot", "counter"});
+		BakingAsserts.assertIsMelted(state.getObject("butter"));
 	}
 	
 	@Test
@@ -289,47 +258,25 @@ public class TestActions {
 		topLevelIngredient = new MashedPotatoes().topLevelIngredient;
 		knowledgebase = new IngredientKnowledgebase();
 		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
-		setUpState();
+		this.setUpState();
 		Action peel = new PeelAction(domain, topLevelIngredient);
 		
-		// can melt an ingredient
-		ObjectInstance potatoes = state.getObject("potatoes");
-		BakingAsserts.assertIsNotPeeled(potatoes);
-		((PeelAction)peel).peel(potatoes);
-		BakingAsserts.assertIsPeeled(potatoes);
+		// can peel an ingredient
+		BakingAsserts.assertIsNotPeeled(state.getObject("potatoes"));
+		state = peel.performAction(state, new String[] {"human", "potatoes_bowl"});
+		BakingAsserts.assertIsPeeled(state.getObject("potatoes"));
 		
-		// can't melt a melted ingredient
-		BakingAsserts.assertActionNotApplicable(peel, state, new String[] {"human", "potatoes"});
-		BakingAsserts.assertIsPeeled(potatoes);
+		// can't peel a peeled ingredient
+		BakingAsserts.assertActionNotApplicable(peel, state, new String[] {"human", "potatoes_bowl"});
+		BakingAsserts.assertIsPeeled(state.getObject("potatoes"));
 	}
-	
-	/*@Test
-	public void testBakeAction() {
-		topLevelIngredient = new Brownies().topLevelIngredient;
-		knowledgebase = new IngredientKnowledgebase();
-		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
-		setUpState();
-		Action bake = new BakeAction(domain, topLevelIngredient);
-		
-		// can melt an ingredient
-		ObjectInstance brownies = IngredientFactory.getNewIngredientInstance(topLevelIngredient, 
-				"brownies", domain.getObjectClass("complex_ingredient"));
-		state.addObject(brownies);
-		BakingAsserts.assertIsNotBaked(brownies);
-		((BakeAction)bake).bake(state, brownies);
-		BakingAsserts.assertIsBaked(brownies);
-		
-		// can't melt a melted ingredient
-		BakingAsserts.assertActionNotApplicable(bake, state, new String[] {"human", "brownies"});
-		BakingAsserts.assertIsBaked(brownies);
-	}*/
 	
 	@Test
 	public void testPourAction() {
 		topLevelIngredient = new Brownies().topLevelIngredient;
 		knowledgebase = new IngredientKnowledgebase();
 		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
-		setUpState();
+		this.setUpState();
 		Action pour = new PourAction(domain, topLevelIngredient);
 		
 		//empty pouring container
@@ -337,10 +284,10 @@ public class TestActions {
 		
 		//Check that pouring works how it is supposed to
 		BakingAsserts.assertActionApplicable(pour, state, new String[] {"human", "flour_bowl", "mixing_bowl_1"});
-		((PourAction)pour).pour(state, "flour_bowl", "mixing_bowl_1");
+		state = pour.performAction(state, new String[] {"human", "flour_bowl", "mixing_bowl_1"});
 		BakingAsserts.assertContainerContains(state.getObject("mixing_bowl_1"), "flour");
-		assertEquals(ContainerFactory.getContentNames(state.getObject("flour_bowl")).size(), 0);
-		assertEquals(ContainerFactory.getContentNames(state.getObject("mixing_bowl_1")).size(), 1);
+		Assert.assertEquals(ContainerFactory.getContentNames(state.getObject("flour_bowl")).size(), 0);
+		Assert.assertEquals(ContainerFactory.getContentNames(state.getObject("mixing_bowl_1")).size(), 1);
 		
 		//pouring into a non-mixing container
 		BakingAsserts.assertActionNotApplicable(pour, state, new String[] {"human",  "mixing_bowl_1", "flour_bowl"});
@@ -351,7 +298,7 @@ public class TestActions {
 		topLevelIngredient = new Brownies().topLevelIngredient;
 		knowledgebase = new IngredientKnowledgebase();
 		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
-		setUpState();
+		this.setUpState();
 		Action move = new MoveAction(domain, topLevelIngredient);
 		Action switch_a = new SwitchAction(domain);
 		
@@ -362,12 +309,13 @@ public class TestActions {
 		
 		BakingAsserts.assertActionNotApplicable(switch_a, state, new String[] {"human", "counter"});
 		
-		BakingAsserts.assertSpaceOff(oven);
-		BakingAsserts.assertSpaceOff(stove);
-		((SwitchAction)switch_a).switchOnOff(state, oven);
-		((SwitchAction)switch_a).switchOnOff(state, stove);
-		BakingAsserts.assertSpaceOn(oven);
-		BakingAsserts.assertSpaceOn(stove);
+		BakingAsserts.assertSpaceOff(state.getObject("oven"));
+		BakingAsserts.assertSpaceOff(state.getObject("stove"));
+		state = switch_a.performAction(state, new String[] {"human", "oven"});
+		state = switch_a.performAction(state, new String[] {"human", "stove"});
+
+		BakingAsserts.assertSpaceOn(state.getObject("oven"));
+		BakingAsserts.assertSpaceOn(state.getObject("stove"));
 		
 		
 	}
@@ -377,7 +325,7 @@ public class TestActions {
 		topLevelIngredient = new Brownies().topLevelIngredient;
 		knowledgebase = new IngredientKnowledgebase();
 		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
-		setUpState();
+		this.setUpState();
 		Action move = new MoveAction(domain, topLevelIngredient);
 		Action switch_a = new SwitchAction(domain);
 		
@@ -395,12 +343,13 @@ public class TestActions {
 		
 		
 		//move into an oven that's turned off!
-		BakingAsserts.assertIsNotBaked(brownies);
-		((MoveAction)move).move(state, baking_pan, oven);
-		BakingAsserts.assertIsNotBaked(brownies);
+		BakingAsserts.assertIsNotBaked(state.getObject("brownies"));
+		state = move.performAction(state, new String[] {"human", "baking_pan", "oven"});
+		BakingAsserts.assertIsNotBaked(state.getObject("brownies"));
 		//turn oven on
-		((SwitchAction)switch_a).switchOnOff(state, oven);
-		BakingAsserts.assertIsBaked(brownies);
+		state = switch_a.performAction(state, new String[] {"human", "oven"});
+
+		BakingAsserts.assertIsBaked(state.getObject("brownies"));
 	}
 	
 	@Test
@@ -408,7 +357,7 @@ public class TestActions {
 		topLevelIngredient = new Brownies().topLevelIngredient;
 		knowledgebase = new IngredientKnowledgebase();
 		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
-		setUpState();
+		this.setUpState();
 		Action move = new MoveAction(domain, topLevelIngredient);
 		Action switch_a = new SwitchAction(domain);
 		
@@ -420,12 +369,10 @@ public class TestActions {
 		
 		ContainerFactory.addIngredient(melting_pot, "butter");
 		
-		ObjectInstance butter = state.getObject("butter");
-		
-		BakingAsserts.assertIsNotMelted(butter);
-		((MoveAction)move).move(state, melting_pot, stove);
-		BakingAsserts.assertIsNotMelted(butter);
-		((SwitchAction)switch_a).switchOnOff(state, stove);
-		BakingAsserts.assertIsMelted(butter);
+		BakingAsserts.assertIsNotMelted(state.getObject("butter"));
+		state = move.performAction(state, new String[] {"human", "melting_pot", "stove"});
+		BakingAsserts.assertIsNotMelted(state.getObject("butter"));
+		state = switch_a.performAction(state, new String[] {"human", "stove"});
+		BakingAsserts.assertIsMelted(state.getObject("butter"));
 	}
 }

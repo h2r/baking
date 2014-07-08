@@ -58,13 +58,9 @@ speed up the total time t1o solve the problem.
 */
 public class DualAgentPerfectRobot  implements DomainGenerator {
 
-	/*IngredientRecipe current_ing = null;
-	HashMap<String, Boolean> affordance;*/
+
 	public DualAgentPerfectRobot() {
-		/*this.current_ing = null;
-		this.affordance = new HashMap<String,Boolean>();*/
-		
-		// TODO Auto-generated constructor stub
+
 	}
 	@Override
 	public Domain generateDomain() {

@@ -17,7 +17,7 @@ public class SpaceOn extends BakingPropositionalFunction {
 	
 	public boolean isTrue(State state, String[] params) {
 		
-		if ((this.spaceName != null && !this.spaceName.equals("")) && !this.spaceName.equals(params[1])) {
+		if ((this.spaceName != null && !this.spaceName.isEmpty()) && !this.spaceName.equals(params[1])) {
 			return false;
 		}
 		ObjectInstance space = state.getObject(params[1]);

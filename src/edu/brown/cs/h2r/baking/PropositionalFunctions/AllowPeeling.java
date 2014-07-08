@@ -27,28 +27,38 @@ public class AllowPeeling extends BakingPropositionalFunction {
 			ObjectInstance toPeel = null;
 			for (String name : contents) {
 				toPeel = state.getObject(name);
-				break;
-			}
-			// Is this a necessary ingredient in the recipe?
-			for (IngredientRecipe content : this.topLevelIngredient.getConstituentIngredients()) {
-				if (content.getName().equals(toPeel.getName())) {
-					// If it is, then make sure it needs to be peeled in the first place
-					return content.getPeeled();
+				boolean match = false;
+				// Is this a necessary ingredient in the recipe?
+				for (IngredientRecipe content : this.topLevelIngredient.getConstituentIngredients()) {
+					if (content.getName().equals(toPeel.getName())) {
+						// If it is, then make sure it needs to be peeled in the first place
+						if (!content.getPeeled()) {
+							return false;
+						}
+						match = true;
+						break;
+					}
 				}
-			}
-			// could this potentially fulfill a trait in the recipe?
-			AbstractMap<String, IngredientRecipe> necessaryTraits = this.topLevelIngredient.getNecessaryTraits();
-			Set<String> toMeltTraits = IngredientFactory.getTraits(toPeel);
-			for (String trait : necessaryTraits.keySet()) {
-				if (toMeltTraits.contains(trait)) {
-					// If it could potentially fulfill a trait ingredient, then ensure that 
-					// it has to be peeled!
-					if (necessaryTraits.get(trait).getPeeled()) {
-						return true;
+				if (!match) {
+					// could this potentially fulfill a trait in the recipe? 
+					AbstractMap<String, IngredientRecipe> necessaryTraits = this.topLevelIngredient.getNecessaryTraits();
+					Set<String> toMeltTraits = IngredientFactory.getTraits(toPeel);
+					for (String trait : necessaryTraits.keySet()) {
+						if (toMeltTraits.contains(trait)) {
+							// If it could potentially fulfill a trait ingredient, then ensure that 
+							// it has to be peeled!
+							if (necessaryTraits.get(trait).getPeeled()) {
+								match = true;
+								break;
+							}
+						}
+					}
+					if (!match) {
+						return false;
 					}
 				}
 			}
-			return false;
+			return true;
 		} else {
 			// If no specific ingredient has been given to check, then allow the melting action
 			// Iff there exists some ingredient or trait ingredient that is melted!

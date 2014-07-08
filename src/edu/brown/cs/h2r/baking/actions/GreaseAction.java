@@ -61,7 +61,7 @@ public class GreaseAction extends BakingAction {
 	}
 	
 	//TODO: Add use counts with this!
-	public void grease(State state, ObjectInstance container, ObjectInstance grease)
+	private void grease(State state, ObjectInstance container, ObjectInstance grease)
 	{
 		//TODO: Change the ingredient use count!
 		ContainerFactory.greaseContainer(container);
