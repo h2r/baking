@@ -24,6 +24,7 @@ public class AffordanceCreator {
 	public static final String MOVE_PF = "movePF";
 	public static final String POUR_PF = "pourPF";
 	public static final String PEEL_PF = "peelPF";
+	public static final String USE_PF = "usePF";
 	public static final String SWITCH_PF = "switchPF";
 	public static final String GREASE_PF = "greasePF";
 	public static final String FINISH_PF = "success";
@@ -40,6 +41,7 @@ public class AffordanceCreator {
 	private ArrayList<PFAtom> peelPFAtoms;
 	private ArrayList<PFAtom> greasePFAtoms;
 	private ArrayList<PFAtom> switchPFAtoms;
+	private ArrayList<PFAtom> usePFAtoms;
 	private ArrayList<PFAtom> containerGreasedPFAtoms;
 	private ArrayList<PFAtom> spaceOnPFAtoms;
 	private ArrayList<PFAtom> finishedPFAtoms;
@@ -59,6 +61,7 @@ public class AffordanceCreator {
 		final PropositionalFunction allowPeeling = new AllowPeeling(AffordanceCreator.PEEL_PF, domain, ingredient);
 		final PropositionalFunction allowGreasing = new AllowGreasing(AffordanceCreator.GREASE_PF, domain, ingredient);
 		final PropositionalFunction allowSwitching = new AllowSwitching(AffordanceCreator.SWITCH_PF, domain, ingredient);
+		final PropositionalFunction allowUsing = new AllowUsingTool(AffordanceCreator.USE_PF, domain, ingredient);
 		final PropositionalFunction isSuccess = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, ingredient);
 		final PropositionalFunction isFailure = new RecipeBotched(AffordanceCreator.BOTCHED_PF, domain, ingredient);
 		final PropositionalFunction spaceOn = new SpaceOn(AffordanceCreator.SPACEON_PF, domain, ingredient, "");

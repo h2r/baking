@@ -71,7 +71,7 @@ public class KevinsKitchen implements DomainGenerator {
 		Action mix = new MixAction(domain, recipe.topLevelIngredient);
 		Action pour = new PourAction(domain, recipe.topLevelIngredient);
 		Action move = new MoveAction(domain, recipe.topLevelIngredient);
-		Action peel = new PeelAction(domain, recipe.topLevelIngredient);
+		//Action peel = new PeelAction(domain, recipe.topLevelIngredient);
 		Action grease = new GreaseAction(domain);
 		Action a_switch = new SwitchAction(domain);
 		Action use = new UseAction(domain, recipe.topLevelIngredient);

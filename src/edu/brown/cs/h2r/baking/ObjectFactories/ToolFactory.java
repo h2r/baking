@@ -3,6 +3,7 @@ package edu.brown.cs.h2r.baking.ObjectFactories;
 import java.util.List;
 import java.util.Set;
 
+import edu.brown.cs.h2r.baking.IngredientRecipe;
 import burlap.oomdp.core.Attribute;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
@@ -75,5 +76,19 @@ public class ToolFactory {
 		return null;
 	}
 	
-	//public static Boolean 
+	public static boolean toolCanBeUsed(ObjectInstance tool, IngredientRecipe ingredient) {
+		return ingredient.hasToolTrait(ToolFactory.getToolTrait(tool));
+	}
+	
+	public static boolean toolCanBeUsed(ObjectInstance tool, ObjectInstance ingredient) {
+		return IngredientFactory.getToolTraits(ingredient).contains(ToolFactory.getToolTrait(tool));
+	}
+	
+	public static boolean toolHasBeenUsed(ObjectInstance tool, IngredientRecipe ingredient) {
+		return ingredient.hasToolAttribute(ToolFactory.getToolAttribute(tool));
+	}
+	
+	public static boolean toolHasBeenUsed(ObjectInstance tool, ObjectInstance ingredient) {
+		return IngredientFactory.getToolAttributes(ingredient).contains(ToolFactory.getToolAttribute(tool));
+	}
 }

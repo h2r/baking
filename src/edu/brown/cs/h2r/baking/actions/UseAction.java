@@ -30,11 +30,11 @@ public class UseAction extends BakingAction {
 		for (String name : ContainerFactory.getContentNames(container)) {
 			ObjectInstance ingredient = state.getObject(name);
 			// This tool can't be used on this ingredient
-			if (!IngredientFactory.getToolTraits(ingredient).contains(ToolFactory.getToolTrait(tool))) {
+			if (!ToolFactory.toolCanBeUsed(tool, ingredient)) {
 				return false;
 			}
 			// Tool has already been used on this ingredient
-			if (IngredientFactory.getToolAttributes(ingredient).contains(ToolFactory.getToolAttribute(tool))) {
+			if (ToolFactory.toolHasBeenUsed(tool, ingredient)) {
 				return false;
 			}
 		}
