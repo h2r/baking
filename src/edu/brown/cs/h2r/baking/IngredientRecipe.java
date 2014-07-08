@@ -125,7 +125,6 @@ public class IngredientRecipe {
 		this.useCount = count;
 	}
 
-	/* traits */
 	public Boolean hasTraits() {
 		return !this.traits.isEmpty();
 	}
@@ -263,11 +262,25 @@ public class IngredientRecipe {
 		this.peeled = ((attributes & Recipe.PEELED) == Recipe.PEELED) ? true : false;
 	}
 	
-	public int generateAttributeNumber(Boolean mixed, Boolean melted, Boolean baked, Boolean peeled) {
+	public static int generateAttributeNumber(Boolean mixed, Boolean melted, Boolean baked, Boolean peeled) {
 		int mixed_int = mixed ? Recipe.MIXED : 0;
 		int melted_int = melted ? Recipe.MELTED : 0;
 		int baked_int = baked ? Recipe.BAKED : 0;
 		int peeled_int = peeled ? Recipe.PEELED : 0;
 		return mixed_int|melted_int|baked_int|peeled_int;
+	}
+	
+	public static AbstractMap<String, IngredientRecipe> getRecursiveSwappedIngredients(IngredientRecipe ingredient) {
+		AbstractMap<String, IngredientRecipe> swapped = new HashMap<String, IngredientRecipe>();
+		if (ingredient.isSimple()) {
+			return swapped;
+		}
+		if (ingredient.getSwapped()) {
+			swapped.put(ingredient.getName(), ingredient);
+		}
+		for (IngredientRecipe ing : ingredient.getContents()) {
+			swapped.putAll(getRecursiveSwappedIngredients(ing));
+		}
+		return swapped;
 	}
 }

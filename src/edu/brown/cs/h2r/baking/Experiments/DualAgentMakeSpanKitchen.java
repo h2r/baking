@@ -44,7 +44,6 @@ import edu.brown.cs.h2r.baking.actions.PourAction;
 public class DualAgentMakeSpanKitchen  implements DomainGenerator {
 
 	public DualAgentMakeSpanKitchen() {
-		// TODO Auto-generated constructor stub
 	}
 	@Override
 	public Domain generateDomain() {
@@ -126,7 +125,7 @@ public class DualAgentMakeSpanKitchen  implements DomainGenerator {
 		StateConditionTest goalCondition = new StateConditionTest() {
 			@Override
 			public boolean satisfies(State s) {
-				return s.somePFGroundingIsTrue(isSuccess);
+				return isSuccess.somePFGroundingIsTrue(s);
 			}
 		};
 		//final int numSteps = Recipe.getNumberSteps(ingredient);

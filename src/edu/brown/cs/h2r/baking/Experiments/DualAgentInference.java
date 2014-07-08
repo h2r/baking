@@ -57,7 +57,6 @@ speed up the total time t1o solve the problem.
 public class DualAgentInference  implements DomainGenerator {
 
 	public DualAgentInference() {
-		// TODO Auto-generated constructor stub
 	}
 	@Override
 	public Domain generateDomain() {

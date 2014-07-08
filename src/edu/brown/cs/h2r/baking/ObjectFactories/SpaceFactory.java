@@ -2,7 +2,6 @@ package edu.brown.cs.h2r.baking.ObjectFactories;
 import java.util.List;
 import java.util.Set;
 
-import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import burlap.oomdp.core.Attribute;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
@@ -102,13 +101,15 @@ public class SpaceFactory {
 	
 	public static ObjectInstance getNewHeatingSpaceObjectInstance(ObjectClass spaceClass, 
 			String name, List<String> containers, String agent) {
-		return SpaceFactory.getNewObjectInstance(spaceClass, name, SpaceFactory.HEATING, containers, agent);
+		return SpaceFactory.getNewObjectInstance(spaceClass, name, SpaceFactory.HEATING|SpaceFactory.SWITCHABLE,
+				containers, agent);
 	}
 	
 	public static ObjectInstance getNewHeatingSpaceObjectInstance(Domain domain, 
 			String name, List<String> containers, String agent) {
 		return SpaceFactory.getNewObjectInstance(
-				domain.getObjectClass(SpaceFactory.ClassName), name, SpaceFactory.HEATING, containers, agent);
+				domain.getObjectClass(SpaceFactory.ClassName), name, SpaceFactory.HEATING|SpaceFactory.SWITCHABLE,
+				containers, agent);
 	}
 	
 	public static ObjectInstance getNewBakingSpaceObjectInstance(ObjectClass spaceClass, 

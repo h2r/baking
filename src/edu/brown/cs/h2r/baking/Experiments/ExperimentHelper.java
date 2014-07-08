@@ -18,7 +18,6 @@ import burlap.oomdp.singleagent.GroundedAction;
 public class ExperimentHelper {
 
 	public ExperimentHelper() {
-		// TODO Auto-generated constructor stub
 	}
 	
 	public static void printEpisodeSequence(List<GroundedAction> fullActions,
@@ -78,7 +77,7 @@ public class ExperimentHelper {
 		
 		List<GroundedAction> gas = new ArrayList<GroundedAction>();
 		for (Action action : actions) {
-			List<GroundedAction> groundedActions = currentState.getAllGroundedActionsFor(action);
+			List<GroundedAction> groundedActions = action.getAllApplicableGroundedActions(currentState);
 			gas.addAll(groundedActions);
 		}
 		Random r = new Random();

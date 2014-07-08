@@ -1,9 +1,18 @@
 package edu.brown.cs.h2r.baking.Recipes;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import burlap.oomdp.core.Domain;
+import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
+import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.ContainerGreased;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.SpaceOn;
 
 public class MoltenLavaCake extends Recipe {
 	
@@ -35,8 +44,52 @@ public class MoltenLavaCake extends Recipe {
 		ingredientList4.add(unflavored_batter);
 		ingredientList4.add(knowledgebase.getIngredient("vanilla"));
 		ingredientList4.add(knowledgebase.getIngredient("orange_liqueur"));
-		this.topLevelIngredient = new IngredientRecipe("molten_lava_cake", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList4);
+		this.topLevelIngredient = new IngredientRecipe("molten_lava_cake", Recipe.BAKED, Recipe.SWAPPED, ingredientList4);
 
+	}
+	
+	public void setUpSubgoals(Domain domain) {
+		AbstractMap<String, IngredientRecipe> swappedIngredients = IngredientRecipe.getRecursiveSwappedIngredients(this.topLevelIngredient);
+		BakingPropositionalFunction pf1 = new SpaceOn(AffordanceCreator.SPACEON_PF, domain, this.topLevelIngredient, "oven");
+		BakingSubgoal sg1 = new BakingSubgoal(pf1, this.topLevelIngredient);
+		this.subgoals.add(sg1);
+		
+		BakingPropositionalFunction pf2 = new ContainerGreased(AffordanceCreator.CONTAINERGREASED_PF, domain, this.topLevelIngredient);
+		BakingSubgoal sg2 = new BakingSubgoal(pf2, this.topLevelIngredient);
+		this.subgoals.add(sg2);
+
+		BakingPropositionalFunction pf3 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("melted_stuff"));
+		BakingSubgoal sg3 = new BakingSubgoal(pf3, swappedIngredients.get("melted_stuff"));
+		sg3.addPrecondition(sg1);
+		sg3.addPrecondition(sg2);
+		this.subgoals.add(sg3);
+		
+		BakingPropositionalFunction pf4 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("batter"));
+		BakingSubgoal sg4 = new BakingSubgoal(pf4, swappedIngredients.get("batter"));
+		sg4.addPrecondition(sg3);
+		this.subgoals.add(sg4);
+		
+		BakingPropositionalFunction pf5 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("unflavored_batter"));
+		BakingSubgoal sg5 = new BakingSubgoal(pf5, swappedIngredients.get("unflavored_batter"));
+		sg5.addPrecondition(sg4);
+		this.subgoals.add(sg5);
+		
+		BakingPropositionalFunction pf6 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("molten_lava_cake"));
+		BakingSubgoal sg6 = new BakingSubgoal(pf6, swappedIngredients.get("molten_lava_cake"));
+		sg6.addPrecondition(sg5);
+		this.subgoals.add(sg6);
+	}
+	
+	public List<String> getRecipeProcedures() {
+		return Arrays.asList("Recipe: Molten Lava Cake",
+				"Preheat oven to 425 degrees F\n",						//0
+				"Grease 6 (6-ounce) custard cups\n",								//1
+				"In a large saucepan, Melt the chocolates and butter\n",							//2
+				"Add the flour and sugar to chocolate mixture.\n",							//3
+				"Stir in the eggs and yolks until smooth. \n",		//4
+				"Stir in the vanilla and orange liqueur\n",										//5
+				"Spread the batter evenly between the custard cups \n",
+				"Bake in preheated oven for 25 to 30 minutes. Do not overcook.");		
 	}
 
 }

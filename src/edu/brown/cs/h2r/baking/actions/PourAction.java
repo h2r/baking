@@ -35,8 +35,6 @@ public class PourAction extends BakingAction {
 		ObjectInstance pouringContainer = state.getObject(params[1]);
 		ObjectInstance receivingContainer = state.getObject(params[2]);
 
-		
-		//TODO: Move this elsewhere to planner
 		String pouringContainerSpace = ContainerFactory.getSpaceName(pouringContainer);
 		String receivingContainerSpace = ContainerFactory.getSpaceName(receivingContainer);
 		
@@ -67,10 +65,6 @@ public class PourAction extends BakingAction {
 		if (!SpaceFactory.isWorking(pouringContainerSpaceObject)) {
 			return false;
 		}
-		
-		if (ContainerFactory.isMixingContainer(pouringContainer) && (ContainerFactory.isEmptyContainer(receivingContainer))) {
-			return false;
-		}
 		return true;
 	}
 
@@ -83,11 +77,11 @@ public class PourAction extends BakingAction {
 		return state;
 	}
 	
-	public void pour(State state, String pouringContainer, String receivingContainer) {
+	private void pour(State state, String pouringContainer, String receivingContainer) {
 		pour(state, state.getObject(pouringContainer), state.getObject(receivingContainer));
 	}
 	
-	public void pour(State state, ObjectInstance pouringContainer, ObjectInstance receivingContainer)
+	private void pour(State state, ObjectInstance pouringContainer, ObjectInstance receivingContainer)
 	{
 		Set<String> ingredients = new HashSet<String>(ContainerFactory.getContentNames(pouringContainer));
 		ContainerFactory.addIngredients(receivingContainer, ingredients);

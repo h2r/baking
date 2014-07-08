@@ -17,6 +17,7 @@ import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
+import burlap.oomdp.core.Domain;
 
 import java.util.AbstractMap;
 
@@ -27,16 +28,6 @@ public abstract class Recipe {
 	protected IngredientKnowledgebase knowledgebase;
 	protected Set<BakingSubgoal> subgoals;
 	
-	/*public static final Boolean NOT_MIXED = false;
-	public static final Boolean NOT_MELTED = false;
-	public static final Boolean NOT_BAKED = false;
-	public static final Boolean NOT_SWAPPED = false;
-	public static final Boolean NOT_PEELED = false;
-	public static final Boolean MIXED = true;
-	public static final Boolean MELTED = true;
-	public static final Boolean BAKED = true;
-	public static final Boolean SWAPPED = true;
-	public static final Boolean PEELED = true;*/
 	public static final int NO_ATTRIBUTES = 0;
 	public static final int MIXED = 1;
 	public static final int MELTED = 2;
@@ -104,17 +95,6 @@ public abstract class Recipe {
 		
 		if (ingredientRecipe.isSimple())
 		{
-			//TODO: Fix this weird bug. Inelegant solution for now.
-			/*if (!ingredientRecipe.getName().equals(object.getName())) {
-				String obj_name = object.getName();
-				String ing_name = ingredientRecipe.getName();
-				for (int i = 0; i < ing_name.length(); i++) {
-					if (obj_name.charAt(i) != ing_name.charAt(i)) {
-						return false;
-					}
-				}
-				return true;
-			}*/
 			return ingredientRecipe.getName().equals(object.getName());
 		}
 		
@@ -512,6 +492,12 @@ public abstract class Recipe {
 		
 		// This object doesn't match anything in the two lists of sub ingredients. We've failed.
 		return true;
+	}
+	
+	public abstract void setUpSubgoals(Domain domain);
+	
+	public Set<BakingSubgoal> getSubgoals() {
+		return this.subgoals;
 	}
 	
 	

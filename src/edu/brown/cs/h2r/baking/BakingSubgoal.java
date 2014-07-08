@@ -1,49 +1,67 @@
 package edu.brown.cs.h2r.baking;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
+import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
 import burlap.oomdp.core.GroundedProp;
-import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
-import burlap.oomdp.logicalexpressions.PFAtom;
 
 public class BakingSubgoal {
 
-	PFAtom goal;
-	Set<PFAtom> preconditions;
+	private BakingPropositionalFunction goal;
+	private List<BakingSubgoal> preconditions;
+	private IngredientRecipe ingredient;
 	
-	public BakingSubgoal(PropositionalFunction pf, String[] params) {
-		GroundedProp gp = new GroundedProp(pf, params);
-		this.goal = new PFAtom(gp);
-		this.preconditions = new HashSet<PFAtom>(); 	
+	public BakingSubgoal(BakingPropositionalFunction pf, IngredientRecipe ingredient) {
+		this.goal = pf;
+		this.preconditions = new ArrayList<BakingSubgoal>();
+		this.ingredient = ingredient;
 	}
 	
-	public PFAtom getGoal() {
+	public BakingPropositionalFunction getGoal() {
 		return this.goal;
 	}
 	
-	public Set<PFAtom> getPreconditions() {
+	public List<BakingSubgoal> getPreconditions() {
 		return this.preconditions;
 	}
 	
-	public void addPrecondition(PropositionalFunction pf, String[] params) {
-		GroundedProp gp = new GroundedProp(pf, params);
-		PFAtom atom = new PFAtom(gp);
-		preconditions.add(atom);
-		//preconditions.add(new PFAtom(new GroundedProp(pf, params)));
+	public void addPrecondition(BakingSubgoal sg) {
+		this.preconditions.add(sg);
 	}
 	
 	public Boolean goalCompleted(State state) {
-		return this.goal.evaluateIn(state);
+		this.goal.changeTopLevelIngredient(this.ingredient);
+		Boolean completed = false;
+		for (GroundedProp gp : this.goal.getAllGroundedPropsForState(state)) {
+			if (gp.isTrue(state)) {
+				completed = true;
+				break;
+			}
+		}
+		return completed;
 	}
 	
-	public Boolean preconditionsSatisfied(State state) {
-		for (PFAtom pc : this.preconditions) {
-			if (!pc.evaluateIn(state)) {
+	public Boolean allPreconditionsCompleted(State state) {
+		for (BakingSubgoal sg : this.preconditions) {
+			BakingPropositionalFunction pf = sg.getGoal();
+			pf.changeTopLevelIngredient(sg.getIngredient());
+			Boolean completed = false;
+			for (GroundedProp gp : pf.getAllGroundedPropsForState(state)) {
+				if (gp.isTrue(state)) {
+					completed = true;
+					break;
+				}
+			}
+			if (!completed) {
 				return false;
 			}
 		}
 		return true;
+	}
+	
+	public IngredientRecipe getIngredient() {
+		return this.ingredient;
 	}
 }
