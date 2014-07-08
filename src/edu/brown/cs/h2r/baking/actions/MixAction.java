@@ -118,7 +118,8 @@ public class MixAction extends BakingAction {
 			
 			ObjectInstance newIngredient = 
 					IngredientFactory.getNewComplexIngredientObjectInstance(complexIngredientClass, 
-							Integer.toString(rando.nextInt()), Recipe.NO_ATTRIBUTES, false, container.getName(), traits, contents);
+							Integer.toString(rando.nextInt()), Recipe.NO_ATTRIBUTES, false, container.getName(),
+							new TreeSet<String>(), new TreeSet<String>(), traits, contents);
 			state.addObject(newIngredient);
 			ContainerFactory.removeContents(container);
 			for (ObjectInstance ob : hidden_copies) {
@@ -146,7 +147,7 @@ public class MixAction extends BakingAction {
 		}
 		Set<String> ings = ContainerFactory.getContentNames(container);
 		ObjectInstance new_ing = IngredientFactory.getNewComplexIngredientObjectInstance(
-				domain.getObjectClass(IngredientFactory.ClassNameComplex), toswap, Recipe.NO_ATTRIBUTES, true, "", traits, ings);
+				domain.getObjectClass(IngredientFactory.ClassNameComplex), toswap, Recipe.NO_ATTRIBUTES, true, "",new TreeSet<String>(), new TreeSet<String>(), traits, ings);
 		// Make the hidden Copies
 		Set<ObjectInstance> hidden_copies = new HashSet<ObjectInstance>();
 		for (String name : ings) {

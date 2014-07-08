@@ -23,20 +23,23 @@ public class IngredientKnowledgebase {
 	public static final String NONMELTABLE = "unsaturated";
 	public static final String LUBRICANT = "lubricant";
 	
-	private final String TRAITFILE = "IngredientTraits.txt";
-	private final String COMBINATIONFILE = "FakeCombinations.txt";
-	private final String COMBINATIONTRAITFILE = "CombinationTraits.txt";
+	private static final String TRAITFILE = "IngredientTraits.txt";
+	private static final String COMBINATIONFILE = "FakeCombinations.txt";
+	private static final String COMBINATIONTRAITFILE = "CombinationTraits.txt";
+	private static final String TOOLTRAITFILE = "IngredientToolTraits.txt";
 	
 	private AbstractMap<String, Set<String>> traitMap;
 	private AbstractMap<String, Set<String>> combinationTraitMap;
 	private AbstractMap<String, Set<String>> allTraits;
 	private AbstractMap<String, ArrayList<Set<String>>> combinationMap;
 	private AbstractMap<String, IngredientRecipe> allIngredients;
+	private AbstractMap<String, Set<String>> toolTraitMap;
 	public IngredientKnowledgebase() {
-		this.traitMap = new TraitParser(TRAITFILE).getMap();
-		this.combinationTraitMap = new TraitParser(COMBINATIONTRAITFILE).getMap();
+		this.traitMap = new TraitParser(IngredientKnowledgebase.TRAITFILE).getMap();
+		this.toolTraitMap = new TraitParser(IngredientKnowledgebase.TOOLTRAITFILE).getMap();
+		this.combinationTraitMap = new TraitParser(IngredientKnowledgebase.COMBINATIONTRAITFILE).getMap();
 		this.allTraits = generateAllTraitMap();
-		this.combinationMap = new CombinationParser(COMBINATIONFILE).getMap();
+		this.combinationMap = new CombinationParser(IngredientKnowledgebase.COMBINATIONFILE).getMap();
 		this.allIngredients = generateAllIngredients();
 	}
 	
@@ -45,6 +48,7 @@ public class IngredientKnowledgebase {
 		for (String name : this.traitMap.keySet()) {
 			IngredientRecipe ing = new IngredientRecipe(name, Recipe.NO_ATTRIBUTES);
 			ing.addTraits(traitMap.get(name));
+			ing.addToolTraits(this.toolTraitMap.get(name));
 			allIngredients.put(name, ing);
 		}
 		return allIngredients;
@@ -187,6 +191,36 @@ public class IngredientKnowledgebase {
 		}
 		// no combination found, return an empty string.
 		return "";
+	}
+	//TODO: Find a better place for this method -- totes. Mix method should actually work I reckon?
+	public void combineIngredients(State state, Domain domain, IngredientRecipe recipe, ObjectInstance container, String toswap) {
+		Set<String> traits = new TreeSet<String>();
+		//get the actual traits from the trait thing
+		for (String trait : recipe.getTraits()) {
+			traits.add(trait);
+		}
+		Set<String> ings = ContainerFactory.getContentNames(container);
+		ObjectInstance new_ing = IngredientFactory.getNewComplexIngredientObjectInstance(
+				domain.getObjectClass(IngredientFactory.ClassNameComplex), toswap, Recipe.NO_ATTRIBUTES, true, "", traits, 
+				recipe.getToolTraits(), recipe.getToolAttributes(), ings);
+		// Make the hidden Copies
+		Set<ObjectInstance> hidden_copies = new HashSet<ObjectInstance>();
+		for (String name : ings) {
+			ObjectInstance ob = state.getObject(name);
+			if (!IngredientFactory.isSimple(ob)) {
+				hidden_copies.add(IngredientFactory.makeHiddenObjectCopy(state, domain, ob));
+			}
+		}
+		ContainerFactory.removeContents(container);
+		for (String name : ings) {
+			state.removeObject(state.getObject(name));
+		}
+		for (ObjectInstance ob : hidden_copies) {
+			state.addObject(ob);
+		}
+		ContainerFactory.addIngredient(container, toswap);
+		IngredientFactory.changeIngredientContainer(new_ing, container.getName());
+		state.addObject(new_ing);
 	}
 	
 	public void newCombinationMap(String filename) {

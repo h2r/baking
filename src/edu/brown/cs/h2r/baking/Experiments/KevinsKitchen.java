@@ -1,6 +1,7 @@
 package edu.brown.cs.h2r.baking.Experiments;
 
 import java.io.IOException;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -29,6 +30,7 @@ import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.SADomain;
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
 import edu.brown.cs.h2r.baking.Knowledgebase.IngredientKnowledgebase;
+import edu.brown.cs.h2r.baking.Knowledgebase.ToolKnowledgebase;
 import burlap.oomdp.core.Domain;
 import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
@@ -55,6 +57,7 @@ public class KevinsKitchen implements DomainGenerator {
 		domain.addObjectClass(IngredientFactory.createComplexHiddenIngredientObjectClass(domain));
 		domain.addObjectClass(SpaceFactory.createObjectClass(domain));		
 		domain.addObjectClass(AgentFactory.getObjectClass(domain));
+		domain.addObjectClass(ToolFactory.createObjectClass(domain));
 		domain.setObjectIdentiferDependence(true);
 		return domain;
 	}
@@ -64,9 +67,10 @@ public class KevinsKitchen implements DomainGenerator {
 		Action mix = new MixAction(domain, recipe.topLevelIngredient);
 		Action pour = new PourAction(domain, recipe.topLevelIngredient);
 		Action move = new MoveAction(domain, recipe.topLevelIngredient);
-		Action peel = new PeelAction(domain, recipe.topLevelIngredient);
+		//Action peel = new PeelAction(domain, recipe.topLevelIngredient);
 		Action grease = new GreaseAction(domain);
 		Action a_switch = new SwitchAction(domain);
+		Action use = new UseAction(domain, recipe.topLevelIngredient);
 		State state = new State();
 		
 		// Get the "highest" subgoal in our recipe.
@@ -87,6 +91,15 @@ public class KevinsKitchen implements DomainGenerator {
 		
 		for (String container : containers) { 
 			state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "counter"));
+		}
+		
+		// Get the tools!
+		ToolKnowledgebase toolKnowledgebase = new ToolKnowledgebase();
+		AbstractMap<String, String[]> toolMap = toolKnowledgebase.getToolMap();
+		for (String name : toolMap.keySet()) {
+			String toolTrait = toolMap.get(name)[0];
+			String toolAttribute = toolMap.get(name)[1];
+			state.addObject(ToolFactory.getNewToolObjectInstance(domain, name, toolTrait, toolAttribute, "container"));
 		}
 		
 		// Out of all the ingredients in our kitchen, plan over only those that might be useful!
@@ -227,12 +240,12 @@ public class KevinsKitchen implements DomainGenerator {
 		
 		KevinsKitchen kitchen = new KevinsKitchen();
 		Domain domain = kitchen.generateDomain();
-		kitchen.PlanRecipeOneAgent(domain, new Brownies());
-		kitchen.PlanRecipeOneAgent(domain, new DeviledEggs());
-		kitchen.PlanRecipeOneAgent(domain, new CucumberSalad());
+		//kitchen.PlanRecipeOneAgent(domain, new Brownies());
+		//kitchen.PlanRecipeOneAgent(domain, new DeviledEggs());
+		//kitchen.PlanRecipeOneAgent(domain, new CucumberSalad());
 		kitchen.PlanRecipeOneAgent(domain, new MashedPotatoes());
-		kitchen.PlanRecipeOneAgent(domain, new MoltenLavaCake());
-		kitchen.PlanRecipeOneAgent(domain, new PeanutButterCookies());
-		kitchen.PlanRecipeOneAgent(domain, new PecanPie());
+		//kitchen.PlanRecipeOneAgent(domain, new MoltenLavaCake());
+		//kitchen.PlanRecipeOneAgent(domain, new PeanutButterCookies());
+		//kitchen.PlanRecipeOneAgent(domain, new PecanPie());
 	}
 }
