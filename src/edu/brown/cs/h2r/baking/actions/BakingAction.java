@@ -71,8 +71,6 @@ public abstract class BakingAction extends Action {
 		return BakingActionResult.success();
 	}
 	
-	public abstract BakingActionResult getWhyActionHadNoEffect(State state, String[] params);
-
 	@Override
 	public boolean applicableInState(State state, String[] params) {
 		return this.checkActionIsApplicableInState(state, params).getIsSuccess();
