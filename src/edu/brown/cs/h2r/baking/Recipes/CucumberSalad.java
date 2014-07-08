@@ -2,6 +2,7 @@ package edu.brown.cs.h2r.baking.Recipes;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import burlap.oomdp.core.Domain;
@@ -53,9 +54,11 @@ public class CucumberSalad extends Recipe {
 		this.subgoals.add(sg3);
 	}
 	
-	/**
-	 * 1. In a large bowl, add the onions, cucumbers and tomatoes and toss to combine.
-	 * 2. In a small bowl, whisk together the lemon juice, olive oil and salt and pepper, to taste.
-	 * 3.Pour over the salad and serve immediately.
-	 */
+	public List<String> getRecipeProcedures() {
+		return Arrays.asList("Recipe: Cucumber Salad",
+				"In a large bowl,add the onions, cucumbers and tomatoes, toss to combine. \n",		//1
+				"In a small bowl, whisk together the lemon juice, olive oil and salt and pepper, to taste\n",	//2
+				"Pour over the salad and serve immediately.\n"		//3
+				);		
+	}
 }

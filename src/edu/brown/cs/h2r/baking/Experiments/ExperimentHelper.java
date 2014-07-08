@@ -18,7 +18,6 @@ import burlap.oomdp.singleagent.GroundedAction;
 public class ExperimentHelper {
 
 	public ExperimentHelper() {
-		// TODO Auto-generated constructor stub
 	}
 	
 	public static void printEpisodeSequence(List<GroundedAction> fullActions,

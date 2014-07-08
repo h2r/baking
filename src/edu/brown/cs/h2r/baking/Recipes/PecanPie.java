@@ -2,6 +2,7 @@ package edu.brown.cs.h2r.baking.Recipes;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import burlap.oomdp.core.Domain;
@@ -9,7 +10,6 @@ import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
-import edu.brown.cs.h2r.baking.PropositionalFunctions.ContainerGreased;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.SpaceOn;
 
@@ -105,17 +105,18 @@ public class PecanPie extends Recipe {
 		this.subgoals.add(sg8);
 	}
 	
-	/**
-	 * 1. Preheat to 400 degrees F.
-	 * 2. In a medium bowl, whisk together the flour, sugar, and salt. 
-	 * 3. Using your fingers, work the butter into the dry ingredients 
-	 * 4. Add the egg and stir the dough together with a fork or by hand in the bowl. 
-	 * 5. Bake on a  baking sheet on the center rack until the dough is set, about 20 minutes. 
-	 * 6. While the crust is baking make the filling: In medium saucepan, combine the butter, brown sugar, 
-	 * 	  corn syrup, and salt.
-	 * 7. Remove from the heat and stir in the nuts, bourbon, and the vanilla.
-     * 8. Whisk the beaten eggs into the filling until smooth. 
-     * 9. Put the pie shell on a sheet pan and pour the filling into the hot crust.
-	 */
+	public List<String> getRecipeProcedures() {
+		return Arrays.asList("Recipe: Pecan Pie",
+				"Preheat to 400 degrees F.\n",						//0
+				"In a medium bowl, whisk together the flour, sugar, and salt.\n",								//1
+				"Using your fingers, work the butter into the dry ingredients \n",							//2
+				"Add the egg and stir the dough together with a fork or by hand in the bowl. \n",							//3
+				"Bake on a  baking sheet on the center rack until the dough is set, about 20 minutes. \n",		//4
+				"In medium saucepan, combine the butter, brown sugar, corn syrup, and salt.\n",//5
+				"Remove from the heat and stir in the nuts, bourbon, and the vanilla. \n", //6
+				"Whisk the beaten eggs into the filling until smooth. \n", //7
+				"Put the pie shell on a sheet pan and pour the filling into the hot crust.\n", //8
+				"Bake for 35 minutes");		//9
+	}
 
 }

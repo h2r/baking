@@ -22,19 +22,9 @@ public class PeelAction extends BakingAction {
 			return false;
 		}
 		
-		ObjectInstance agent =  state.getObject(params[0]);
-		
 		ObjectInstance container = state.getObject(params[1]);
 		
 		if (ContainerFactory.isEmptyContainer(container)) {
-			return false;
-		}
-		
-		if (ContainerFactory.isReceivingContainer(container)) { 
-			return false;
-		}
-		
-		if (ContainerFactory.isMixingContainer(container)) {
 			return false;
 		}
 		
@@ -67,7 +57,7 @@ public class PeelAction extends BakingAction {
 		return state;
 	}
 	
-	public void peel(ObjectInstance objectInstance) {
+	private void peel(ObjectInstance objectInstance) {
 		IngredientFactory.setPeeled(objectInstance, true);
 	}
 }

@@ -95,17 +95,6 @@ public abstract class Recipe {
 		
 		if (ingredientRecipe.isSimple())
 		{
-			//TODO: Fix this weird bug. Inelegant solution for now.
-			/*if (!ingredientRecipe.getName().equals(object.getName())) {
-				String obj_name = object.getName();
-				String ing_name = ingredientRecipe.getName();
-				for (int i = 0; i < ing_name.length(); i++) {
-					if (obj_name.charAt(i) != ing_name.charAt(i)) {
-						return false;
-					}
-				}
-				return true;
-			}*/
 			return ingredientRecipe.getName().equals(object.getName());
 		}
 		

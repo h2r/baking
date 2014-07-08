@@ -20,8 +20,6 @@ public class SwitchAction extends BakingAction {
 			return false;
 		}
 		
-		ObjectInstance agent =  state.getObject(params[0]);
-		
 		ObjectInstance spaceInstance = state.getObject(params[1]);
 		if (!SpaceFactory.isSwitchable(spaceInstance)) {
 			return false;
@@ -38,7 +36,7 @@ public class SwitchAction extends BakingAction {
 		return state;
 	}
 	
-	public void switchOnOff(State state, ObjectInstance space) {
+	private void switchOnOff(State state, ObjectInstance space) {
 		boolean isOn = SpaceFactory.getOnOff(space);
 		SpaceFactory.setOnOff(space, !isOn);
 		

@@ -15,7 +15,6 @@ import burlap.oomdp.core.State;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
-import edu.brown.cs.h2r.baking.PropositionalFunctions.IngredientNecessaryForRecipe;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 
 
@@ -76,21 +75,6 @@ public class IngredientKnowledgebase {
 		}
 		return ingredients;
 	}
-	
-	/*public List<ObjectInstance>getPotentialIngredientObjectInstanceList(State s, Domain domain, IngredientRecipe tlIngredient) {
-	//TODO: Will move this out soon, here to see if it works!
-	/*public List<ObjectInstance>getPotentialIngredientObjectInstanceList(State s, Domain domain, IngredientRecipe tlIngredient) {
-		List<ObjectInstance> ingredients = new ArrayList<ObjectInstance>();
-		IngredientNecessaryForRecipe necessary = new IngredientNecessaryForRecipe(AffordanceCreator.INGREDIENTPF, domain, tlIngredient);
-		for (IngredientRecipe ing : getIngredientList()) {
-			if (necessary.isTrue(s, new String[] {ing.getName()})) {
-				ObjectClass oc = ing.isSimple() ? domain.getObjectClass(IngredientFactory.ClassNameSimple) : domain.getObjectClass(IngredientFactory.ClassNameComplex);
-				ObjectInstance obj = IngredientFactory.getNewIngredientInstance(ing, ing.getName(), oc);
-				ingredients.add(obj);
-			}
-		}
-		return ingredients;
-	}*/
 	
 	public List<ObjectInstance> getPotentialIngredientObjectInstanceList(State s, Domain domain, IngredientRecipe tlIngredient) {
 		List<ObjectInstance> ingredients = new ArrayList<ObjectInstance>();
@@ -160,7 +144,6 @@ public class IngredientKnowledgebase {
 		return new TreeSet<String>();
 	}
 	
-	// TODO: Update/fix logic when trying to mix 3+ ingredients? Finding all permutations or something!
 	// Determine whether the ingredient in the container can be swapped out (flour + liquid -> flour).
 	// If a match is found, return the name of the combination found.
 	public String canCombine(State state, ObjectInstance container) {

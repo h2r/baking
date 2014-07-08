@@ -2,6 +2,7 @@ package edu.brown.cs.h2r.baking.Recipes;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import burlap.oomdp.core.Domain;
@@ -79,13 +80,16 @@ public class MoltenLavaCake extends Recipe {
 		this.subgoals.add(sg6);
 	}
 	
-	/**
-	 * Preheat oven to 425 degrees F.
-	 * Grease 6 (6-ounce) custard cups. 
-	 * Melt the chocolates and butter in the microwave, or in a double boiler.
-	 * Add the flour and sugar to chocolate mixture. 
-	 * Stir in the eggs and yolks until smooth. 
-	 * Stir in the vanilla and orange liqueur.
-	 */
+	public List<String> getRecipeProcedures() {
+		return Arrays.asList("Recipe: Molten Lava Cake",
+				"Preheat oven to 425 degrees F\n",						//0
+				"Grease 6 (6-ounce) custard cups\n",								//1
+				"In a large saucepan, Melt the chocolates and butter\n",							//2
+				"Add the flour and sugar to chocolate mixture.\n",							//3
+				"Stir in the eggs and yolks until smooth. \n",		//4
+				"Stir in the vanilla and orange liqueur\n",										//5
+				"Spread the batter evenly between the custard cups \n",
+				"Bake in preheated oven for 25 to 30 minutes. Do not overcook.");		
+	}
 
 }

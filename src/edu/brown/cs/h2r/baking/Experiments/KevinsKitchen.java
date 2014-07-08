@@ -4,20 +4,16 @@ import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import burlap.behavior.affordances.AffordancesController;
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.Policy;
-import burlap.behavior.singleagent.QValue;
-//import burlap.behavior.singleagent.auxiliary.StateReachability;
 import burlap.behavior.singleagent.planning.QComputablePlanner;
-//import burlap.behavior.singleagent.planning.StateConditionTest;
 import burlap.behavior.singleagent.planning.commonpolicies.AffordanceGreedyQPolicy;
 import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
-//import burlap.behavior.singleagent.planning.deterministic.informed.Heuristic;
-import burlap.behavior.singleagent.planning.stochastic.rtdp.AffordanceRTDP;
 import edu.brown.cs.h2r.baking.BellmanAffordanceRTDP;
 import burlap.behavior.singleagent.planning.stochastic.rtdp.RTDP;
 import burlap.behavior.statehashing.NameDependentStateHashFactory;
@@ -115,34 +111,28 @@ public class KevinsKitchen implements DomainGenerator {
 		
 		// High level planner that plans through the recipe's subgoals
 		Set<BakingSubgoal> subgoals = recipe.getSubgoals();
-		BakingSubgoal completed = null;
-		while (!subgoals.isEmpty()) {
+		Set<BakingSubgoal> active_subgoals = new HashSet<BakingSubgoal>();
+		
+		do {
+			// For all subgoals with all preconditions satisfied
+			for (BakingSubgoal sg : active_subgoals) {
+				subgoals.remove(sg);
+				state = this.PlanIngredient(domain, state, sg.getIngredient(), sg);
+			}
+			active_subgoals.clear();
+			// Iterate through inactive subgoals to find those who have had all of their
+			// preconditions resolved.
 			for (BakingSubgoal sg : subgoals) {
 				if (sg.allPreconditionsCompleted(state)) {
-					state = this.PlanIngredient(domain, state, sg.getIngredient(), sg);
-					completed = sg;
-					break;
+					active_subgoals.add(sg);
 				}
-			}
-			subgoals.remove(completed);
-			for (BakingSubgoal sg : subgoals) {
-				BakingSubgoal todelete = null;
-				for (BakingSubgoal pc : sg.getPreconditions()) {
-					if (pc.equals(completed)) {
-						todelete = pc;
-						break;
-					}
-				}
-				if (todelete != null) {
-					sg.getPreconditions().remove(todelete);
-				}
-			}
-		}
+			}	
+		} while (!active_subgoals.isEmpty());
 	}
 	
 	public State PlanIngredient(Domain domain, State startingState, IngredientRecipe ingredient, BakingSubgoal subgoal)
 	{
-		System.out.println(""+ingredient.getName());
+		System.out.println(ingredient.getName());
 		State currentState = new State(startingState);
 		
 		ObjectClass containerClass = domain.getObjectClass(ContainerFactory.ClassName);		
@@ -197,7 +187,6 @@ public class KevinsKitchen implements DomainGenerator {
 			}
 		};
 		
-		// Trying out new stuff!
 		int numRollouts = 1500; // RTDP
 		int maxDepth = 10; // RTDP
 		double vInit = 0;
@@ -219,12 +208,10 @@ public class KevinsKitchen implements DomainGenerator {
 
 		} else {
 			planner = new RTDP(domain, rf, recipeTerminalFunction, gamma, hashFactory, vInit, numRollouts, maxDelta, maxDepth);
-			planner.setMinNumRolloutsWithSmallValueChange(30);
 			planner.planFromState(currentState);
 			
 			// Create a Q-greedy policy from the planner
 			p = new GreedyQPolicy((QComputablePlanner)planner);
-			//p = new AffordanceGreedyQPolicy(affController,(QComputablePlanner)planner)
 		}
 		
 		// Print out the planning results

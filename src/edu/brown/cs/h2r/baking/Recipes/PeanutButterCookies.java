@@ -1,6 +1,7 @@
 package edu.brown.cs.h2r.baking.Recipes;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import burlap.oomdp.core.Domain;
@@ -8,7 +9,6 @@ import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
-import edu.brown.cs.h2r.baking.PropositionalFunctions.ContainerGreased;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.SpaceOn;
 
@@ -71,13 +71,13 @@ public class PeanutButterCookies extends Recipe {
 		this.subgoals.add(sg5);
 	}
 	
-	/**
-	 * 1. Preheat oven to 375 degrees.
-	 * 2. Cream together butter, peanut butter and sugars. 
-	 * 3. Beat in eggs. 
-	 * 4. In a separate bowl, sift together flour, baking powder, baking soda, and salt. 
-	 * 5. Stir into batter. Put batter in refrigerator for 1 hour.
-	 * 6. Bake for 10 minutes.
-	 * 
-	 */
+	public List<String> getRecipeProcedures() {
+		return Arrays.asList("Recipe: Peanut Butter Cookies",
+				"Preheat oven to 375 degrees F\n",						//0
+				"Cream together butter, peanut butter and sugars\n",								//1
+				"Beat in eggs\n",							//2
+				"In a separate bowl, sift together flour, baking powder, baking soda, and salt. \n",							//3
+				"Stir into batter.\n",		//4
+				"Bake for 10 minutes.\n");		//5
+	}
 }

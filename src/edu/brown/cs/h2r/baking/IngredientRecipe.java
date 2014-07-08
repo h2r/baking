@@ -33,6 +33,9 @@ public class IngredientRecipe {
 		this.traits = new TreeSet<String>();
 		this.useCount = 1;
 		this.contents = null;
+		this.peeled = false;
+		this.traits = new TreeSet<String>();
+		this.useCount = 1;
 		this.necessaryTraits = null;
 		this.toolTraits = new TreeSet<String>();
 		this.toolAttributes = new TreeSet<String>();
@@ -319,12 +322,4 @@ public class IngredientRecipe {
 		}
 		return swapped;
 	}
-	
-	/*public List<BakingSubgoal> getSubgoals() {
-		return this.subgoals;
-	}
-	
-	public void addSubgoal(BakingSubgoal sg) {
-		this.subgoals.add(sg);
-	}*/
 }

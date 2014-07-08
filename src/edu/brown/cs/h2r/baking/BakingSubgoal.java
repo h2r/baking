@@ -17,7 +17,6 @@ public class BakingSubgoal {
 		this.goal = pf;
 		this.preconditions = new ArrayList<BakingSubgoal>();
 		this.ingredient = ingredient;
-		//this.ingredient.addSubgoal(this);
 	}
 	
 	public BakingPropositionalFunction getGoal() {
@@ -45,18 +44,13 @@ public class BakingSubgoal {
 	}
 	
 	public Boolean allPreconditionsCompleted(State state) {
-		//IngredientRecipe toDelete = null;
 		for (BakingSubgoal sg : this.preconditions) {
-			/*if (toDelete != null) {
-				this.preconditions.remove(toDelete);
-			}*/
 			BakingPropositionalFunction pf = sg.getGoal();
 			pf.changeTopLevelIngredient(sg.getIngredient());
 			Boolean completed = false;
 			for (GroundedProp gp : pf.getAllGroundedPropsForState(state)) {
 				if (gp.isTrue(state)) {
 					completed = true;
-					//toDelete = ing;
 					break;
 				}
 			}

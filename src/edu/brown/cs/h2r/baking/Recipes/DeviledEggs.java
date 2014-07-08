@@ -2,6 +2,7 @@ package edu.brown.cs.h2r.baking.Recipes;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import burlap.oomdp.core.Domain;
@@ -54,5 +55,13 @@ public class DeviledEggs extends Recipe {
 		sg3.addPrecondition(sg1);
 		sg3.addPrecondition(sg2);
 		this.subgoals.add(sg3);
+	}
+	
+	@Override
+	public List<String> getRecipeProcedures() {
+		return Arrays.asList("Recipe: Deviled Eggs",
+				"Using a fork, mash the yolks with salt, pepper, to taste, and Dijon until smooth.\n",						//0
+				"Add the shallot, gherkins, brine and tarragon and stir to combine.\n",								//1
+				"Pipe the yolk mixture into the egg white halves. \n"); //2		
 	}
 }

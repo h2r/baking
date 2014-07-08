@@ -116,7 +116,7 @@ public class IngredientFactory {
 	public static ObjectInstance getNewSimpleIngredientObjectInstance(ObjectClass simpleIngredientClass, String name, 
 			int attributes, Set<String> traits, String ingredientContainer) {
 		ObjectInstance newInstance = new ObjectInstance(simpleIngredientClass, name);
-		setAttributes(newInstance, attributes);
+		IngredientFactory.setAttributes(newInstance, attributes);
 		newInstance.setValue(IngredientFactory.attributeUseCount, 1);
 		for (String trait : traits) {
 			newInstance.addRelationalTarget("traits", trait);
@@ -132,7 +132,7 @@ public class IngredientFactory {
 			int attributes, int useCount, Set<String> traits, Set<String> toolTraits,
 			Set<String> toolAttributes, String ingredientContainer) {
 		ObjectInstance newInstance = new ObjectInstance(simpleIngredientClass, name);
-		setAttributes(newInstance, attributes);
+		IngredientFactory.setAttributes(newInstance, attributes);
 		newInstance.setValue(IngredientFactory.attributeUseCount, useCount);
 		for (String trait : traits) {
 			newInstance.addRelationalTarget(IngredientFactory.attributeTraits, trait);
@@ -156,7 +156,7 @@ public class IngredientFactory {
 			int attributes, boolean swapped, String ingredientContainer, Set<String> traits, 
 			Set<String> toolTraits, Set<String> toolAttributes, Iterable<String> contents) {
 		ObjectInstance newInstance = new ObjectInstance(complexIngredientClass, name);
-		setAttributes(newInstance, attributes);
+		IngredientFactory.setAttributes(newInstance, attributes);
 		newInstance.setValue(IngredientFactory.attributeUseCount, 1);
 		newInstance.setValue(IngredientFactory.attributeSwapped, swapped ? 1 : 0);
 		
