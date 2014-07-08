@@ -27,7 +27,7 @@ public class SwitchAction extends BakingAction {
 		String spaceName = params[1];
 		ObjectInstance spaceInstance = state.getObject(spaceName);
 		if (!SpaceFactory.isSwitchable(spaceInstance)) {
-			return BakingActionResult.failure(spaceName + " cannot be turned on/off");
+			return BakingActionResult.failure(spaceName + " does not have the capability to be turned on/off");
 		}
 		
 		return BakingActionResult.success();

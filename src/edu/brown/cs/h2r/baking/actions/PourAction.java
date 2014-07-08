@@ -63,7 +63,7 @@ public class PourAction extends BakingAction {
 		
 		if (!pouringContainerSpace.equalsIgnoreCase(receivingContainerSpace))
 		{
-			return BakingActionResult.failure(receivingContainerName + " cannot be poured into");
+			return BakingActionResult.failure(pouringContainerName + " is not in the same space as the " + receivingContainerName);
 		}
 		ObjectInstance pouringContainerSpaceObject = state.getObject(pouringContainerSpace);
 		

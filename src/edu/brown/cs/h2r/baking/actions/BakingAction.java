@@ -11,7 +11,7 @@ import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.MakeSpanFactory;
 
 
-public class BakingAction extends Action {
+public abstract class BakingAction extends Action {
 	IngredientRecipe ingredient;
 	public BakingAction() {
 		// TODO Auto-generated constructor stub
@@ -70,6 +70,8 @@ public class BakingAction extends Action {
 		
 		return BakingActionResult.success();
 	}
+	
+	public abstract BakingActionResult getWhyActionHadNoEffect(State state, String[] params);
 
 	@Override
 	public boolean applicableInState(State state, String[] params) {

@@ -23,6 +23,8 @@ public class GreaseAction extends BakingAction {
 		}
 		String containerName = params[1];
 		ObjectInstance container = state.getObject(params[1]);
+		
+		String ingredientName = params[2];
 		ObjectInstance grease = state.getObject(params[2]);
 		
 		if (!ContainerFactory.isEmptyContainer(container)) {
@@ -34,11 +36,11 @@ public class GreaseAction extends BakingAction {
 		}
 		
 		if (ContainerFactory.isGreasedContainer(container)) {
-			return BakingActionResult.failure(containerName + " is not an greased container");
+			return BakingActionResult.failure(containerName + " is not an greasable container");
 		}
 		
 		if (!IngredientFactory.isLubricant(grease)) {
-			return BakingActionResult.failure(containerName + " is not an greased container");
+			return BakingActionResult.failure(ingredientName + " is not a suitable grease");
 		}
 		
 		return BakingActionResult.success();
