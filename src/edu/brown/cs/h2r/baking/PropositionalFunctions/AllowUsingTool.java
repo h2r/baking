@@ -15,7 +15,7 @@ import edu.brown.cs.h2r.baking.ObjectFactories.ToolFactory;
 public class AllowUsingTool extends BakingPropositionalFunction {
 
 	public AllowUsingTool(String name, Domain domain, IngredientRecipe ingredient) {
-		super(name, domain, new String[] {AgentFactory.ClassName, ContainerFactory.ClassName} ,ingredient);
+		super(name, domain, new String[] {AgentFactory.ClassName, ToolFactory.ClassName, ContainerFactory.ClassName} ,ingredient);
 	}
 	
 	public boolean isTrue(State state, String[] params) {

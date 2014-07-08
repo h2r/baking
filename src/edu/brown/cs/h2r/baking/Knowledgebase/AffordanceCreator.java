@@ -113,6 +113,13 @@ public class AffordanceCreator {
 			this.switchPFAtoms.add(new PFAtom(switchGroundedProp));
 		}
 		
+		PropositionalFunction usePF = domain.getPropFunction(AffordanceCreator.USE_PF);
+		this.usePFAtoms = new ArrayList<PFAtom>();
+		List<GroundedProp> useGroundedProps = usePF.getAllGroundedPropsForState(state);
+		for (GroundedProp useGroundedProp : useGroundedProps) {
+			this.usePFAtoms.add(new PFAtom(useGroundedProp));
+		}
+		
 		PropositionalFunction finishedPF = domain.getPropFunction(AffordanceCreator.FINISH_PF);
 		this.finishedPFAtoms = new ArrayList<PFAtom>();
 		List<GroundedProp> finishedGroundedProps = finishedPF.getAllGroundedPropsForState(state);
@@ -164,6 +171,7 @@ public class AffordanceCreator {
 		setupDelegate(domain, movePFAtoms, MoveAction.className, finishedPFAtom);
 		setupDelegate(domain, pourPFAtoms, PourAction.className, finishedPFAtom);
 		setupDelegate(domain, peelPFAtoms, PeelAction.className, finishedPFAtom);
+		setupDelegate(domain, usePFAtoms, UseAction.className, finishedPFAtom);
 		setupDelegate(domain, greasePFAtoms, GreaseAction.className, containerGreasedPFAtom);
 		setupDelegate(domain, switchPFAtoms, SwitchAction.className, spaceOnPFAtom);
 		
