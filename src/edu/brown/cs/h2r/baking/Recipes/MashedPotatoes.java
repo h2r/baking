@@ -17,7 +17,6 @@ public class MashedPotatoes extends Recipe {
 		super();
 		List<IngredientRecipe> ingredientList = new ArrayList<IngredientRecipe>();
 		IngredientRecipe potatoes = knowledgebase.getIngredient("potatoes");
-		//potatoes.setPeeled();
 		potatoes.addToolAttribute("peeled");
 		ingredientList.add(potatoes);
 		ingredientList.add(knowledgebase.getIngredient("butter"));

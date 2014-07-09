@@ -47,8 +47,14 @@ public class IngredientKnowledgebase {
 		AbstractMap<String, IngredientRecipe> allIngredients = new HashMap<String, IngredientRecipe>();
 		for (String name : this.traitMap.keySet()) {
 			IngredientRecipe ing = new IngredientRecipe(name, Recipe.NO_ATTRIBUTES);
-			ing.addTraits(traitMap.get(name));
-			ing.addToolTraits(this.toolTraitMap.get(name));
+			Set<String> traits = traitMap.get(name);
+			Set<String> toolTraits = this.toolTraitMap.get(name);
+			if (traits != null) {
+				ing.addTraits(traits);
+			}
+			if (toolTraits != null) {
+				ing.addToolTraits(toolTraits);
+			}
 			allIngredients.put(name, ing);
 		}
 		return allIngredients;

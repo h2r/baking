@@ -48,10 +48,14 @@ public class TraitParser {
 
 				String trait_list = line.substring(line.indexOf("[")+1, line.indexOf("]"));
 				Set<String> traits = new TreeSet<String>();
-				for (String trait : trait_list.split(", ")) {
-					traits.add(trait);
+				if (!trait_list.isEmpty()) {
+					for (String trait : trait_list.split(", ")) {
+						traits.add(trait);
+					}
+					ingredients.put(name, traits);
+				} else {
+					ingredients.put(name, null);
 				}
-				ingredients.put(name, traits);
 			}
 			br.close();
 		} catch (IOException ex) {

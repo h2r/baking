@@ -27,7 +27,6 @@ import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.actions.MixAction;
 import edu.brown.cs.h2r.baking.actions.MoveAction;
-import edu.brown.cs.h2r.baking.actions.PeelAction;
 import edu.brown.cs.h2r.baking.actions.PourAction;
 import edu.brown.cs.h2r.baking.actions.SwitchAction;
 import edu.brown.cs.h2r.baking.actions.UseAction;
@@ -77,7 +76,6 @@ public class BasicKitchen implements DomainGenerator {
 		Action move = new MoveAction(domain, recipe.topLevelIngredient);
 		Action turnOnOff = new SwitchAction(domain);
 		Action use = new UseAction(domain, recipe.topLevelIngredient);
-		Action peel = new PeelAction(domain, recipe.topLevelIngredient);
 		return domain;
 	}
 	

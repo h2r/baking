@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.*;
-import org.junit.Test;
 
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
@@ -20,6 +19,7 @@ import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.ToolFactory;
 import edu.brown.cs.h2r.baking.Recipes.*;
 import edu.brown.cs.h2r.baking.actions.*;
 
@@ -83,6 +83,7 @@ public class TestActions {
 		domain.addObjectClass(IngredientFactory.createComplexHiddenIngredientObjectClass(domain));
 		domain.addObjectClass(SpaceFactory.createObjectClass(domain));		
 		domain.addObjectClass(AgentFactory.getObjectClass(domain));
+		domain.addObjectClass(ToolFactory.createObjectClass(domain));
 	}
 	
 	@After
@@ -254,24 +255,6 @@ public class TestActions {
 	}
 	
 	@Test
-	public void testPeelAction() {
-		topLevelIngredient = new MashedPotatoes().topLevelIngredient;
-		knowledgebase = new IngredientKnowledgebase();
-		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
-		this.setUpState();
-		Action peel = new PeelAction(domain, topLevelIngredient);
-		
-		// can peel an ingredient
-		BakingAsserts.assertIsNotPeeled(state.getObject("potatoes"));
-		state = peel.performAction(state, new String[] {"human", "potatoes_bowl"});
-		BakingAsserts.assertIsPeeled(state.getObject("potatoes"));
-		
-		// can't peel a peeled ingredient
-		BakingAsserts.assertActionNotApplicable(peel, state, new String[] {"human", "potatoes_bowl"});
-		BakingAsserts.assertIsPeeled(state.getObject("potatoes"));
-	}
-	
-	@Test
 	public void testPourAction() {
 		topLevelIngredient = new Brownies().topLevelIngredient;
 		knowledgebase = new IngredientKnowledgebase();
@@ -374,5 +357,33 @@ public class TestActions {
 		BakingAsserts.assertIsNotMelted(state.getObject("butter"));
 		state = switch_a.performAction(state, new String[] {"human", "stove"});
 		BakingAsserts.assertIsMelted(state.getObject("butter"));
+	}
+	
+	@Test
+	public void testUseAction() {
+		topLevelIngredient = new MashedPotatoes().topLevelIngredient;
+		knowledgebase = new IngredientKnowledgebase();
+		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
+		this.setUpState();
+		Action use = new UseAction(domain, topLevelIngredient);
+		
+		ObjectInstance peeler = ToolFactory.getNewToolObjectInstance(domain, "peeler", "peelable", "peeled", "counter");
+		state.addObject(peeler);
+		SpaceFactory.addContainer(state.getObject("counter"), state.getObject("peeler"));
+		
+		// Can't peel a non-peelabled
+		BakingAsserts.assertActionNotApplicable(use, state, new String[] {"human", "peeler", "butter_bowl"});
+		
+		// Can peel a peelable
+		BakingAsserts.assertHasToolTrait(state.getObject("potatoes"), "peelable");
+		BakingAsserts.assertDoesntHaveToolAttribute(state.getObject("potatoes"), "peeled");
+		BakingAsserts.assertActionApplicable(use, state, new String[] {"human", "peeler", "potatoes_bowl"});
+
+		state = use.performAction(state, new String[] {"human", "peeler", "potatoes_bowl"});
+		
+		// Can't peel a peeled ingredient
+		BakingAsserts.assertHasToolAttribute(state.getObject("potatoes"), "peeled");
+		BakingAsserts.assertActionNotApplicable(use, state, new String[] {"human", "peeler", "butter_bowl"});
+
 	}
 }

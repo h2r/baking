@@ -105,7 +105,7 @@ public class TestRecipeSuccess {
 				domain.getObjectClass("complex_ingredient"), "Mashed_potatoes", Recipe.NO_ATTRIBUTES, 
 				Recipe.SWAPPED, "mixing_bowl_1", new TreeSet<String>(), new TreeSet<String>(), new TreeSet<String>(), contents);
 		
-		IngredientFactory.setPeeled(state.getObject("potatoes"), true);
+		IngredientFactory.addToolAttribute(state.getObject("potatoes"), "peeled");
 		BakingAsserts.assertSuccess(state, topLevelIngredient, mash);
 		
 	}

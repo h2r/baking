@@ -23,7 +23,6 @@ public class IngredientFactory {
 	private static final String attributeBaked = "baked";
 	private static final String attributeMelted = "melted";
 	private static final String attributeMixed = "mixed";
-	private static final String attributePeeled = "peeled";
 	private static final String attributeContainer = "container";
 	private static final String attributeContains = "contents";
 	private static final String attributeTraits = "traits";
@@ -32,7 +31,7 @@ public class IngredientFactory {
 	private static final String attributeToolTraits = "toolTrait";
 	private static final String attributeToolAttributes = "toolAttribute";
 	private static final String[] booleanAttributes= {IngredientFactory.attributeBaked, 
-		IngredientFactory.attributeMelted, IngredientFactory.attributeMixed, IngredientFactory.attributePeeled};
+		IngredientFactory.attributeMelted, IngredientFactory.attributeMixed};
 
 	private static ObjectClass createObjectClass(Domain domain, String className) {
 		ObjectClass objectClass = new ObjectClass(domain, className);
@@ -47,10 +46,6 @@ public class IngredientFactory {
 		Attribute receivingAttribute =
 				new Attribute(domain, IngredientFactory.attributeMixed, Attribute.AttributeType.BOOLEAN);
 		objectClass.addAttribute(receivingAttribute);
-		
-		Attribute peelAttribute =
-				new Attribute(domain, IngredientFactory.attributePeeled, Attribute.AttributeType.BOOLEAN);
-		objectClass.addAttribute(peelAttribute);
 		
 		Attribute countAttribute = 
 				new Attribute(domain, IngredientFactory.attributeUseCount, Attribute.AttributeType.DISC);
@@ -112,22 +107,6 @@ public class IngredientFactory {
 		return objectClass;
 	}
 		
-	@Deprecated
-	public static ObjectInstance getNewSimpleIngredientObjectInstance(ObjectClass simpleIngredientClass, String name, 
-			int attributes, Set<String> traits, String ingredientContainer) {
-		ObjectInstance newInstance = new ObjectInstance(simpleIngredientClass, name);
-		IngredientFactory.setAttributes(newInstance, attributes);
-		newInstance.setValue(IngredientFactory.attributeUseCount, 1);
-		for (String trait : traits) {
-			newInstance.addRelationalTarget("traits", trait);
-		}
-		if (ingredientContainer != null || ingredientContainer != "")
-		{
-			newInstance.addRelationalTarget(IngredientFactory.attributeContainer, ingredientContainer);
-		}
-		return newInstance;		
-	}
-	
 	public static ObjectInstance getNewSimpleIngredientObjectInstance(ObjectClass simpleIngredientClass, String name, 
 			int attributes, int useCount, Set<String> traits, Set<String> toolTraits,
 			Set<String> toolAttributes, String ingredientContainer) {
@@ -183,41 +162,12 @@ public class IngredientFactory {
 		return newInstance;
 	}
 	
-	@Deprecated
-	public static ObjectInstance getNewComplexIngredientObjectInstance(ObjectClass complexIngredientClass, String name, 
-			Boolean baked, Boolean melted, Boolean mixed, Boolean peeled, Boolean swapped, int useCount, 
-			String ingredientContainer, Set<String> traits, Iterable<String> contents) {
-		ObjectInstance newInstance = new ObjectInstance(complexIngredientClass, name);
-		newInstance.setValue(IngredientFactory.attributeBaked, baked ? 1 : 0);
-		newInstance.setValue(IngredientFactory.attributeMelted, melted ? 1 : 0);
-		newInstance.setValue(IngredientFactory.attributeMixed, mixed ? 1 : 0);
-		newInstance.setValue(IngredientFactory.attributeUseCount, useCount);
-		newInstance.setValue(IngredientFactory.attributeSwapped, swapped ? 1 : 0);
-		
-		if (ingredientContainer != null || ingredientContainer != "") {
-			newInstance.addRelationalTarget(IngredientFactory.attributeContainer, ingredientContainer);
-		}
-		for (String trait : traits) {
-			newInstance.addRelationalTarget("traits", trait);
-		}
-		
-		if (contents != null) {
-			for (String ingredient : contents) {
-				newInstance.addRelationalTarget(IngredientFactory.attributeContains, ingredient);
-			}
-		}
-		
-		return newInstance;
-	}
-	
-	
 	public static ObjectInstance getNewIngredientInstance(ObjectInstance objectInstance, String name) {
 		Boolean baked = IngredientFactory.isBakedIngredient(objectInstance);
 		Boolean mixed = IngredientFactory.isMixedIngredient(objectInstance);
 		Boolean melted = IngredientFactory.isMeltedIngredient(objectInstance);
-		Boolean peeled = IngredientFactory.isPeeledIngredient(objectInstance);
 		
-		int attributes = IngredientRecipe.generateAttributeNumber(mixed, melted, baked, peeled);
+		int attributes = IngredientRecipe.generateAttributeNumber(mixed, melted, baked);
 		int useCount = IngredientFactory.getUseCount(objectInstance);
 		String container = IngredientFactory.getContainer(objectInstance);
 		Set<String> traits = IngredientFactory.getTraits(objectInstance);
@@ -236,23 +186,9 @@ public class IngredientFactory {
 				container, traits, toolTraits, toolAttributes, contents);
 	}
 	
-	@Deprecated
-	public static ObjectInstance getNewIngredientInstance(ObjectClass simpleIngredientClass, 
-			IngredientRecipe ingredientRecipe, String ingredientContainer) {
-		/*	int attributes = ingredientRecipe.generateAttributeNumber(ingredientRecipe.getBaked(), 
-					ingredientRecipe.getMelted(),  ingredientRecipe.getMixed(), 
-					ingredientRecipe.getPeeled());
-		if (ingredientRecipe.isSimple()) {
-			return IngredientFactory.getNewSimpleIngredientObjectInstance(simpleIngredientClass, ingredientRecipe.getName(), 
-					attributes, ingredientRecipe.getUseCount(), ingredientRecipe.getTraits(), ingredientContainer);
-		}*/
-		return null;
-	}
-	
-	
 	public static ObjectInstance getNewIngredientInstance(IngredientRecipe ingredient, String name, ObjectClass oc) {
 		int attributes = IngredientRecipe.generateAttributeNumber(ingredient.getBaked(), ingredient.getMixed(), 
-				ingredient.getMelted(), ingredient.getPeeled());
+				ingredient.getMelted());
 		Boolean swapped = ingredient.getSwapped();
 		int useCount = ingredient.getUseCount();
 		String container = "";
@@ -357,10 +293,6 @@ public class IngredientFactory {
 		return ingredient.getDiscValForAttribute(IngredientFactory.attributeMelted) == 1;
 	}
 	
-	public static Boolean isPeeledIngredient(ObjectInstance ingredient){
-		return ingredient.getDiscValForAttribute(IngredientFactory.attributePeeled) == 1;
-	}
-	
 	public static void mixIngredient(ObjectInstance ingredient) {
 		ingredient.setValue(IngredientFactory.attributeMixed, 1);
 	}
@@ -391,10 +323,6 @@ public class IngredientFactory {
 	
 	public static Set<String> getContentsForIngredient(ObjectInstance ingredient) {
 		return new TreeSet<String>(ingredient.getAllRelationalTargets(IngredientFactory.attributeContains));
-	}
-
-	public static void setPeeled(ObjectInstance ingredient, boolean isPeeled) {
-		ingredient.setValue(IngredientFactory.attributePeeled, isPeeled ? 1 : 0);
 	}
 
 	public static void setSwapped(ObjectInstance ingredient) {
@@ -474,9 +402,12 @@ public class IngredientFactory {
 		hidden = new ObjectInstance(oc, object.getName());
 		
 		hidden.initializeValueObjects();
+		String multi = Attribute.AttributeType.MULTITARGETRELATIONAL.name();
+		String relational = Attribute.AttributeType.RELATIONAL.name();
 		for (Value v : hidden.getValues()) {
 			String name = v.attName();
-			if (name.equals("traits") || name.equals("contents")) {
+			String attributeType = v.getAttribute().type.name();
+			if (attributeType.equals(multi) || attributeType.equals(relational)) {
 				for (String val : object.getAllRelationalTargets(name)) {
 					hidden.addRelationalTarget(name, val);
 				}
@@ -546,6 +477,5 @@ public class IngredientFactory {
 		ingredient.setValue(IngredientFactory.attributeBaked, ((attributes & Recipe.BAKED) == Recipe.BAKED) ? 1 : 0);
 		ingredient.setValue(IngredientFactory.attributeMelted, ((attributes & Recipe.MELTED) == Recipe.MELTED) ? 1 : 0);
 		ingredient.setValue(IngredientFactory.attributeMixed, ((attributes & Recipe.MIXED) == Recipe.MIXED) ? 1 : 0);
-		ingredient.setValue(IngredientFactory.attributePeeled, ((attributes & Recipe.PEELED) == Recipe.PEELED) ? 1 : 0);
 	}
 }
