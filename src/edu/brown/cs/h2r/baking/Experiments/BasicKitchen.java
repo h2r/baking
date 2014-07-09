@@ -25,6 +25,8 @@ import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.MakeSpanFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
+import edu.brown.cs.h2r.baking.actions.BakingActionResult;
+import edu.brown.cs.h2r.baking.actions.BakingAction;
 import edu.brown.cs.h2r.baking.actions.MixAction;
 import edu.brown.cs.h2r.baking.actions.MoveAction;
 import edu.brown.cs.h2r.baking.actions.PeelAction;
@@ -75,9 +77,9 @@ public class BasicKitchen implements DomainGenerator {
 		Action mix = new MixAction(domain, recipe.topLevelIngredient);
 		Action pour = new PourAction(domain, recipe.topLevelIngredient);
 		Action move = new MoveAction(domain, recipe.topLevelIngredient);
+		Action peel = new PeelAction(domain, recipe.topLevelIngredient);
 		Action turnOnOff = new SwitchAction(domain);
 		Action use = new UseAction(domain, recipe.topLevelIngredient);
-		Action peel = new PeelAction(domain, recipe.topLevelIngredient);
 		return domain;
 	}
 	
@@ -159,18 +161,33 @@ public class BasicKitchen implements DomainGenerator {
 		return this.parser.stateToString(this.currentState);
 	}
 	
-	public boolean takeAction(String actionName, String[] params) {
+	public BakingActionResult takeAction(String actionName, String[] params) {
 		this.init();
 		
 		StateHashTuple previousTuple = this.stateHashFactory.hashState(this.currentState);
-		Action action = this.domain.getAction(actionName);
-		if (action != null && action.applicableInState(this.currentState, params)) {
-			this.currentState = action.performAction(this.currentState, params);
-			this.removeEmptyIngredientContainers(this.currentState);
+		BakingAction action = (BakingAction)this.domain.getAction(actionName);
+		if (action == null) {
+			return BakingActionResult.failure(actionName + " is not a valid action");
 		}
+		
+		BakingActionResult result = action.checkActionIsApplicableInState(this.currentState, params);
+		if (!result.getIsSuccess()) {
+			return result;
+		}
+
+		this.currentState = action.performAction(this.currentState, params);
+		this.removeEmptyIngredientContainers(this.currentState);
 		StateHashTuple newTuple = this.stateHashFactory.hashState(this.currentState);
 		
-		return previousTuple.hashCode() != newTuple.hashCode();
+		if (previousTuple.hashCode() == newTuple.hashCode()) {
+			String message = actionName + " had no effect with params [";
+			for (int i = 0; i <  params.length; i++) {
+				message += (i < params.length - 1) ? params[i] + ", " : params[i]; 
+			}
+			message += "]";
+			return BakingActionResult.failure(message);
+		}
+		return BakingActionResult.success();
 	}
 	
 	protected void removeEmptyIngredientContainers(State state) {
