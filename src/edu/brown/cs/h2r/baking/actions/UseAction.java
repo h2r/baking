@@ -48,9 +48,21 @@ public class UseAction extends BakingAction {
 		super.performActionHelper(state, params);
 		ObjectInstance tool = state.getObject(params[1]);
 		ObjectInstance container = state.getObject(params[2]);
-		for (String name : ContainerFactory.getContentNames(container)) {
-			ObjectInstance ingredient = state.getObject(name);
-			this.useTool(state, tool, ingredient);
+		if (ToolFactory.toolIsTransportable(tool)) {
+			if (ToolFactory.isEmpty(tool)) {
+				for (String name : ContainerFactory.getContentNames(container)) {
+					ObjectInstance ingredient = state.getObject(name);
+					this.useTool(state, tool, ingredient);
+					ToolFactory.addIngredient(tool, ingredient);
+				}
+			} else {
+				ToolFactory.pourIngredients(state, tool, container);
+			}
+		} else {
+			for (String name : ContainerFactory.getContentNames(container)) {
+				ObjectInstance ingredient = state.getObject(name);
+				this.useTool(state, tool, ingredient);
+			}
 		}
 		
 		return state;

@@ -367,7 +367,7 @@ public class TestActions {
 		this.setUpState();
 		Action use = new UseAction(domain, topLevelIngredient);
 		
-		ObjectInstance peeler = ToolFactory.getNewToolObjectInstance(domain, "peeler", "peelable", "peeled", "counter");
+		ObjectInstance peeler = ToolFactory.getNewSimpleToolObjectInstance(domain, "peeler", "peelable", "peeled", "counter");
 		state.addObject(peeler);
 		SpaceFactory.addContainer(state.getObject("counter"), state.getObject("peeler"));
 		
