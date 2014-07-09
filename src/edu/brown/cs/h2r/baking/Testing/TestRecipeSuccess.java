@@ -97,9 +97,15 @@ public class TestRecipeSuccess {
 		topLevelIngredient = new MashedPotatoes().topLevelIngredient;
 		knowledgebase = new IngredientKnowledgebase();
 		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
-		setUpState();
+		this.setUpState();
 		
-		List<String> contents = Arrays.asList("butter", "potatoes", "salt", "eggs");
+		List<String> contents = Arrays.asList("butter", "potatoes", "salted_water", "eggs");
+		
+		ObjectInstance salted_water = IngredientFactory.getNewComplexIngredientObjectInstance(
+				domain.getObjectClass("complex_ingredient"), "salted_water", Recipe.NO_ATTRIBUTES,
+				Recipe.SWAPPED, "mixing_bowl_2", new TreeSet<String>(), Arrays.asList("water", "salt"));
+		
+		state.addObject(salted_water);
 		
 		ObjectInstance mash = IngredientFactory.getNewComplexIngredientObjectInstance(
 				domain.getObjectClass("complex_ingredient"), "Mashed_potatoes", Recipe.NO_ATTRIBUTES, 
