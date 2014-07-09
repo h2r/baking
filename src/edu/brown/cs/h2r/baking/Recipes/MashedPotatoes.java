@@ -52,6 +52,7 @@ public class MashedPotatoes extends Recipe {
 		BakingPropositionalFunction saltedWaterPf = 
 				new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("salted_water"));
 		BakingSubgoal saltedWaterSubgoal = new BakingSubgoal(saltedWaterPf, swappedIngredients.get("salted_water"));
+		this.subgoals.add(saltedWaterSubgoal);
 		
 		BakingPropositionalFunction pf1 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.topLevelIngredient);
 		BakingSubgoal sg1 = new BakingSubgoal(pf1, this.topLevelIngredient);
