@@ -270,6 +270,14 @@ public class IngredientRecipe {
 		return mixed_int|melted_int|baked_int|peeled_int;
 	}
 	
+	public int generateAttributeNumber() {
+		int mixed_int = this.getMixed() ? Recipe.MIXED : 0;
+		int melted_int = this.getMelted() ? Recipe.MELTED : 0;
+		int baked_int = this.getBaked() ? Recipe.BAKED : 0;
+		int peeled_int = this.getPeeled() ? Recipe.PEELED : 0;
+		return mixed_int|melted_int|baked_int|peeled_int;	
+	}
+	
 	public static AbstractMap<String, IngredientRecipe> getRecursiveSwappedIngredients(IngredientRecipe ingredient) {
 		AbstractMap<String, IngredientRecipe> swapped = new HashMap<String, IngredientRecipe>();
 		if (ingredient.isSimple()) {

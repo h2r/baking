@@ -90,32 +90,7 @@ public class TestRecipeSuccess {
 		allIngredients = null;
 		topLevelIngredient = null;
 	}
-	
-	// Test a successful recipe with all ingredients in an object
-	@Test
-	public void testAllIngredientsSuccess() {
-		topLevelIngredient = new MashedPotatoes().topLevelIngredient;
-		knowledgebase = new IngredientKnowledgebase();
-		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
-		this.setUpState();
-		
-		List<String> contents = Arrays.asList("butter", "potatoes", "salted_water", "eggs");
-		
-		ObjectInstance salted_water = IngredientFactory.getNewComplexIngredientObjectInstance(
-				domain.getObjectClass("complex_ingredient"), "salted_water", Recipe.NO_ATTRIBUTES,
-				Recipe.SWAPPED, "mixing_bowl_2", new TreeSet<String>(), Arrays.asList("water", "salt"));
-		
-		state.addObject(salted_water);
-		
-		ObjectInstance mash = IngredientFactory.getNewComplexIngredientObjectInstance(
-				domain.getObjectClass("complex_ingredient"), "Mashed_potatoes", Recipe.NO_ATTRIBUTES, 
-				Recipe.SWAPPED, "mixing_bowl_1", new TreeSet<String>(), contents);
-		
-		IngredientFactory.setPeeled(state.getObject("potatoes"), true);
-		BakingAsserts.assertSuccess(state, topLevelIngredient, mash);
-		
-	}
-	
+
 	// Test a successful recipe comprised of two swapped objects
 	@Test
 	public void testSwappedIngredientsSuccess() {

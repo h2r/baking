@@ -448,6 +448,7 @@ public class IngredientFactory {
 			match = false;
 			for (IngredientRecipe ing : goal.getContents()) {
 				if (ing.getName().equals(obj.getName())) {
+					IngredientFactory.setAttributes(obj, ing.generateAttributeNumber());
 					match = true;
 					break;
 				}

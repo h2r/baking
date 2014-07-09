@@ -231,7 +231,7 @@ public class TestIngredientRecipe {
 	public void testMashedPotatoes() {
 		topLevelIngredient = new MashedPotatoes().topLevelIngredient;
 		this.setUp();
-		swappedIngredientList = Arrays.asList("Mashed_potatoes", "salted_water");
+		swappedIngredientList = Arrays.asList("Mashed_potatoes", "salted_water", "cooked_potatoes");
 		constituentNecessaryTraits = Arrays.asList("salt");
 		constituentIngredients = new ArrayList<IngredientRecipe>();
 		constituentIngredientList = Arrays.asList("potatoes", "butter", "eggs", "water");

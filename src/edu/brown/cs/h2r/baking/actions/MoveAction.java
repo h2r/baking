@@ -74,14 +74,19 @@ public class MoveAction extends BakingAction {
 		if (SpaceFactory.getOnOff(spaceInstance) && !ContainerFactory.isEmptyContainer(containerInstance)) {
 			if (SpaceFactory.isHeating(spaceInstance) && ContainerFactory.isHeatingContainer(containerInstance)) {
 				for (String name : ContainerFactory.getContentNames(containerInstance)) {
-					if (!IngredientFactory.isMeltedAtRoomTemperature(state.getObject(name))) {
-						IngredientFactory.meltIngredient(state.getObject(name));
+					ObjectInstance ing = state.getObject(name);
+					if (!IngredientFactory.isMeltedAtRoomTemperature(ing)) {
+						IngredientFactory.meltIngredient(ing);
+						/*if (!IngredientFactory.isSimple(ing) && !IngredientFactory.isSwapped(ing)) {
+							
+						}*/
 					}
 				}
 			}
 			else if (SpaceFactory.isBaking(spaceInstance) && ContainerFactory.isBakingContainer(containerInstance)) {
 				for (String name : ContainerFactory.getContentNames(containerInstance)) {
-					IngredientFactory.bakeIngredient(state.getObject(name));
+					ObjectInstance ing = state.getObject(name);
+					IngredientFactory.bakeIngredient(ing);
 				}
 			}
 		}

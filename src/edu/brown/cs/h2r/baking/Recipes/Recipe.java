@@ -126,9 +126,9 @@ public abstract class Recipe {
 				}
 			}
 			// If we don't have equal amounts of swapped ingredients, then we've done something wrong
-			if (swappedRecipeIngredients.size() != swappedObjectIngredients.size()) {
+			/*if (swappedRecipeIngredients.size() != swappedObjectIngredients.size()) {
 				return false;
-			}
+			}*/
 			IngredientRecipe match;
 			for (ObjectInstance swappedObj : swappedObjectIngredients) {
 				match = null;
@@ -161,6 +161,12 @@ public abstract class Recipe {
 						}
 					}
 				}
+			}
+			// any unmatched swapped recipe ingredients, add their contents to recipe content
+			for (IngredientRecipe swappedIng : swappedRecipeIngredients) {
+				recipeContents.addAll(swappedIng.getContents());
+				recipeContents.addAll(swappedIng.getNecessaryTraits().values());
+				recipeContents.remove(swappedIng);
 			}
 			
 		}
