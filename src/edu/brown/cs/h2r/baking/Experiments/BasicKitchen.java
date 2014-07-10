@@ -3,6 +3,7 @@ package edu.brown.cs.h2r.baking.Experiments;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import burlap.behavior.statehashing.NameDependentStateHashFactory;
 import burlap.behavior.statehashing.StateHashFactory;
@@ -16,8 +17,10 @@ import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.SADomain;
+import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
+import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
 import edu.brown.cs.h2r.baking.Knowledgebase.IngredientKnowledgebase;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
@@ -155,6 +158,11 @@ public class BasicKitchen implements DomainGenerator {
 		if (this.isFailure == null) {
 			this.isFailure = new RecipeBotched("botched", domain, this.recipe.topLevelIngredient);
 		}
+		
+		this.recipe.setUpSubgoals(this.domain);
+		if (((RecipeBotched)this.isFailure).hasNoSubgoals()) {
+			this.addSubgoalsToBotched(recipe.getSubgoals(), ((RecipeBotched)this.isFailure));
+		}
 	}
 	
 	public String resetCurrentState() {
@@ -212,6 +220,15 @@ public class BasicKitchen implements DomainGenerator {
 	
 	public boolean getIsBotched() {
 		return this.isFailure.isTrue(this.currentState, "");
+	}
+	
+	// Add ingredient-only subgoals to the RecipeBotched propositional function
+	public void addSubgoalsToBotched(Set<BakingSubgoal> subgoals, RecipeBotched botched) {
+		for (BakingSubgoal sg : subgoals) {
+			if (sg.getGoal().getClassName().equals(AffordanceCreator.FINISH_PF)) {
+				botched.addSubgoal(sg);
+			}
+		}
 	}
 
 }

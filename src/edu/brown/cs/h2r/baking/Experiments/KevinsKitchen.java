@@ -37,9 +37,11 @@ import edu.brown.cs.h2r.baking.ObjectFactories.*;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
 import edu.brown.cs.h2r.baking.Recipes.*;
 import edu.brown.cs.h2r.baking.actions.*;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
 
 public class KevinsKitchen implements DomainGenerator {
 	List<ObjectInstance> allIngredients;
+	List<BakingSubgoal> ing_subgoals;
 	private IngredientRecipe topLevelIngredient;
 	public KevinsKitchen() {
 
@@ -99,6 +101,19 @@ public class KevinsKitchen implements DomainGenerator {
 		// High level planner that plans through the recipe's subgoals
 		Set<BakingSubgoal> subgoals = recipe.getSubgoals();
 		Set<BakingSubgoal> active_subgoals = new HashSet<BakingSubgoal>();
+		
+		// To the failed propFunction, add in all subgoals for a recipe that are based on an ingredient.
+		RecipeBotched failed = ((RecipeBotched)domain.getPropFunction(AffordanceCreator.BOTCHED_PF));
+		if (failed != null) {
+			failed.clearSubgoals();
+		}
+		
+		this.ing_subgoals = new ArrayList<BakingSubgoal>();
+		for (BakingSubgoal sg : subgoals) {
+			if (sg.getGoal().getClassName().equals(AffordanceCreator.FINISH_PF)) {
+				ing_subgoals.add(sg);
+			}
+		}
 		
 		do {
 			// For all subgoals with all preconditions satisfied
@@ -162,6 +177,12 @@ public class KevinsKitchen implements DomainGenerator {
 		}
 		final PropositionalFunction isSuccess = subgoal.getGoal();
 		final PropositionalFunction isFailure = domain.getPropFunction(AffordanceCreator.BOTCHED_PF);
+		
+		if (((RecipeBotched)isFailure).hasNoSubgoals()) {
+			for (BakingSubgoal sg : this.ing_subgoals) {
+				((RecipeBotched)isFailure).addSubgoal(sg);
+			}
+		}
 		
 		TerminalFunction recipeTerminalFunction = new RecipeTerminalFunction(isSuccess, isFailure);
 		
