@@ -70,6 +70,8 @@ public class BasicKitchen implements DomainGenerator {
 		domain.addObjectClass(ContainerFactory.createObjectClass(domain));
 		domain.addObjectClass(IngredientFactory.createSimpleIngredientObjectClass(domain));
 		domain.addObjectClass(IngredientFactory.createComplexIngredientObjectClass(domain));
+		domain.addObjectClass(IngredientFactory.createComplexHiddenIngredientObjectClass(domain));
+		domain.addObjectClass(IngredientFactory.createSimpleHiddenIngredientObjectClass(domain));
 		domain.addObjectClass(SpaceFactory.createObjectClass(domain));		
 		domain.addObjectClass(AgentFactory.getObjectClass(domain));
 		domain.addObjectClass(MakeSpanFactory.getObjectClass(domain));
@@ -100,7 +102,7 @@ public class BasicKitchen implements DomainGenerator {
 		
 		List<String> bakingContainers = Arrays.asList("Baking_Dish");
 		for (String container : bakingContainers) { 
-			state.addObject(ContainerFactory.getNewHeatingContainerObjectInstance(domain, container, null, "counter"));
+			state.addObject(ContainerFactory.getNewBakingContainerObjectInstance(domain, container, null, "counter"));
 		}
 		
 		List<String> containers = new ArrayList<String>();

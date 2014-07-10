@@ -97,13 +97,21 @@ public abstract class Recipe {
 		{
 			return ingredientRecipe.getName().equals(object.getName());
 		}
-		
 		// List of ingredients that fulfill a "trait" rather than a ingredient in recipe
 		List<ObjectInstance> traitIngredients = new ArrayList<ObjectInstance>();
-		
 		List<IngredientRecipe> recipeContents = ingredientRecipe.getContents();
-		Set<String> compulsoryTraits = ingredientRecipe.getNecessaryTraits().keySet();
-		AbstractMap<String, IngredientRecipe> compulsoryTraitMap = ingredientRecipe.getNecessaryTraits();
+		
+		// Real trait map
+		AbstractMap<String, IngredientRecipe> TraitMap = ingredientRecipe.getNecessaryTraits();
+		
+		// Copy of trait map / trait map Key set
+		AbstractMap<String, IngredientRecipe> compulsoryTraitMap = new HashMap<String, IngredientRecipe>();
+		Set<String> compulsoryTraits = new TreeSet<String>();
+		for (String trait :TraitMap.keySet()) {
+			compulsoryTraits.add(trait);
+			compulsoryTraitMap.put(trait,  TraitMap.get(trait));
+		}
+		
 		Set<String> objContents = IngredientFactory.getRecursiveContentsAndSwapped(state, object);
 		Set<String> contents = IngredientFactory.getRecursiveContentsForIngredient(state, object);
 		
@@ -165,7 +173,12 @@ public abstract class Recipe {
 			// any unmatched swapped recipe ingredients, add their contents to recipe content
 			for (IngredientRecipe swappedIng : swappedRecipeIngredients) {
 				recipeContents.addAll(swappedIng.getContents());
-				recipeContents.addAll(swappedIng.getNecessaryTraits().values());
+				AbstractMap<String, IngredientRecipe> swappedTraits = swappedIng.getNecessaryTraits();
+				Set<String> swappedTraitKeys =  swappedTraits.keySet();
+				for (String trait : swappedTraitKeys) {
+					compulsoryTraits.add(trait);
+					compulsoryTraitMap.put(trait, swappedTraits.get(trait));
+				}
 				recipeContents.remove(swappedIng);
 			}
 			

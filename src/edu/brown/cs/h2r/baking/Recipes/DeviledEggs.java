@@ -52,7 +52,6 @@ public class DeviledEggs extends Recipe {
 		
 		BakingPropositionalFunction pf3 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("DeviledEggs"));
 		BakingSubgoal sg3 = new BakingSubgoal(pf3, swappedIngredients.get("DeviledEggs"));
-		sg3.addPrecondition(sg1);
 		sg3.addPrecondition(sg2);
 		this.subgoals.add(sg3);
 	}

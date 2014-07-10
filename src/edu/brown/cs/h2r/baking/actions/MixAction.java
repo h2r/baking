@@ -139,8 +139,22 @@ public class MixAction extends BakingAction {
 			ContainerFactory.addIngredient(container, newIngredient.getName());
 			IngredientFactory.changeIngredientContainer(newIngredient, container.getName());
 			
-			
-			ExperimentHelper.checkIngredientCompleted(ingredient.makeFakeAttributeCopy(newIngredient), state, asList(newIngredient), state.getObjectsOfTrueClass(ContainerFactory.ClassName));
+			// Call to makeFakeAttributeCopy here is to ensure we can make a swapped ingredient even
+			// if in reality, said swapped ingredient has to eventually be baked/melted/peeled...
+			if (Recipe.isSuccess(state, ingredient.makeFakeAttributeCopy(newIngredient), newIngredient)) {
+				ExperimentHelper.checkIngredientCompleted(ingredient.makeFakeAttributeCopy(newIngredient), state, asList(newIngredient), state.getObjectsOfTrueClass(ContainerFactory.ClassName));
+			} else {
+				//For the online game, ingredient is always the topLevelIngredient, so check all possible
+				// swapped ingredients
+				for (IngredientRecipe swapped : IngredientRecipe.getRecursiveSwappedIngredients(ingredient).values()) {
+					IngredientRecipe swappedCopy = swapped.makeFakeAttributeCopy(newIngredient);
+					if (Recipe.isSuccess(state, swapped.makeFakeAttributeCopy(newIngredient), newIngredient)) {
+						ExperimentHelper.checkIngredientCompleted(swappedCopy, state, 
+								asList(newIngredient), state.getObjectsOfTrueClass(ContainerFactory.ClassName));
+						break;
+					}
+				}
+			}
 		}
 	}
 	
