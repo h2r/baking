@@ -363,6 +363,10 @@ public class IngredientFactory {
 		}
 	}
 	
+	public static boolean hasToolTrait(ObjectInstance object, String trait) {
+		return IngredientFactory.getToolTraits(object).contains(trait);
+	}
+	
 	
 	public static Set<String> getRecursiveContentsForIngredient(State state, ObjectInstance ingredient) {
 		Set<String> contents = new TreeSet<String>();

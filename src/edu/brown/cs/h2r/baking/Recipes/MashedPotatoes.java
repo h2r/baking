@@ -32,7 +32,7 @@ public class MashedPotatoes extends Recipe {
 		potatoes.addToolAttribute("peeled");
 		cookedPotatoesList.add(potatoes);
 		cookedPotatoesList.add(saltedWater);
-		IngredientRecipe cookedPotatoes = new IngredientRecipe("cooked_potatoes", Recipe.MELTED, Recipe.SWAPPED, cookedPotatoesList);
+		IngredientRecipe cookedPotatoes = new IngredientRecipe("potatoes_in_water", Recipe.MELTED, Recipe.SWAPPED, cookedPotatoesList);
 		
 		List<IngredientRecipe> ingredientList = new ArrayList<IngredientRecipe>();
 		ingredientList.add(cookedPotatoes);
@@ -62,8 +62,8 @@ public class MashedPotatoes extends Recipe {
 		this.subgoals.add(saltedWaterSubgoal);
 		
 		BakingPropositionalFunction cookedPotatoesPF = 
-				new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("cooked_potatoes"));
-		BakingSubgoal cookedPotatoesSubgoal = new BakingSubgoal(cookedPotatoesPF, swappedIngredients.get("cooked_potatoes"));
+				new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("potatoes_in_water"));
+		BakingSubgoal cookedPotatoesSubgoal = new BakingSubgoal(cookedPotatoesPF, swappedIngredients.get("potatoes_in_water"));
 		cookedPotatoesSubgoal.addPrecondition(saltedWaterSubgoal);
 		this.subgoals.add(cookedPotatoesSubgoal);
 		
