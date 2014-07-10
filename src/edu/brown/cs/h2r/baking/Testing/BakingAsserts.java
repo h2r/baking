@@ -56,21 +56,6 @@ public class BakingAsserts {
 		Assert.assertTrue(IngredientFactory.isMixedIngredient(ing));
 	}
 	
-	public static void assertIsPeeled(IngredientRecipe ing) {
-		Assert.assertTrue(ing.getPeeled());
-	}
-	
-	public static void assertIsPeeled(ObjectInstance ing) {
-		Assert.assertTrue(IngredientFactory.isPeeledIngredient(ing));
-	}
-	
-	public static void assertIsNotPeeled(IngredientRecipe ing) {
-		Assert.assertFalse(ing.getPeeled());
-	}
-	
-	public static void assertIsNotPeeled(ObjectInstance ing) {
-		Assert.assertFalse(IngredientFactory.isPeeledIngredient(ing));
-	}
 	
 	public static void assertIsSwapped(IngredientRecipe ing) {
 		Assert.assertTrue(ing.getSwapped());
@@ -229,5 +214,29 @@ public class BakingAsserts {
 	
 	public static void assertSpaceOff(ObjectInstance space) {
 		Assert.assertFalse(SpaceFactory.getOnOff(space));
+	}
+	
+	public static void assertHasToolTrait(ObjectInstance ingredient, String trait) {
+		Assert.assertTrue(IngredientFactory.getToolTraits(ingredient).contains(trait));
+	}
+	
+	public static void assertHasToolTrait(IngredientRecipe ingredient, String trait) {
+		Assert.assertTrue(ingredient.getToolTraits().contains(trait));
+	}
+	
+	public static void assertHasToolAttribute(ObjectInstance ingredient, String attribute) {
+		Assert.assertTrue(IngredientFactory.getToolAttributes(ingredient).contains(attribute));
+	}
+	
+	public static void assertHasToolAttribute(IngredientRecipe ingredient, String attribute) {
+		Assert.assertTrue(ingredient.getToolAttributes().contains(attribute));
+	}
+	
+	public static void assertDoesntHaveToolAttribute(ObjectInstance ingredient, String attribute) {
+		Assert.assertFalse(IngredientFactory.getToolAttributes(ingredient).contains(attribute));
+	}
+	
+	public static void assertDoesntHasToolAttribute(IngredientRecipe ingredient, String attribute) {
+		Assert.assertFalse(ingredient.getToolAttributes().contains(attribute));
 	}
 }

@@ -32,7 +32,6 @@ public abstract class Recipe {
 	public static final int MIXED = 1;
 	public static final int MELTED = 2;
 	public static final int BAKED = 4;
-	public static final int PEELED = 8;
 	public static final Boolean SWAPPED = true;
 	public static final Boolean NOT_SWAPPED = false;
 	

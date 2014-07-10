@@ -1,6 +1,7 @@
 package edu.brown.cs.h2r.baking.Experiments;
 
 import java.io.IOException;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -29,6 +30,7 @@ import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.SADomain;
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
 import edu.brown.cs.h2r.baking.Knowledgebase.IngredientKnowledgebase;
+import edu.brown.cs.h2r.baking.Knowledgebase.ToolKnowledgebase;
 import burlap.oomdp.core.Domain;
 import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
@@ -57,6 +59,7 @@ public class KevinsKitchen implements DomainGenerator {
 		domain.addObjectClass(IngredientFactory.createComplexHiddenIngredientObjectClass(domain));
 		domain.addObjectClass(SpaceFactory.createObjectClass(domain));		
 		domain.addObjectClass(AgentFactory.getObjectClass(domain));
+		domain.addObjectClass(ToolFactory.createObjectClass(domain));
 		domain.setObjectIdentiferDependence(true);
 		return domain;
 	}
@@ -66,9 +69,10 @@ public class KevinsKitchen implements DomainGenerator {
 		Action mix = new MixAction(domain, recipe.topLevelIngredient);
 		Action pour = new PourAction(domain, recipe.topLevelIngredient);
 		Action move = new MoveAction(domain, recipe.topLevelIngredient);
-		Action peel = new PeelAction(domain, recipe.topLevelIngredient);
 		Action grease = new GreaseAction(domain);
 		Action a_switch = new SwitchAction(domain);
+		//Action use = new UseAction(domain, recipe.topLevelIngredient);
+		Action peel = new PeelAction(domain, recipe.topLevelIngredient);
 		State state = new State();
 		
 		// Get the "highest" subgoal in our recipe.
@@ -89,6 +93,20 @@ public class KevinsKitchen implements DomainGenerator {
 		
 		for (String container : containers) { 
 			state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "counter"));
+		}
+		
+		// Get the tools!
+		ToolKnowledgebase toolKnowledgebase = new ToolKnowledgebase();
+		AbstractMap<String, String[]> toolMap = toolKnowledgebase.getToolMap();
+		for (String name : toolMap.keySet()) {
+			String[] toolInfo = toolMap.get(name);
+			String toolTrait = toolInfo[0];
+			String toolAttribute = toolInfo[1];
+			if (toolInfo.length == 3) {
+				state.addObject(ToolFactory.getNewTransportableToolObjectInstance(domain, name, toolTrait, toolAttribute, "counter"));
+			} else {
+				state.addObject(ToolFactory.getNewSimpleToolObjectInstance(domain, name, toolTrait, toolAttribute, "counter"));
+			}
 		}
 		
 		// Out of all the ingredients in our kitchen, plan over only those that might be useful!

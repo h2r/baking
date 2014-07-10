@@ -29,7 +29,7 @@ public class MashedPotatoes extends Recipe {
 		
 		List<IngredientRecipe> cookedPotatoesList = new ArrayList<IngredientRecipe>();
 		IngredientRecipe potatoes = knowledgebase.getIngredient("potatoes");
-		potatoes.setPeeled();
+		potatoes.addToolAttribute("peeled");
 		cookedPotatoesList.add(potatoes);
 		cookedPotatoesList.add(saltedWater);
 		IngredientRecipe cookedPotatoes = new IngredientRecipe("cooked_potatoes", Recipe.MELTED, Recipe.SWAPPED, cookedPotatoesList);

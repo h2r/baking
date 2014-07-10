@@ -38,7 +38,7 @@ public class PeelAction extends BakingAction {
 		Set<String> contents = ContainerFactory.getContentNames(container);
 		for (String ingredient : contents) {
 			ObjectInstance ingredientObject = state.getObject(ingredient);
-			if (IngredientFactory.isPeeledIngredient(ingredientObject)) {
+			if (IngredientFactory.hasToolAttribute(ingredientObject, "peeled")) {
 				return BakingActionResult.failure(ingredient + " is already peeled");
 			}
 		}
@@ -66,6 +66,6 @@ public class PeelAction extends BakingAction {
 	}
 	
 	private void peel(ObjectInstance objectInstance) {
-		IngredientFactory.setPeeled(objectInstance, true);
+		IngredientFactory.addToolAttribute(objectInstance, "peeled");
 	}
 }

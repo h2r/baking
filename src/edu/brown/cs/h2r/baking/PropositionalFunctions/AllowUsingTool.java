@@ -10,29 +10,35 @@ import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.ToolFactory;
 
-public class AllowPeeling extends BakingPropositionalFunction {
+public class AllowUsingTool extends BakingPropositionalFunction {
 
-	public AllowPeeling(String name, Domain domain, IngredientRecipe ingredient) {
-		super(name, domain, new String[] {AgentFactory.ClassName, ContainerFactory.ClassName} ,ingredient);
+	public AllowUsingTool(String name, Domain domain, IngredientRecipe ingredient) {
+		super(name, domain, new String[] {AgentFactory.ClassName, ToolFactory.ClassName, ContainerFactory.ClassName} ,ingredient);
 	}
 	
 	public boolean isTrue(State state, String[] params) {
-		if (!params[1].equalsIgnoreCase("")) {
-			ObjectInstance container = state.getObject(params[1]);
-			Set<String> contents = ContainerFactory.getContentNames(container);
+		ObjectInstance tool = state.getObject(params[1]);
+		ObjectInstance container = state.getObject(params[2]);
+		Set<String> contents = ContainerFactory.getContentNames(container);
+		if (!params[2].equalsIgnoreCase("")) {
 			if (contents.isEmpty()) {
 				return false;
 			}
-			ObjectInstance toPeel = null;
+			ObjectInstance ingredient;
 			for (String name : contents) {
-				toPeel = state.getObject(name);
+				ingredient = state.getObject(name);
 				boolean match = false;
 				// Is this a necessary ingredient in the recipe?
 				for (IngredientRecipe content : this.topLevelIngredient.getConstituentIngredients()) {
-					if (content.getName().equals(toPeel.getName())) {
-						// If it is, then make sure it needs to be peeled in the first place
-						if (!content.hasToolAttribute("peeled")) {
+					if (content.getName().equals(ingredient.getName())) {
+						// Check to see if it can be used by the tool
+						if (!ToolFactory.toolCanBeUsed(tool, content)) {
+							return false;
+						}
+						// If it is, then make sure it needs to have the tool used on it in the first place
+						if (!ToolFactory.toolHasBeenUsed(tool, content)) {
 							return false;
 						}
 						match = true;
@@ -42,12 +48,14 @@ public class AllowPeeling extends BakingPropositionalFunction {
 				if (!match) {
 					// could this potentially fulfill a trait in the recipe? 
 					AbstractMap<String, IngredientRecipe> necessaryTraits = this.topLevelIngredient.getNecessaryTraits();
-					Set<String> toMeltTraits = IngredientFactory.getTraits(toPeel);
+					Set<String> toMeltTraits = IngredientFactory.getTraits(ingredient);
 					for (String trait : necessaryTraits.keySet()) {
 						if (toMeltTraits.contains(trait)) {
 							// If it could potentially fulfill a trait ingredient, then ensure that 
 							// it has to be peeled!
-							if (necessaryTraits.get(trait).hasToolAttribute("peeled")) {
+							IngredientRecipe ing = necessaryTraits.get(trait);
+							if (ToolFactory.toolCanBeUsed(tool, ing) && 
+									ToolFactory.toolHasBeenUsed(tool, ing)) {
 								match = true;
 								break;
 							}
@@ -60,16 +68,16 @@ public class AllowPeeling extends BakingPropositionalFunction {
 			}
 			return true;
 		} else {
-			// If no specific ingredient has been given to check, then allow the peeling action
-			// Iff there exists some ingredient or trait ingredient that is peeled
+			// If no specific ingredient has been given to check, then allow use action
+			// Iff there exists some ingredient or trait ingredient that hs the trait!
 			for (IngredientRecipe content : topLevelIngredient.getConstituentIngredients()) {
-				if (content.hasToolAttribute("peeled")) {
+				if (ToolFactory.toolHasBeenUsed(tool, content)) {
 					return true;
 				}
 			}
 			AbstractMap<String, IngredientRecipe> traitMap = topLevelIngredient.getConstituentNecessaryTraits();
 			for (String trait : traitMap.keySet()) {
-				if (traitMap.get(trait).hasToolAttribute("peeled")) {
+				if (ToolFactory.toolHasBeenUsed(tool, traitMap.get(trait))) {
 					return true;
 				}
 			}
