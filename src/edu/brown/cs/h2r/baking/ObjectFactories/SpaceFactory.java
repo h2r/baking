@@ -171,10 +171,10 @@ public class SpaceFactory {
 	}
 	
 	public static int generateAttributeNumber(Boolean baking, Boolean heating, Boolean working, Boolean switchable) {
-		int baking_int = baking ? SpaceFactory.BAKING : 0;
-		int heating_int = heating ? SpaceFactory.HEATING : 0;
-		int working_int = working ? SpaceFactory.WORKING : 0;
-		int switchable_int = switchable ? SpaceFactory.SWITCHABLE : 0;
-		return baking_int|heating_int|working_int|switchable_int;
+		int bakingInt = baking ? SpaceFactory.BAKING : 0;
+		int heatingInt = heating ? SpaceFactory.HEATING : 0;
+		int workingInt = working ? SpaceFactory.WORKING : 0;
+		int switchableInt = switchable ? SpaceFactory.SWITCHABLE : 0;
+		return bakingInt|heatingInt|workingInt|switchableInt;
 	}
 }

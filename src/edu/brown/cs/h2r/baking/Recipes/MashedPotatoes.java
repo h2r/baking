@@ -19,7 +19,6 @@ public class MashedPotatoes extends Recipe {
 		
 		List<IngredientRecipe> saltedWaterList = new ArrayList<IngredientRecipe>();
 		IngredientRecipe water = knowledgebase.getIngredient("water");
-		//water.setMelted();
 		saltedWaterList.add(water);
 		IngredientRecipe saltedWater = 
 				new IngredientRecipe("salted_water", Recipe.MELTED, Recipe.SWAPPED, saltedWaterList);
@@ -38,10 +37,9 @@ public class MashedPotatoes extends Recipe {
 		ingredientList.add(cookedPotatoes);
 		ingredientList.add(knowledgebase.getIngredient("butter"));
 		ingredientList.add(knowledgebase.getIngredient("eggs"));
-		IngredientRecipe mashed_potatoes = new IngredientRecipe("Mashed_potatoes", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList);
-		
-		
-		this.topLevelIngredient = mashed_potatoes;
+		IngredientRecipe mashedPotatoes = new IngredientRecipe("Mashed_potatoes", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList);
+		this.topLevelIngredient = mashedPotatoes;
+		//this.setUpRecipeToolAttributes();
 	}
 
 	@Override

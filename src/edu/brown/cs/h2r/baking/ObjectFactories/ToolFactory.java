@@ -181,7 +181,8 @@ public class ToolFactory {
 	}
 	
 	public static void pourIngredients(State state, ObjectInstance tool, ObjectInstance container) {
-		for (String name : ToolFactory.getContents(tool)) {
+		Set<String> contents = ToolFactory.getContents(tool);
+		for (String name : contents) {
 			ObjectInstance ingredient = state.getObject(name);
 			ContainerFactory.addIngredient(container, name);
 			IngredientFactory.changeIngredientContainer(ingredient, container.getName());

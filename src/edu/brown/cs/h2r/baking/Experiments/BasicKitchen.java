@@ -190,9 +190,10 @@ public class BasicKitchen implements DomainGenerator {
 		StateHashTuple newTuple = this.stateHashFactory.hashState(this.currentState);
 		
 		if (previousTuple.hashCode() == newTuple.hashCode()) {
+			int len = params.length;
 			String message = actionName + " had no effect with params [";
-			for (int i = 0; i <  params.length; i++) {
-				message += (i < params.length - 1) ? params[i] + ", " : params[i]; 
+			for (int i = 0; i <  len; i++) {
+				message += (i < len - 1) ? params[i] + ", " : params[i]; 
 			}
 			message += "]";
 			return BakingActionResult.failure(message);

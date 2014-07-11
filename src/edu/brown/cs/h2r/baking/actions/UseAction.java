@@ -1,5 +1,7 @@
 package edu.brown.cs.h2r.baking.actions;
 
+import java.util.Set;
+
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
@@ -49,26 +51,31 @@ public class UseAction extends BakingAction {
 		ObjectInstance tool = state.getObject(params[1]);
 		ObjectInstance container = state.getObject(params[2]);
 		if (ToolFactory.toolIsTransportable(tool)) {
-			if (ToolFactory.isEmpty(tool)) {
-				for (String name : ContainerFactory.getContentNames(container)) {
-					ObjectInstance ingredient = state.getObject(name);
-					this.useTool(state, tool, ingredient);
-					ToolFactory.addIngredient(tool, ingredient);
-				}
-			} else {
-				ToolFactory.pourIngredients(state, tool, container);
-			}
+			this.useTransportableTool(state, tool, container);
 		} else {
-			for (String name : ContainerFactory.getContentNames(container)) {
-				ObjectInstance ingredient = state.getObject(name);
-				this.useTool(state, tool, ingredient);
-			}
+			this.useSimpleTool(state, tool, container);
 		}
-		
 		return state;
 	}
 	
-	public void useTool(State state, ObjectInstance tool, ObjectInstance ingredient) {
-		IngredientFactory.addToolAttribute(ingredient, ToolFactory.getToolAttribute(tool));
+	public void useSimpleTool(State state, ObjectInstance tool, ObjectInstance container) {
+		Set<String> contentNames = ContainerFactory.getContentNames(container);
+		for (String name : contentNames) {				
+			ObjectInstance ingredient = state.getObject(name);
+			IngredientFactory.addToolAttribute(ingredient, ToolFactory.getToolAttribute(tool));
+		}
+	}
+	
+	public void useTransportableTool(State state, ObjectInstance tool, ObjectInstance container) {
+		if (ToolFactory.isEmpty(tool)) {
+			Set<String> contentNames = ContainerFactory.getContentNames(container);
+			for (String name : contentNames) {
+				ObjectInstance ingredient = state.getObject(name);
+				IngredientFactory.addToolAttribute(ingredient, ToolFactory.getToolAttribute(tool));
+				ToolFactory.addIngredient(tool, ingredient);
+			}
+		} else {
+			ToolFactory.pourIngredients(state, tool, container);
+		}
 	}
 }

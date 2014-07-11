@@ -1,6 +1,8 @@
 package edu.brown.cs.h2r.baking.PropositionalFunctions;
 
 import java.util.AbstractMap;
+import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import burlap.oomdp.core.Domain;
@@ -10,6 +12,7 @@ import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
+import edu.brown.cs.h2r.baking.actions.PeelAction;
 
 public class AllowPeeling extends BakingPropositionalFunction {
 
@@ -29,10 +32,11 @@ public class AllowPeeling extends BakingPropositionalFunction {
 				toPeel = state.getObject(name);
 				boolean match = false;
 				// Is this a necessary ingredient in the recipe?
-				for (IngredientRecipe content : this.topLevelIngredient.getConstituentIngredients()) {
+				List<IngredientRecipe> ingredientContents = this.topLevelIngredient.getConstituentIngredients();
+				for (IngredientRecipe content: ingredientContents) {
 					if (content.getName().equals(toPeel.getName())) {
 						// If it is, then make sure it needs to be peeled in the first place
-						if (!content.hasToolAttribute("peeled")) {
+						if (!content.hasToolAttribute(PeelAction.PEELED)) {
 							return false;
 						}
 						match = true;
@@ -43,11 +47,12 @@ public class AllowPeeling extends BakingPropositionalFunction {
 					// could this potentially fulfill a trait in the recipe? 
 					AbstractMap<String, IngredientRecipe> necessaryTraits = this.topLevelIngredient.getNecessaryTraits();
 					Set<String> toMeltTraits = IngredientFactory.getTraits(toPeel);
-					for (String trait : necessaryTraits.keySet()) {
+					for (Entry<String, IngredientRecipe> entry : necessaryTraits.entrySet()) {
+						String trait = entry.getKey();
 						if (toMeltTraits.contains(trait)) {
 							// If it could potentially fulfill a trait ingredient, then ensure that 
 							// it has to be peeled!
-							if (necessaryTraits.get(trait).hasToolAttribute("peeled")) {
+							if (entry.getValue().hasToolAttribute(PeelAction.PEELED)) {
 								match = true;
 								break;
 							}
@@ -62,14 +67,15 @@ public class AllowPeeling extends BakingPropositionalFunction {
 		} else {
 			// If no specific ingredient has been given to check, then allow the peeling action
 			// Iff there exists some ingredient or trait ingredient that is peeled
-			for (IngredientRecipe content : topLevelIngredient.getConstituentIngredients()) {
-				if (content.hasToolAttribute("peeled")) {
+			List<IngredientRecipe> contents = topLevelIngredient.getConstituentIngredients();
+			for (IngredientRecipe content : contents) {
+				if (content.hasToolAttribute(PeelAction.PEELED)) {
 					return true;
 				}
 			}
 			AbstractMap<String, IngredientRecipe> traitMap = topLevelIngredient.getConstituentNecessaryTraits();
-			for (String trait : traitMap.keySet()) {
-				if (traitMap.get(trait).hasToolAttribute("peeled")) {
+			for (IngredientRecipe ing : traitMap.values()) {
+				if (ing.hasToolAttribute(PeelAction.PEELED)) {
 					return true;
 				}
 			}

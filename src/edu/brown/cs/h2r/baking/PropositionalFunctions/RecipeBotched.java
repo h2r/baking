@@ -14,21 +14,21 @@ import edu.brown.cs.h2r.baking.Recipes.Recipe;
 
 public class RecipeBotched extends BakingPropositionalFunction {
 
-	List<BakingSubgoal> ing_subgoals;
+	List<BakingSubgoal> ingSubgoals;
 	public RecipeBotched(String name, Domain domain, IngredientRecipe ingredient) {
 		super(name, domain, new String[] {AgentFactory.ClassName}, ingredient);
-		this.ing_subgoals = new ArrayList<BakingSubgoal>();
+		this.ingSubgoals = new ArrayList<BakingSubgoal>();
 	}
 
 	@Override
 	public boolean isTrue(State state, String[] params) {
 		List<ObjectInstance> ingredients = state.getObjectsOfTrueClass(IngredientFactory.ClassNameComplex);
 		boolean failed; // has it failed with at least one subgoal?
-		boolean not_fail; // has it not failed with a least one subgoal?
+		boolean notFail; // has it not failed with a least one subgoal?
 		for (ObjectInstance ingredient : ingredients) {
 			failed = false;
-			not_fail = false;
-			for (BakingSubgoal sg : this.ing_subgoals) {
+			notFail = false;
+			for (BakingSubgoal sg : this.ingSubgoals) {
 				IngredientRecipe goalIng = sg.getIngredient();
 				// Fake copy so a final ingredient that has yet to be baked would not return failure.
 				// Conversely, if a non-top level ingredient "gets by" without being melted or baked,
@@ -37,11 +37,11 @@ public class RecipeBotched extends BakingPropositionalFunction {
 				if (Recipe.isFailure(state, goalIng.makeFakeAttributeCopy(ingredient), ingredient)) {
 					failed = true;
 				} else {
-					not_fail = true;
+					notFail = true;
 				}
 			}
 			// If it has failed, and hasn't not_failed, then the recipe is most definitely a failure.
-			if (failed && !not_fail) {
+			if (failed && !notFail) {
 				return true;
 			}
 		}
@@ -49,15 +49,15 @@ public class RecipeBotched extends BakingPropositionalFunction {
 	}
 	
 	public void addSubgoal(BakingSubgoal sg) {
-		this.ing_subgoals.add(sg);
+		this.ingSubgoals.add(sg);
 	}
 	
 	public boolean hasNoSubgoals() {
-		return this.ing_subgoals.isEmpty();
+		return this.ingSubgoals.isEmpty();
 	}
 	
 	public void clearSubgoals() {
-		this.ing_subgoals.clear();
+		this.ingSubgoals.clear();
 	}
 
 }

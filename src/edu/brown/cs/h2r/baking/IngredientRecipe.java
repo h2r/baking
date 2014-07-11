@@ -1,10 +1,10 @@
 package edu.brown.cs.h2r.baking;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Set;
-import java.util.TreeSet;
 
 import burlap.oomdp.core.ObjectInstance;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
@@ -24,31 +24,32 @@ public class IngredientRecipe {
 	private List<IngredientRecipe> contents;
 	private int useCount;
 	private AbstractMap<String, IngredientRecipe> necessaryTraits;
+	private Set<String> recipeToolAttributes;
 	
 	public IngredientRecipe(String name, int attributes) {
 		this.name = name;
 		this.setAttributes(attributes);
 		this.swapped = false;
-		this.traits = new TreeSet<String>();
 		this.useCount = 1;
 		this.contents = null;
-		this.traits = new TreeSet<String>();
-		this.useCount = 1;
+		this.traits = new HashSet<String>();
 		this.necessaryTraits = null;
-		this.toolTraits = new TreeSet<String>();
-		this.toolAttributes = new TreeSet<String>();
+		this.toolTraits = new HashSet<String>();
+		this.toolAttributes = new HashSet<String>();
+		this.recipeToolAttributes = new HashSet<String>();
 	}
 	
 	public IngredientRecipe(String name, int attributes, Boolean swapped, List<IngredientRecipe> contents) {
 		this.name = name;
 		this.setAttributes(attributes);
 		this.contents = contents;
-		this.traits = new TreeSet<String>();
 		this.swapped = swapped;
-		this.necessaryTraits = new HashMap<String, IngredientRecipe>();
 		this.useCount = 1;
-		this.toolTraits = new TreeSet<String>();
-		this.toolAttributes = new TreeSet<String>();
+		this.traits = new HashSet<String>();
+		this.necessaryTraits = new HashMap<String, IngredientRecipe>();
+		this.toolTraits = new HashSet<String>();
+		this.toolAttributes = new HashSet<String>();
+		this.recipeToolAttributes = new HashSet<String>();
 	}
 	
 	public Boolean isSimple() {
@@ -275,17 +276,17 @@ public class IngredientRecipe {
 	}
 	
 	public static int generateAttributeNumber(Boolean mixed, Boolean melted, Boolean baked) {
-		int mixed_int = mixed ? Recipe.MIXED : 0;
-		int melted_int = melted ? Recipe.MELTED : 0;
-		int baked_int = baked ? Recipe.BAKED : 0;
-		return mixed_int|melted_int|baked_int;
+		int mixedInt = mixed ? Recipe.MIXED : 0;
+		int meltedInt = melted ? Recipe.MELTED : 0;
+		int bakedInt = baked ? Recipe.BAKED : 0;
+		return mixedInt|meltedInt|bakedInt;
 	}
 	
 	public int generateAttributeNumber() {
-		int mixed_int = this.getMixed() ? Recipe.MIXED : 0;
-		int melted_int = this.getMelted() ? Recipe.MELTED : 0;
-		int baked_int = this.getBaked() ? Recipe.BAKED : 0;
-		return mixed_int|melted_int|baked_int;	
+		int mixedInt = this.getMixed() ? Recipe.MIXED : 0;
+		int meltedInt = this.getMelted() ? Recipe.MELTED : 0;
+		int bakedInt = this.getBaked() ? Recipe.BAKED : 0;
+		return mixedInt|meltedInt|bakedInt;	
 	}
 	
 	public static AbstractMap<String, IngredientRecipe> getRecursiveSwappedIngredients(IngredientRecipe ingredient) {

@@ -1,4 +1,5 @@
 package edu.brown.cs.h2r.baking.actions;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
@@ -113,7 +114,8 @@ public class MixAction extends BakingAction {
 			ObjectInstance[] objectArray = new ObjectInstance[objects.size()];
 			objects.toArray(objectArray);
 			//find mutual traits
-			for (String trait: IngredientFactory.getTraits(objectArray[0])) {
+			Set<String> allTraits = IngredientFactory.getTraits(objectArray[0]);
+			for (String trait: allTraits) {
 				if (IngredientFactory.getTraits(objectArray[1]).contains(trait)) {
 					traits.add(trait);
 				}
@@ -140,22 +142,7 @@ public class MixAction extends BakingAction {
 			ContainerFactory.addIngredient(container, newIngredient.getName());
 			IngredientFactory.changeIngredientContainer(newIngredient, container.getName());
 			
-			// Call to makeFakeAttributeCopy here is to ensure we can make a swapped ingredient even
-			// if in reality, said swapped ingredient has to eventually be baked/melted/peeled...
-			if (Recipe.isSuccess(state, ingredient.makeFakeAttributeCopy(newIngredient), newIngredient)) {
-				ExperimentHelper.checkIngredientCompleted(ingredient.makeFakeAttributeCopy(newIngredient), state, asList(newIngredient), state.getObjectsOfTrueClass(ContainerFactory.ClassName));
-			} else {
-				//For the online game, ingredient is always the topLevelIngredient, so check all possible
-				// swapped ingredients
-				for (IngredientRecipe swapped : IngredientRecipe.getRecursiveSwappedIngredients(ingredient).values()) {
-					IngredientRecipe swappedCopy = swapped.makeFakeAttributeCopy(newIngredient);
-					if (Recipe.isSuccess(state, swapped.makeFakeAttributeCopy(newIngredient), newIngredient)) {
-						ExperimentHelper.checkIngredientCompleted(swappedCopy, state, 
-								asList(newIngredient), state.getObjectsOfTrueClass(ContainerFactory.ClassName));
-						break;
-					}
-				}
-			}
+			this.makeSwappedIngredient(state, newIngredient);
 		}
 	}
 	
@@ -164,11 +151,8 @@ public class MixAction extends BakingAction {
 	}
 	
 	public void combineIngredients(State state, Domain domain, IngredientRecipe recipe, ObjectInstance container, String toswap) {
-		Set<String> traits = new TreeSet<String>();
+		Set<String> traits = new HashSet<String>(recipe.getTraits());
 		//get the actual traits from the trait thing
-		for (String trait : recipe.getTraits()) {
-			traits.add(trait);
-		}
 		Set<String> ings = ContainerFactory.getContentNames(container);
 		ObjectInstance new_ing = IngredientFactory.getNewComplexIngredientObjectInstance(
 				domain.getObjectClass(IngredientFactory.ClassNameComplex), toswap, Recipe.NO_ATTRIBUTES, true, "",new TreeSet<String>(), new TreeSet<String>(), traits, ings);
@@ -190,5 +174,26 @@ public class MixAction extends BakingAction {
 		ContainerFactory.addIngredient(container, toswap);
 		IngredientFactory.changeIngredientContainer(new_ing, container.getName());
 		state.addObject(new_ing);
+	}
+	
+	public void makeSwappedIngredient(State state, ObjectInstance newIngredient) {
+		// Call to makeFakeAttributeCopy here is to ensure we can make a swapped ingredient even
+					// if in reality, said swapped ingredient has to eventually be baked/melted/peeled...
+					if (Recipe.isSuccess(state, ingredient.makeFakeAttributeCopy(newIngredient), newIngredient)) {
+						ExperimentHelper.checkIngredientCompleted(ingredient.makeFakeAttributeCopy(newIngredient),
+								state, asList(newIngredient), state.getObjectsOfTrueClass(ContainerFactory.ClassName));
+					} else {
+						//For the online game, ingredient is always the topLevelIngredient, so check all possible
+						// swapped ingredients
+						Collection<IngredientRecipe> swappedIngs= IngredientRecipe.getRecursiveSwappedIngredients(ingredient).values();
+		 				for (IngredientRecipe swapped : swappedIngs) {
+							IngredientRecipe swappedCopy = swapped.makeFakeAttributeCopy(newIngredient);
+							if (Recipe.isSuccess(state, swapped.makeFakeAttributeCopy(newIngredient), newIngredient)) {
+								ExperimentHelper.checkIngredientCompleted(swappedCopy, state, 
+										asList(newIngredient), state.getObjectsOfTrueClass(ContainerFactory.ClassName));
+								break;
+							}
+						}
+					}
 	}
 }

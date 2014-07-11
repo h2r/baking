@@ -33,8 +33,6 @@ public class TestIngredientRecipe {
 	AbstractMap<String, Integer> useCount;
 	IngredientRecipe topLevelIngredient;
 	
-	//ObjectInstance success, failure, success_swapped;
-	
 	public void setUp() {
 		domain = new SADomain();
 		setUpDomain();
@@ -147,7 +145,7 @@ public class TestIngredientRecipe {
 	public void testBrownies() {
 		topLevelIngredient = new Brownies().topLevelIngredient;
 		this.setUp();
-		swappedIngredientList = Arrays.asList("dry_ingredients", "wet_ingredients", "brownies");
+		swappedIngredientList = Arrays.asList("dry_ingredients", "wet_ingredients", "brownie_batter");
 		constituentNecessaryTraits = Arrays.asList("salt", "sugar", "flour", "fat");
 		constituentIngredients = new ArrayList<IngredientRecipe>();
 		constituentIngredientList = Arrays.asList("baking_powder", "cocoa", "vanilla", "eggs");

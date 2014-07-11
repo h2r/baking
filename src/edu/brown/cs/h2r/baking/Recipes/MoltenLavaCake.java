@@ -38,14 +38,15 @@ public class MoltenLavaCake extends Recipe {
 		ingredientList3.add(batter);
 		ingredientList3.add(knowledgebase.getIngredient("eggs"));
 		ingredientList3.add(knowledgebase.getIngredient("egg_yolks"));
-		IngredientRecipe unflavored_batter = new IngredientRecipe("unflavored_batter", Recipe.NO_ATTRIBUTES,Recipe.SWAPPED, ingredientList3);
+		IngredientRecipe unflavoredBatter = new IngredientRecipe("unflavored_batter", Recipe.NO_ATTRIBUTES,Recipe.SWAPPED, ingredientList3);
 		
 		List<IngredientRecipe> ingredientList4 = new ArrayList<IngredientRecipe>();
-		ingredientList4.add(unflavored_batter);
+		ingredientList4.add(unflavoredBatter);
 		ingredientList4.add(knowledgebase.getIngredient("vanilla"));
 		ingredientList4.add(knowledgebase.getIngredient("orange_liqueur"));
-		this.topLevelIngredient = new IngredientRecipe("molten_lava_cake", Recipe.BAKED, Recipe.SWAPPED, ingredientList4);
-
+		IngredientRecipe cake = new IngredientRecipe("molten_lava_cake", Recipe.BAKED, Recipe.SWAPPED, ingredientList4);
+		this.topLevelIngredient = cake;
+		//this.setUpRecipeToolAttributes();
 	}
 	
 	public void setUpSubgoals(Domain domain) {

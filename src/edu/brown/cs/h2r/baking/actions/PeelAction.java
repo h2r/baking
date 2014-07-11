@@ -13,6 +13,7 @@ import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 
 public class PeelAction extends BakingAction {
 	public static final String className = "peel";
+	public static final String  PEELED = "peeled";
 	public PeelAction(Domain domain, IngredientRecipe ingredient) {
 		super(PeelAction.className, domain, ingredient, new String[] {AgentFactory.ClassName, ContainerFactory.ClassName});
 	}
@@ -41,7 +42,7 @@ public class PeelAction extends BakingAction {
 			if (!IngredientFactory.hasToolTrait(ingredientObject, "peelable")) {
 				return BakingActionResult.failure(ingredient + " can't be peeled");
 			}
-			if (IngredientFactory.hasToolAttribute(ingredientObject, "peeled")) {
+			if (IngredientFactory.hasToolAttribute(ingredientObject, PeelAction.PEELED)) {
 				return BakingActionResult.failure(ingredient + " is already peeled");
 			}
 		}
@@ -69,6 +70,6 @@ public class PeelAction extends BakingAction {
 	}
 	
 	private void peel(ObjectInstance objectInstance) {
-		IngredientFactory.addToolAttribute(objectInstance, "peeled");
+		IngredientFactory.addToolAttribute(objectInstance, PeelAction.PEELED);
 	}
 }

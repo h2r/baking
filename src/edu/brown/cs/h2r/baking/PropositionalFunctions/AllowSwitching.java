@@ -1,5 +1,7 @@
 package edu.brown.cs.h2r.baking.PropositionalFunctions;
 
+import java.util.List;
+
 import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
@@ -33,55 +35,55 @@ public class AllowSwitching extends BakingPropositionalFunction {
 		
 		if (!SpaceFactory.getOnOff(space)) {
 			if (SpaceFactory.isHeating(space)) {
-				if (this.topLevelIngredient.getMelted()) {
-					ObjectInstance obj =  state.getObject(this.topLevelIngredient.getName());
-					if (obj != null) {
-						if (!IngredientFactory.isMeltedIngredient(obj) && !IngredientFactory.isMeltedAtRoomTemperature(obj)) {
-							return true;
-						}
-					}
-				}
-				
-				for (IngredientRecipe ing : this.topLevelIngredient.getContents()) {
-					if (ing.getMelted()) {
-						ObjectInstance obj = state.getObject(ing.getName());
-						if (obj != null) {
-							if (!IngredientFactory.isMeltedIngredient(obj) && !IngredientFactory.isMeltedAtRoomTemperature(obj)) {
-								return true;
-							}
-						}
-					}
-				}
+				return this.checkSwitchHeating(state);
 			} else if (SpaceFactory.isBaking(space)) {
-				if (this.topLevelIngredient.getBaked()) {
-					ObjectInstance obj =  state.getObject(this.topLevelIngredient.getName());
-					if (obj != null) {
-						if (!IngredientFactory.isBakedIngredient(obj)) {
-							return true;
-						}
-					}
+				return this.checkSwitchBaking(state);
+			}
+		}
+		return false;
+	}
+	
+	private boolean checkSwitchHeating(State state) {
+		if (this.topLevelIngredient.getMelted()) {
+			ObjectInstance obj =  state.getObject(this.topLevelIngredient.getName());
+			if (obj != null) {
+				if (!IngredientFactory.isMeltedIngredient(obj) && !IngredientFactory.isMeltedAtRoomTemperature(obj)) {
+					return true;
 				}
-				
-				for (IngredientRecipe ing : this.topLevelIngredient.getContents()) {
-					if (ing.getBaked()) {
-						ObjectInstance obj = state.getObject(ing.getName());
-						if (obj != null) {
-							if (!IngredientFactory.isBakedIngredient(obj)) {
-								return true;
-							}
-						}
+			}
+		}
+		List<IngredientRecipe> contents = this.topLevelIngredient.getContents();
+		for (IngredientRecipe ing : contents) {
+			if (ing.getMelted()) {
+				ObjectInstance obj = state.getObject(ing.getName());
+				if (obj != null) {
+					if (!IngredientFactory.isMeltedIngredient(obj) && !IngredientFactory.isMeltedAtRoomTemperature(obj)) {
+						return true;
 					}
 				}
 			}
 		}
-		// Else, check the preconditions for the subgoal
-		for (BakingSubgoal precondition : this.subgoal.getPreconditions()) {
-			// If the preconditions are related to the grease action
-			String preconditionClassName = precondition.getGoal().getClassName();
-			if (preconditionClassName.equals(AffordanceCreator.SPACEON_PF)) {
-				// If the precondition hans't been filled up by some binding in the state
-				if (!precondition.goalCompleted(state)) {
+		return false;
+	}
+	
+	private boolean checkSwitchBaking(State state) {
+		if (this.topLevelIngredient.getBaked()) {
+			ObjectInstance obj =  state.getObject(this.topLevelIngredient.getName());
+			if (obj != null) {
+				if (!IngredientFactory.isBakedIngredient(obj)) {
 					return true;
+				}
+			}
+		}
+		
+		List<IngredientRecipe> contents = this.topLevelIngredient.getContents();
+		for (IngredientRecipe ing : contents) {
+			if (ing.getBaked()) {
+				ObjectInstance obj = state.getObject(ing.getName());
+				if (obj != null) {
+					if (!IngredientFactory.isBakedIngredient(obj)) {
+						return true;
+					}
 				}
 			}
 		}

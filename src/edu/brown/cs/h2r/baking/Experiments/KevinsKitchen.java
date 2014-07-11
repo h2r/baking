@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import burlap.behavior.affordances.AffordancesController;
@@ -43,7 +44,7 @@ import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
 
 public class KevinsKitchen implements DomainGenerator {
 	List<ObjectInstance> allIngredients;
-	List<BakingSubgoal> ing_subgoals;
+	List<BakingSubgoal> ingSubgoals;
 	private IngredientRecipe topLevelIngredient;
 	public KevinsKitchen() {
 
@@ -70,7 +71,7 @@ public class KevinsKitchen implements DomainGenerator {
 		Action pour = new PourAction(domain, recipe.topLevelIngredient);
 		Action move = new MoveAction(domain, recipe.topLevelIngredient);
 		Action grease = new GreaseAction(domain);
-		Action a_switch = new SwitchAction(domain);
+		Action aSwitch = new SwitchAction(domain);
 		//Action use = new UseAction(domain, recipe.topLevelIngredient);
 		Action peel = new PeelAction(domain, recipe.topLevelIngredient);
 		State state = new State();
@@ -97,9 +98,9 @@ public class KevinsKitchen implements DomainGenerator {
 		
 		// Get the tools!
 		ToolKnowledgebase toolKnowledgebase = new ToolKnowledgebase();
-		AbstractMap<String, String[]> toolMap = toolKnowledgebase.getToolMap();
-		for (String name : toolMap.keySet()) {
-			String[] toolInfo = toolMap.get(name);
+		for (Entry<String, String[]> tool : toolKnowledgebase.getToolMap().entrySet()) {
+			String name = tool.getKey();
+			String[] toolInfo = tool.getValue();
 			String toolTrait = toolInfo[0];
 			String toolAttribute = toolInfo[1];
 			if (toolInfo.length == 3) {
@@ -114,11 +115,10 @@ public class KevinsKitchen implements DomainGenerator {
 		this.allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, recipe.topLevelIngredient);
 	
 		System.out.println("\n\nPlanner will now plan the "+recipe.topLevelIngredient.getName()+" recipe!");
-		((PourAction)pour).addAllIngredients(this.allIngredients);
 		
 		// High level planner that plans through the recipe's subgoals
 		Set<BakingSubgoal> subgoals = recipe.getSubgoals();
-		Set<BakingSubgoal> active_subgoals = new HashSet<BakingSubgoal>();
+		Set<BakingSubgoal> activeSubgoals = new HashSet<BakingSubgoal>();
 		
 		// To the failed propFunction, add in all subgoals for a recipe that are based on an ingredient.
 		RecipeBotched failed = ((RecipeBotched)domain.getPropFunction(AffordanceCreator.BOTCHED_PF));
@@ -126,28 +126,28 @@ public class KevinsKitchen implements DomainGenerator {
 			failed.clearSubgoals();
 		}
 		
-		this.ing_subgoals = new ArrayList<BakingSubgoal>();
+		this.ingSubgoals = new ArrayList<BakingSubgoal>();
 		for (BakingSubgoal sg : subgoals) {
 			if (sg.getGoal().getClassName().equals(AffordanceCreator.FINISH_PF)) {
-				ing_subgoals.add(sg);
+				ingSubgoals.add(sg);
 			}
 		}
 		
 		do {
 			// For all subgoals with all preconditions satisfied
-			for (BakingSubgoal sg : active_subgoals) {
+			for (BakingSubgoal sg : activeSubgoals) {
 				subgoals.remove(sg);
 				state = this.PlanIngredient(domain, state, sg.getIngredient(), sg);
 			}
-			active_subgoals.clear();
+			activeSubgoals.clear();
 			// Iterate through inactive subgoals to find those who have had all of their
 			// preconditions resolved.
 			for (BakingSubgoal sg : subgoals) {
 				if (sg.allPreconditionsCompleted(state)) {
-					active_subgoals.add(sg);
+					activeSubgoals.add(sg);
 				}
 			}	
-		} while (!active_subgoals.isEmpty());
+		} while (!activeSubgoals.isEmpty());
 	}
 	
 	public State PlanIngredient(Domain domain, State startingState, IngredientRecipe ingredient, BakingSubgoal subgoal)
@@ -184,12 +184,14 @@ public class KevinsKitchen implements DomainGenerator {
 			}
 		}
 		
-		for (Action action : domain.getActions()) {
+		List<Action> actions = domain.getActions();
+		for (Action action : actions) {
 			((BakingAction)action).changePlanningIngredient(ingredient);
 		}
 		AffordanceCreator theCreator = new AffordanceCreator(domain, currentState, ingredient);
 		// Add the current top level ingredient so we can properly trim the action space
-		for (PropositionalFunction pf : domain.getPropFunctions()) {
+		List<PropositionalFunction> propFunctions = domain.getPropFunctions();
+		for (PropositionalFunction pf : propFunctions) {
 			((BakingPropositionalFunction)pf).changeTopLevelIngredient(ingredient);
 			((BakingPropositionalFunction)pf).setSubgoal(subgoal);
 		}
@@ -197,10 +199,12 @@ public class KevinsKitchen implements DomainGenerator {
 		final PropositionalFunction isFailure = domain.getPropFunction(AffordanceCreator.BOTCHED_PF);
 		
 		if (((RecipeBotched)isFailure).hasNoSubgoals()) {
-			for (BakingSubgoal sg : this.ing_subgoals) {
+			for (BakingSubgoal sg : this.ingSubgoals) {
 				((RecipeBotched)isFailure).addSubgoal(sg);
 			}
 		}
+		
+		//((AllowUsingTool)domain.getPropFunction(AffordanceCreator.USE_PF)).addRecipe(recipe);
 		
 		TerminalFunction recipeTerminalFunction = new RecipeTerminalFunction(isSuccess, isFailure);
 		
