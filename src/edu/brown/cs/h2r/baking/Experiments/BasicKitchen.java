@@ -100,7 +100,7 @@ public class BasicKitchen implements DomainGenerator {
 		
 		List<String> bakingContainers = Arrays.asList("Baking_Dish");
 		for (String container : bakingContainers) { 
-			state.addObject(ContainerFactory.getNewHeatingContainerObjectInstance(domain, container, null, "counter"));
+			state.addObject(ContainerFactory.getNewBakingContainerObjectInstance(domain, container, null, "counter"));
 		}
 		
 		List<String> containers = new ArrayList<String>();
