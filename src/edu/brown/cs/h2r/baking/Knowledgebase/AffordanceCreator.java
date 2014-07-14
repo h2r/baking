@@ -18,7 +18,7 @@ import burlap.oomdp.logicalexpressions.PFAtom;
 import burlap.oomdp.singleagent.GroundedAction;
 
 public class AffordanceCreator {
-	public static final String MELT_PF = "meltPF";
+	public static final String HEAT_PF = "heatPF";
 	public static final String BAKE_PF = "bakePF";
 	public static final String MIX_PF = "mixPF";
 	public static final String MOVE_PF = "movePF";

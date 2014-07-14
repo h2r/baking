@@ -20,18 +20,20 @@ public class MashedPotatoes extends Recipe {
 		List<IngredientRecipe> saltedWaterList = new ArrayList<IngredientRecipe>();
 		IngredientRecipe water = knowledgebase.getIngredient("water");
 		saltedWaterList.add(water);
+		water.setHeated();
 		IngredientRecipe saltedWater = 
-				new IngredientRecipe("salted_water", Recipe.MELTED, Recipe.SWAPPED, saltedWaterList);
-		saltedWater.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
+				new IngredientRecipe("salted_water", Recipe.HEATED, Recipe.SWAPPED, saltedWaterList);
+		saltedWater.addNecessaryTrait("salt", Recipe.HEATED);
 		
 		
 		
 		List<IngredientRecipe> cookedPotatoesList = new ArrayList<IngredientRecipe>();
 		IngredientRecipe potatoes = knowledgebase.getIngredient("potatoes");
 		potatoes.addToolAttribute("peeled");
+		potatoes.setHeated();
 		cookedPotatoesList.add(potatoes);
 		cookedPotatoesList.add(saltedWater);
-		IngredientRecipe cookedPotatoes = new IngredientRecipe("potatoes_in_water", Recipe.MELTED, Recipe.SWAPPED, cookedPotatoesList);
+		IngredientRecipe cookedPotatoes = new IngredientRecipe("potatoes_in_water", Recipe.HEATED, Recipe.SWAPPED, cookedPotatoesList);
 		
 		List<IngredientRecipe> ingredientList = new ArrayList<IngredientRecipe>();
 		ingredientList.add(cookedPotatoes);

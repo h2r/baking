@@ -46,10 +46,10 @@ public class AllowPeeling extends BakingPropositionalFunction {
 				if (!match) {
 					// could this potentially fulfill a trait in the recipe? 
 					AbstractMap<String, IngredientRecipe> necessaryTraits = this.topLevelIngredient.getNecessaryTraits();
-					Set<String> toMeltTraits = IngredientFactory.getTraits(toPeel);
+					Set<String> toPeelTraits = IngredientFactory.getTraits(toPeel);
 					for (Entry<String, IngredientRecipe> entry : necessaryTraits.entrySet()) {
 						String trait = entry.getKey();
-						if (toMeltTraits.contains(trait)) {
+						if (toPeelTraits.contains(trait)) {
 							// If it could potentially fulfill a trait ingredient, then ensure that 
 							// it has to be peeled!
 							if (entry.getValue().hasToolAttribute(PeelAction.PEELED)) {

@@ -11,6 +11,7 @@ import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
@@ -26,15 +27,19 @@ public class AllowPouring extends BakingPropositionalFunction {
 		ObjectInstance receivingContainer = s.getObject(params[2]);
 		
 		if (ContainerFactory.isBakingContainer(receivingContainer)) {
-			return this.checkPourIntoBakingContainer(s, pouringContainer);
+			if (!this.checkPourIntoBakingContainer(s, pouringContainer, receivingContainer)) {
+				return false;
+			}
 		}
 		
 		if (ContainerFactory.isHeatingContainer(receivingContainer)) {
-			return this.checkPourIntoHeatingContainer(s, pouringContainer);
+			if (!this.checkPourIntoHeatingContainer(s, pouringContainer, receivingContainer)) {
+				return false;
+			}
 		}
 		
-		
-		if (ContainerFactory.isMixingContainer(pouringContainer) && 
+		// Avoid useless pouring back and forth!
+		if (ContainerFactory.isReceivingContainer(pouringContainer) && 
 				ContainerFactory.isMixingContainer(receivingContainer) && ContainerFactory.isEmptyContainer(receivingContainer)) {
 			return false;
 		}
@@ -94,11 +99,22 @@ public class AllowPouring extends BakingPropositionalFunction {
 		Boolean currentMatch;
 		for (ObjectInstance content : pourContents) {
 			currentMatch = false;
+			if (this.topLevelIngredient.getName().equals(content.getName())) {
+				currentMatch = true;
+			}
 			for (IngredientRecipe ing : necessaryIngs) {
 				if (ing.getName().equals(content.getName())) {
-					if (ing.AttributesMatch(content)) {
-						currentMatch = true;
-						break;
+					//if (ing.AttributesMatch(content)) {
+					if (ContainerFactory.isMixingContainer(receivingContainer)) {
+						if (ing.AttributesMatch(content)) {
+							currentMatch = true;
+							break;
+						}
+					} else {
+						if (ing.toolAttributesMatch(content)) {
+							currentMatch = true;
+							break;
+						}
 					}
 				}
 			}
@@ -111,9 +127,15 @@ public class AllowPouring extends BakingPropositionalFunction {
 						List<ObjectInstance> containers = s.getObjectsOfTrueClass(ContainerFactory.ClassName);
 						for (ObjectInstance container : containers) {
 							if (!ContainerFactory.isMixingContainer(pouringContainer)) {
-								if (ContainerFactory.isMixingContainer(container) && !ContainerFactory.isEmptyContainer(container)) {
+								//if (ContainerFactory.isMixingContainer(container) && !ContainerFactory.isEmptyContainer(container)) {
+								if (ContainerFactory.isReceivingContainer(container) && !ContainerFactory.isEmptyContainer(container)
+										&& !container.getName().equals(pouringContainer.getName())) {	
 									Set<String> cNames = ContainerFactory.getConstituentSwappedContentNames(container, s);
 									for (String name : cNames) {
+										// we laready have the ingredient for this subgoal, no need to keep going!
+										if (this.topLevelIngredient.getName().equals(name)) {
+											return false;
+										}
 										ObjectInstance obj = s.getObject(name);
 										if (IngredientFactory.getTraits(obj).contains(trait)) {
 											traitUsed = true;
@@ -125,7 +147,12 @@ public class AllowPouring extends BakingPropositionalFunction {
 							}
 						}
 						if (!traitUsed) {
-							currentMatch = necessaryTraits.get(trait).AttributesMatch(content);
+							if (ContainerFactory.isMixingContainer(receivingContainer)) {
+								currentMatch = necessaryTraits.get(trait).AttributesMatch(content);
+							} else {
+								currentMatch = necessaryTraits.get(trait).toolAttributesMatch(content);
+							//currentMatch = true;
+							}
 							break;
 						}
 					}
@@ -140,40 +167,91 @@ public class AllowPouring extends BakingPropositionalFunction {
 		return true;
 	}
 	
-	private boolean checkPourIntoBakingContainer(State s, ObjectInstance pouringContainer) {
-		Set<String> contentNames = ContainerFactory.getContentNames(pouringContainer);
-		for (String name :contentNames) {
-			if (IngredientFactory.isSimple(s.getObject(name))) {
-				return false;
-			}
-			if (this.topLevelIngredient.getName().equals(name)) {
-				return topLevelIngredient.getBaked();
-			}
-			List<IngredientRecipe> contents = this.topLevelIngredient.getConstituentIngredients();
-			for (IngredientRecipe content : contents) {
-				if (content.getName().equals(name)) {
-					return content.getBaked();
+	private boolean checkPourIntoBakingContainer(State s, ObjectInstance pouringContainer,
+			ObjectInstance receivingContainer) {
+		/**
+		 * If the container is empty then we only want to add in ingredients that we must
+		 * bake, as per the recipe.
+		 * Conversely, if the container is not empty:
+		 * a) If it contains an already baked ingredient, then we can assume that we don't need to
+		 * put the container back in the oven, and therefore we can add any ingredients.
+		 * b) If all of the ingredients are non-bakeed, then we must assume that this container is meant
+		 * to go in the oven in the near future, and therefore we will only add any ingredients
+		 * that the recipe calls for to be baked.
+		 */
+		Set<String> pouringContentNames = ContainerFactory.getContentNames(pouringContainer);
+		if (ContainerFactory.isEmptyContainer(receivingContainer) || 
+				!ContainerFactory.hasABakedContent(s, receivingContainer)) {
+			for (String name : pouringContentNames) {
+				if (!this.checkBakingIngredient(s, name)) {
+					return false;
 				}
 			}
 		}
-		return false;
-		
+		return true;
 	}
 	
-	private boolean checkPourIntoHeatingContainer(State s, ObjectInstance pouringContainer) {
-		Set<String> contentNames = ContainerFactory.getContentNames(pouringContainer);
-		for (String name : contentNames) {
-			if (IngredientFactory.isMeltedIngredient(s.getObject(name))) {
-				return false;
-			}
-			if (this.topLevelIngredient.getName().equals(name)) {
-				return topLevelIngredient.getMelted();
-			}
-			List<IngredientRecipe> contents = this.topLevelIngredient.getContents();
-			for (IngredientRecipe content : contents) {
-				if (content.getName().equals(name)) {
-					return content.getMelted();
+	private boolean checkPourIntoHeatingContainer(State s, ObjectInstance pouringContainer,
+			ObjectInstance receivingContainer) {
+
+		/**
+		 * If the container is empty then we only want to add in ingredients that we must
+		 * heat, as per the recipe.
+		 * Conversely, if the container is not empty:
+		 * a) If it contains an already heated ingredient, then we can assume that we don't need to
+		 * put the container back on the burner, and therefore we can add any ingredients.
+		 * b) If all of the ingredients are non-heated, then we must assume that this container is meant
+		 * to go on the heating surface in the near future, and therefore we will only add any ingredients
+		 * that the recipe calls for to be heated.
+		 */
+		Set<String> pouringContentNames = ContainerFactory.getContentNames(pouringContainer);
+		if (ContainerFactory.isEmptyContainer(receivingContainer)) {
+			for (String name : pouringContentNames) {
+				if (!this.checkHeatingIngredient(s, name)) {
+					return false;
 				}
+			}
+		} else {
+			if (!ContainerFactory.hasAHeatedContent(s, receivingContainer)) {
+				for (String name : pouringContentNames) {
+					if (!this.checkHeatingIngredient(s, name)) {
+						return false;
+					}
+				}
+			}
+		}
+		return true;
+	}
+	
+	// checks to see if an ingredient is baked in the recipe
+	private boolean checkBakingIngredient(State s, String name) {
+		if (IngredientFactory.isSimple(s.getObject(name))) {
+			return false;
+		}
+		if (this.topLevelIngredient.getName().equals(name)) {
+			return topLevelIngredient.getBaked();
+		}
+		List<IngredientRecipe> contents = this.topLevelIngredient.getConstituentIngredients();
+		for (IngredientRecipe content : contents) {
+			if (content.getName().equals(name)) {
+				return content.getBaked();
+			}
+		}
+		return false;
+	}
+	
+	// Checks to see if an ingredient is heated for the recipe
+	private boolean checkHeatingIngredient(State s, String name) {
+		if (IngredientFactory.isHeatedIngredient(s.getObject(name))) {
+			return false;
+		}
+		if (this.topLevelIngredient.getName().equals(name)) {
+			return topLevelIngredient.getHeated();
+		}
+		List<IngredientRecipe> contents = this.topLevelIngredient.getContents();
+		for (IngredientRecipe content : contents) {
+			if (content.getName().equals(name)) {
+				return content.getHeated();
 			}
 		}
 		return false;

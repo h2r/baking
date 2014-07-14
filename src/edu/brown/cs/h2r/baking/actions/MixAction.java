@@ -51,9 +51,6 @@ public class MixAction extends BakingAction {
 			return BakingActionResult.failure(containerName + " is empty");
 		}
 		
-		/*if (!ContainerFactory.isMixingContainer(containerInstance)) {
-			return BakingActionResult.failure(containerName + " is not a mixing container");
-		}*/
 		// move to should mix probably!
 		if (ContainerFactory.getContentNames(containerInstance).size() < 2) {
 			return BakingActionResult.failure(containerName + " containers only one ingredient");
@@ -68,16 +65,7 @@ public class MixAction extends BakingAction {
 		if (mixingContainerSpaceName == null) {
 			return BakingActionResult.failure(containerSpaceName + " does not exist");
 		}
-		
-		/*String agentOfSpace = SpaceFactory.getAgent(mixingContainerSpaceName).iterator().next();
-		if (!agentOfSpace.equalsIgnoreCase(agent.getName()))
-		{		
-			return BakingActionResult.failure(agentName + " cannot perform actions in " + containerSpaceName);
-		}*/
-				
-		/*if (!SpaceFactory.isWorking(mixingContainerSpaceName)) {
-			return BakingActionResult.failure(mixingContainerSpaceName + " is not suitable for mixing");
-		}*/
+
 		if (SpaceFactory.isBaking(mixingContainerSpaceName)) {
 			return BakingActionResult.failure(mixingContainerSpaceName + " is not suitable for mixing!");
 		}
@@ -145,7 +133,25 @@ public class MixAction extends BakingAction {
 			ContainerFactory.addIngredient(container, newIngredient.getName());
 			IngredientFactory.changeIngredientContainer(newIngredient, container.getName());
 			
+			ObjectInstance receivingSpace = state.getObject(ContainerFactory.getSpaceName(container));
+			if (SpaceFactory.isBaking(receivingSpace) && SpaceFactory.getOnOff(receivingSpace)) {
+				IngredientFactory.bakeIngredient(newIngredient);
+			} else if (SpaceFactory.isHeating(receivingSpace) && SpaceFactory.getOnOff(receivingSpace)) {
+				IngredientFactory.heatIngredient(newIngredient);
+			}
+			
 			this.makeSwappedIngredient(state, newIngredient);
+			
+			// ensure that if a new ingredient was created on a switchable surface that is currently 
+			// on, then it will recieve the appropiate attribute.
+			/*if (swappedName != null) {
+				ObjectInstance receivingSpace = state.getObject(ContainerFactory.getSpaceName(container));
+				if (SpaceFactory.isBaking(receivingSpace) && SpaceFactory.getOnOff(receivingSpace)) {
+					IngredientFactory.bakeIngredient(state.getObject(swappedName));
+				} else if (SpaceFactory.isHeating(receivingSpace) && SpaceFactory.getOnOff(receivingSpace)) {
+					IngredientFactory.heatIngredient(state.getObject(swappedName));
+				}
+			}*/
 		}
 	}
 	
@@ -179,11 +185,11 @@ public class MixAction extends BakingAction {
 		state.addObject(new_ing);
 	}
 	
-	public void makeSwappedIngredient(State state, ObjectInstance newIngredient) {
+	public String makeSwappedIngredient(State state, ObjectInstance newIngredient) {
 		// Call to makeFakeAttributeCopy here is to ensure we can make a swapped ingredient even
-		// if in reality, said swapped ingredient has to eventually be baked/melted/peeled...
+		// if in reality, said swapped ingredient has to eventually be baked/heated/peeled...
 		if (Recipe.isSuccess(state, ingredient.makeFakeAttributeCopy(newIngredient), newIngredient)) {
-			ExperimentHelper.checkIngredientCompleted(ingredient.makeFakeAttributeCopy(newIngredient),
+			return ExperimentHelper.checkIngredientCompleted(ingredient.makeFakeAttributeCopy(newIngredient),
 					state, asList(newIngredient), state.getObjectsOfTrueClass(ContainerFactory.ClassName));
 		} else {
 			//For the online game, ingredient is always the topLevelIngredient, so check all possible
@@ -192,11 +198,12 @@ public class MixAction extends BakingAction {
 			for (IngredientRecipe swapped : swappedIngs) {
 				IngredientRecipe swappedCopy = swapped.makeFakeAttributeCopy(newIngredient);
 				if (Recipe.isSuccess(state, swapped.makeFakeAttributeCopy(newIngredient), newIngredient)) {
-					ExperimentHelper.checkIngredientCompleted(swappedCopy, state, 
+					return ExperimentHelper.checkIngredientCompleted(swappedCopy, state, 
 							asList(newIngredient), state.getObjectsOfTrueClass(ContainerFactory.ClassName));
-					break;
+					
 				}
 			}
 		}
+		return null;
 	}
 }

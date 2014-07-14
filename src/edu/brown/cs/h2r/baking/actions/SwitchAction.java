@@ -83,7 +83,7 @@ public class SwitchAction extends BakingAction {
 					ContainerFactory.isHeatingContainer(container)) {
 				for (String ing : ContainerFactory.getContentNames(container)) {
 					if (!IngredientFactory.isMeltedAtRoomTemperature(state.getObject(ing))) {
-						IngredientFactory.meltIngredient(state.getObject(ing));
+						IngredientFactory.heatIngredient(state.getObject(ing));
 					}				
 				}
 			}

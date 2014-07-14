@@ -34,7 +34,7 @@ public class Brownies extends Recipe {
 		
 		IngredientRecipe wetIngs = new IngredientRecipe("wet_ingredients", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList);
 		wetIngs.addNecessaryTrait("sugar", Recipe.NO_ATTRIBUTES);
-		wetIngs.addNecessaryTrait("fat", Recipe.MELTED);
+		wetIngs.addNecessaryTrait("fat", Recipe.HEATED);
 		
 		// In a large saucepan, melt 1/2 cup butter.
 		

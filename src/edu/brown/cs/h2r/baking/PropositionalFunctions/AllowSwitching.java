@@ -44,20 +44,20 @@ public class AllowSwitching extends BakingPropositionalFunction {
 	}
 	
 	private boolean checkSwitchHeating(State state) {
-		if (this.topLevelIngredient.getMelted()) {
+		if (this.topLevelIngredient.getHeated()) {
 			ObjectInstance obj =  state.getObject(this.topLevelIngredient.getName());
 			if (obj != null) {
-				if (!IngredientFactory.isMeltedIngredient(obj) && !IngredientFactory.isMeltedAtRoomTemperature(obj)) {
+				if (!IngredientFactory.isHeatedIngredient(obj) && !IngredientFactory.isMeltedAtRoomTemperature(obj)) {
 					return true;
 				}
 			}
 		}
 		List<IngredientRecipe> contents = this.topLevelIngredient.getContents();
 		for (IngredientRecipe ing : contents) {
-			if (ing.getMelted()) {
+			if (ing.getHeated()) {
 				ObjectInstance obj = state.getObject(ing.getName());
 				if (obj != null) {
-					if (!IngredientFactory.isMeltedIngredient(obj) && !IngredientFactory.isMeltedAtRoomTemperature(obj)) {
+					if (!IngredientFactory.isHeatedIngredient(obj) && !IngredientFactory.isMeltedAtRoomTemperature(obj)) {
 						return true;
 					}
 				}

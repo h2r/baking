@@ -218,7 +218,7 @@ public class KevinsKitchen implements DomainGenerator {
 			}
 		};
 		
-		int numRollouts = 1500; // RTDP
+		int numRollouts = 2000; // RTDP
 		int maxDepth = 10; // RTDP
 		double vInit = 0;
 		double maxDelta = .01;

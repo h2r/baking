@@ -248,4 +248,25 @@ public class ContainerFactory {
 		int receiving_int = receiving ? ContainerFactory.RECEIVING: 0;
 		return baking_int|mixing_int|heating_int|receiving_int;
 	}
+	
+	public static boolean hasABakedContent(State s, ObjectInstance container) {
+		Set<String> receivingContentNames = ContainerFactory.getContentNames(container);
+		for (String name : receivingContentNames) {
+			if (IngredientFactory.isBakedIngredient(s.getObject(name))) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public static boolean hasAHeatedContent(State s, ObjectInstance container) {
+		Set<String> receivingContentNames = ContainerFactory.getContentNames(container);
+		for (String name : receivingContentNames) {
+			if (IngredientFactory.isHeatedIngredient(s.getObject(name))) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 }

@@ -57,16 +57,16 @@ public class AllowMoving extends BakingPropositionalFunction {
 	}
 	
 	private boolean checkMoveToHeating(State s, Set<String> contents) {
-		if (this.topLevelIngredient.getMelted() && contents.contains(this.topLevelIngredient.getName()) ) {
-			if (!IngredientFactory.isMeltedIngredient(s.getObject(topLevelIngredient.getName()))) {
+		if (this.topLevelIngredient.getHeated() && contents.contains(this.topLevelIngredient.getName()) ) {
+			if (!IngredientFactory.isHeatedIngredient(s.getObject(topLevelIngredient.getName()))) {
 				if (!IngredientFactory.isMeltedAtRoomTemperature(s.getObject(this.topLevelIngredient.getName()))) {
 					return true;
 				}
 			}
 		} else {
 			List<IngredientRecipe> ingredientContents = this.topLevelIngredient.getContents();
-			for (IngredientRecipe ing : ingredientContents) {						if (ing.getMelted() && contents.contains(ing.getName())) {
-					if (!IngredientFactory.isMeltedIngredient(s.getObject(ing.getName()))) {
+			for (IngredientRecipe ing : ingredientContents) {						if (ing.getHeated() && contents.contains(ing.getName())) {
+					if (!IngredientFactory.isHeatedIngredient(s.getObject(ing.getName()))) {
 						if (!IngredientFactory.isMeltedAtRoomTemperature(s.getObject(ing.getName()))) {
 							return true;
 						}

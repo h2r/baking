@@ -99,7 +99,7 @@ public class MoveAction extends BakingAction {
 			for (String name : names) {
 				ObjectInstance ing = state.getObject(name);
 				if (!IngredientFactory.isMeltedAtRoomTemperature(ing)) {
-					IngredientFactory.meltIngredient(ing);
+					IngredientFactory.heatIngredient(ing);
 				}
 			}
 		}

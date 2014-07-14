@@ -14,7 +14,7 @@ import edu.brown.cs.h2r.baking.Recipes.Recipe;
 public class IngredientRecipe {
 	
 	private Boolean mixed;
-	private Boolean melted;
+	private Boolean heated;
 	private Boolean baked;
 	private Set<String> traits;
 	private Set<String> toolTraits;
@@ -63,12 +63,12 @@ public class IngredientRecipe {
 		return this.mixed;
 	}
 	
-	public Boolean getMelted () {
-		return this.melted;
+	public Boolean getHeated () {
+		return this.heated;
 	}
 	
-	public void setMelted() {
-		this.melted = true;
+	public void setHeated() {
+		this.heated = true;
 	}
 	
 	public Boolean getBaked () {
@@ -160,6 +160,14 @@ public class IngredientRecipe {
 		return new ArrayList<IngredientRecipe>(this.contents);
 	}
 	
+	public List<String> getContentNames() {
+		List<String> contents = new ArrayList<String>();
+		for (IngredientRecipe ing : this.contents) {
+			contents.add(ing.getName());
+		}
+		return contents;
+	}
+	
 	public List<IngredientRecipe> getConstituentIngredients()
 	{
 		return this.getConstituentIngredient(this.getContents());
@@ -230,22 +238,26 @@ public class IngredientRecipe {
 		return traits;
 	}
 	
-	public Boolean AttributesMatch(ObjectInstance object) {
+	public boolean AttributesMatch(ObjectInstance object) {
 		if (IngredientFactory.isBakedIngredient(object) != this.getBaked()) {
 			return false;
 		}
-		if (this.getMelted()) {
-			if (!(IngredientFactory.isMeltedIngredient(object) || IngredientFactory.isMeltedAtRoomTemperature(object))) {
+		if (this.getHeated()) {
+			if (!(IngredientFactory.isHeatedIngredient(object) || IngredientFactory.isMeltedAtRoomTemperature(object))) {
 				return false;
 			}
 		} else {
-			if (IngredientFactory.isMeltedIngredient(object)) {
+			if (IngredientFactory.isHeatedIngredient(object)) {
 				return false;
 			}
 		}
 		if (IngredientFactory.isMixedIngredient(object) != this.getMixed()) {
 			return false;
 		}
+		return this.toolAttributesMatch(object);
+	}
+	
+	public boolean toolAttributesMatch(ObjectInstance object) {
 		Set<String> ingToolAttributes = this.getToolAttributes();
 		Set<String> objToolAttributes = IngredientFactory.getToolAttributes(object);
 		if (ingToolAttributes.size() != objToolAttributes.size()) {
@@ -262,7 +274,7 @@ public class IngredientRecipe {
 	
 	public IngredientRecipe makeFakeAttributeCopy(ObjectInstance obj) {
 		int attributes = generateAttributeNumber(IngredientFactory.isMixedIngredient(obj), 
-				IngredientFactory.isMeltedIngredient(obj), IngredientFactory.isBakedIngredient(obj));
+				IngredientFactory.isHeatedIngredient(obj), IngredientFactory.isBakedIngredient(obj));
 		IngredientRecipe newIng = new IngredientRecipe(this.getName(), attributes, this.getSwapped(),
 				this.getContents());
 		newIng.addNecessaryTraits(this.getNecessaryTraits());
@@ -271,22 +283,22 @@ public class IngredientRecipe {
 	
 	public void setAttributes(int attributes) {
 		this.baked = ((attributes & Recipe.BAKED) == Recipe.BAKED) ? true : false;
-		this.melted = ((attributes & Recipe.MELTED) == Recipe.MELTED) ? true : false;
+		this.heated = ((attributes & Recipe.HEATED) == Recipe.HEATED) ? true : false;
 		this.mixed = ((attributes & Recipe.MIXED) == Recipe.MIXED) ? true : false;
 	}
 	
-	public static int generateAttributeNumber(Boolean mixed, Boolean melted, Boolean baked) {
+	public static int generateAttributeNumber(Boolean mixed, Boolean heated, Boolean baked) {
 		int mixedInt = mixed ? Recipe.MIXED : 0;
-		int meltedInt = melted ? Recipe.MELTED : 0;
+		int heatedInt = heated ? Recipe.HEATED : 0;
 		int bakedInt = baked ? Recipe.BAKED : 0;
-		return mixedInt|meltedInt|bakedInt;
+		return mixedInt|heatedInt|bakedInt;
 	}
 	
 	public int generateAttributeNumber() {
 		int mixedInt = this.getMixed() ? Recipe.MIXED : 0;
-		int meltedInt = this.getMelted() ? Recipe.MELTED : 0;
+		int heatedInt = this.getHeated() ? Recipe.HEATED : 0;
 		int bakedInt = this.getBaked() ? Recipe.BAKED : 0;
-		return mixedInt|meltedInt|bakedInt;	
+		return mixedInt|heatedInt|bakedInt;	
 	}
 	
 	public static AbstractMap<String, IngredientRecipe> getRecursiveSwappedIngredients(IngredientRecipe ingredient) {
@@ -301,5 +313,33 @@ public class IngredientRecipe {
 			swapped.putAll(getRecursiveSwappedIngredients(ing));
 		}
 		return swapped;
+	}
+	
+	public boolean hasBakedContent() {
+		for (IngredientRecipe ing : this.getContents()) {
+			if (ing.getBaked()) {
+				return true;
+			}
+		}
+		for (IngredientRecipe ing : this.getNecessaryTraits().values()) {
+			if (ing.getBaked()) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean hasHeatedContent() {
+		for (IngredientRecipe ing : this.getContents()) {
+			if (ing.getHeated()) {
+				return true;
+			}
+		}
+		for (IngredientRecipe ing : this.getNecessaryTraits().values()) {
+			if (ing.getHeated()) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

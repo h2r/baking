@@ -20,10 +20,10 @@ public class MoltenLavaCake extends Recipe {
 		super();
 		List<IngredientRecipe> ingredientList = new ArrayList<IngredientRecipe>();
 		IngredientRecipe butter = knowledgebase.getIngredient("butter");
-		butter.setMelted();
+		butter.setHeated();
 		ingredientList.add(butter);
 		IngredientRecipe chocolate = knowledgebase.getIngredient("chocolate_squares");
-		chocolate.setMelted();
+		chocolate.setHeated();
 		ingredientList.add(chocolate);
 		IngredientRecipe melted = new IngredientRecipe("melted_stuff", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList);
 		

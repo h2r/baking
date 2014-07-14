@@ -2,6 +2,7 @@ package edu.brown.cs.h2r.baking.ObjectFactories;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import burlap.oomdp.core.Attribute;
@@ -21,7 +22,7 @@ public class IngredientFactory {
 	public static final String ClassNameSimpleHidden = "simple_hidden_ingredient";
 	public static final String ClassNameComplexHidden = "complex_hidden_ingredient";
 	private static final String attributeBaked = "baked";
-	private static final String attributeMelted = "melted";
+	private static final String attributeHeated = "heated";
 	private static final String attributeMixed = "mixed";
 	private static final String attributeContainer = "container";
 	private static final String attributeContains = "contents";
@@ -31,7 +32,7 @@ public class IngredientFactory {
 	private static final String attributeToolTraits = "toolTrait";
 	private static final String attributeToolAttributes = "toolAttribute";
 	private static final String[] booleanAttributes= {IngredientFactory.attributeBaked, 
-		IngredientFactory.attributeMelted, IngredientFactory.attributeMixed};
+		IngredientFactory.attributeHeated, IngredientFactory.attributeMixed};
 
 	private static ObjectClass createObjectClass(Domain domain, String className) {
 		ObjectClass objectClass = new ObjectClass(domain, className);
@@ -40,7 +41,7 @@ public class IngredientFactory {
 		objectClass.addAttribute(mixingAttribute);
 		
 		Attribute heatingAttribute = 
-				new Attribute(domain, IngredientFactory.attributeMelted, Attribute.AttributeType.BOOLEAN);
+				new Attribute(domain, IngredientFactory.attributeHeated, Attribute.AttributeType.BOOLEAN);
 		objectClass.addAttribute(heatingAttribute);
 		
 		Attribute receivingAttribute =
@@ -165,9 +166,9 @@ public class IngredientFactory {
 	public static ObjectInstance getNewIngredientInstance(ObjectInstance objectInstance, String name) {
 		Boolean baked = IngredientFactory.isBakedIngredient(objectInstance);
 		Boolean mixed = IngredientFactory.isMixedIngredient(objectInstance);
-		Boolean melted = IngredientFactory.isMeltedIngredient(objectInstance);
+		Boolean heated = IngredientFactory.isHeatedIngredient(objectInstance);
 		
-		int attributes = IngredientRecipe.generateAttributeNumber(mixed, melted, baked);
+		int attributes = IngredientRecipe.generateAttributeNumber(mixed, heated, baked);
 		int useCount = IngredientFactory.getUseCount(objectInstance);
 		String container = IngredientFactory.getContainer(objectInstance);
 		Set<String> traits = IngredientFactory.getTraits(objectInstance);
@@ -188,7 +189,7 @@ public class IngredientFactory {
 	
 	public static ObjectInstance getNewIngredientInstance(IngredientRecipe ingredient, String name, ObjectClass oc) {
 		int attributes = IngredientRecipe.generateAttributeNumber(ingredient.getBaked(), ingredient.getMixed(), 
-				ingredient.getMelted());
+				ingredient.getHeated());
 		Boolean swapped = ingredient.getSwapped();
 		int useCount = ingredient.getUseCount();
 		String container = "";
@@ -292,8 +293,8 @@ public class IngredientFactory {
 		return ingredient.getDiscValForAttribute(IngredientFactory.attributeMixed) == 1;
 	}
 	
-	public static Boolean isMeltedIngredient(ObjectInstance ingredient) {
-		return ingredient.getDiscValForAttribute(IngredientFactory.attributeMelted) == 1;
+	public static Boolean isHeatedIngredient(ObjectInstance ingredient) {
+		return ingredient.getDiscValForAttribute(IngredientFactory.attributeHeated) == 1;
 	}
 	
 	public static void mixIngredient(ObjectInstance ingredient) {
@@ -304,8 +305,8 @@ public class IngredientFactory {
 		ingredient.setValue(IngredientFactory.attributeBaked, 1);
 	}
 	
-	public static void meltIngredient(ObjectInstance ingredient) {
-		ingredient.setValue(IngredientFactory.attributeMelted, 1);
+	public static void heatIngredient(ObjectInstance ingredient) {
+		ingredient.setValue(IngredientFactory.attributeHeated, 1);
 	}
 	
 	public static void setUseCount(ObjectInstance ingredient, int count) {
@@ -447,9 +448,10 @@ public class IngredientFactory {
 				}
 			}
 			if (!match) {
-				Set<String> traits = goal.getNecessaryTraits().keySet();
-				for (String trait : traits) {
-					if (IngredientFactory.getTraits(obj).contains(trait)) {
+				for (Entry<String, IngredientRecipe> entry : goal.getNecessaryTraits().entrySet()) {
+					if (IngredientFactory.getTraits(obj).contains(entry.getKey())) {
+						IngredientRecipe ing = entry.getValue();
+						IngredientFactory.setAttributes(obj, ing.generateAttributeNumber(), ing.getToolAttributes());
 						match = true;
 						break;
 					}
@@ -493,7 +495,7 @@ public class IngredientFactory {
 	
 	public static void setAttributes(ObjectInstance ingredient, int attributes, Set<String> toolAttributes) {
 		ingredient.setValue(IngredientFactory.attributeBaked, ((attributes & Recipe.BAKED) == Recipe.BAKED) ? 1 : 0);
-		ingredient.setValue(IngredientFactory.attributeMelted, ((attributes & Recipe.MELTED) == Recipe.MELTED) ? 1 : 0);
+		ingredient.setValue(IngredientFactory.attributeHeated, ((attributes & Recipe.HEATED) == Recipe.HEATED) ? 1 : 0);
 		ingredient.setValue(IngredientFactory.attributeMixed, ((attributes & Recipe.MIXED) == Recipe.MIXED) ? 1 : 0);
 		for (String attribute : toolAttributes) {
 			IngredientFactory.addToolAttribute(ingredient, attribute);

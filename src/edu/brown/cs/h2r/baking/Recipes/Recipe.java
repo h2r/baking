@@ -32,7 +32,7 @@ public abstract class Recipe {
 	
 	public static final int NO_ATTRIBUTES = 0;
 	public static final int MIXED = 1;
-	public static final int MELTED = 2;
+	public static final int HEATED = 2;
 	public static final int BAKED = 4;
 	public static final Boolean SWAPPED = true;
 	public static final Boolean NOT_SWAPPED = false;
@@ -60,7 +60,7 @@ public abstract class Recipe {
 	{
 		int count = 0;
 		count += ingredient.getBaked() ? 1 : 0;
-		count += ingredient.getMelted() ? 1 : 0;
+		count += ingredient.getHeated() ? 1 : 0;
 		count += ingredient.getMixed() ? 1 : 0;
 		count += ingredient.getConstituentIngredientsCount();
 		return count;
@@ -260,8 +260,8 @@ public abstract class Recipe {
 			Boolean match = false;
 			for (ObjectInstance obj : traitIngredients) {
 				if (IngredientFactory.getTraits(obj).contains(trait)) {
-					// Ensure traitIngredient has the correct Attributes (melted, baked...)
-					// I.E. The fat we are using is in fact melted.
+					// Ensure traitIngredient has the correct Attributes (heated, baked...)
+					// I.E. The fat we are using is in fact heated.
 					match = compulsoryTraitMap.get(trait).AttributesMatch(obj);
 					break;
 				}
@@ -301,7 +301,7 @@ public abstract class Recipe {
 				// They aren't even the same name. FAIL!
 				return true;
 			}
-			// they don't have the right attributes (melted, peeled, etc).
+			// they don't have the right attributes (heated, peeled, etc).
 			if (!ingredientRecipe.AttributesMatch(object)) {
 				return true;
 			}
