@@ -32,7 +32,7 @@ public class AllowMoving extends BakingPropositionalFunction {
 			} else if (SpaceFactory.isHeating(space)) {
 				return this.checkMoveToHeating(s, contents);
 			} else {
-				return this.checkMoveToNonSwitchable(s, currentSpace,contents);
+				return true;
 			}
 		}
 		return false;
@@ -73,26 +73,6 @@ public class AllowMoving extends BakingPropositionalFunction {
 					}
 				}
 			}
-		}
-		return false;
-	}
-	
-	private boolean checkMoveToNonSwitchable(State s, ObjectInstance currentSpace, Set<String> contents) {
-		if (SpaceFactory.isHeating(currentSpace)) {
-			for (String name : contents) {
-				if (IngredientFactory.isMeltedIngredient(s.getObject(name))) {
-					return true;
-				}
-			}
-		}
-		else if (SpaceFactory.isBaking(currentSpace)) {
-			for (String name : contents) {
-				if (IngredientFactory.isBakedIngredient(s.getObject(name))) {
-					return true;
-				}
-			}
-		} else {
-			return true;
 		}
 		return false;
 	}

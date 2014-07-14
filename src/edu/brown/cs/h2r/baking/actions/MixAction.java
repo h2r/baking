@@ -51,9 +51,9 @@ public class MixAction extends BakingAction {
 			return BakingActionResult.failure(containerName + " is empty");
 		}
 		
-		if (!ContainerFactory.isMixingContainer(containerInstance)) {
+		/*if (!ContainerFactory.isMixingContainer(containerInstance)) {
 			return BakingActionResult.failure(containerName + " is not a mixing container");
-		}
+		}*/
 		// move to should mix probably!
 		if (ContainerFactory.getContentNames(containerInstance).size() < 2) {
 			return BakingActionResult.failure(containerName + " containers only one ingredient");
@@ -69,14 +69,17 @@ public class MixAction extends BakingAction {
 			return BakingActionResult.failure(containerSpaceName + " does not exist");
 		}
 		
-		String agentOfSpace = SpaceFactory.getAgent(mixingContainerSpaceName).iterator().next();
+		/*String agentOfSpace = SpaceFactory.getAgent(mixingContainerSpaceName).iterator().next();
 		if (!agentOfSpace.equalsIgnoreCase(agent.getName()))
 		{		
 			return BakingActionResult.failure(agentName + " cannot perform actions in " + containerSpaceName);
-		}
+		}*/
 				
-		if (!SpaceFactory.isWorking(mixingContainerSpaceName)) {
-			return BakingActionResult.failure(containerSpaceName + " is not suitable for mixing");
+		/*if (!SpaceFactory.isWorking(mixingContainerSpaceName)) {
+			return BakingActionResult.failure(mixingContainerSpaceName + " is not suitable for mixing");
+		}*/
+		if (SpaceFactory.isBaking(mixingContainerSpaceName)) {
+			return BakingActionResult.failure(mixingContainerSpaceName + " is not suitable for mixing!");
 		}
 		return BakingActionResult.success();
 	}
@@ -178,22 +181,22 @@ public class MixAction extends BakingAction {
 	
 	public void makeSwappedIngredient(State state, ObjectInstance newIngredient) {
 		// Call to makeFakeAttributeCopy here is to ensure we can make a swapped ingredient even
-					// if in reality, said swapped ingredient has to eventually be baked/melted/peeled...
-					if (Recipe.isSuccess(state, ingredient.makeFakeAttributeCopy(newIngredient), newIngredient)) {
-						ExperimentHelper.checkIngredientCompleted(ingredient.makeFakeAttributeCopy(newIngredient),
-								state, asList(newIngredient), state.getObjectsOfTrueClass(ContainerFactory.ClassName));
-					} else {
-						//For the online game, ingredient is always the topLevelIngredient, so check all possible
-						// swapped ingredients
-						Collection<IngredientRecipe> swappedIngs= IngredientRecipe.getRecursiveSwappedIngredients(ingredient).values();
-		 				for (IngredientRecipe swapped : swappedIngs) {
-							IngredientRecipe swappedCopy = swapped.makeFakeAttributeCopy(newIngredient);
-							if (Recipe.isSuccess(state, swapped.makeFakeAttributeCopy(newIngredient), newIngredient)) {
-								ExperimentHelper.checkIngredientCompleted(swappedCopy, state, 
-										asList(newIngredient), state.getObjectsOfTrueClass(ContainerFactory.ClassName));
-								break;
-							}
-						}
-					}
+		// if in reality, said swapped ingredient has to eventually be baked/melted/peeled...
+		if (Recipe.isSuccess(state, ingredient.makeFakeAttributeCopy(newIngredient), newIngredient)) {
+			ExperimentHelper.checkIngredientCompleted(ingredient.makeFakeAttributeCopy(newIngredient),
+					state, asList(newIngredient), state.getObjectsOfTrueClass(ContainerFactory.ClassName));
+		} else {
+			//For the online game, ingredient is always the topLevelIngredient, so check all possible
+			// swapped ingredients
+			Collection<IngredientRecipe> swappedIngs= IngredientRecipe.getRecursiveSwappedIngredients(ingredient).values();
+			for (IngredientRecipe swapped : swappedIngs) {
+				IngredientRecipe swappedCopy = swapped.makeFakeAttributeCopy(newIngredient);
+				if (Recipe.isSuccess(state, swapped.makeFakeAttributeCopy(newIngredient), newIngredient)) {
+					ExperimentHelper.checkIngredientCompleted(swappedCopy, state, 
+							asList(newIngredient), state.getObjectsOfTrueClass(ContainerFactory.ClassName));
+					break;
+				}
+			}
+		}
 	}
 }
