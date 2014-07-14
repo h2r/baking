@@ -6,20 +6,22 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.AbstractMap;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.TreeSet;
 
 
-public class TraitParser {
+public class ToolParser {
 
-	private AbstractMap<String, Set<String>> map;
-	public TraitParser(String filename) {
+	private AbstractMap<String, String[]> map;
+	public ToolParser(String filename) {
 		this.map = generateMap(filename);
 	}
 
-	private AbstractMap<String,Set<String>> generateMap(String filename) {
-		HashMap<String,Set<String>> ingredients = new HashMap<String,Set<String>>();
+	private AbstractMap<String,String[]> generateMap(String filename) {
+		HashMap<String, String[]> tools = new HashMap<String, String[]>();
 		ClassLoader CLDR = this.getClass().getClassLoader();
 		
 		URL resourceURL = CLDR.getResource(filename);
@@ -37,7 +39,6 @@ public class TraitParser {
 		if (in == null) {
 			throw new RuntimeException("File " + filename + " does not exist in directory " + CLDR.getResource(".").getFile());
 		}
-
 		BufferedReader br = null;
 		try {
 			br = new BufferedReader(new InputStreamReader(in));
@@ -46,26 +47,19 @@ public class TraitParser {
 				int end = line.indexOf("'", 1);
 				String name = line.substring(1, end);
 
-				String trait_list = line.substring(line.indexOf("[")+1, line.indexOf("]"));
-				Set<String> traits = new TreeSet<String>();
-				if (!trait_list.isEmpty()) {
-					for (String trait : trait_list.split(", ")) {
-						traits.add(trait);
-					}
-					ingredients.put(name, traits);
-				} else {
-					ingredients.put(name, null);
-				}
+				String info = line.substring(line.indexOf("{")+1, line.indexOf("}"));
+				String[] tool_info = info.split(", ");
+				tools.put(name, tool_info);
 			}
 			br.close();
 		} catch (IOException ex) {
 			System.err.println(ex);
 			System.exit(1);
 		}
-		return ingredients;
+		return tools;
 	}
 	
-	public AbstractMap<String, Set<String>> getMap() {
+	public AbstractMap<String, String[]> getMap() {
 		return this.map;
 	}
 	

@@ -1,5 +1,6 @@
 package edu.brown.cs.h2r.baking.PropositionalFunctions;
 
+import java.util.List;
 import java.util.Set;
 
 import edu.brown.cs.h2r.baking.IngredientRecipe;
@@ -20,14 +21,16 @@ public class IngredientNecessaryForRecipe extends BakingPropositionalFunction {
 	public boolean isTrue(State s, String[] params) {
 		if (!params[0].equalsIgnoreCase("")) {
 			String name = params[0];
-			for (IngredientRecipe ingredient : this.topLevelIngredient.getConstituentIngredients()) {
+			List<IngredientRecipe> contents = this.topLevelIngredient.getConstituentIngredients();
+			for (IngredientRecipe ingredient : contents) {
 				if (ingredient.getName().equals(params[0])) {
 					return true;
 				}
 			}
 			IngredientKnowledgebase knowledgebase = new IngredientKnowledgebase();
 			Set<String> ingredientTraits = this.topLevelIngredient.getConstituentNecessaryTraits().keySet();
-			for (String trait : knowledgebase.getTraits(name)) {
+			Set<String> traits = knowledgebase.getTraits(name);
+			for (String trait : traits) {
 				if (ingredientTraits.contains(trait)) {
 					return true;
 				}

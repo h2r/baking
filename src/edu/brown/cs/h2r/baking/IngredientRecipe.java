@@ -1,10 +1,10 @@
 package edu.brown.cs.h2r.baking;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Set;
-import java.util.TreeSet;
 
 import burlap.oomdp.core.ObjectInstance;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
@@ -16,55 +16,40 @@ public class IngredientRecipe {
 	private Boolean mixed;
 	private Boolean melted;
 	private Boolean baked;
-	private Boolean peeled;
 	private Set<String> traits;
+	private Set<String> toolTraits;
+	private Set<String> toolAttributes;
 	private String name;
 	private Boolean swapped;
 	private List<IngredientRecipe> contents;
 	private int useCount;
 	private AbstractMap<String, IngredientRecipe> necessaryTraits;
+	private Set<String> recipeToolAttributes;
 	
 	public IngredientRecipe(String name, int attributes) {
 		this.name = name;
 		this.setAttributes(attributes);
 		this.swapped = false;
-		this.traits = new TreeSet<String>();
 		this.useCount = 1;
 		this.contents = null;
-		this.peeled = false;
-		this.traits = new TreeSet<String>();
-		this.useCount = 1;
-	}
-	
-	
-	public IngredientRecipe (String name, int attributes, List<IngredientRecipe> contents) {
-		this.name = name;
-		this.setAttributes(attributes);
-		this.swapped = false;
-		this.contents = contents;
-		this.traits = new TreeSet<String>();
-		this.necessaryTraits = new HashMap<String, IngredientRecipe>();
-		this.useCount = 1;
+		this.traits = new HashSet<String>();
+		this.necessaryTraits = null;
+		this.toolTraits = new HashSet<String>();
+		this.toolAttributes = new HashSet<String>();
+		this.recipeToolAttributes = new HashSet<String>();
 	}
 	
 	public IngredientRecipe(String name, int attributes, Boolean swapped, List<IngredientRecipe> contents) {
 		this.name = name;
 		this.setAttributes(attributes);
 		this.contents = contents;
-		this.traits = new TreeSet<String>();
 		this.swapped = swapped;
+		this.useCount = 1;
+		this.traits = new HashSet<String>();
 		this.necessaryTraits = new HashMap<String, IngredientRecipe>();
-		this.useCount = 1;
-	}
-	
-	public IngredientRecipe(String name, int attributes, Boolean swapped, List<IngredientRecipe> contents, AbstractMap<String, IngredientRecipe> necessaryTraits) {
-		this.name = name;
-		this.setAttributes(attributes);
-		this.contents = contents;
-		this.traits = new TreeSet<String>();
-		this.swapped = swapped;
-		this.necessaryTraits = necessaryTraits;
-		this.useCount = 1;
+		this.toolTraits = new HashSet<String>();
+		this.toolAttributes = new HashSet<String>();
+		this.recipeToolAttributes = new HashSet<String>();
 	}
 	
 	public Boolean isSimple() {
@@ -93,17 +78,17 @@ public class IngredientRecipe {
 	public void setBaked() {
 		this.baked = true;
 	}
-	
-	public void setPeeled() {
-		this.peeled = true;
-	}
-	
-	public Boolean getPeeled() {
-		return this.peeled;
-	}
 		
 	public String getName() {
 		return this.name;
+	}
+	
+	public Set<String> getToolTraits() {
+		return this.toolTraits;
+	}
+	
+	public Set<String> getToolAttributes() {
+		return this.toolAttributes;
 	}
 	
 	public Boolean getSwapped() {
@@ -124,8 +109,24 @@ public class IngredientRecipe {
 	public void setUseCount(int count) {
 		this.useCount = count;
 	}
+	
+	public void addToolTraits(Set<String> traits) {
+		this.toolTraits.addAll(traits);
+	}
+	
+	public void addToolAttribute(String attribute) {
+		this.toolAttributes.add(attribute);
+	}
+	
+	public boolean hasToolTrait(String trait) {
+		return this.toolTraits.contains(trait);
+	}
+	
+	public boolean hasToolAttribute(String attribute) {
+		return this.toolAttributes.contains(attribute);
+	}
 
-	public Boolean hasTraits() {
+	public boolean hasTraits() {
 		return !this.traits.isEmpty();
 	}
 	
@@ -198,6 +199,9 @@ public class IngredientRecipe {
 		this.necessaryTraits.put(trait, ing);
 	}
 	
+	public void addNecessaryTraits(AbstractMap<String, IngredientRecipe> necessaryTraits) {
+		this.necessaryTraits.putAll(necessaryTraits);
+	}
 	
 	public AbstractMap<String, IngredientRecipe> getConstituentNecessaryTraits() {
 		AbstractMap<String, IngredientRecipe> toRet = this.getNecessaryTraits();
@@ -242,32 +246,47 @@ public class IngredientRecipe {
 		if (IngredientFactory.isMixedIngredient(object) != this.getMixed()) {
 			return false;
 		}
-		if (IngredientFactory.isPeeledIngredient(object) != this.getPeeled()) {
+		Set<String> ingToolAttributes = this.getToolAttributes();
+		Set<String> objToolAttributes = IngredientFactory.getToolAttributes(object);
+		if (ingToolAttributes.size() != objToolAttributes.size()) {
 			return false;
+		}
+		for (String attribute : ingToolAttributes) {
+			if (!objToolAttributes.contains(attribute)) {
+				return false;
+			}
 		}
 		return true;
 	}
 	
 	
 	public IngredientRecipe makeFakeAttributeCopy(ObjectInstance obj) {
-		return new IngredientRecipe(this.getName(), generateAttributeNumber(IngredientFactory.isMixedIngredient(obj), 
-				IngredientFactory.isMeltedIngredient(obj), IngredientFactory.isBakedIngredient(obj), 
-				IngredientFactory.isPeeledIngredient(obj)), this.getSwapped(), this.getContents(), this.getNecessaryTraits());
+		int attributes = generateAttributeNumber(IngredientFactory.isMixedIngredient(obj), 
+				IngredientFactory.isMeltedIngredient(obj), IngredientFactory.isBakedIngredient(obj));
+		IngredientRecipe newIng = new IngredientRecipe(this.getName(), attributes, this.getSwapped(),
+				this.getContents());
+		newIng.addNecessaryTraits(this.getNecessaryTraits());
+		return newIng;
 	}
 	
 	public void setAttributes(int attributes) {
 		this.baked = ((attributes & Recipe.BAKED) == Recipe.BAKED) ? true : false;
 		this.melted = ((attributes & Recipe.MELTED) == Recipe.MELTED) ? true : false;
 		this.mixed = ((attributes & Recipe.MIXED) == Recipe.MIXED) ? true : false;
-		this.peeled = ((attributes & Recipe.PEELED) == Recipe.PEELED) ? true : false;
 	}
 	
-	public static int generateAttributeNumber(Boolean mixed, Boolean melted, Boolean baked, Boolean peeled) {
-		int mixed_int = mixed ? Recipe.MIXED : 0;
-		int melted_int = melted ? Recipe.MELTED : 0;
-		int baked_int = baked ? Recipe.BAKED : 0;
-		int peeled_int = peeled ? Recipe.PEELED : 0;
-		return mixed_int|melted_int|baked_int|peeled_int;
+	public static int generateAttributeNumber(Boolean mixed, Boolean melted, Boolean baked) {
+		int mixedInt = mixed ? Recipe.MIXED : 0;
+		int meltedInt = melted ? Recipe.MELTED : 0;
+		int bakedInt = baked ? Recipe.BAKED : 0;
+		return mixedInt|meltedInt|bakedInt;
+	}
+	
+	public int generateAttributeNumber() {
+		int mixedInt = this.getMixed() ? Recipe.MIXED : 0;
+		int meltedInt = this.getMelted() ? Recipe.MELTED : 0;
+		int bakedInt = this.getBaked() ? Recipe.BAKED : 0;
+		return mixedInt|meltedInt|bakedInt;	
 	}
 	
 	public static AbstractMap<String, IngredientRecipe> getRecursiveSwappedIngredients(IngredientRecipe ingredient) {

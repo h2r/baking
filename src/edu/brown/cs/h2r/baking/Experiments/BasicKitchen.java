@@ -3,6 +3,7 @@ package edu.brown.cs.h2r.baking.Experiments;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import burlap.behavior.statehashing.NameDependentStateHashFactory;
 import burlap.behavior.statehashing.StateHashFactory;
@@ -16,8 +17,10 @@ import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.SADomain;
+import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
+import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
 import edu.brown.cs.h2r.baking.Knowledgebase.IngredientKnowledgebase;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
@@ -70,6 +73,8 @@ public class BasicKitchen implements DomainGenerator {
 		domain.addObjectClass(ContainerFactory.createObjectClass(domain));
 		domain.addObjectClass(IngredientFactory.createSimpleIngredientObjectClass(domain));
 		domain.addObjectClass(IngredientFactory.createComplexIngredientObjectClass(domain));
+		domain.addObjectClass(IngredientFactory.createComplexHiddenIngredientObjectClass(domain));
+		domain.addObjectClass(IngredientFactory.createSimpleHiddenIngredientObjectClass(domain));
 		domain.addObjectClass(SpaceFactory.createObjectClass(domain));		
 		domain.addObjectClass(AgentFactory.getObjectClass(domain));
 		domain.addObjectClass(MakeSpanFactory.getObjectClass(domain));
@@ -100,7 +105,7 @@ public class BasicKitchen implements DomainGenerator {
 		
 		List<String> bakingContainers = Arrays.asList("Baking_Dish");
 		for (String container : bakingContainers) { 
-			state.addObject(ContainerFactory.getNewHeatingContainerObjectInstance(domain, container, null, "counter"));
+			state.addObject(ContainerFactory.getNewBakingContainerObjectInstance(domain, container, null, "counter"));
 		}
 		
 		List<String> containers = new ArrayList<String>();
@@ -153,6 +158,11 @@ public class BasicKitchen implements DomainGenerator {
 		if (this.isFailure == null) {
 			this.isFailure = new RecipeBotched("botched", domain, this.recipe.topLevelIngredient);
 		}
+		
+		this.recipe.setUpSubgoals(this.domain);
+		if (((RecipeBotched)this.isFailure).hasNoSubgoals()) {
+			this.addSubgoalsToBotched(recipe.getSubgoals(), ((RecipeBotched)this.isFailure));
+		}
 	}
 	
 	public String resetCurrentState() {
@@ -180,9 +190,10 @@ public class BasicKitchen implements DomainGenerator {
 		StateHashTuple newTuple = this.stateHashFactory.hashState(this.currentState);
 		
 		if (previousTuple.hashCode() == newTuple.hashCode()) {
+			int len = params.length;
 			String message = actionName + " had no effect with params [";
-			for (int i = 0; i <  params.length; i++) {
-				message += (i < params.length - 1) ? params[i] + ", " : params[i]; 
+			for (int i = 0; i <  len; i++) {
+				message += (i < len - 1) ? params[i] + ", " : params[i]; 
 			}
 			message += "]";
 			return BakingActionResult.failure(message);
@@ -210,6 +221,15 @@ public class BasicKitchen implements DomainGenerator {
 	
 	public boolean getIsBotched() {
 		return this.isFailure.isTrue(this.currentState, "");
+	}
+	
+	// Add ingredient-only subgoals to the RecipeBotched propositional function
+	public void addSubgoalsToBotched(Set<BakingSubgoal> subgoals, RecipeBotched botched) {
+		for (BakingSubgoal sg : subgoals) {
+			if (sg.getGoal().getClassName().equals(AffordanceCreator.FINISH_PF)) {
+				botched.addSubgoal(sg);
+			}
+		}
 	}
 
 }

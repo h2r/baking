@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.*;
-import org.junit.Test;
 
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
@@ -20,6 +19,7 @@ import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.ToolFactory;
 import edu.brown.cs.h2r.baking.Recipes.*;
 import edu.brown.cs.h2r.baking.actions.*;
 
@@ -83,6 +83,7 @@ public class TestActions {
 		domain.addObjectClass(IngredientFactory.createComplexHiddenIngredientObjectClass(domain));
 		domain.addObjectClass(SpaceFactory.createObjectClass(domain));		
 		domain.addObjectClass(AgentFactory.getObjectClass(domain));
+		domain.addObjectClass(ToolFactory.createObjectClass(domain));
 	}
 	
 	@After
@@ -127,12 +128,12 @@ public class TestActions {
 
 		state = mix.performAction(state, new String[] {"human", "mixing_bowl_2"});
 		Assert.assertEquals(ContainerFactory.getContentNames(state.getObject("mixing_bowl_2")).size(), 1);
-		ObjectInstance named_ing = null;
+		ObjectInstance namedIng = null;
 		for (String name : ContainerFactory.getContentNames(state.getObject("mixing_bowl_2"))) {
-			named_ing = state.getObject(name);
+			namedIng = state.getObject(name);
 			break;
 		}
-		BakingAsserts.assertIngredientContains(named_ing, Arrays.asList("cocoa", "baking_powder"));
+		BakingAsserts.assertIngredientContains(namedIng, Arrays.asList("cocoa", "baking_powder"));
 		
 		state = pour.performAction(state, new String[] {"human", "orange_juice_bowl", "mixing_bowl_1"});
 		Assert.assertEquals(ContainerFactory.getContentNames(state.getObject("mixing_bowl_1")).size(), 2);
@@ -156,12 +157,12 @@ public class TestActions {
 		state.addObject(oven);
 		state.addObject(stove);
 
-		ObjectInstance melting_pot = ContainerFactory.getNewHeatingContainerObjectInstance(domain, "melting_pot", null, "counter");
-		ObjectInstance baking_pan = ContainerFactory.getNewBakingContainerObjectInstance(domain, "baking_pan", null, "counter");
-		state.addObject(melting_pot);
-		state.addObject(baking_pan);
-		SpaceFactory.addContainer(counter, melting_pot);
-		SpaceFactory.addContainer(counter, baking_pan);
+		ObjectInstance meltingPot = ContainerFactory.getNewHeatingContainerObjectInstance(domain, "melting_pot", null, "counter");
+		ObjectInstance bakingPan = ContainerFactory.getNewBakingContainerObjectInstance(domain, "baking_pan", null, "counter");
+		state.addObject(meltingPot);
+		state.addObject(bakingPan);
+		SpaceFactory.addContainer(counter, meltingPot);
+		SpaceFactory.addContainer(counter, bakingPan);
 		
 		BakingAsserts.assertActionNotApplicable(move, state, new String[] {"human", "baking_pan", "stove"});
 		BakingAsserts.assertActionNotApplicable(move, state, new String[] {"human", "mixing_bowl_1", "stove"});
@@ -201,14 +202,14 @@ public class TestActions {
 		ObjectInstance oven = SpaceFactory.getNewBakingSpaceObjectInstance(domain, "oven", null, "");
 		state.addObject(oven);
 
-		ObjectInstance baking_pan = ContainerFactory.getNewBakingContainerObjectInstance(domain, "baking_pan", null, "counter");
-		state.addObject(baking_pan);
+		ObjectInstance bakingPan = ContainerFactory.getNewBakingContainerObjectInstance(domain, "baking_pan", null, "counter");
+		state.addObject(bakingPan);
 		
 		ObjectInstance brownies = IngredientFactory.getNewIngredientInstance(this.topLevelIngredient, "brownies", domain.getObjectClass(IngredientFactory.ClassNameComplex));
 		//raw brownies
 		brownies.setValue("baked", 0);
 		state.addObject(brownies);
-		ContainerFactory.addIngredient(baking_pan, brownies.getName());
+		ContainerFactory.addIngredient(bakingPan, brownies.getName());
 		
 		
 		//move into an oven that's turned off!
@@ -231,7 +232,7 @@ public class TestActions {
 		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
 		this.setUpState();
 		Action move = new MoveAction(domain, topLevelIngredient);
-		Action switch_a = new SwitchAction(domain);
+		Action switchA = new SwitchAction(domain);
 		
 		ObjectInstance stove = SpaceFactory.getNewHeatingSpaceObjectInstance(domain, "stove", null, "");
 		state.addObject(stove);
@@ -247,28 +248,10 @@ public class TestActions {
 		state = move.performAction(state, new String[] {"human", "melting_pot", "counter"});
 		BakingAsserts.assertIsNotMelted(state.getObject("butter"));
 		
-		state = switch_a.performAction(state, new String[] {"human", "stove"});
+		state = switchA.performAction(state, new String[] {"human", "stove"});
 		state = move.performAction(state, new String[] {"human", "melting_pot", "stove"});
 		state = move.performAction(state, new String[] {"human", "melting_pot", "counter"});
 		BakingAsserts.assertIsMelted(state.getObject("butter"));
-	}
-	
-	@Test
-	public void testPeelAction() {
-		topLevelIngredient = new MashedPotatoes().topLevelIngredient;
-		knowledgebase = new IngredientKnowledgebase();
-		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
-		this.setUpState();
-		Action peel = new PeelAction(domain, topLevelIngredient);
-		
-		// can peel an ingredient
-		BakingAsserts.assertIsNotPeeled(state.getObject("potatoes"));
-		state = peel.performAction(state, new String[] {"human", "potatoes_bowl"});
-		BakingAsserts.assertIsPeeled(state.getObject("potatoes"));
-		
-		// can't peel a peeled ingredient
-		BakingAsserts.assertActionNotApplicable(peel, state, new String[] {"human", "potatoes_bowl"});
-		BakingAsserts.assertIsPeeled(state.getObject("potatoes"));
 	}
 	
 	@Test
@@ -299,20 +282,19 @@ public class TestActions {
 		knowledgebase = new IngredientKnowledgebase();
 		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
 		this.setUpState();
-		Action move = new MoveAction(domain, topLevelIngredient);
-		Action switch_a = new SwitchAction(domain);
+		Action switchA = new SwitchAction(domain);
 		
 		ObjectInstance oven = SpaceFactory.getNewBakingSpaceObjectInstance(domain, "oven", null, "");
 		ObjectInstance stove = SpaceFactory.getNewHeatingSpaceObjectInstance(domain, "stove", null, "");
 		state.addObject(oven);
 		state.addObject(stove);
 		
-		BakingAsserts.assertActionNotApplicable(switch_a, state, new String[] {"human", "counter"});
+		BakingAsserts.assertActionNotApplicable(switchA, state, new String[] {"human", "counter"});
 		
 		BakingAsserts.assertSpaceOff(state.getObject("oven"));
 		BakingAsserts.assertSpaceOff(state.getObject("stove"));
-		state = switch_a.performAction(state, new String[] {"human", "oven"});
-		state = switch_a.performAction(state, new String[] {"human", "stove"});
+		state = switchA.performAction(state, new String[] {"human", "oven"});
+		state = switchA.performAction(state, new String[] {"human", "stove"});
 
 		BakingAsserts.assertSpaceOn(state.getObject("oven"));
 		BakingAsserts.assertSpaceOn(state.getObject("stove"));
@@ -327,19 +309,19 @@ public class TestActions {
 		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
 		this.setUpState();
 		Action move = new MoveAction(domain, topLevelIngredient);
-		Action switch_a = new SwitchAction(domain);
+		Action switchA = new SwitchAction(domain);
 		
 		ObjectInstance oven = SpaceFactory.getNewBakingSpaceObjectInstance(domain, "oven", null, "");
 		state.addObject(oven);
 
-		ObjectInstance baking_pan = ContainerFactory.getNewBakingContainerObjectInstance(domain, "baking_pan", null, "counter");
-		state.addObject(baking_pan);
+		ObjectInstance bakingPan = ContainerFactory.getNewBakingContainerObjectInstance(domain, "baking_pan", null, "counter");
+		state.addObject(bakingPan);
 		
 		ObjectInstance brownies = IngredientFactory.getNewIngredientInstance(this.topLevelIngredient, "brownies", domain.getObjectClass(IngredientFactory.ClassNameComplex));
 		//raw brownies
 		brownies.setValue("baked", 0);
 		state.addObject(brownies);
-		ContainerFactory.addIngredient(baking_pan, brownies.getName());
+		ContainerFactory.addIngredient(bakingPan, brownies.getName());
 		
 		
 		//move into an oven that's turned off!
@@ -347,7 +329,7 @@ public class TestActions {
 		state = move.performAction(state, new String[] {"human", "baking_pan", "oven"});
 		BakingAsserts.assertIsNotBaked(state.getObject("brownies"));
 		//turn oven on
-		state = switch_a.performAction(state, new String[] {"human", "oven"});
+		state = switchA.performAction(state, new String[] {"human", "oven"});
 
 		BakingAsserts.assertIsBaked(state.getObject("brownies"));
 	}
@@ -359,20 +341,48 @@ public class TestActions {
 		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
 		this.setUpState();
 		Action move = new MoveAction(domain, topLevelIngredient);
-		Action switch_a = new SwitchAction(domain);
+		Action switchA = new SwitchAction(domain);
 		
 		ObjectInstance stove = SpaceFactory.getNewHeatingSpaceObjectInstance(domain, "stove", null, "");
 		state.addObject(stove);
 
-		ObjectInstance melting_pot = ContainerFactory.getNewHeatingContainerObjectInstance(domain, "melting_pot", null, "counter");
-		state.addObject(melting_pot);
+		ObjectInstance meltingPot = ContainerFactory.getNewHeatingContainerObjectInstance(domain, "melting_pot", null, "counter");
+		state.addObject(meltingPot);
 		
-		ContainerFactory.addIngredient(melting_pot, "butter");
+		ContainerFactory.addIngredient(meltingPot, "butter");
 		
 		BakingAsserts.assertIsNotMelted(state.getObject("butter"));
 		state = move.performAction(state, new String[] {"human", "melting_pot", "stove"});
 		BakingAsserts.assertIsNotMelted(state.getObject("butter"));
-		state = switch_a.performAction(state, new String[] {"human", "stove"});
+		state = switchA.performAction(state, new String[] {"human", "stove"});
 		BakingAsserts.assertIsMelted(state.getObject("butter"));
+	}
+	
+	@Test
+	public void testUseAction() {
+		topLevelIngredient = new MashedPotatoes().topLevelIngredient;
+		knowledgebase = new IngredientKnowledgebase();
+		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
+		this.setUpState();
+		Action use = new UseAction(domain, topLevelIngredient);
+		
+		ObjectInstance peeler = ToolFactory.getNewSimpleToolObjectInstance(domain, "peeler", "peelable", "peeled", "counter");
+		state.addObject(peeler);
+		SpaceFactory.addContainer(state.getObject("counter"), state.getObject("peeler"));
+		
+		// Can't peel a non-peelabled
+		BakingAsserts.assertActionNotApplicable(use, state, new String[] {"human", "peeler", "butter_bowl"});
+		
+		// Can peel a peelable
+		BakingAsserts.assertHasToolTrait(state.getObject("potatoes"), "peelable");
+		BakingAsserts.assertDoesntHaveToolAttribute(state.getObject("potatoes"), "peeled");
+		BakingAsserts.assertActionApplicable(use, state, new String[] {"human", "peeler", "potatoes_bowl"});
+
+		state = use.performAction(state, new String[] {"human", "peeler", "potatoes_bowl"});
+		
+		// Can't peel a peeled ingredient
+		BakingAsserts.assertHasToolAttribute(state.getObject("potatoes"), "peeled");
+		BakingAsserts.assertActionNotApplicable(use, state, new String[] {"human", "peeler", "butter_bowl"});
+
 	}
 }

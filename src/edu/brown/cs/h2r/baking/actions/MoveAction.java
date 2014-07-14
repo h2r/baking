@@ -1,5 +1,7 @@
 package edu.brown.cs.h2r.baking.actions;
 
+import java.util.Set;
+
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
@@ -71,17 +73,33 @@ public class MoveAction extends BakingAction {
 		SpaceFactory.addContainer(spaceInstance, containerInstance);
 		SpaceFactory.removeContainer(oldSpaceObject, containerInstance);
 		
-		if (SpaceFactory.getOnOff(spaceInstance) && !ContainerFactory.isEmptyContainer(containerInstance)) {
-			if (SpaceFactory.isHeating(spaceInstance) && ContainerFactory.isHeatingContainer(containerInstance)) {
-				for (String name : ContainerFactory.getContentNames(containerInstance)) {
-					if (!IngredientFactory.isMeltedAtRoomTemperature(state.getObject(name))) {
-						IngredientFactory.meltIngredient(state.getObject(name));
-					}
-				}
+		if (SpaceFactory.getOnOff(spaceInstance)) {
+			if (SpaceFactory.isBaking(spaceInstance)) {
+				MoveAction.movingToBakingSpace(state, spaceInstance, containerInstance);
 			}
-			else if (SpaceFactory.isBaking(spaceInstance) && ContainerFactory.isBakingContainer(containerInstance)) {
-				for (String name : ContainerFactory.getContentNames(containerInstance)) {
-					IngredientFactory.bakeIngredient(state.getObject(name));
+			if (SpaceFactory.isHeating(spaceInstance)) {
+				MoveAction.movingToHeatingSpace(state, spaceInstance, containerInstance);
+			}
+		}
+	}
+	
+	private static void movingToBakingSpace(State state, ObjectInstance spaceInstance, ObjectInstance containerInstance) {
+		if (!ContainerFactory.isEmptyContainer(containerInstance) && ContainerFactory.isBakingContainer(containerInstance)) {
+			Set<String> names = ContainerFactory.getContentNames(containerInstance);
+			for (String name : names) {
+				ObjectInstance ing = state.getObject(name);
+				IngredientFactory.bakeIngredient(ing);
+			}
+		}
+	}
+	
+	private static void movingToHeatingSpace(State state, ObjectInstance spaceInstance, ObjectInstance containerInstance) {
+		if (!ContainerFactory.isEmptyContainer(containerInstance) && ContainerFactory.isHeatingContainer(containerInstance)) {
+			Set<String> names = ContainerFactory.getContentNames(containerInstance);
+			for (String name : names) {
+				ObjectInstance ing = state.getObject(name);
+				if (!IngredientFactory.isMeltedAtRoomTemperature(ing)) {
+					IngredientFactory.meltIngredient(ing);
 				}
 			}
 		}

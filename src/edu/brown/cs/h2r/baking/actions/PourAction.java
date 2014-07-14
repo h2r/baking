@@ -15,11 +15,9 @@ import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 
 public class PourAction extends BakingAction {
 	public static final String className = "pour";
-	private List<ObjectInstance> allIngredients;
 	public PourAction(Domain domain, IngredientRecipe ingredient) {
 		super(PourAction.className, domain, ingredient, new String[] {AgentFactory.ClassName, ContainerFactory.ClassName, ContainerFactory.ClassName});
 		this.domain = domain;
-		//this.allIngredients = ings;
 	}
 	
 	@Override
@@ -43,8 +41,9 @@ public class PourAction extends BakingAction {
 		String receivingContainerName = params[2];
 		ObjectInstance receivingContainer = state.getObject(params[2]);
 
-		String pouringContainerSpace = ContainerFactory.getSpaceName(pouringContainer);
-		String receivingContainerSpace = ContainerFactory.getSpaceName(receivingContainer);
+		String pouringContainerSpaceName = ContainerFactory.getSpaceName(pouringContainer);
+		String receivingContainerSpaceName = ContainerFactory.getSpaceName(receivingContainer);
+		ObjectInstance receivingContainerSpace = state.getObject(receivingContainerSpaceName);
 		
 		if (ContainerFactory.isEmptyContainer(pouringContainer)) {
 			return BakingActionResult.failure(pouringContainerName + " is empty");
@@ -54,21 +53,24 @@ public class PourAction extends BakingAction {
 			return BakingActionResult.failure(receivingContainerName + " cannot be poured into");
 		}
 		
-		if (pouringContainerSpace == null || receivingContainerSpace == null)
+		if (pouringContainerSpaceName == null || receivingContainerSpaceName == null)
 		{
 			throw new RuntimeException("One of the pouring containers is not in any space");
 		}
 		
-		if (!pouringContainerSpace.equalsIgnoreCase(receivingContainerSpace))
+		if (!pouringContainerSpaceName.equalsIgnoreCase(receivingContainerSpaceName))
 		{
 			return BakingActionResult.failure(pouringContainerName + " is not in the same space as the " + receivingContainerName);
 		}
-		ObjectInstance pouringContainerSpaceObject = state.getObject(pouringContainerSpace);
+		/*if (SpaceFactory.isBaking(receivingContainerSpace)) {
+			return BakingActionResult.failure(receivingContainerName + " is in the " +  receivingContainerSpaceName+ " which is a baking space!");
+		}*/
+		ObjectInstance pouringContainerSpaceObject = state.getObject(pouringContainerSpaceName);
 		
 		String agentOfSpace = SpaceFactory.getAgent(pouringContainerSpaceObject).iterator().next();
 		if (!agentOfSpace.equalsIgnoreCase(agentName))
 		{		
-			return BakingActionResult.failure(agentName + " cannot work in " + pouringContainerSpace);
+			return BakingActionResult.failure(agentName + " cannot work in " + pouringContainerSpaceName);
 		}
 		if (!SpaceFactory.isWorking(pouringContainerSpaceObject)) {
 			return BakingActionResult.failure("Pouring cannot be performed in the " + pouringContainerSpaceObject);
@@ -86,28 +88,36 @@ public class PourAction extends BakingAction {
 		super.performActionHelper(state, params);
 		ObjectInstance pouringContainer = state.getObject(params[1]);
 		ObjectInstance receivingContainer = state.getObject(params[2]);
-		pour(state, pouringContainer, receivingContainer);
+		ObjectInstance receivingSpace = state.getObject(ContainerFactory.getSpaceName(receivingContainer));
+		pour(state, pouringContainer, receivingContainer, receivingSpace);
 		return state;
 	}
 	
 	private void pour(State state, String pouringContainer, String receivingContainer) {
-		pour(state, state.getObject(pouringContainer), state.getObject(receivingContainer));
+		ObjectInstance recContainer = state.getObject(receivingContainer);
+		ObjectInstance receivingSpace = state.getObject(ContainerFactory.getSpaceName(recContainer));
+		pour(state, state.getObject(pouringContainer), recContainer, receivingSpace);
 	}
 	
-	private void pour(State state, ObjectInstance pouringContainer, ObjectInstance receivingContainer)
+	private void pour(State state, ObjectInstance pouringContainer, ObjectInstance receivingContainer,
+			ObjectInstance receivingSpace)
 	{
 		Set<String> ingredients = new HashSet<String>(ContainerFactory.getContentNames(pouringContainer));
 		ContainerFactory.addIngredients(receivingContainer, ingredients);
 		ContainerFactory.removeContents(pouringContainer);
+		boolean shouldHeat = this.shouldHeat(state, receivingSpace);
 		for (String ingredient : ingredients) {
-			ObjectInstance ingredientInstance = state.getObject(ingredient); 
+			ObjectInstance ingredientInstance = state.getObject(ingredient);
+			if (shouldHeat) {
+				IngredientFactory.meltIngredient(ingredientInstance);
+			}
 			IngredientFactory.changeIngredientContainer(ingredientInstance, receivingContainer.getName());
 		}
 		
 	}
 	
-	public void addAllIngredients(List<ObjectInstance> ings) {
-		this.allIngredients = ings;
+	private boolean shouldHeat(State state, ObjectInstance space) {
+		return SpaceFactory.isHeating(space) && SpaceFactory.getOnOff(space);
 	}
 	
 }

@@ -46,7 +46,8 @@ public abstract class BakingAction extends Action {
 	}
 	
 	public BakingActionResult checkActionIsApplicableInState(State state, String[] params) {
-		for (int i = 0; i < params.length; i++) {
+		int len = params.length;
+		for (int i = 0; i < len; i++) {
 			String objectName = params[i];
 			ObjectInstance object = state.getObject(objectName);
 			if (object == null) {

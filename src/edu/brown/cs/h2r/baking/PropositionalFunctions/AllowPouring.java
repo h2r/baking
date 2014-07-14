@@ -26,37 +26,11 @@ public class AllowPouring extends BakingPropositionalFunction {
 		ObjectInstance receivingContainer = s.getObject(params[2]);
 		
 		if (ContainerFactory.isBakingContainer(receivingContainer)) {
-			for (String name :ContainerFactory.getContentNames(pouringContainer)) {
-				if (IngredientFactory.isSimple(s.getObject(name))) {
-					return false;
-				}
-				if (this.topLevelIngredient.getName().equals(name)) {
-					return topLevelIngredient.getBaked();
-				}
-				for (IngredientRecipe contents : this.topLevelIngredient.getConstituentIngredients()) {
-					if (contents.getName().equals(name)) {
-						return contents.getBaked();
-					}
-				}
-			}
-			return false;
+			return this.checkPourIntoBakingContainer(s, pouringContainer);
 		}
 		
 		if (ContainerFactory.isHeatingContainer(receivingContainer)) {
-			for (String name :ContainerFactory.getContentNames(pouringContainer)) {
-				if (IngredientFactory.isMeltedIngredient(s.getObject(name))) {
-					return false;
-				}
-				if (this.topLevelIngredient.getName().equals(name)) {
-					return topLevelIngredient.getMelted();
-				}
-				for (IngredientRecipe content : this.topLevelIngredient.getContents()) {
-					if (content.getName().equals(name)) {
-						return content.getMelted();
-					}
-				}
-			}
-			return false;
+			return this.checkPourIntoHeatingContainer(s, pouringContainer);
 		}
 		
 		
@@ -66,46 +40,43 @@ public class AllowPouring extends BakingPropositionalFunction {
 		}
 		
 		// Get what our subgoal is looking for and make copies
-		List<IngredientRecipe> necessary_ings = new ArrayList<IngredientRecipe>(); 
-		for (IngredientRecipe ing : this.topLevelIngredient.getContents()) {
-			necessary_ings.add(ing);
-		}
-		AbstractMap<String, IngredientRecipe> actual_ing_traits = this.topLevelIngredient.getNecessaryTraits();
-		//AbstractMap<String, IngredientRecipe> actual_ing_traits = this.topLevelIngredient.getConstituentNecessaryTraits();
-		AbstractMap<String, IngredientRecipe> necessary_traits = new HashMap<String, IngredientRecipe>();
-		for (String name : actual_ing_traits.keySet()) {
-			necessary_traits.put(name, actual_ing_traits.get(name));
-		}
+		List<IngredientRecipe> necessaryIngs = new ArrayList<IngredientRecipe>(); 
+		necessaryIngs.addAll(this.topLevelIngredient.getContents());
+		
+		AbstractMap<String, IngredientRecipe> necessaryTraits = new HashMap<String, IngredientRecipe>();
+		necessaryTraits.putAll(this.topLevelIngredient.getNecessaryTraits());
 		
 		// Look to see what trait/necessary ingredients we have already fulfilled in our bowl
-		Set<ObjectInstance> receiving_contents = new HashSet<ObjectInstance>();
-		for (String content_name : ContainerFactory.getConstituentSwappedContentNames(receivingContainer, s)) {
-			ObjectInstance obj = s.getObject(content_name);
-			receiving_contents.add(obj);
+		Set<ObjectInstance> receivingContents = new HashSet<ObjectInstance>();
+		Set<String> contentNames = ContainerFactory.getConstituentSwappedContentNames(receivingContainer, s);
+		for (String contentName : contentNames) {
+			ObjectInstance obj = s.getObject(contentName);
+			receivingContents.add(obj);
 		}
 		// Check that everything in our bowl is either a necessary ingredient or a trait
 		// ingredient for our current subgoal.
-		for (ObjectInstance content : receiving_contents) {
-			String content_name = content.getName();
+		for (ObjectInstance content : receivingContents) {
+			String contentName = content.getName();
 			IngredientRecipe match = null;
-			for (IngredientRecipe ing : necessary_ings) {
-				if (ing.getName().equals(content_name)) {
+			for (IngredientRecipe ing : necessaryIngs) {
+				if (ing.getName().equals(contentName)) {
 					match = ing;
 					break;
 				}
 			}
 			if (match != null) {
-				necessary_ings.remove(match);
+				necessaryIngs.remove(match);
 			} else {
-				String found_trait = null;
-				for (String trait : necessary_traits.keySet()) {
+				String foundTrait = null;
+				Set<String> traits = necessaryTraits.keySet();
+				for (String trait : traits) {
 					if (IngredientFactory.getTraits(content).contains(trait)) {
-						found_trait = trait;
+						foundTrait = trait;
 						break;
 					}
 				}
-				if (found_trait != null) {
-					necessary_traits.remove(found_trait);
+				if (foundTrait != null) {
+					necessaryTraits.remove(foundTrait);
 				} else {
 					// We're trying to pour into a bowl that doesn't have "good" ingredients
 					// By good I mean relevant, in relation to our current subgoal.
@@ -114,34 +85,38 @@ public class AllowPouring extends BakingPropositionalFunction {
 			}
 		}
 		// Get all of the ingredients in our pouring bowl.
-		Set<ObjectInstance> pour_contents = new HashSet<ObjectInstance>();
-		for (String name : ContainerFactory.getConstituentSwappedContentNames(pouringContainer, s)) {
-			pour_contents.add(s.getObject(name));
+		Set<ObjectInstance> pourContents = new HashSet<ObjectInstance>();
+		Set<String> names = ContainerFactory.getConstituentSwappedContentNames(pouringContainer, s);
+		for (String name : names) {
+			pourContents.add(s.getObject(name));
 		}
 		// Now, lets see if our pouring container has ingredients that are actually needed;
-		Boolean current_match;
-		for (ObjectInstance content : pour_contents) {
-			current_match = false;
-			for (IngredientRecipe ing : necessary_ings) {
+		Boolean currentMatch;
+		for (ObjectInstance content : pourContents) {
+			currentMatch = false;
+			for (IngredientRecipe ing : necessaryIngs) {
 				if (ing.getName().equals(content.getName())) {
 					if (ing.AttributesMatch(content)) {
-						current_match = true;
+						currentMatch = true;
 						break;
 					}
 				}
 			}
-			if (!current_match) {
-				for (String trait : necessary_traits.keySet()) {
+			if (!currentMatch) {
+				Set<String> traits = necessaryTraits.keySet();
+				for (String trait : traits) {
 					if (IngredientFactory.getTraits(content).contains(trait)) {
 						// Check that this trait ingredient hasn't been added to some other bowl
-						boolean trait_used = false;
-						for (ObjectInstance container : s.getObjectsOfTrueClass(ContainerFactory.ClassName)) {
+						boolean traitUsed = false;
+						List<ObjectInstance> containers = s.getObjectsOfTrueClass(ContainerFactory.ClassName);
+						for (ObjectInstance container : containers) {
 							if (!ContainerFactory.isMixingContainer(pouringContainer)) {
 								if (ContainerFactory.isMixingContainer(container) && !ContainerFactory.isEmptyContainer(container)) {
-									for (String name : ContainerFactory.getConstituentSwappedContentNames(container, s)) {
+									Set<String> cNames = ContainerFactory.getConstituentSwappedContentNames(container, s);
+									for (String name : cNames) {
 										ObjectInstance obj = s.getObject(name);
 										if (IngredientFactory.getTraits(obj).contains(trait)) {
-											trait_used = true;
+											traitUsed = true;
 											break;
 										}
 									}
@@ -149,13 +124,13 @@ public class AllowPouring extends BakingPropositionalFunction {
 								}
 							}
 						}
-						if (!trait_used) {
-							current_match = necessary_traits.get(trait).AttributesMatch(content);
+						if (!traitUsed) {
+							currentMatch = necessaryTraits.get(trait).AttributesMatch(content);
 							break;
 						}
 					}
 				}
-				if (!current_match) {
+				if (!currentMatch) {
 					return false;
 				}
 			}
@@ -163,5 +138,44 @@ public class AllowPouring extends BakingPropositionalFunction {
 		// Ingredient we are pouring and those in the bowl we're pouring into are all pertinent
 		// to our current subgoal and therefore this pour action will get us closer to our goal!
 		return true;
+	}
+	
+	private boolean checkPourIntoBakingContainer(State s, ObjectInstance pouringContainer) {
+		Set<String> contentNames = ContainerFactory.getContentNames(pouringContainer);
+		for (String name :contentNames) {
+			if (IngredientFactory.isSimple(s.getObject(name))) {
+				return false;
+			}
+			if (this.topLevelIngredient.getName().equals(name)) {
+				return topLevelIngredient.getBaked();
+			}
+			List<IngredientRecipe> contents = this.topLevelIngredient.getConstituentIngredients();
+			for (IngredientRecipe content : contents) {
+				if (content.getName().equals(name)) {
+					return content.getBaked();
+				}
+			}
+		}
+		return false;
+		
+	}
+	
+	private boolean checkPourIntoHeatingContainer(State s, ObjectInstance pouringContainer) {
+		Set<String> contentNames = ContainerFactory.getContentNames(pouringContainer);
+		for (String name : contentNames) {
+			if (IngredientFactory.isMeltedIngredient(s.getObject(name))) {
+				return false;
+			}
+			if (this.topLevelIngredient.getName().equals(name)) {
+				return topLevelIngredient.getMelted();
+			}
+			List<IngredientRecipe> contents = this.topLevelIngredient.getContents();
+			for (IngredientRecipe content : contents) {
+				if (content.getName().equals(name)) {
+					return content.getMelted();
+				}
+			}
+		}
+		return false;
 	}
 }

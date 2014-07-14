@@ -19,8 +19,8 @@ public class BakingPropositionalFunction extends PropositionalFunction {
 		return false;
 	}
 	
-	public void changeTopLevelIngredient(IngredientRecipe new_ingredient) {
-		this.topLevelIngredient = new_ingredient;
+	public void changeTopLevelIngredient(IngredientRecipe newIngredient) {
+		this.topLevelIngredient = newIngredient;
 	}
 	
 	public IngredientRecipe getTopLevelIngredient() {
