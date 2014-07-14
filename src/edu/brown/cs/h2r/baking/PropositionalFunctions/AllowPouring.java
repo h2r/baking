@@ -126,7 +126,6 @@ public class AllowPouring extends BakingPropositionalFunction {
 						}
 						if (!traitUsed) {
 							currentMatch = necessaryTraits.get(trait).AttributesMatch(content);
-							currentMatch = true;
 							break;
 						}
 					}

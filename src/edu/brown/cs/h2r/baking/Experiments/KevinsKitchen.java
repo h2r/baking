@@ -195,6 +195,7 @@ public class KevinsKitchen implements DomainGenerator {
 			((BakingPropositionalFunction)pf).changeTopLevelIngredient(ingredient);
 			((BakingPropositionalFunction)pf).setSubgoal(subgoal);
 		}
+		subgoal.getGoal().changeTopLevelIngredient(ingredient);
 		final PropositionalFunction isSuccess = subgoal.getGoal();
 		final PropositionalFunction isFailure = domain.getPropFunction(AffordanceCreator.BOTCHED_PF);
 		
