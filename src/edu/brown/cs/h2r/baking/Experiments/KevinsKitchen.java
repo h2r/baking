@@ -94,17 +94,8 @@ public class KevinsKitchen implements DomainGenerator {
 		
 		// Get the tools!
 		ToolKnowledgebase toolKnowledgebase = new ToolKnowledgebase();
-		AbstractMap<String, String[]> toolMap = toolKnowledgebase.getToolMap();
-		for (String name : toolMap.keySet()) {
-			String[] toolInfo = toolMap.get(name);
-			String toolTrait = toolInfo[0];
-			String toolAttribute = toolInfo[1];
-			if (toolInfo.length == 3) {
-				state.addObject(ToolFactory.getNewTransportableToolObjectInstance(domain, name, toolTrait, toolAttribute, "counter"));
-			} else {
-				state.addObject(ToolFactory.getNewSimpleToolObjectInstance(domain, name, toolTrait, toolAttribute, "counter"));
-			}
-		}
+		toolKnowledgebase.addTools(domain, state, "counter");
+		
 		
 		// Out of all the ingredients in our kitchen, plan over only those that might be useful!
 		IngredientKnowledgebase knowledgebase = new IngredientKnowledgebase();
