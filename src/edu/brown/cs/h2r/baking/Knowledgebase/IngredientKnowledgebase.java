@@ -208,39 +208,8 @@ public class IngredientKnowledgebase {
 		// no combination found, return an empty string.
 		return "";
 	}
-	//TODO: Find a better place for this method -- totes. Mix method should actually work I reckon?
-	public void combineIngredients(State state, Domain domain, IngredientRecipe recipe, ObjectInstance container, String toswap) {
-		Set<String> traits = new HashSet<String>();
-		//get the actual traits from the trait thing
-		Set<String> recipeTraits = recipe.getTraits();
-		for (String trait : recipeTraits) {
-			traits.add(trait);
-		}
-		Set<String> ings = ContainerFactory.getContentNames(container);
-		ObjectInstance newIng = IngredientFactory.getNewComplexIngredientObjectInstance(
-				domain.getObjectClass(IngredientFactory.ClassNameComplex), toswap, Recipe.NO_ATTRIBUTES, true, "", traits, 
-				recipe.getToolTraits(), recipe.getToolAttributes(), ings);
-		// Make the hidden Copies
-		Set<ObjectInstance> hiddenCopies = new HashSet<ObjectInstance>();
-		for (String name : ings) {
-			ObjectInstance ob = state.getObject(name);
-			if (!IngredientFactory.isSimple(ob)) {
-				hiddenCopies.add(IngredientFactory.makeHiddenObjectCopy(state, domain, ob));
-			}
-		}
-		ContainerFactory.removeContents(container);
-		for (String name : ings) {
-			state.removeObject(state.getObject(name));
-		}
-		for (ObjectInstance ob : hiddenCopies) {
-			state.addObject(ob);
-		}
-		ContainerFactory.addIngredient(container, toswap);
-		IngredientFactory.changeIngredientContainer(newIng, container.getName());
-		state.addObject(newIng);
-	}
 	
 	public void newCombinationMap(String filename) {
-	this.combinationMap = new CombinationParser(filename).getMap();
+		this.combinationMap = new CombinationParser(filename).getMap();
 	}
 }
