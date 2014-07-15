@@ -74,7 +74,7 @@ public class AgentSpecificHeuristic implements Heuristic {
 		int count = 0;
 		count += IngredientFactory.isBakedIngredient(object) ? 1 : 0;
 		count += IngredientFactory.isMixedIngredient(object) ? 1 : 0;
-		count += IngredientFactory.isMeltedIngredient(object) ? 1 : 0; 
+		count += IngredientFactory.isHeatedIngredient(object) ? 1 : 0; 
 		
 		if (IngredientFactory.isSimple(object))
 		{

@@ -1,8 +1,11 @@
 package edu.brown.cs.h2r.baking.PropositionalFunctions;
 
+import java.util.Map.Entry;
+
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
@@ -13,7 +16,6 @@ public class AllowMixing extends BakingPropositionalFunction {
 		super(name, domain, new String[]{AgentFactory.ClassName, ContainerFactory.ClassName}, ingredient) ;
 	}
 	@Override
-	// Default true for now until I find better logic.
 	public boolean isTrue(State state, String[] params) {
 		ObjectInstance containerInstance = state.getObject(params[1]);
 		int contentAmount = ContainerFactory.getContentNames(containerInstance).size();
@@ -22,6 +24,32 @@ public class AllowMixing extends BakingPropositionalFunction {
 		
 		if (contentAmount != neededAmount) {
 			return false;
+		}
+		
+		for (String name : ContainerFactory.getContentNames(containerInstance)) {
+			ObjectInstance ingObj = state.getObject(name);
+			IngredientRecipe ingredient = null;
+			for (IngredientRecipe i : this.topLevelIngredient.getContents()) {
+				if (i.getName().equals(name)) {
+					ingredient = i;
+					break;
+				}
+			}
+			
+			if (ingredient == null) {
+				for (Entry<String, IngredientRecipe> entry : this.topLevelIngredient.getNecessaryTraits().entrySet()) {
+					if (IngredientFactory.getTraits(ingObj).contains(entry.getKey())) {
+						ingredient = entry.getValue();
+						break;
+					}
+				}
+				if (ingredient == null) {
+					return false;
+				}
+			}
+			if (!ingredient.AttributesMatch(ingObj)) {
+				return false;
+			}
 		}
 		
 		return true;

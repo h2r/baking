@@ -8,6 +8,7 @@ import burlap.oomdp.core.Domain;
 import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
+import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.ContainerGreased;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
@@ -32,9 +33,9 @@ public class Brownies extends Recipe {
 		ingredientList.add(knowledgebase.getIngredient("vanilla"));
 		ingredientList.add(knowledgebase.getIngredient("eggs"));
 		
-		IngredientRecipe wet_ings = new IngredientRecipe("wet_ingredients", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList);
-		wet_ings.addNecessaryTrait("sugar", Recipe.NO_ATTRIBUTES);
-		wet_ings.addNecessaryTrait("fat", Recipe.MELTED);
+		IngredientRecipe wetIngs = new IngredientRecipe("wet_ingredients", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList);
+		wetIngs.addNecessaryTrait("sugar", Recipe.NO_ATTRIBUTES);
+		wetIngs.addNecessaryTrait("fat", Recipe.HEATED);
 		
 		// In a large saucepan, melt 1/2 cup butter.
 		
@@ -46,22 +47,22 @@ public class Brownies extends Recipe {
 		
 		
 		// Make the subgoal
-		IngredientRecipe dry_ings = new IngredientRecipe ("dry_ingredients", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList2);
+		IngredientRecipe dryIngs = new IngredientRecipe ("dry_ingredients", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList2);
 		// Add the necessaryTraits and their respective attributes
-		dry_ings.addNecessaryTrait("flour", Recipe.NO_ATTRIBUTES);
-		dry_ings.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
+		dryIngs.addNecessaryTrait("flour", Recipe.NO_ATTRIBUTES);
+		dryIngs.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
 		
 		List<IngredientRecipe> ingredientList3 = new ArrayList<IngredientRecipe>();
-		ingredientList3.add(dry_ings);
-		ingredientList3.add(wet_ings);
-		IngredientRecipe brownies = new IngredientRecipe("brownies", Recipe.BAKED, Recipe.SWAPPED, ingredientList3);
-		
+		ingredientList3.add(dryIngs);
+		ingredientList3.add(wetIngs);
+		IngredientRecipe brownies = new IngredientRecipe("brownie_batter", Recipe.BAKED, Recipe.SWAPPED, ingredientList3);
 		this.topLevelIngredient = brownies;
+		//this.setUpRecipeToolAttributes();
 	}
 	
 	public void setUpSubgoals(Domain domain) {
 		AbstractMap<String, IngredientRecipe> swappedIngredients = IngredientRecipe.getRecursiveSwappedIngredients(this.topLevelIngredient);
-		BakingPropositionalFunction pf1 = new SpaceOn(AffordanceCreator.SPACEON_PF, domain, this.topLevelIngredient, "oven");
+		BakingPropositionalFunction pf1 = new SpaceOn(AffordanceCreator.SPACEON_PF, domain, this.topLevelIngredient, SpaceFactory.SPACE_OVEN);
 		BakingSubgoal sg1 = new BakingSubgoal(pf1, this.topLevelIngredient);
 		this.subgoals.add(sg1);
 		
@@ -82,7 +83,7 @@ public class Brownies extends Recipe {
 		this.subgoals.add(sg4);
 		
 		BakingPropositionalFunction pf5 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("brownies"));
-		BakingSubgoal sg5 = new BakingSubgoal(pf5, swappedIngredients.get("brownies"));
+		BakingSubgoal sg5 = new BakingSubgoal(pf5, swappedIngredients.get("brownie_batter"));
 		sg5.addPrecondition(sg1);
 		sg5.addPrecondition(sg3);
 		sg5.addPrecondition(sg4);
@@ -94,10 +95,9 @@ public class Brownies extends Recipe {
 		return Arrays.asList("Recipe: Brownies",
 				"Preheat oven to 350 degrees F (175 degrees C).\n",						//0
 				"Grease and flour an 8-inch square pan.\n",								//1
-				"In a large saucepan, melt 1/2 cup butter.\n",							//2
-				"Stir in sugar, eggs, and 1 teaspoon vanilla.\n",							//3
-				"Beat in 1/3 cup cocoa, 1/2 cup flour, salt, and baking powder.\n",		//4
-				"Spread batter into prepared pan.\n",										//5
-				"Bake in preheated oven for 25 to 30 minutes. Do not overcook.");		
+				"In a large saucepan, melt 1/2 cup butter. In a mixing bowl, combine sugar, eggs, melted butter and 1 teaspoon vanilla.\n",							//3
+				"In another bowl, combine 1/3 cup cocoa, 1/2 cup flour, salt, and baking powder.\n",		//4
+				"Pour the wet ingredients onto the dry ingredients and mix to combine.\n",										//5
+				"Pour the batter on the pan and bake in preheated oven for 25 to 30 minutes. Do not overcook.");		
 	}
 }

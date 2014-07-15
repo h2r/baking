@@ -20,23 +20,24 @@ public class DeviledEggs extends Recipe {
 		ingredientList.add(knowledgebase.getIngredient("egg_yolks"));
 		ingredientList.add(knowledgebase.getIngredient("pepper"));
 		
-		IngredientRecipe yolk_mix = new IngredientRecipe("yolk_mix", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList);
-		yolk_mix.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
-		yolk_mix.addNecessaryTrait("mustard", Recipe.NO_ATTRIBUTES);
+		IngredientRecipe yolkMix = new IngredientRecipe("yolk_mix", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList);
+		yolkMix.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
+		yolkMix.addNecessaryTrait("mustard", Recipe.NO_ATTRIBUTES);
 		
 		List<IngredientRecipe> ingredientList2 = new ArrayList<IngredientRecipe>();
 		ingredientList2.add(knowledgebase.getIngredient("chopped_tarragon"));
 		ingredientList2.add(knowledgebase.getIngredient("sweet_gherkins"));
 		ingredientList2.add(knowledgebase.getIngredient("shallots"));
-		ingredientList2.add(yolk_mix);
-		IngredientRecipe finished_mix = new IngredientRecipe("finished_mix", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList2);
+		ingredientList2.add(yolkMix);
+		IngredientRecipe finishedMix = new IngredientRecipe("finished_mix", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList2);
 
 		List<IngredientRecipe> ingredientList3 = new ArrayList<IngredientRecipe>();
 		ingredientList3.add(knowledgebase.getIngredient("egg_whites"));
-		ingredientList3.add(finished_mix);
+		ingredientList3.add(finishedMix);
 		
-		this.topLevelIngredient = new IngredientRecipe("DeviledEggs", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList3);
-
+		IngredientRecipe deviledEggs = new IngredientRecipe("DeviledEggs", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList3);
+		this.topLevelIngredient = deviledEggs;
+		//this.setUpRecipeToolAttributes();
 	}
 	
 	public void setUpSubgoals(Domain domain) {
@@ -52,7 +53,6 @@ public class DeviledEggs extends Recipe {
 		
 		BakingPropositionalFunction pf3 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("DeviledEggs"));
 		BakingSubgoal sg3 = new BakingSubgoal(pf3, swappedIngredients.get("DeviledEggs"));
-		sg3.addPrecondition(sg1);
 		sg3.addPrecondition(sg2);
 		this.subgoals.add(sg3);
 	}

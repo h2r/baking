@@ -9,6 +9,7 @@ import burlap.oomdp.core.Domain;
 import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
+import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.ContainerGreased;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
@@ -20,10 +21,10 @@ public class MoltenLavaCake extends Recipe {
 		super();
 		List<IngredientRecipe> ingredientList = new ArrayList<IngredientRecipe>();
 		IngredientRecipe butter = knowledgebase.getIngredient("butter");
-		butter.setMelted();
+		butter.setHeated();
 		ingredientList.add(butter);
 		IngredientRecipe chocolate = knowledgebase.getIngredient("chocolate_squares");
-		chocolate.setMelted();
+		chocolate.setHeated();
 		ingredientList.add(chocolate);
 		IngredientRecipe melted = new IngredientRecipe("melted_stuff", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList);
 		
@@ -38,19 +39,20 @@ public class MoltenLavaCake extends Recipe {
 		ingredientList3.add(batter);
 		ingredientList3.add(knowledgebase.getIngredient("eggs"));
 		ingredientList3.add(knowledgebase.getIngredient("egg_yolks"));
-		IngredientRecipe unflavored_batter = new IngredientRecipe("unflavored_batter", Recipe.NO_ATTRIBUTES,Recipe.SWAPPED, ingredientList3);
+		IngredientRecipe unflavoredBatter = new IngredientRecipe("unflavored_batter", Recipe.NO_ATTRIBUTES,Recipe.SWAPPED, ingredientList3);
 		
 		List<IngredientRecipe> ingredientList4 = new ArrayList<IngredientRecipe>();
-		ingredientList4.add(unflavored_batter);
+		ingredientList4.add(unflavoredBatter);
 		ingredientList4.add(knowledgebase.getIngredient("vanilla"));
 		ingredientList4.add(knowledgebase.getIngredient("orange_liqueur"));
-		this.topLevelIngredient = new IngredientRecipe("molten_lava_cake", Recipe.BAKED, Recipe.SWAPPED, ingredientList4);
-
+		IngredientRecipe cake = new IngredientRecipe("molten_lava_cake", Recipe.BAKED, Recipe.SWAPPED, ingredientList4);
+		this.topLevelIngredient = cake;
+		//this.setUpRecipeToolAttributes();
 	}
 	
 	public void setUpSubgoals(Domain domain) {
 		AbstractMap<String, IngredientRecipe> swappedIngredients = IngredientRecipe.getRecursiveSwappedIngredients(this.topLevelIngredient);
-		BakingPropositionalFunction pf1 = new SpaceOn(AffordanceCreator.SPACEON_PF, domain, this.topLevelIngredient, "oven");
+		BakingPropositionalFunction pf1 = new SpaceOn(AffordanceCreator.SPACEON_PF, domain, this.topLevelIngredient, SpaceFactory.SPACE_OVEN);
 		BakingSubgoal sg1 = new BakingSubgoal(pf1, this.topLevelIngredient);
 		this.subgoals.add(sg1);
 		

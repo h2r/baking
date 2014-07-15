@@ -1,7 +1,5 @@
 package edu.brown.cs.h2r.baking.actions;
 
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import burlap.oomdp.core.Domain;
@@ -15,57 +13,68 @@ import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 
 public class PourAction extends BakingAction {
 	public static final String className = "pour";
-	private List<ObjectInstance> allIngredients;
 	public PourAction(Domain domain, IngredientRecipe ingredient) {
 		super(PourAction.className, domain, ingredient, new String[] {AgentFactory.ClassName, ContainerFactory.ClassName, ContainerFactory.ClassName});
 		this.domain = domain;
-		//this.allIngredients = ings;
 	}
 	
 	@Override
-	public boolean applicableInState(State state, String[] params) {
-		if (!super.applicableInState(state, params)) {
-			return false;
-		}
-		ObjectInstance agent = state.getObject(params[0]);
-		if (AgentFactory.isRobot(agent)) {
-			return false;
+	public BakingActionResult checkActionIsApplicableInState(State state, String[] params) {
+		BakingActionResult superResult = super.checkActionIsApplicableInState(state, params);
+		
+		if (!superResult.getIsSuccess()) {
+			return superResult;
 		}
 		
+		String agentName = params[0];
+		ObjectInstance agent =  state.getObject(agentName);
+		
+		if (AgentFactory.isRobot(agent)) {
+			return BakingActionResult.failure(agentName + " cannot perform this action");
+		}
+		
+		String pouringContainerName = params[1];
 		ObjectInstance pouringContainer = state.getObject(params[1]);
+		
+		String receivingContainerName = params[2];
 		ObjectInstance receivingContainer = state.getObject(params[2]);
 
-		String pouringContainerSpace = ContainerFactory.getSpaceName(pouringContainer);
-		String receivingContainerSpace = ContainerFactory.getSpaceName(receivingContainer);
+		String pouringContainerSpaceName = ContainerFactory.getSpaceName(pouringContainer);
+		String receivingContainerSpaceName = ContainerFactory.getSpaceName(receivingContainer);
+		ObjectInstance receivingContainerSpace = state.getObject(receivingContainerSpaceName);
 		
 		if (ContainerFactory.isEmptyContainer(pouringContainer)) {
-			return false;
+			return BakingActionResult.failure(pouringContainerName + " is empty");
 		}
 		
 		if (!ContainerFactory.isReceivingContainer(receivingContainer)) {
-			return false;
+			return BakingActionResult.failure(receivingContainerName + " cannot be poured into");
 		}
 		
-		if (pouringContainerSpace == null || receivingContainerSpace == null)
+		if (pouringContainerSpaceName == null || receivingContainerSpaceName == null)
 		{
 			throw new RuntimeException("One of the pouring containers is not in any space");
 		}
 		
-		if (!pouringContainerSpace.equalsIgnoreCase(receivingContainerSpace))
-		{
-			return false;
+		if (SpaceFactory.isBaking(receivingContainerSpace)) {
+			return BakingActionResult.failure(receivingContainerName + " is in the " +  receivingContainerSpaceName+ " which is a baking space!");
 		}
-		ObjectInstance pouringContainerSpaceObject = state.getObject(pouringContainerSpace);
+		ObjectInstance pouringContainerSpaceObject = state.getObject(pouringContainerSpaceName);
 		
 		String agentOfSpace = SpaceFactory.getAgent(pouringContainerSpaceObject).iterator().next();
-		if (!agentOfSpace.equalsIgnoreCase(agent.getName()))
+		if (!agentOfSpace.equalsIgnoreCase(agentName))
 		{		
-			return false;
+			return BakingActionResult.failure(agentName + " cannot work in " + pouringContainerSpaceName);
 		}
 		if (!SpaceFactory.isWorking(pouringContainerSpaceObject)) {
-			return false;
+			return BakingActionResult.failure("Pouring cannot be performed in the " + pouringContainerSpaceObject);
 		}
-		return true;
+		return BakingActionResult.success();
+	}
+	
+	@Override
+	public boolean applicableInState(State state, String[] params) {
+		return this.checkActionIsApplicableInState(state, params).getIsSuccess();
 	}
 
 	@Override
@@ -83,18 +92,42 @@ public class PourAction extends BakingAction {
 	
 	private void pour(State state, ObjectInstance pouringContainer, ObjectInstance receivingContainer)
 	{
-		Set<String> ingredients = new HashSet<String>(ContainerFactory.getContentNames(pouringContainer));
+		ObjectInstance receivingSpace = state.getObject(ContainerFactory.getSpaceName(receivingContainer));
+		if (SpaceFactory.isHeating(receivingSpace)) {
+			PourAction.pourIntoHeating(state, pouringContainer, receivingContainer, receivingSpace);
+		} else {
+			PourAction.pourIntoWorking(state, pouringContainer, receivingContainer);
+		}
+	}
+	
+	// If an ingredient is poured into a heating space that is turned on, then it will get the
+	// appropiate attribute.
+	private static void pourIntoHeating(State state, ObjectInstance pouringContainer, 
+			ObjectInstance receivingContainer, ObjectInstance receivingSpace) {
+		Set<String> ingredients = ContainerFactory.getContentNames(pouringContainer);
+		ContainerFactory.addIngredients(receivingContainer, ingredients);
+		ContainerFactory.removeContents(pouringContainer);
+		boolean on = SpaceFactory.getOnOff(receivingSpace);
+		for (String ingredient : ingredients) {
+			ObjectInstance ingredientInstance = state.getObject(ingredient);
+			if (on) {
+				IngredientFactory.heatIngredient(ingredientInstance);
+			}
+			IngredientFactory.changeIngredientContainer(ingredientInstance, receivingContainer.getName());
+		}
+	}
+	
+	private static void pourIntoWorking(State state, ObjectInstance pouringContainer, 
+			ObjectInstance receivingContainer) {
+		Set<String> ingredients = ContainerFactory.getContentNames(pouringContainer);
 		ContainerFactory.addIngredients(receivingContainer, ingredients);
 		ContainerFactory.removeContents(pouringContainer);
 		for (String ingredient : ingredients) {
-			ObjectInstance ingredientInstance = state.getObject(ingredient); 
+			ObjectInstance ingredientInstance = state.getObject(ingredient);
 			IngredientFactory.changeIngredientContainer(ingredientInstance, receivingContainer.getName());
 		}
 		
-	}
-	
-	public void addAllIngredients(List<ObjectInstance> ings) {
-		this.allIngredients = ings;
+		
 	}
 	
 }

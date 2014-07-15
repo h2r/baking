@@ -14,30 +14,41 @@ public class GreaseAction extends BakingAction {
 				{AgentFactory.ClassName, ContainerFactory.ClassName, IngredientFactory.ClassNameSimple});
 	}
 	
-	public boolean applicableInState(State state, String[] params) {
-		if (!super.applicableInState(state, params)) {
-			return false;
+	@Override
+	public BakingActionResult checkActionIsApplicableInState(State state, String[] params) {
+		BakingActionResult superResult = super.checkActionIsApplicableInState(state, params);
+		
+		if (!superResult.getIsSuccess()) {
+			return superResult;
 		}
+		String containerName = params[1];
 		ObjectInstance container = state.getObject(params[1]);
+		
+		String ingredientName = params[2];
 		ObjectInstance grease = state.getObject(params[2]);
 		
 		if (!ContainerFactory.isEmptyContainer(container)) {
-			return false;
+			return BakingActionResult.failure(containerName + " is not an empty container");
 		}
 		
 		if (!ContainerFactory.isBakingContainer(container)) {
-			return false;
+			return BakingActionResult.failure(containerName + " is not an baking container");
 		}
 		
 		if (ContainerFactory.isGreasedContainer(container)) {
-			return false;
+			return BakingActionResult.failure(containerName + " is not an greasable container");
 		}
 		
 		if (!IngredientFactory.isLubricant(grease)) {
-			return false;
+			return BakingActionResult.failure(ingredientName + " is not a suitable grease");
 		}
 		
-		return true;
+		return BakingActionResult.success();
+	}
+	
+	@Override
+	public boolean applicableInState(State state, String[] params) {
+		return this.checkActionIsApplicableInState(state, params).getIsSuccess();
 	}
 
 	@Override

@@ -26,21 +26,22 @@ public class PeanutButterCookies extends Recipe {
 		List<IngredientRecipe> ingredientList2 = new ArrayList<IngredientRecipe>();
 		ingredientList2.add(creamed);
 		ingredientList2.add(knowledgebase.getIngredient("eggs"));
-		IngredientRecipe wet_ingredients = new IngredientRecipe("wet_ingredients", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList2);
+		IngredientRecipe wetIngredients = new IngredientRecipe("wet_ingredients", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList2);
 		
 		List<IngredientRecipe> ingredientList3 = new ArrayList<IngredientRecipe>();
 		ingredientList3.add(knowledgebase.getIngredient("baking_soda"));
 		ingredientList3.add(knowledgebase.getIngredient("baking_powder"));
-		IngredientRecipe dry_ingredients = new IngredientRecipe("dry_ingredients", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList3);
-		dry_ingredients.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
-		dry_ingredients.addNecessaryTrait("flour", Recipe.NO_ATTRIBUTES);
+		IngredientRecipe dryIngredients = new IngredientRecipe("dry_ingredients", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList3);
+		dryIngredients.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
+		dryIngredients.addNecessaryTrait("flour", Recipe.NO_ATTRIBUTES);
 		
 		List<IngredientRecipe> ingredientList4 = new ArrayList<IngredientRecipe>();
-		ingredientList4.add(wet_ingredients);
-		ingredientList4.add(dry_ingredients);
+		ingredientList4.add(wetIngredients);
+		ingredientList4.add(dryIngredients);
 		
 		IngredientRecipe cookies = new IngredientRecipe("peanutButterCookies", Recipe.BAKED, Recipe.SWAPPED, ingredientList4);
 		this.topLevelIngredient = cookies;
+		//this.setUpRecipeToolAttributes();
 	}
 	
 	public void setUpSubgoals(Domain domain) {

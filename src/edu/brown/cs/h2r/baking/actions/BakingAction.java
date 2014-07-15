@@ -11,7 +11,7 @@ import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.MakeSpanFactory;
 
 
-public class BakingAction extends Action {
+public abstract class BakingAction extends Action {
 	IngredientRecipe ingredient;
 	public BakingAction() {
 	}
@@ -44,22 +44,30 @@ public class BakingAction extends Action {
 		super(name, domain, parameterClasses, parameterOrderGroups);
 		this.ingredient = ingredient;
 	}
-
-	@Override
-	public boolean applicableInState(State state, String[] params) {
-		for (int i = 0; i < params.length; i++) {
+	
+	public BakingActionResult checkActionIsApplicableInState(State state, String[] params) {
+		int len = params.length;
+		for (int i = 0; i < len; i++) {
 			String objectName = params[i];
 			ObjectInstance object = state.getObject(objectName);
 			if (object == null) {
-				return false;
+				return BakingActionResult.failure(objectName + " does not exist");
 			}
 			String className = object.getObjectClass().name;
 			if (!className.equalsIgnoreCase(this.parameterClasses[i])) {
-				return false;
+				return BakingActionResult.failure(objectName + " is not valid for this action");
 			}
 		}
+		if (!this.canAgentGo(state, params)) {
+			return BakingActionResult.failure(params[0] + " is not a valid agent to take this action");
+		}
 		
-		return this.canAgentGo(state, params);
+		return BakingActionResult.success();
+	}
+	
+	@Override
+	public boolean applicableInState(State state, String[] params) {
+		return this.checkActionIsApplicableInState(state, params).getIsSuccess();
 	}
 
 	@Override

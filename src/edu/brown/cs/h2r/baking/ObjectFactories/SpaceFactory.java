@@ -18,7 +18,10 @@ public class SpaceFactory {
 	private static final String attributeWorking = "working";
 	private static final String attributeContains = "contains";
 	private static final String attributeAgent = "agent";
-
+	
+	public static final String SPACE_OVEN = "oven";
+	public static final String SPACE_STOVE = "stove";
+	public static final String SPACE_COUNTER = "counter";
 	public static final int NO_ATTRIBUTES= 0 ;
 	public static final int BAKING = 1;
 	public static final int HEATING = 2;
@@ -101,15 +104,13 @@ public class SpaceFactory {
 	
 	public static ObjectInstance getNewHeatingSpaceObjectInstance(ObjectClass spaceClass, 
 			String name, List<String> containers, String agent) {
-		return SpaceFactory.getNewObjectInstance(spaceClass, name, SpaceFactory.HEATING|SpaceFactory.SWITCHABLE,
-				containers, agent);
+		return SpaceFactory.getNewObjectInstance(spaceClass, name, SpaceFactory.HEATING | SpaceFactory.SWITCHABLE, containers, agent);
 	}
 	
 	public static ObjectInstance getNewHeatingSpaceObjectInstance(Domain domain, 
 			String name, List<String> containers, String agent) {
 		return SpaceFactory.getNewObjectInstance(
-				domain.getObjectClass(SpaceFactory.ClassName), name, SpaceFactory.HEATING|SpaceFactory.SWITCHABLE,
-				containers, agent);
+				domain.getObjectClass(SpaceFactory.ClassName), name, SpaceFactory.HEATING | SpaceFactory.SWITCHABLE, containers, agent);
 	}
 	
 	public static ObjectInstance getNewBakingSpaceObjectInstance(ObjectClass spaceClass, 
@@ -173,10 +174,10 @@ public class SpaceFactory {
 	}
 	
 	public static int generateAttributeNumber(Boolean baking, Boolean heating, Boolean working, Boolean switchable) {
-		int baking_int = baking ? SpaceFactory.BAKING : 0;
-		int heating_int = heating ? SpaceFactory.HEATING : 0;
-		int working_int = working ? SpaceFactory.WORKING : 0;
-		int switchable_int = switchable ? SpaceFactory.SWITCHABLE : 0;
-		return baking_int|heating_int|working_int|switchable_int;
+		int bakingInt = baking ? SpaceFactory.BAKING : 0;
+		int heatingInt = heating ? SpaceFactory.HEATING : 0;
+		int workingInt = working ? SpaceFactory.WORKING : 0;
+		int switchableInt = switchable ? SpaceFactory.SWITCHABLE : 0;
+		return bakingInt|heatingInt|workingInt|switchableInt;
 	}
 }

@@ -32,20 +32,20 @@ public class BakingAsserts {
 		Assert.assertFalse(IngredientFactory.isBakedIngredient(ing));
 	}
 	
-	public static void assertIsMelted(IngredientRecipe ing) {
-		Assert.assertTrue(ing.getMelted());
+	public static void assertIsHeated(IngredientRecipe ing) {
+		Assert.assertTrue(ing.getHeated());
 	}
 	
-	public static void assertIsMelted(ObjectInstance ing) {
-		Assert.assertTrue(IngredientFactory.isMeltedIngredient(ing));
+	public static void assertIsHeated(ObjectInstance ing) {
+		Assert.assertTrue(IngredientFactory.isHeatedIngredient(ing));
 	}
 	
-	public static void assertIsNotMelted(IngredientRecipe ing) {
-		Assert.assertFalse(ing.getMelted());
+	public static void assertIsNotHeated(IngredientRecipe ing) {
+		Assert.assertFalse(ing.getHeated());
 	}
 	
-	public static void assertIsNotMelted(ObjectInstance ing) {
-		Assert.assertFalse(IngredientFactory.isMeltedIngredient(ing));
+	public static void assertIsNotHeated(ObjectInstance ing) {
+		Assert.assertFalse(IngredientFactory.isHeatedIngredient(ing));
 	}
 	
 	public static void assertIsMixed(IngredientRecipe ing) {
