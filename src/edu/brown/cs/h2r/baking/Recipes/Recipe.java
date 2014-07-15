@@ -27,7 +27,7 @@ public abstract class Recipe {
 	
 	public IngredientRecipe topLevelIngredient;
 	protected IngredientKnowledgebase knowledgebase;
-	protected Set<BakingSubgoal> subgoals;
+	protected List<BakingSubgoal> subgoals;
 	protected Set<String> recipeToolAttributes;
 	
 	public static final int NO_ATTRIBUTES = 0;
@@ -40,7 +40,7 @@ public abstract class Recipe {
 	public Recipe()
 	{
 		this.knowledgebase = new IngredientKnowledgebase();
-		this.subgoals = new HashSet<BakingSubgoal>();
+		this.subgoals = new ArrayList<BakingSubgoal>();
 		this.recipeToolAttributes = new HashSet<String>();
 	}
 	
@@ -513,7 +513,7 @@ public abstract class Recipe {
 	
 	public abstract void setUpSubgoals(Domain domain);
 	
-	public Set<BakingSubgoal> getSubgoals() {
+	public List<BakingSubgoal> getSubgoals() {
 		return this.subgoals;
 	}
 	
@@ -523,7 +523,12 @@ public abstract class Recipe {
 		}
 		this.recipeToolAttributes.addAll(this.topLevelIngredient.getToolAttributes());
 	}
+	
 	public Set<String> getRecipeToolAttributes() {
 		return this.recipeToolAttributes;
+	}
+	
+	public void resetSubgoals() {
+		this.subgoals = new ArrayList<BakingSubgoal>();
 	}
 }

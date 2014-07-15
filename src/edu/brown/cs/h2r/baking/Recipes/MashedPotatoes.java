@@ -41,16 +41,14 @@ public class MashedPotatoes extends Recipe {
 		ingredientList.add(knowledgebase.getIngredient("eggs"));
 		IngredientRecipe mashedPotatoes = new IngredientRecipe("Mashed_potatoes", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList);
 		this.topLevelIngredient = mashedPotatoes;
-		//this.setUpRecipeToolAttributes();
 	}
 
 	@Override
 	public List<String> getRecipeProcedures() {
 		return Arrays.asList("Recipe: Mashed Potatoes",
-		"Bring a large pot of salted water to a boil.\n",										//0
-		"Peel potatoes and add to pot.  Cook until tender and drain.\n",							//1
-		"Let cool and mash.\n",																	//2
-		"Combine mashed potato, butter and egg in a large bowl.\n");								//3
+		"Bring a large pot of salted water to a boil, then mix the pot to ensure evenly distributed salt.\n",										//0
+		"Peel potatoes, add them to pot and stir the pot.  Cook until tender and drain.\n",							//1
+		"Remove the potatoes from the heat. Combine potatoes, butter and egg in a large bowl, and mix until desired consistency has been reached.\n");								//2
 	}
 	
 	public void setUpSubgoals(Domain domain) {

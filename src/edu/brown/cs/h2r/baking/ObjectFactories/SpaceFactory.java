@@ -18,7 +18,10 @@ public class SpaceFactory {
 	private static final String attributeWorking = "working";
 	private static final String attributeContains = "contains";
 	private static final String attributeAgent = "agent";
-
+	
+	public static final String SPACE_OVEN = "oven";
+	public static final String SPACE_STOVE = "stove";
+	public static final String SPACE_COUNTER = "counter";
 	public static final int NO_ATTRIBUTES= 0 ;
 	public static final int BAKING = 1;
 	public static final int HEATING = 2;

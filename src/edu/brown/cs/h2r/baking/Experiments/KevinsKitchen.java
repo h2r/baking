@@ -85,15 +85,15 @@ public class KevinsKitchen implements DomainGenerator {
 		
 		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
 		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2", "baking_dish", "melting_pot");
-		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter", containers, "human"));
+		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, SpaceFactory.SPACE_COUNTER, containers, "human"));
 
-		state.addObject(ContainerFactory.getNewBakingContainerObjectInstance(domain, "baking_dish", null, "counter"));
-		state.addObject(ContainerFactory.getNewHeatingContainerObjectInstance(domain, "melting_pot", null, "counter"));
-		state.addObject(SpaceFactory.getNewBakingSpaceObjectInstance(domain, "oven", null, ""));
-		state.addObject(SpaceFactory.getNewHeatingSpaceObjectInstance(domain, "stove", null, ""));
+		state.addObject(ContainerFactory.getNewBakingContainerObjectInstance(domain, "baking_dish", null, SpaceFactory.SPACE_COUNTER));
+		state.addObject(ContainerFactory.getNewHeatingContainerObjectInstance(domain, "melting_pot", null, SpaceFactory.SPACE_COUNTER));
+		state.addObject(SpaceFactory.getNewBakingSpaceObjectInstance(domain, SpaceFactory.SPACE_OVEN, null, ""));
+		state.addObject(SpaceFactory.getNewHeatingSpaceObjectInstance(domain, SpaceFactory.SPACE_STOVE, null, ""));
 		
 		for (String container : containers) { 
-			state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "counter"));
+			state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, SpaceFactory.SPACE_COUNTER));
 		}
 		
 		// Get the tools!
@@ -104,9 +104,9 @@ public class KevinsKitchen implements DomainGenerator {
 			String toolTrait = toolInfo[0];
 			String toolAttribute = toolInfo[1];
 			if (toolInfo.length == 3) {
-				state.addObject(ToolFactory.getNewTransportableToolObjectInstance(domain, name, toolTrait, toolAttribute, "counter"));
+				state.addObject(ToolFactory.getNewTransportableToolObjectInstance(domain, name, toolTrait, toolAttribute, SpaceFactory.SPACE_COUNTER));
 			} else {
-				state.addObject(ToolFactory.getNewSimpleToolObjectInstance(domain, name, toolTrait, toolAttribute, "counter"));
+				state.addObject(ToolFactory.getNewSimpleToolObjectInstance(domain, name, toolTrait, toolAttribute, SpaceFactory.SPACE_COUNTER));
 			}
 		}
 		
@@ -117,7 +117,7 @@ public class KevinsKitchen implements DomainGenerator {
 		System.out.println("\n\nPlanner will now plan the "+recipe.topLevelIngredient.getName()+" recipe!");
 		
 		// High level planner that plans through the recipe's subgoals
-		Set<BakingSubgoal> subgoals = recipe.getSubgoals();
+		List<BakingSubgoal> subgoals = recipe.getSubgoals();
 		Set<BakingSubgoal> activeSubgoals = new HashSet<BakingSubgoal>();
 		
 		// To the failed propFunction, add in all subgoals for a recipe that are based on an ingredient.
@@ -156,7 +156,7 @@ public class KevinsKitchen implements DomainGenerator {
 		State currentState = new State(startingState);
 		
 		ObjectClass containerClass = domain.getObjectClass(ContainerFactory.ClassName);		
-		ObjectInstance counterSpace = currentState.getObject("counter");
+		ObjectInstance counterSpace = currentState.getObject(SpaceFactory.SPACE_COUNTER);
 
 		List<ObjectInstance> ingredientInstances = this.allIngredients;
 		List<ObjectInstance> containerInstances = Recipe.getContainers(containerClass, ingredientInstances, counterSpace.getName());
@@ -180,7 +180,7 @@ public class KevinsKitchen implements DomainGenerator {
 				ObjectInstance ing = currentState.getObject(ingredientInstance.getName());
 				IngredientFactory.changeIngredientContainer(ing, ing.getName()+"_bowl");
 				ContainerFactory.addIngredient(currentState.getObject(ing.getName()+"_bowl"), ing.getName());
-				SpaceFactory.addContainer(currentState.getObject("counter"), currentState.getObject(ing.getName()+"_bowl"));
+				SpaceFactory.addContainer(currentState.getObject(SpaceFactory.SPACE_COUNTER), currentState.getObject(ing.getName()+"_bowl"));
 			}
 		}
 		
@@ -271,10 +271,10 @@ public class KevinsKitchen implements DomainGenerator {
 		
 		KevinsKitchen kitchen = new KevinsKitchen();
 		Domain domain = kitchen.generateDomain();
+		kitchen.PlanRecipeOneAgent(domain, new MashedPotatoes());
 		kitchen.PlanRecipeOneAgent(domain, new Brownies());
 		kitchen.PlanRecipeOneAgent(domain, new DeviledEggs());
 		kitchen.PlanRecipeOneAgent(domain, new CucumberSalad());
-		kitchen.PlanRecipeOneAgent(domain, new MashedPotatoes());
 		kitchen.PlanRecipeOneAgent(domain, new MoltenLavaCake());
 		kitchen.PlanRecipeOneAgent(domain, new PeanutButterCookies());
 		kitchen.PlanRecipeOneAgent(domain, new PecanPie());
