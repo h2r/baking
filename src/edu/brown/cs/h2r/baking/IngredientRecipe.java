@@ -35,9 +35,7 @@ public class IngredientRecipe {
 		this.recipeHeated = false;
 		this.swapped = false;
 		this.useCount = 1;
-		this.contents = null;
 		this.traits = new HashSet<String>();
-		this.necessaryTraits = null;
 		this.toolTraits = new HashSet<String>();
 		this.toolAttributes = new HashSet<String>();
 		this.recipeToolAttributes = new HashSet<String>();
@@ -123,6 +121,9 @@ public class IngredientRecipe {
 	public void addToolAttribute(String attribute) {
 		this.toolAttributes.add(attribute);
 	}
+	public void addToolAttributes(Set<String> attributes) {
+		this.toolAttributes.addAll(attributes);
+	}
 	
 	public boolean hasToolTrait(String trait) {
 		return this.toolTraits.contains(trait);
@@ -164,6 +165,10 @@ public class IngredientRecipe {
 	
 	public List<IngredientRecipe> getContents() {
 		return new ArrayList<IngredientRecipe>(this.contents);
+	}
+	
+	public void addContents(List<IngredientRecipe> contents) {
+		this.contents.addAll(contents);
 	}
 	
 	public List<String> getContentNames() {
@@ -362,5 +367,40 @@ public class IngredientRecipe {
 	}
 	public boolean getRecipeHeated() {
 		return this.recipeHeated;
+	}
+	
+	public void changeName(String newName) {
+		this.name = newName;
+	}
+	
+	public IngredientRecipe makeCopy() {
+		String name = this.getName();
+		int attributes = this.generateAttributeNumber();
+		IngredientRecipe newIng = new IngredientRecipe(name, attributes);
+		if( this.getRecipeBaked()) {
+			newIng.setRecipeBaked();
+		}
+		if (this.getRecipeHeated()) {
+			newIng.setRecipeHeated();
+		}
+		if (!this.isSimple()) {
+			newIng.addContents(this.getContents());
+		}
+		if(this.getSwapped()) {
+			newIng.setSwapped();
+		}
+		newIng.setUseCount(this.getUseCount());
+		newIng.addTraits(this.getTraits());
+		if (!this.getNecessaryTraits().isEmpty()) {
+			newIng.addNecessaryTraits(this.getNecessaryTraits());
+		}
+		newIng.addToolTraits(this.getToolTraits());
+		newIng.addToolAttributes(this.getToolAttributes());
+		return newIng;
+	}
+	public IngredientRecipe getCopyWithNewName(String newName) {
+		IngredientRecipe newIng = this.makeCopy();
+		newIng.changeName(newName);
+		return newIng;
 	}
 }

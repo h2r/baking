@@ -96,8 +96,16 @@ public abstract class Recipe {
 		if (!ingredientRecipe.AttributesMatch(object)) {
 			return false;
 		}
+		boolean subgoalSimple = ingredientRecipe.isSimple();
+		boolean objectSimple = IngredientFactory.isSimple(object);
 		
-		if (ingredientRecipe.isSimple())
+		// ensures that both the ingredient and the object are either simple of complex. Obviously,
+		// if ones simple and the other one isn't, we haven't succeeded!
+		if (subgoalSimple != objectSimple) {
+			return false;
+		}
+		
+		if (subgoalSimple)
 		{
 			return ingredientRecipe.getName().equals(object.getName());
 		}
@@ -290,15 +298,19 @@ public abstract class Recipe {
 			return false;
 		}
 		
+		if (IngredientFactory.isSwapped(object)) {
+			return ingredientRecipe.getName().equals(object.getName());
+		}
+		
 		if (ingredientRecipe.isSimple())
 		{
-			if ((object.getObjectClass().name.equals(IngredientFactory.ClassNameSimple)) || 
-					(object.getObjectClass().name.equals(IngredientFactory.ClassNameSimpleHidden)))
+			String ocName = object.getObjectClass().name;
+			if (!(ocName.equals(IngredientFactory.ClassNameSimple) || ocName.equals(IngredientFactory.ClassNameSimpleHidden)))
 			{
 				// Object is not a simple ingredient, but the ingredient we are checking against is. FAIL!
 				return true;
 			}
-			if (ingredientRecipe.getName().equals(object.getName()))
+			if (!ingredientRecipe.getName().equals(object.getName()))
 			{
 				// They aren't even the same name. FAIL!
 				return true;
@@ -340,19 +352,10 @@ public abstract class Recipe {
 		}
 		
 		// Make copies so we can edit them as we go!
-		List<IngredientRecipe> recipeContents = new ArrayList<IngredientRecipe>();
-		for (IngredientRecipe rc : ingredientRecipe.getContents()) {
-			recipeContents.add(rc);
-		}
-		Set<String> recipeTraits = new HashSet<String>();
-		for (String trait : ingredientRecipe.getNecessaryTraits().keySet()) {
-			recipeTraits.add(trait);
-		}
+		List<IngredientRecipe> recipeContents = new ArrayList<IngredientRecipe>(ingredientRecipe.getContents());
+		Set<String> recipeTraits = new HashSet<String>(ingredientRecipe.getNecessaryTraits().keySet());
 		AbstractMap<String, IngredientRecipe> compulsoryTraitMap = ingredientRecipe.getNecessaryTraits();
-		Set<String> contents = new HashSet<String>();
-		for (String content :IngredientFactory.getRecursiveContentsAndSwapped(state, object)) {
-			contents.add(content);
-		}
+		Set<String> contents = new HashSet<String>(IngredientFactory.getRecursiveContentsAndSwapped(state, object));
 		
 		// If we've found a match in our ingredients
 		Boolean foundAGoodIngredient = false;
@@ -405,7 +408,8 @@ public abstract class Recipe {
 				String traitMatch = null;
 				for (String trait : IngredientFactory.getTraits(ing)) {
 					if (recipeTraits.contains(trait)) {
-						if (!isFailure(state, compulsoryTraitMap.get(trait), ing)) {
+						IngredientRecipe ingredient = compulsoryTraitMap.get(trait);
+						if (!isFailure(state, ingredient.getCopyWithNewName(ing.getName()), ing)) {
 							traitMatch = trait;
 						}
 						break;
@@ -475,8 +479,16 @@ public abstract class Recipe {
 				}
 			}
 		}
+		int simpleRecipeContents = 0;
+		for (IngredientRecipe ing : recipeContents) {
+			if (ing.isSimple()) {
+				simpleRecipeContents++;
+			}
+		}
+		
+		
 		// Check if there are any ingredients or traits we haven't fulfilled yet.
-		if (recipeContents.size() != 0 || recipeTraits.size() != 0) {
+		if (simpleRecipeContents != 0 || recipeTraits.size() != 0) {
 			return true;
 		}
 		

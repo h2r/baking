@@ -156,9 +156,9 @@ public class MixAction extends BakingAction {
 		Set<ObjectInstance> hidden_copies = new HashSet<ObjectInstance>();
 		for (String name : ings) {
 			ObjectInstance ob = state.getObject(name);
-			if (!IngredientFactory.isSimple(ob)) {
+			//if (!IngredientFactory.isSimple(ob)) {
 				hidden_copies.add(IngredientFactory.makeHiddenObjectCopy(state, domain, ob));
-			}
+			//}
 		}
 		ContainerFactory.removeContents(container);
 		for (String name : ings) {
@@ -169,6 +169,13 @@ public class MixAction extends BakingAction {
 		}
 		ContainerFactory.addIngredient(container, toswap);
 		IngredientFactory.changeIngredientContainer(new_ing, container.getName());
+		
+		ObjectInstance receivingSpace = state.getObject(ContainerFactory.getSpaceName(container));
+		if (SpaceFactory.isBaking(receivingSpace) && SpaceFactory.getOnOff(receivingSpace)) {
+			IngredientFactory.bakeIngredient(new_ing);
+		} else if (SpaceFactory.isHeating(receivingSpace) && SpaceFactory.getOnOff(receivingSpace)) {
+			IngredientFactory.heatIngredient(new_ing);
+		}
 		state.addObject(new_ing);
 	}
 	

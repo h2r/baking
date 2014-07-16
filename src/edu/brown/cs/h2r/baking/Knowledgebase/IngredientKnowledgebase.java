@@ -26,7 +26,7 @@ public class IngredientKnowledgebase {
 	public static final String LUBRICANT = "lubricant";
 	
 	private static final String TRAITFILE = "IngredientTraits.txt";
-	private static final String COMBINATIONFILE = "FakeCombinations.txt";
+	private static final String COMBINATIONFILE = "IngredientCombinations.txt";
 	private static final String COMBINATIONTRAITFILE = "CombinationTraits.txt";
 	private static final String TOOLTRAITFILE = "IngredientToolTraits.txt";
 	
@@ -166,6 +166,7 @@ public class IngredientKnowledgebase {
 		for (String content : contents) {
 			contains.add(state.getObject(content));
 		}
+		int contentSize = contents.size();
 		Set<String> keys = this.combinationMap.keySet();
 		for (Entry<String, ArrayList<Set<String>>> entry : this.combinationMap.entrySet()) {
 			String key = entry.getKey();
@@ -175,6 +176,9 @@ public class IngredientKnowledgebase {
 				// a "collection" (that is, a collection of dry ingredients, or a collection of wet
 				// ingredients).
 				if (necessaryTraits.size() == 1) {
+					if (contentSize != 1) {
+						continue;
+					}
 					String[] traitArray = new String[1];
 					String trait = necessaryTraits.toArray(traitArray)[0];
 					Boolean match = true;
@@ -188,6 +192,9 @@ public class IngredientKnowledgebase {
 					}
 					
 				} else {
+					if (contentSize != 2) {
+						continue;
+					}
 					String[] traitArray = new String[necessaryTraits.size()];
 					necessaryTraits.toArray(traitArray);
 					ObjectInstance[] contentArray = new ObjectInstance[contains.size()];
