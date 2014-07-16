@@ -249,20 +249,20 @@ public class ContainerFactory {
 		return baking_int|mixing_int|heating_int|receiving_int;
 	}
 	
-	public static boolean hasABakedContent(State s, ObjectInstance container) {
+	public static boolean hasABakedContent(State state, ObjectInstance container) {
 		Set<String> receivingContentNames = ContainerFactory.getContentNames(container);
 		for (String name : receivingContentNames) {
-			if (IngredientFactory.isBakedIngredient(s.getObject(name))) {
+			if (IngredientFactory.isBakedIngredient(state.getObject(name))) {
 				return true;
 			}
 		}
 		return false;
 	}
 	
-	public static boolean hasAHeatedContent(State s, ObjectInstance container) {
+	public static boolean hasAHeatedContent(State state, ObjectInstance container) {
 		Set<String> receivingContentNames = ContainerFactory.getContentNames(container);
 		for (String name : receivingContentNames) {
-			if (IngredientFactory.isHeatedIngredient(s.getObject(name))) {
+			if (IngredientFactory.isHeatedIngredient(state.getObject(name))) {
 				return true;
 			}
 		}

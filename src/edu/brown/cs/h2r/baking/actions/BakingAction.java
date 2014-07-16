@@ -46,8 +46,7 @@ public abstract class BakingAction extends Action {
 	}
 	
 	public BakingActionResult checkActionIsApplicableInState(State state, String[] params) {
-		int len = params.length;
-		for (int i = 0; i < len; i++) {
+		for (int i = 0, len = params.length; i < len; i++) {
 			String objectName = params[i];
 			ObjectInstance object = state.getObject(objectName);
 			if (object == null) {
@@ -71,9 +70,9 @@ public abstract class BakingAction extends Action {
 	}
 
 	@Override
-	protected State performActionHelper(State s, String[] params) {
-		this.addAgentToOccupiedList(s, params[0]);
-		return s;	
+	protected State performActionHelper(State state, String[] params) {
+		this.addAgentToOccupiedList(state, params[0]);
+		return state;	
 	}
 	
 	protected boolean canAgentGo(State state, String[] params) {

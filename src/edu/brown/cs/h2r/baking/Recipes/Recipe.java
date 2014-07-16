@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 
+import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
 import edu.brown.cs.h2r.baking.Knowledgebase.IngredientKnowledgebase;
 import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
@@ -27,7 +28,7 @@ public abstract class Recipe {
 	
 	public IngredientRecipe topLevelIngredient;
 	protected IngredientKnowledgebase knowledgebase;
-	protected List<BakingSubgoal> subgoals;
+	protected List<BakingSubgoal> subgoals, ingredientSubgoals;
 	protected Set<String> recipeToolAttributes;
 	
 	public static final int NO_ATTRIBUTES = 0;
@@ -41,6 +42,7 @@ public abstract class Recipe {
 	{
 		this.knowledgebase = new IngredientKnowledgebase();
 		this.subgoals = new ArrayList<BakingSubgoal>();
+		this.ingredientSubgoals = new ArrayList<BakingSubgoal>();
 		this.recipeToolAttributes = new HashSet<String>();
 	}
 	
@@ -517,6 +519,18 @@ public abstract class Recipe {
 		return this.subgoals;
 	}
 	
+	public void addIngredientSubgoals() {
+		for (BakingSubgoal sg : subgoals) {
+			if (sg.getGoal().getClassName().equals(AffordanceCreator.FINISH_PF)) {
+				this.ingredientSubgoals.add(sg);
+			}
+		}
+	}
+	
+	public List<BakingSubgoal> getIngredientSubgoals() {
+		return this.ingredientSubgoals;
+	}
+	
 	public void setUpRecipeToolAttributes() {
 		for (IngredientRecipe ing : this.topLevelIngredient.getConstituentIngredients()) {
 			this.recipeToolAttributes.addAll(ing.getToolAttributes());
@@ -530,5 +544,50 @@ public abstract class Recipe {
 	
 	public void resetSubgoals() {
 		this.subgoals = new ArrayList<BakingSubgoal>();
+	}
+	
+	private static boolean subgoalRequiresBaking(IngredientRecipe ingredient) {
+		if (ingredient.getBaked()) {
+			return true;
+		}
+		if (!ingredient.isSimple()) {
+			Set<IngredientRecipe> contents = new HashSet<IngredientRecipe>(ingredient.getContents());
+			contents.addAll(ingredient.getNecessaryTraits().values());
+			for (IngredientRecipe ing : contents) {
+				if (ing.getBaked()) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	private static boolean subgoalRequiresHeating(IngredientRecipe ingredient) {
+		if (ingredient.getHeated()) {
+			return true;
+		}
+		if (!ingredient.isSimple()) {
+			Set<IngredientRecipe> contents = new HashSet<IngredientRecipe>(ingredient.getContents());
+			contents.addAll(ingredient.getNecessaryTraits().values());
+			for (IngredientRecipe ing : contents) {
+				if (ing.getHeated()) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	public void addRequiredRecipeAttributes() {
+		for (BakingSubgoal sg : this.ingredientSubgoals) {
+			IngredientRecipe ing = sg.getIngredient();
+			if (Recipe.subgoalRequiresBaking(ing)) {
+				ing.setRecipeBaked();
+			}
+			
+			if (Recipe.subgoalRequiresHeating(ing)) {
+				ing.setRecipeHeated();
+			}
+		}
 	}
 }

@@ -18,7 +18,7 @@ public class IngredientNecessaryForRecipe extends BakingPropositionalFunction {
 	// Out of all the ingredients in the kitchen, will check if the recipe *might* require it.
 	// Check if it's listed as a necessary ingredient in the recipe, or if it contains
 	// a trait that's listed as  a necessary trait for some component of the recipe.
-	public boolean isTrue(State s, String[] params) {
+	public boolean isTrue(State state, String[] params) {
 		if (!params[0].equalsIgnoreCase("")) {
 			String name = params[0];
 			List<IngredientRecipe> contents = this.topLevelIngredient.getConstituentIngredients();

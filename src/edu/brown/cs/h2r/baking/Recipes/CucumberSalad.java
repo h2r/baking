@@ -35,7 +35,6 @@ public class CucumberSalad extends Recipe {
 		ingredientList3.add(dressing);
 		IngredientRecipe cucumberSalad = new IngredientRecipe("CucumberSalad", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList3);
 		this.topLevelIngredient = cucumberSalad;
-		//this.setUpRecipeToolAttributes();
 	}
 	
 	public void setUpSubgoals(Domain domain) {

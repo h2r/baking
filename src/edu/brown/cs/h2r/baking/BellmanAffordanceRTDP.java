@@ -80,7 +80,6 @@ public class BellmanAffordanceRTDP extends AffordanceRTDP {
 		// If Affordances prune away all actions, back off to full action set 
 		if (affFilteredQValues.isEmpty()) {
 			affFilteredQValues = allQValues;
-			//System.out.println("ohlala!");
 		}
 
 		// Find max Q values

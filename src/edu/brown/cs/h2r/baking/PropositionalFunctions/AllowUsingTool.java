@@ -18,7 +18,6 @@ public class AllowUsingTool extends BakingPropositionalFunction {
 	private Recipe recipe;
 	public AllowUsingTool(String name, Domain domain, IngredientRecipe ingredient) {
 		super(name, domain, new String[] {AgentFactory.ClassName, ToolFactory.ClassName, ContainerFactory.ClassName} ,ingredient);
-		this.recipe = null;
 	}
 	
 	public boolean isTrue(State state, String[] params) {
@@ -26,7 +25,7 @@ public class AllowUsingTool extends BakingPropositionalFunction {
 		return this.recipe.getRecipeToolAttributes().contains(ToolFactory.getToolAttribute(tool));
 	}
 	
-	public void addRecipe(Recipe recipe) {
+	public void setRecipe(Recipe recipe) {
 		this.recipe = recipe;
 	}
 }

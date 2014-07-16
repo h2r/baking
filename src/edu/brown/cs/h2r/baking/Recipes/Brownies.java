@@ -57,7 +57,7 @@ public class Brownies extends Recipe {
 		ingredientList3.add(wetIngs);
 		IngredientRecipe brownies = new IngredientRecipe("brownie_batter", Recipe.BAKED, Recipe.SWAPPED, ingredientList3);
 		this.topLevelIngredient = brownies;
-		//this.setUpRecipeToolAttributes();
+		this.addRequiredRecipeAttributes();
 	}
 	
 	public void setUpSubgoals(Domain domain) {

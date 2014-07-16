@@ -28,7 +28,7 @@ public class InferenceRewardFunction implements RewardFunction {
 	}
 	
 	@Override
-	public double reward(State s, GroundedAction a, State sprime) {
+	public double reward(State state, GroundedAction a, State sprime) {
 		double reward = 0;
 		//double sumBeliefs = 0;
 		double maxBelief = 0;
@@ -37,7 +37,7 @@ public class InferenceRewardFunction implements RewardFunction {
 		{
 			if (this.getBeliefs().get(i) > maxBelief) {
 				maxBelief = this.getBeliefs().get(i);
-				reward = this.rewardFunctions.get(i).reward(s,  a,  sprime);
+				reward = this.rewardFunctions.get(i).reward(state,  a,  sprime);
 			}
 			//sumBeliefs += this.getBeliefs().get(i);
 			//reward += this.rewardFunctions.get(i).reward(s, a, sprime) * this.getBeliefs().get(i);

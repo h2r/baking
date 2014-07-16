@@ -68,8 +68,8 @@ public class AllowPeeling extends BakingPropositionalFunction {
 			// If no specific ingredient has been given to check, then allow the peeling action
 			// Iff there exists some ingredient or trait ingredient that is peeled
 			List<IngredientRecipe> contents = topLevelIngredient.getConstituentIngredients();
-			for (IngredientRecipe content : contents) {
-				if (content.hasToolAttribute(PeelAction.PEELED)) {
+			for (IngredientRecipe ing : contents) {
+				if (ing.hasToolAttribute(PeelAction.PEELED)) {
 					return true;
 				}
 			}

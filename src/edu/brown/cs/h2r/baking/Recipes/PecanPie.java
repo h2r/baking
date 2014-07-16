@@ -62,7 +62,6 @@ public class PecanPie extends Recipe {
 		ingredientList7.add(pieCrust);
 		IngredientRecipe pecanPie = new IngredientRecipe("PecanPie", Recipe.BAKED, Recipe.SWAPPED, ingredientList7);
 		this.topLevelIngredient = pecanPie;
-		//this.setUpRecipeToolAttributes();
 	}
 	
 	public void setUpSubgoals(Domain domain) {

@@ -152,8 +152,8 @@ public class BakingAsserts {
 		}
 	}
 	
-	public static void assertConstituentIngredientsMatch(ObjectInstance ing, State s, List<String> ings) {
-		Set<String> constituentIngredients = IngredientFactory.getRecursiveContentsForIngredient(s, ing);
+	public static void assertConstituentIngredientsMatch(ObjectInstance ing, State state, List<String> ings) {
+		Set<String> constituentIngredients = IngredientFactory.getRecursiveContentsForIngredient(state, ing);
 		Boolean match = true;
 		for (String i : ings) {
 			if (!constituentIngredients.contains(i)) {
@@ -164,8 +164,8 @@ public class BakingAsserts {
 		Assert.assertTrue(match);
 	}
 	
-	public static void assertSwappedIngredientsMatch(ObjectInstance ing, State s, List<String> ings) {
-		Set<String> swappedIngredients = IngredientFactory.getRecursiveContentsAndSwapped(s, ing);
+	public static void assertSwappedIngredientsMatch(ObjectInstance ing, State state, List<String> ings) {
+		Set<String> swappedIngredients = IngredientFactory.getRecursiveContentsAndSwapped(state, ing);
 		Boolean match = true;
 		Assert.assertEquals(swappedIngredients.size(), ings.size());
 		for (String i : ings) {
@@ -190,22 +190,22 @@ public class BakingAsserts {
 		Assert.assertTrue(match);
 	}
 	
-	public static void assertSuccess(State s, IngredientRecipe ingredient, ObjectInstance success) {
-		Assert.assertTrue(Recipe.isSuccess(s, ingredient, success));
-		Assert.assertFalse(Recipe.isFailure(s, ingredient, success));
+	public static void assertSuccess(State state, IngredientRecipe ingredient, ObjectInstance success) {
+		Assert.assertTrue(Recipe.isSuccess(state, ingredient, success));
+		Assert.assertFalse(Recipe.isFailure(state, ingredient, success));
 	}
 	
-	public static void assertFailure(State s, IngredientRecipe ingredient, ObjectInstance failure) {
-		Assert.assertFalse(Recipe.isSuccess(s, ingredient, failure));
-		Assert.assertTrue(Recipe.isFailure(s, ingredient, failure));
+	public static void assertFailure(State state, IngredientRecipe ingredient, ObjectInstance failure) {
+		Assert.assertFalse(Recipe.isSuccess(state, ingredient, failure));
+		Assert.assertTrue(Recipe.isFailure(state, ingredient, failure));
 	}
 	
-	public static void assertActionApplicable(Action a, State s, String[] params) {
-		Assert.assertTrue(a.applicableInState(s, params));
+	public static void assertActionApplicable(Action a, State state, String[] params) {
+		Assert.assertTrue(a.applicableInState(state, params));
 	}
 	
-	public static void assertActionNotApplicable(Action a, State s, String[] params) {
-		Assert.assertFalse(a.applicableInState(s, params));
+	public static void assertActionNotApplicable(Action a, State state, String[] params) {
+		Assert.assertFalse(a.applicableInState(state, params));
 	}
 	
 	public static void assertSpaceOn(ObjectInstance space) {

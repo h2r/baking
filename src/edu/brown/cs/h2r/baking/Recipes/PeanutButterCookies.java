@@ -41,7 +41,6 @@ public class PeanutButterCookies extends Recipe {
 		
 		IngredientRecipe cookies = new IngredientRecipe("peanutButterCookies", Recipe.BAKED, Recipe.SWAPPED, ingredientList4);
 		this.topLevelIngredient = cookies;
-		//this.setUpRecipeToolAttributes();
 	}
 	
 	public void setUpSubgoals(Domain domain) {

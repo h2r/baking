@@ -95,7 +95,7 @@ public class BasicKitchen implements DomainGenerator {
 		state.addObject(SpaceFactory.getNewBakingSpaceObjectInstance(this.domain, SpaceFactory.SPACE_OVEN, null, ""));
 		state.addObject(SpaceFactory.getNewHeatingSpaceObjectInstance(this.domain, SpaceFactory.SPACE_STOVE, null, ""));
 		
-		List<String> mixingContainers = Arrays.asList("Large_Bowl", "Mixing_Bowl");
+		List<String> mixingContainers = Arrays.asList("Large_Bowl");
 		for (String container : mixingContainers) { 
 			state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, SpaceFactory.SPACE_COUNTER));
 		}
@@ -176,7 +176,7 @@ public class BasicKitchen implements DomainGenerator {
 	public String resetCurrentState() {
 		this.init();
 		this.currentState = this.getInitialState();
-		this.resetCompletedSubgoals();
+		this.resetCompletedSubgoals(this.completedSubgoals.length);
 		return this.parser.stateToString(this.currentState);
 	}
 	
@@ -250,14 +250,12 @@ public class BasicKitchen implements DomainGenerator {
 	private void checkCompletedSubgoals(State state) {
 		int len = this.recipeSubgoals.size();
 		for (int i = 0; i < len; i++) {
-			if (this.recipeSubgoals.get(i).goalCompleted(state)) {
-				this.completedSubgoals[i] = true;
-			}
+			this.completedSubgoals[i] |= this.recipeSubgoals.get(i).goalCompleted(state);
 		}
 	}
 	
-	private void resetCompletedSubgoals() {
-		this.completedSubgoals = new boolean[this.completedSubgoals.length];
+	private void resetCompletedSubgoals(int len) {
+		this.completedSubgoals = new boolean[len];
 	}
 
 }

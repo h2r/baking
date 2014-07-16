@@ -16,6 +16,8 @@ public class IngredientRecipe {
 	private Boolean mixed;
 	private Boolean heated;
 	private Boolean baked;
+	private Boolean recipeBaked;
+	private Boolean recipeHeated;
 	private Set<String> traits;
 	private Set<String> toolTraits;
 	private Set<String> toolAttributes;
@@ -29,6 +31,8 @@ public class IngredientRecipe {
 	public IngredientRecipe(String name, int attributes) {
 		this.name = name;
 		this.setAttributes(attributes);
+		this.recipeBaked = false;
+		this.recipeHeated = false;
 		this.swapped = false;
 		this.useCount = 1;
 		this.contents = null;
@@ -42,6 +46,8 @@ public class IngredientRecipe {
 	public IngredientRecipe(String name, int attributes, Boolean swapped, List<IngredientRecipe> contents) {
 		this.name = name;
 		this.setAttributes(attributes);
+		this.recipeBaked = false;
+		this.recipeHeated = false;
 		this.contents = contents;
 		this.swapped = swapped;
 		this.useCount = 1;
@@ -341,5 +347,20 @@ public class IngredientRecipe {
 			}
 		}
 		return false;
+	}
+	
+	public void setRecipeBaked() {
+		this.recipeBaked = true;
+	}
+	
+	public void setRecipeHeated() {
+		this.recipeHeated = true;
+	}
+	
+	public boolean getRecipeBaked() {
+		return this.recipeBaked;
+	}
+	public boolean getRecipeHeated() {
+		return this.recipeHeated;
 	}
 }

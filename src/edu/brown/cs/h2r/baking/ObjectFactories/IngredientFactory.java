@@ -404,7 +404,7 @@ public class IngredientFactory {
 		return contents;
 	}
 	
-	public static ObjectInstance makeHiddenObjectCopy(State s, Domain domain, ObjectInstance object) {
+	public static ObjectInstance makeHiddenObjectCopy(State state, Domain domain, ObjectInstance object) {
 		ObjectInstance hidden;
 		ObjectClass oc;
 		if (isSimple(object)) {

@@ -22,18 +22,18 @@ public class AllowPouring extends BakingPropositionalFunction {
 		super(name, domain, new String[]{AgentFactory.ClassName, ContainerFactory.ClassName, ContainerFactory.ClassName}, ingredient);
 	}
 	@Override
-	public boolean isTrue(State s, String[] params) {
-		ObjectInstance pouringContainer = s.getObject(params[1]);
-		ObjectInstance receivingContainer = s.getObject(params[2]);
+	public boolean isTrue(State state, String[] params) {
+		ObjectInstance pouringContainer = state.getObject(params[1]);
+		ObjectInstance receivingContainer = state.getObject(params[2]);
 		
 		if (ContainerFactory.isBakingContainer(receivingContainer)) {
-			if (!this.checkPourIntoBakingContainer(s, pouringContainer, receivingContainer)) {
+			if (!this.checkPourIntoBakingContainer(state, pouringContainer, receivingContainer)) {
 				return false;
 			}
 		}
 		
 		if (ContainerFactory.isHeatingContainer(receivingContainer)) {
-			if (!this.checkPourIntoHeatingContainer(s, pouringContainer, receivingContainer)) {
+			if (!this.checkPourIntoHeatingContainer(state, pouringContainer, receivingContainer)) {
 				return false;
 			}
 		}
@@ -51,123 +51,30 @@ public class AllowPouring extends BakingPropositionalFunction {
 		AbstractMap<String, IngredientRecipe> necessaryTraits = new HashMap<String, IngredientRecipe>();
 		necessaryTraits.putAll(this.topLevelIngredient.getNecessaryTraits());
 		
-		// Look to see what trait/necessary ingredients we have already fulfilled in our bowl
+		// Look to see what  ingredients we have already fulfilled in our bowl
 		Set<ObjectInstance> receivingContents = new HashSet<ObjectInstance>();
-		Set<String> contentNames = ContainerFactory.getConstituentSwappedContentNames(receivingContainer, s);
+		Set<String> contentNames = ContainerFactory.getConstituentSwappedContentNames(receivingContainer, state);
 		for (String contentName : contentNames) {
-			ObjectInstance obj = s.getObject(contentName);
+			ObjectInstance obj = state.getObject(contentName);
 			receivingContents.add(obj);
 		}
 		// Check that everything in our bowl is either a necessary ingredient or a trait
 		// ingredient for our current subgoal.
-		for (ObjectInstance content : receivingContents) {
-			String contentName = content.getName();
-			IngredientRecipe match = null;
-			for (IngredientRecipe ing : necessaryIngs) {
-				if (ing.getName().equals(contentName)) {
-					match = ing;
-					break;
-				}
-			}
-			if (match != null) {
-				necessaryIngs.remove(match);
-			} else {
-				String foundTrait = null;
-				Set<String> traits = necessaryTraits.keySet();
-				for (String trait : traits) {
-					if (IngredientFactory.getTraits(content).contains(trait)) {
-						foundTrait = trait;
-						break;
-					}
-				}
-				if (foundTrait != null) {
-					necessaryTraits.remove(foundTrait);
-				} else {
-					// We're trying to pour into a bowl that doesn't have "good" ingredients
-					// By good I mean relevant, in relation to our current subgoal.
-					return false;
-				}
-			}
+		if (!AllowPouring.allIngredientsNecessary(necessaryIngs, receivingContents, necessaryTraits)) {
+			return false;
 		}
-		// Get all of the ingredients in our pouring bowl.
-		Set<ObjectInstance> pourContents = new HashSet<ObjectInstance>();
-		Set<String> names = ContainerFactory.getConstituentSwappedContentNames(pouringContainer, s);
-		for (String name : names) {
-			pourContents.add(s.getObject(name));
-		}
+		
 		// Now, lets see if our pouring container has ingredients that are actually needed;
-		Boolean currentMatch;
-		for (ObjectInstance content : pourContents) {
-			currentMatch = false;
-			if (this.topLevelIngredient.getName().equals(content.getName())) {
-				currentMatch = true;
-			}
-			for (IngredientRecipe ing : necessaryIngs) {
-				if (ing.getName().equals(content.getName())) {
-					//if (ing.AttributesMatch(content)) {
-					if (ContainerFactory.isMixingContainer(receivingContainer)) {
-						if (ing.AttributesMatch(content)) {
-							currentMatch = true;
-							break;
-						}
-					} else {
-						if (ing.toolAttributesMatch(content)) {
-							currentMatch = true;
-							break;
-						}
-					}
-				}
-			}
-			if (!currentMatch) {
-				Set<String> traits = necessaryTraits.keySet();
-				for (String trait : traits) {
-					if (IngredientFactory.getTraits(content).contains(trait)) {
-						// Check that this trait ingredient hasn't been added to some other bowl
-						boolean traitUsed = false;
-						List<ObjectInstance> containers = s.getObjectsOfTrueClass(ContainerFactory.ClassName);
-						for (ObjectInstance container : containers) {
-							if (!ContainerFactory.isMixingContainer(pouringContainer)) {
-								//if (ContainerFactory.isMixingContainer(container) && !ContainerFactory.isEmptyContainer(container)) {
-								if (ContainerFactory.isReceivingContainer(container) && !ContainerFactory.isEmptyContainer(container)
-										&& !container.getName().equals(pouringContainer.getName())) {	
-									Set<String> cNames = ContainerFactory.getConstituentSwappedContentNames(container, s);
-									for (String name : cNames) {
-										// we laready have the ingredient for this subgoal, no need to keep going!
-										if (this.topLevelIngredient.getName().equals(name)) {
-											return false;
-										}
-										ObjectInstance obj = s.getObject(name);
-										if (IngredientFactory.getTraits(obj).contains(trait)) {
-											traitUsed = true;
-											break;
-										}
-									}
-									
-								}
-							}
-						}
-						if (!traitUsed) {
-							if (ContainerFactory.isMixingContainer(receivingContainer)) {
-								currentMatch = necessaryTraits.get(trait).AttributesMatch(content);
-							} else {
-								currentMatch = necessaryTraits.get(trait).toolAttributesMatch(content);
-							//currentMatch = true;
-							}
-							break;
-						}
-					}
-				}
-				if (!currentMatch) {
-					return false;
-				}
-			}
+		if (!this.pouringNecessaryIngredients(state, pouringContainer, receivingContainer, necessaryIngs, necessaryTraits)) {
+			return false;
 		}
+		
 		// Ingredient we are pouring and those in the bowl we're pouring into are all pertinent
 		// to our current subgoal and therefore this pour action will get us closer to our goal!
 		return true;
 	}
 	
-	private boolean checkPourIntoBakingContainer(State s, ObjectInstance pouringContainer,
+	private boolean checkPourIntoBakingContainer(State state, ObjectInstance pouringContainer,
 			ObjectInstance receivingContainer) {
 		/**
 		 * If the container is empty then we only want to add in ingredients that we must
@@ -181,9 +88,9 @@ public class AllowPouring extends BakingPropositionalFunction {
 		 */
 		Set<String> pouringContentNames = ContainerFactory.getContentNames(pouringContainer);
 		if (ContainerFactory.isEmptyContainer(receivingContainer) || 
-				!ContainerFactory.hasABakedContent(s, receivingContainer)) {
+				!ContainerFactory.hasABakedContent(state, receivingContainer)) {
 			for (String name : pouringContentNames) {
-				if (!this.checkBakingIngredient(s, name)) {
+				if (!this.checkBakingIngredient(state.getObject(name))) {
 					return false;
 				}
 			}
@@ -191,7 +98,7 @@ public class AllowPouring extends BakingPropositionalFunction {
 		return true;
 	}
 	
-	private boolean checkPourIntoHeatingContainer(State s, ObjectInstance pouringContainer,
+	private boolean checkPourIntoHeatingContainer(State state, ObjectInstance pouringContainer,
 			ObjectInstance receivingContainer) {
 
 		/**
@@ -207,14 +114,14 @@ public class AllowPouring extends BakingPropositionalFunction {
 		Set<String> pouringContentNames = ContainerFactory.getContentNames(pouringContainer);
 		if (ContainerFactory.isEmptyContainer(receivingContainer)) {
 			for (String name : pouringContentNames) {
-				if (!this.checkHeatingIngredient(s, name)) {
+				if (!this.checkHeatingIngredient(state.getObject(name))) {
 					return false;
 				}
 			}
 		} else {
-			if (!ContainerFactory.hasAHeatedContent(s, receivingContainer)) {
+			if (!ContainerFactory.hasAHeatedContent(state, receivingContainer)) {
 				for (String name : pouringContentNames) {
-					if (!this.checkHeatingIngredient(s, name)) {
+					if (!this.checkHeatingIngredient(state.getObject(name))) {
 						return false;
 					}
 				}
@@ -224,34 +131,158 @@ public class AllowPouring extends BakingPropositionalFunction {
 	}
 	
 	// checks to see if an ingredient is baked in the recipe
-	private boolean checkBakingIngredient(State s, String name) {
-		if (IngredientFactory.isSimple(s.getObject(name))) {
+	private boolean checkBakingIngredient(ObjectInstance object) {
+		String name = object.getName();
+		if (IngredientFactory.isSimple(object)) {
 			return false;
 		}
 		if (this.topLevelIngredient.getName().equals(name)) {
 			return topLevelIngredient.getBaked();
 		}
 		List<IngredientRecipe> contents = this.topLevelIngredient.getConstituentIngredients();
-		for (IngredientRecipe content : contents) {
-			if (content.getName().equals(name)) {
-				return content.getBaked();
+		for (IngredientRecipe ingredient : contents) {
+			if (ingredient.getName().equals(name)) {
+				return ingredient.getBaked();
 			}
 		}
 		return false;
 	}
 	
 	// Checks to see if an ingredient is heated for the recipe
-	private boolean checkHeatingIngredient(State s, String name) {
-		if (IngredientFactory.isHeatedIngredient(s.getObject(name))) {
+	private boolean checkHeatingIngredient(ObjectInstance object) {
+		String name = object.getName();
+		if (IngredientFactory.isHeatedIngredient(object)) {
 			return false;
 		}
 		if (this.topLevelIngredient.getName().equals(name)) {
 			return topLevelIngredient.getHeated();
 		}
 		List<IngredientRecipe> contents = this.topLevelIngredient.getContents();
-		for (IngredientRecipe content : contents) {
-			if (content.getName().equals(name)) {
-				return content.getHeated();
+		for (IngredientRecipe ingredient : contents) {
+			if (ingredient.getName().equals(name)) {
+				return ingredient.getHeated();
+			}
+		}
+		return false;
+	}
+	
+	private static boolean allIngredientsNecessary(List<IngredientRecipe> necessaryIngs, Set<ObjectInstance> 
+		receivingContents, AbstractMap<String, IngredientRecipe> necessaryTraits) {
+		for (ObjectInstance ingObject : receivingContents) {
+			String contentName = ingObject.getName();
+			IngredientRecipe match = null;
+			for (IngredientRecipe ing : necessaryIngs) {
+				if (ing.getName().equals(contentName)) {
+					match = ing;
+					break;
+				}
+			}
+			if (match != null) {
+				necessaryIngs.remove(match);
+			} else {
+				String foundTrait = null;
+				Set<String> traits = necessaryTraits.keySet();
+				for (String trait : traits) {
+					if (IngredientFactory.getTraits(ingObject).contains(trait)) {
+						foundTrait = trait;
+						break;
+					}
+				}
+				if (foundTrait != null) {
+					necessaryTraits.remove(foundTrait);
+				} else {
+					// We're trying to pour into a bowl that doesn't have "good" ingredients
+					// By good I mean relevant, in relation to our current subgoal.
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	
+	private boolean pouringNecessaryIngredients(State state, ObjectInstance pouringContainer,
+			ObjectInstance receivingContainer, List<IngredientRecipe> necessaryIngs,
+			AbstractMap<String, IngredientRecipe> necessaryTraits) {
+		// Get all of the ingredients in our pouring bowl.
+		Set<ObjectInstance> pourContents = new HashSet<ObjectInstance>();
+		Set<String> names = ContainerFactory.getConstituentSwappedContentNames(pouringContainer, state);
+		for (String name : names) {
+			pourContents.add(state.getObject(name));
+		}
+		//Do all our ingredients fulfill a necessaryIngredient or traitIngredient?
+		for (ObjectInstance ingObject : pourContents) {
+			if(!this.fulfillsRequiredIngredient(necessaryIngs, receivingContainer, ingObject)) {
+				if (!this.fulfillsTraitIngredient(state, necessaryTraits, pouringContainer,
+						receivingContainer, ingObject)) {
+					return false;
+				}
+			}
+		}		
+		return true;
+	}
+	
+	private boolean fulfillsRequiredIngredient(List<IngredientRecipe> necessaryIngs, 
+			ObjectInstance receivingContainer, ObjectInstance ingObject) {
+		if (this.topLevelIngredient.getName().equals(ingObject.getName())) {
+			return true;
+		}
+		for (IngredientRecipe ing : necessaryIngs) {
+			if (ing.getName().equals(ingObject.getName())) {
+				if (ContainerFactory.isMixingContainer(receivingContainer)) {
+					if (ing.AttributesMatch(ingObject)) {
+						return true;
+					}
+				} else {
+					if (ing.toolAttributesMatch(ingObject)) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+	
+	private boolean fulfillsTraitIngredient(State state, AbstractMap<String, IngredientRecipe> necessaryTraits,
+			ObjectInstance pouringContainer, ObjectInstance receivingContainer, ObjectInstance ingObject) {
+		Set<String> traits = necessaryTraits.keySet();
+		for (String trait : traits) {
+			if (IngredientFactory.getTraits(ingObject).contains(trait)) {
+				// Check that this trait ingredient hasn't been added to some other bowl
+				boolean traitUsed = false;
+				List<ObjectInstance> containers = state.getObjectsOfTrueClass(ContainerFactory.ClassName);
+				for (ObjectInstance container : containers) {
+					if (!ContainerFactory.isMixingContainer(pouringContainer)) {
+						if (!container.getName().equals(pouringContainer.getName())) {
+							if (ContainerFactory.isReceivingContainer(container) && !ContainerFactory.isEmptyContainer(container)) {	
+								Set<String> cNames = ContainerFactory.getConstituentSwappedContentNames(container, state);
+								for (String name : cNames) {
+									// we laready have the ingredient for this subgoal, no need to keep going!
+									if (this.topLevelIngredient.getName().equals(name)) {
+										return false;
+									}
+									ObjectInstance obj = state.getObject(name);
+									if (IngredientFactory.getTraits(obj).contains(trait)) {
+										traitUsed = true;
+										break;
+									}
+								}
+								
+							}
+						}
+					}
+				}
+				if (!traitUsed) {
+					// If we're pouring into a mixing container, then we must be sure that we have
+					// the correct tool attributes (peeled,...) andregular attributes (baked, heated...).
+					// Conversely, if we're pouring into a heating/baking container, then we definitely
+					// want the correct tool attributes, but not necessarily the correct regular attributes
+					// since the ingredient might be about to be baked or heated.
+					if (ContainerFactory.isMixingContainer(receivingContainer)) {
+						return necessaryTraits.get(trait).AttributesMatch(ingObject);
+					} else {
+						return necessaryTraits.get(trait).toolAttributesMatch(ingObject);
+					}
+				}
 			}
 		}
 		return false;

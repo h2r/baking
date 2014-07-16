@@ -34,9 +34,12 @@ public class AllowSwitching extends BakingPropositionalFunction {
 		}
 		
 		if (!SpaceFactory.getOnOff(space)) {
-			if (SpaceFactory.isHeating(space)) {
+			// topLevelIngredient's .getRecipeHeated return whether, at some point in the recipe, an
+			// ingredient has to be heated. If so, then the next checkSwitchHeating determines if the
+			// ingredient(s) that had to be heated has already been heated. The same applies for baking.
+			if (SpaceFactory.isHeating(space) && this.topLevelIngredient.getRecipeHeated()) {
 				return this.checkSwitchHeating(state);
-			} else if (SpaceFactory.isBaking(space)) {
+			} else if (SpaceFactory.isBaking(space) && this.topLevelIngredient.getRecipeBaked()) {
 				return this.checkSwitchBaking(state);
 			}
 		}

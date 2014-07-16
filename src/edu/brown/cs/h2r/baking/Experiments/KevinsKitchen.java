@@ -82,6 +82,9 @@ public class KevinsKitchen implements DomainGenerator {
 		}
 		
 		recipe.setUpSubgoals(domain);
+		// creates ingredient-only subgoals 
+		recipe.addIngredientSubgoals();
+		recipe.addRequiredRecipeAttributes();
 		
 		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
 		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2", "baking_dish", "melting_pot");
@@ -104,7 +107,7 @@ public class KevinsKitchen implements DomainGenerator {
 			String toolTrait = toolInfo[0];
 			String toolAttribute = toolInfo[1];
 			if (toolInfo.length == 3) {
-				state.addObject(ToolFactory.getNewTransportableToolObjectInstance(domain, name, toolTrait, toolAttribute, SpaceFactory.SPACE_COUNTER));
+				state.addObject(ToolFactory.getNewCarryingToolObjectInstance(domain, name, toolTrait, toolAttribute, SpaceFactory.SPACE_COUNTER));
 			} else {
 				state.addObject(ToolFactory.getNewSimpleToolObjectInstance(domain, name, toolTrait, toolAttribute, SpaceFactory.SPACE_COUNTER));
 			}
@@ -126,12 +129,7 @@ public class KevinsKitchen implements DomainGenerator {
 			failed.clearSubgoals();
 		}
 		
-		this.ingSubgoals = new ArrayList<BakingSubgoal>();
-		for (BakingSubgoal sg : subgoals) {
-			if (sg.getGoal().getClassName().equals(AffordanceCreator.FINISH_PF)) {
-				ingSubgoals.add(sg);
-			}
-		}
+		this.ingSubgoals = recipe.getIngredientSubgoals();
 		
 		do {
 			// For all subgoals with all preconditions satisfied
@@ -213,7 +211,7 @@ public class KevinsKitchen implements DomainGenerator {
 		RewardFunction rf = new RewardFunction() {
 			@Override
 			// Uniform cost function for an optimistic algorithm that guarantees convergence.
-			public double reward(State s, GroundedAction a, State sprime) {
+			public double reward(State state, GroundedAction a, State sprime) {
 				return -1;
 			}
 		};
@@ -255,7 +253,7 @@ public class KevinsKitchen implements DomainGenerator {
 		List<ObjectInstance> containerObjects =
 				new ArrayList<ObjectInstance>(endState.getObjectsOfTrueClass(ContainerFactory.ClassName));
 		
-		ExperimentHelper.checkIngredientCompleted(ingredient, endState, finalObjects, containerObjects);
+		ExperimentHelper.makeSwappedIngredientObject(ingredient, endState, finalObjects, containerObjects);
 		
 		System.out.println(episodeAnalysis.getActionSequenceString(" \n"));
 		ExperimentHelper.printResults(episodeAnalysis.actionSequence, episodeAnalysis.rewardSequence);

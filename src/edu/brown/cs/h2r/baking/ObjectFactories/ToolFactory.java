@@ -17,7 +17,7 @@ public class ToolFactory {
 	private static final String attributeToolAttribute = "toolAttribute";
 	private static final String attributeSpace = "space";
 	private static final String attributeContains = "contains";
-	private static final String attributeTransportable = "transportable";
+	private static final String attributeCanCarry = "canCarry";
 	
 	public static ObjectClass createObjectClass(Domain domain) {
 		ObjectClass objectClass = new ObjectClass(domain, ToolFactory.ClassName);
@@ -39,7 +39,7 @@ public class ToolFactory {
 						Attribute.AttributeType.MULTITARGETRELATIONAL));
 		
 		Attribute transportableAttribute = 
-				new Attribute(domain, ToolFactory.attributeTransportable, Attribute.AttributeType.BOOLEAN);
+				new Attribute(domain, ToolFactory.attributeCanCarry, Attribute.AttributeType.BOOLEAN);
 		objectClass.addAttribute(transportableAttribute);
 		
 		return objectClass;
@@ -57,7 +57,7 @@ public class ToolFactory {
 		newInstance.addRelationalTarget(ToolFactory.attributeToolTrait, trait);
 		newInstance.addRelationalTarget(ToolFactory.attributeToolAttribute, attribute);
 		//newInstance.addRelationalTarget(ToolFactory.attributeContains, null);
-		newInstance.setValue(ToolFactory.attributeTransportable, false);
+		newInstance.setValue(ToolFactory.attributeCanCarry, false);
 		
 		if (containerSpace != null || containerSpace != "")
 		{
@@ -76,17 +76,17 @@ public class ToolFactory {
 		return getNewObjectInstance(toolClass, name, trait, attribute, containerSpace);
 	}
 	
-	public static ObjectInstance getNewTransportableToolObjectInstance(Domain domain, String name, 
+	public static ObjectInstance getNewCarryingToolObjectInstance(Domain domain, String name, 
 			String trait, String attribute, String containerSpace) {
 		ObjectInstance tool = getNewObjectInstance(domain, name, trait, attribute, containerSpace);
-		tool.setValue(ToolFactory.attributeTransportable, true);
+		tool.setValue(ToolFactory.attributeCanCarry, true);
 		return tool;
 	}
 	
-	private static ObjectInstance getNewTransportableToolObjectInstance(ObjectClass toolClass, String name, 
+	private static ObjectInstance getNewCarryingToolObjectInstance(ObjectClass toolClass, String name, 
 			String trait, String attribute, String containerSpace) {
 		ObjectInstance tool = getNewObjectInstance(toolClass, name, trait, attribute, containerSpace);
-		tool.setValue(ToolFactory.attributeTransportable, true);
+		tool.setValue(ToolFactory.attributeCanCarry, true);
 		return tool;
 		
 	}
@@ -155,26 +155,26 @@ public class ToolFactory {
 		tool.addRelationalTarget(ToolFactory.attributeContains, ingredient.getName());
 	}
 	
-	public static boolean toolIsTransportable(ObjectInstance tool) {
-		return tool.getValueForAttribute(ToolFactory.attributeTransportable).getBooleanValue();
+	public static boolean toolCanCarry(ObjectInstance tool) {
+		return tool.getValueForAttribute(ToolFactory.attributeCanCarry).getBooleanValue();
 	}
 	
 	public static boolean toolContainsIngredient(ObjectInstance tool, ObjectInstance ingredient) {
-		if (!ToolFactory.toolIsTransportable(tool)) {
+		if (!ToolFactory.toolCanCarry(tool)) {
 			return false;
 		}
 		return ToolFactory.getContents(tool).contains(ingredient.getName());
 	}
 	
 	public static boolean toolContainsIngredient(ObjectInstance tool, IngredientRecipe ingredient) {
-		if (!ToolFactory.toolIsTransportable(tool)) {
+		if (!ToolFactory.toolCanCarry(tool)) {
 			return false;
 		}
 		return ToolFactory.getContents(tool).contains(ingredient.getName());
 	}
 	
 	public static boolean isEmpty(ObjectInstance tool) {
-		if (!ToolFactory.toolIsTransportable(tool)) {
+		if (!ToolFactory.toolCanCarry(tool)) {
 			return true;
 		}
 		return ToolFactory.getContents(tool).isEmpty();

@@ -84,9 +84,9 @@ public class IngredientKnowledgebase {
 		return ingredientObjects;
 	}
 	
-	public List<ObjectInstance> getPotentialIngredientObjectInstanceList(State s, Domain domain, IngredientRecipe tlIngredient) {
+	public List<ObjectInstance> getPotentialIngredientObjectInstanceList(State state, Domain domain, IngredientRecipe tlIngredient) {
 		List<ObjectInstance> ingredientObjects = new ArrayList<ObjectInstance>();
-		List<IngredientRecipe> ingredients = this.getPotentialIngredientList(s, domain, tlIngredient);
+		List<IngredientRecipe> ingredients = this.getPotentialIngredientList(state, domain, tlIngredient);
 		for (IngredientRecipe ing : ingredients) {
 			ObjectClass oc = ing.isSimple() ? domain.getObjectClass(IngredientFactory.ClassNameSimple) : domain.getObjectClass(IngredientFactory.ClassNameComplex);
 			ObjectInstance obj = IngredientFactory.getNewIngredientInstance(ing, ing.getName(), oc);
@@ -98,7 +98,7 @@ public class IngredientKnowledgebase {
 	}
 	
 	
-	public List<IngredientRecipe> getPotentialIngredientList(State s, Domain domain, IngredientRecipe tlIngredient) {
+	public List<IngredientRecipe> getPotentialIngredientList(State state, Domain domain, IngredientRecipe tlIngredient) {
 		List<IngredientRecipe> ingredients = new ArrayList<IngredientRecipe>();
 		Collection<IngredientRecipe> allIngredients = this.allIngredients.values();
 		Set<String> necessaryTraits = tlIngredient.getNecessaryTraits().keySet();
@@ -124,7 +124,7 @@ public class IngredientKnowledgebase {
 					ingredients.add(ingredient);
 				}
 			} else {
-				List<IngredientRecipe> toAdd = getPotentialIngredientList(s, domain, ingredient);
+				List<IngredientRecipe> toAdd = getPotentialIngredientList(state, domain, ingredient);
 				for (IngredientRecipe i : toAdd) {
 					if (ingredients.contains(i)) {
 						IngredientRecipe ing = ingredients.get(ingredients.indexOf(i));

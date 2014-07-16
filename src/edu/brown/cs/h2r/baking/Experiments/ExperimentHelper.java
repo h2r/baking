@@ -135,7 +135,7 @@ public class ExperimentHelper {
 		return nextState;
 	}
 	
-	public static String checkIngredientCompleted(IngredientRecipe ingredient,
+	public static String makeSwappedIngredientObject(IngredientRecipe ingredient,
 			State endState, List<ObjectInstance> finalObjects,
 			List<ObjectInstance> containerObjects) {
 		ObjectInstance namedIngredient;

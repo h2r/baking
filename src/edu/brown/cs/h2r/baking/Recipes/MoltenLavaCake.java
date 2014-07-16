@@ -47,7 +47,6 @@ public class MoltenLavaCake extends Recipe {
 		ingredientList4.add(knowledgebase.getIngredient("orange_liqueur"));
 		IngredientRecipe cake = new IngredientRecipe("molten_lava_cake", Recipe.BAKED, Recipe.SWAPPED, ingredientList4);
 		this.topLevelIngredient = cake;
-		//this.setUpRecipeToolAttributes();
 	}
 	
 	public void setUpSubgoals(Domain domain) {

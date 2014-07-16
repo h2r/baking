@@ -9,6 +9,7 @@ import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ToolFactory;
 
 public class UseAction extends BakingAction {
@@ -17,32 +18,41 @@ public class UseAction extends BakingAction {
 		super(UseAction.className, domain, ingredient, new String[] {AgentFactory.ClassName, ToolFactory.ClassName, ContainerFactory.ClassName});
 	}
 	
+	
 	@Override
-	public boolean applicableInState(State state, String[] params) {
-		if (!super.applicableInState(state, params)) {
-			return false;
+	public BakingActionResult checkActionIsApplicableInState(State state, String[] params) {
+		BakingActionResult superResult = super.checkActionIsApplicableInState(state, params);
+		
+		if (!superResult.getIsSuccess()) {
+			return superResult;
 		}
 		
 		ObjectInstance tool = state.getObject(params[1]);
 		ObjectInstance container = state.getObject(params[2]);
-		
-		if (!ToolFactory.getSpaceName(tool).equals(ContainerFactory.getSpaceName(container))) {
-			return false;
+		String containerSpace = ContainerFactory.getSpaceName(container);
+		String toolSpace = ToolFactory.getSpaceName(tool);
+		if (!toolSpace.equals(containerSpace)) {
+			return BakingActionResult.failure(tool.getName() + " not in same space as " + container.getName());
 		}
 		
 		for (String name : ContainerFactory.getContentNames(container)) {
 			ObjectInstance ingredient = state.getObject(name);
 			// This tool can't be used on this ingredient
 			if (!ToolFactory.toolCanBeUsed(tool, ingredient)) {
-				return false;
+				return BakingActionResult.failure(tool.getName() + " can't be used on " + name);
 			}
 			// Tool has already been used on this ingredient
 			if (ToolFactory.toolHasBeenUsed(tool, ingredient)) {
-				return false;
+				return BakingActionResult.failure(tool.getName() + " has already been used on " + name);
 			}
 		}
 		
-		return true;
+		return BakingActionResult.success();
+	}
+	
+	@Override
+	public boolean applicableInState(State state, String[] params) {
+		return this.checkActionIsApplicableInState(state, params).getIsSuccess();
 	}
 	
 	@Override
@@ -50,7 +60,7 @@ public class UseAction extends BakingAction {
 		super.performActionHelper(state, params);
 		ObjectInstance tool = state.getObject(params[1]);
 		ObjectInstance container = state.getObject(params[2]);
-		if (ToolFactory.toolIsTransportable(tool)) {
+		if (ToolFactory.toolCanCarry(tool)) {
 			this.useTransportableTool(state, tool, container);
 		} else {
 			this.useSimpleTool(state, tool, container);

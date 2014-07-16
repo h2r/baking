@@ -51,8 +51,8 @@ public class MoveAction extends BakingAction {
 	}
 	
 	@Override
-	public boolean applicableInState(State s, String[] params) {
-		return this.checkActionIsApplicableInState(s, params).getIsSuccess();
+	public boolean applicableInState(State state, String[] params) {
+		return this.checkActionIsApplicableInState(state, params).getIsSuccess();
 	
 	}
 	

@@ -106,11 +106,9 @@ public class MixAction extends BakingAction {
 			objects.toArray(objectArray);
 			//find mutual traits
 			Set<String> allTraits = IngredientFactory.getTraits(objectArray[0]);
-			for (String trait: allTraits) {
-				if (IngredientFactory.getTraits(objectArray[1]).contains(trait)) {
-					traits.add(trait);
-				}
-			}
+			traits = new HashSet(IngredientFactory.getTraits(objectArray[1]));
+			traits.retainAll(allTraits);
+		
 			// hide objects
 			for (String name: contents) {
 				ObjectInstance ing = state.getObject(name);
@@ -141,17 +139,6 @@ public class MixAction extends BakingAction {
 			}
 			
 			this.makeSwappedIngredient(state, newIngredient);
-			
-			// ensure that if a new ingredient was created on a switchable surface that is currently 
-			// on, then it will recieve the appropiate attribute.
-			/*if (swappedName != null) {
-				ObjectInstance receivingSpace = state.getObject(ContainerFactory.getSpaceName(container));
-				if (SpaceFactory.isBaking(receivingSpace) && SpaceFactory.getOnOff(receivingSpace)) {
-					IngredientFactory.bakeIngredient(state.getObject(swappedName));
-				} else if (SpaceFactory.isHeating(receivingSpace) && SpaceFactory.getOnOff(receivingSpace)) {
-					IngredientFactory.heatIngredient(state.getObject(swappedName));
-				}
-			}*/
 		}
 	}
 	
@@ -189,7 +176,7 @@ public class MixAction extends BakingAction {
 		// Call to makeFakeAttributeCopy here is to ensure we can make a swapped ingredient even
 		// if in reality, said swapped ingredient has to eventually be baked/heated/peeled...
 		if (Recipe.isSuccess(state, ingredient.makeFakeAttributeCopy(newIngredient), newIngredient)) {
-			return ExperimentHelper.checkIngredientCompleted(ingredient.makeFakeAttributeCopy(newIngredient),
+			return ExperimentHelper.makeSwappedIngredientObject(ingredient.makeFakeAttributeCopy(newIngredient),
 					state, asList(newIngredient), state.getObjectsOfTrueClass(ContainerFactory.ClassName));
 		} else {
 			//For the online game, ingredient is always the topLevelIngredient, so check all possible
@@ -198,7 +185,7 @@ public class MixAction extends BakingAction {
 			for (IngredientRecipe swapped : swappedIngs) {
 				IngredientRecipe swappedCopy = swapped.makeFakeAttributeCopy(newIngredient);
 				if (Recipe.isSuccess(state, swapped.makeFakeAttributeCopy(newIngredient), newIngredient)) {
-					return ExperimentHelper.checkIngredientCompleted(swappedCopy, state, 
+					return ExperimentHelper.makeSwappedIngredientObject(swappedCopy, state, 
 							asList(newIngredient), state.getObjectsOfTrueClass(ContainerFactory.ClassName));
 					
 				}

@@ -37,7 +37,6 @@ public class DeviledEggs extends Recipe {
 		
 		IngredientRecipe deviledEggs = new IngredientRecipe("DeviledEggs", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList3);
 		this.topLevelIngredient = deviledEggs;
-		//this.setUpRecipeToolAttributes();
 	}
 	
 	public void setUpSubgoals(Domain domain) {
