@@ -181,7 +181,11 @@ public abstract class Recipe {
 			}
 			// any unmatched swapped recipe ingredients, add their contents to recipe content
 			for (IngredientRecipe swappedIng : swappedRecipeIngredients) {
-				recipeContents.addAll(swappedIng.getContents());
+				if (swappedIng.isSimple()) {
+					recipeContents.add(swappedIng);
+				} else {
+					recipeContents.addAll(swappedIng.getContents());
+				}
 				AbstractMap<String, IngredientRecipe> swappedTraits = swappedIng.getNecessaryTraits();
 				for (Entry<String, IngredientRecipe> entry : swappedTraits.entrySet()) {
 					compulsoryTraits.add(entry.getKey());

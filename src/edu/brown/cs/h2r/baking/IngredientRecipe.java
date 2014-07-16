@@ -96,9 +96,6 @@ public class IngredientRecipe {
 	}
 	
 	public Boolean getSwapped() {
-		if (this.isSimple()) {
-			return false;
-		}
 		return this.swapped;
 	}
 	
@@ -164,6 +161,9 @@ public class IngredientRecipe {
 	}
 	
 	public List<IngredientRecipe> getContents() {
+		if (this.isSimple()) {
+			return new ArrayList<IngredientRecipe>();
+		}
 		return new ArrayList<IngredientRecipe>(this.contents);
 	}
 	
@@ -286,8 +286,12 @@ public class IngredientRecipe {
 	public IngredientRecipe makeFakeAttributeCopy(ObjectInstance obj) {
 		int attributes = generateAttributeNumber(IngredientFactory.isMixedIngredient(obj), 
 				IngredientFactory.isHeatedIngredient(obj), IngredientFactory.isBakedIngredient(obj));
+		List<IngredientRecipe> contents = new ArrayList<IngredientRecipe>();
+		if (!this.isSimple()) {
+			contents.addAll(this.getContents());
+		}
 		IngredientRecipe newIng = new IngredientRecipe(this.getName(), attributes, this.getSwapped(),
-				this.getContents());
+				contents);
 		newIng.addNecessaryTraits(this.getNecessaryTraits());
 		return newIng;
 	}
@@ -314,11 +318,11 @@ public class IngredientRecipe {
 	
 	public static AbstractMap<String, IngredientRecipe> getRecursiveSwappedIngredients(IngredientRecipe ingredient) {
 		AbstractMap<String, IngredientRecipe> swapped = new HashMap<String, IngredientRecipe>();
-		if (ingredient.isSimple()) {
-			return swapped;
-		}
 		if (ingredient.getSwapped()) {
 			swapped.put(ingredient.getName(), ingredient);
+		}
+		if (ingredient.isSimple()) {
+			return swapped;
 		}
 		for (IngredientRecipe ing : ingredient.getContents()) {
 			swapped.putAll(getRecursiveSwappedIngredients(ing));

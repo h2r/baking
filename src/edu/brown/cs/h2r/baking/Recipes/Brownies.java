@@ -29,13 +29,21 @@ public class Brownies extends Recipe {
 		 */
 		
 		// Stir in sugar, eggs, and 1 teaspoon vanilla.
+		
+		IngredientRecipe butter = knowledgebase.getIngredient("butter");
+		butter.setSwapped();
+		butter.setHeated();
+		//IngredientRecipe meltedFat = new IngredientRecipe("meltedFat", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, new ArrayList<IngredientRecipe>());
+		
 		List<IngredientRecipe> ingredientList = new ArrayList<IngredientRecipe>();
 		ingredientList.add(knowledgebase.getIngredient("vanilla"));
 		ingredientList.add(knowledgebase.getIngredient("eggs"));
+		//ingredientList.add(meltedFat);
+		ingredientList.add(butter);
 		
 		IngredientRecipe wetIngs = new IngredientRecipe("wet_ingredients", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList);
 		wetIngs.addNecessaryTrait("sugar", Recipe.NO_ATTRIBUTES);
-		wetIngs.addNecessaryTrait("fat", Recipe.HEATED);
+		//wetIngs.addNecessaryTrait("fat", Recipe.HEATED);
 		
 		// In a large saucepan, melt 1/2 cup butter.
 		
@@ -70,10 +78,15 @@ public class Brownies extends Recipe {
 		BakingSubgoal sg2 = new BakingSubgoal(pf2, this.topLevelIngredient);
 		this.subgoals.add(sg2);
 
+		BakingPropositionalFunction meltedFatPF = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("butter"));
+		BakingSubgoal meltedFatSG = new BakingSubgoal(meltedFatPF, swappedIngredients.get("butter"));
+		this.subgoals.add(meltedFatSG);
+		meltedFatSG.addPrecondition(sg1);
+		meltedFatSG.addPrecondition(sg2);
+		
 		BakingPropositionalFunction pf3 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("wet_ingredients"));
 		BakingSubgoal sg3 = new BakingSubgoal(pf3, swappedIngredients.get("wet_ingredients"));
-		sg3.addPrecondition(sg1);
-		sg3.addPrecondition(sg2);
+		sg3.addPrecondition(meltedFatSG);
 		this.subgoals.add(sg3);
 		
 		BakingPropositionalFunction pf4 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("dry_ingredients"));
@@ -95,7 +108,8 @@ public class Brownies extends Recipe {
 		return Arrays.asList("Recipe: Brownies",
 				"Preheat oven to 350 degrees F (175 degrees C).\n",						//0
 				"Grease and flour an 8-inch square pan.\n",								//1
-				"In a large saucepan, melt 1/2 cup butter. In a mixing bowl, combine sugar, eggs, melted butter and 1 teaspoon vanilla.\n",							//3
+				"In a large saucepan, melt 1/2 cup butter. \n",
+				"In a mixing bowl, combine sugar, eggs, melted butter and 1 teaspoon vanilla.\n",							//3
 				"In another bowl, combine 1/3 cup cocoa, 1/2 cup flour, salt, and baking powder.\n",		//4
 				"Pour the wet ingredients onto the dry ingredients and mix to combine.\n",										//5
 				"Pour the batter on the pan and bake in preheated oven for 25 to 30 minutes. Do not overcook.");		
