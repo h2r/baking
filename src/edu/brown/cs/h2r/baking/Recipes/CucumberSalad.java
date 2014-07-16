@@ -33,8 +33,8 @@ public class CucumberSalad extends Recipe {
 		List<IngredientRecipe> ingredientList3= new ArrayList<IngredientRecipe>();
 		ingredientList3.add(salad);
 		ingredientList3.add(dressing);
-		this.topLevelIngredient = new IngredientRecipe("CucumberSalad", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList3);
-		
+		IngredientRecipe cucumberSalad = new IngredientRecipe("CucumberSalad", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList3);
+		this.topLevelIngredient = cucumberSalad;
 	}
 	
 	public void setUpSubgoals(Domain domain) {

@@ -32,20 +32,20 @@ public class BakingAsserts {
 		Assert.assertFalse(IngredientFactory.isBakedIngredient(ing));
 	}
 	
-	public static void assertIsMelted(IngredientRecipe ing) {
-		Assert.assertTrue(ing.getMelted());
+	public static void assertIsHeated(IngredientRecipe ing) {
+		Assert.assertTrue(ing.getHeated());
 	}
 	
-	public static void assertIsMelted(ObjectInstance ing) {
-		Assert.assertTrue(IngredientFactory.isMeltedIngredient(ing));
+	public static void assertIsHeated(ObjectInstance ing) {
+		Assert.assertTrue(IngredientFactory.isHeatedIngredient(ing));
 	}
 	
-	public static void assertIsNotMelted(IngredientRecipe ing) {
-		Assert.assertFalse(ing.getMelted());
+	public static void assertIsNotHeated(IngredientRecipe ing) {
+		Assert.assertFalse(ing.getHeated());
 	}
 	
-	public static void assertIsNotMelted(ObjectInstance ing) {
-		Assert.assertFalse(IngredientFactory.isMeltedIngredient(ing));
+	public static void assertIsNotHeated(ObjectInstance ing) {
+		Assert.assertFalse(IngredientFactory.isHeatedIngredient(ing));
 	}
 	
 	public static void assertIsMixed(IngredientRecipe ing) {
@@ -56,21 +56,6 @@ public class BakingAsserts {
 		Assert.assertTrue(IngredientFactory.isMixedIngredient(ing));
 	}
 	
-	public static void assertIsPeeled(IngredientRecipe ing) {
-		Assert.assertTrue(ing.getPeeled());
-	}
-	
-	public static void assertIsPeeled(ObjectInstance ing) {
-		Assert.assertTrue(IngredientFactory.isPeeledIngredient(ing));
-	}
-	
-	public static void assertIsNotPeeled(IngredientRecipe ing) {
-		Assert.assertFalse(ing.getPeeled());
-	}
-	
-	public static void assertIsNotPeeled(ObjectInstance ing) {
-		Assert.assertFalse(IngredientFactory.isPeeledIngredient(ing));
-	}
 	
 	public static void assertIsSwapped(IngredientRecipe ing) {
 		Assert.assertTrue(ing.getSwapped());
@@ -167,8 +152,8 @@ public class BakingAsserts {
 		}
 	}
 	
-	public static void assertConstituentIngredientsMatch(ObjectInstance ing, State s, List<String> ings) {
-		Set<String> constituentIngredients = IngredientFactory.getRecursiveContentsForIngredient(s, ing);
+	public static void assertConstituentIngredientsMatch(ObjectInstance ing, State state, List<String> ings) {
+		Set<String> constituentIngredients = IngredientFactory.getRecursiveContentsForIngredient(state, ing);
 		Boolean match = true;
 		for (String i : ings) {
 			if (!constituentIngredients.contains(i)) {
@@ -179,8 +164,8 @@ public class BakingAsserts {
 		Assert.assertTrue(match);
 	}
 	
-	public static void assertSwappedIngredientsMatch(ObjectInstance ing, State s, List<String> ings) {
-		Set<String> swappedIngredients = IngredientFactory.getRecursiveContentsAndSwapped(s, ing);
+	public static void assertSwappedIngredientsMatch(ObjectInstance ing, State state, List<String> ings) {
+		Set<String> swappedIngredients = IngredientFactory.getRecursiveContentsAndSwapped(state, ing);
 		Boolean match = true;
 		Assert.assertEquals(swappedIngredients.size(), ings.size());
 		for (String i : ings) {
@@ -205,22 +190,22 @@ public class BakingAsserts {
 		Assert.assertTrue(match);
 	}
 	
-	public static void assertSuccess(State s, IngredientRecipe ingredient, ObjectInstance success) {
-		Assert.assertTrue(Recipe.isSuccess(s, ingredient, success));
-		Assert.assertFalse(Recipe.isFailure(s, ingredient, success));
+	public static void assertSuccess(State state, IngredientRecipe ingredient, ObjectInstance success) {
+		Assert.assertTrue(Recipe.isSuccess(state, ingredient, success));
+		Assert.assertFalse(Recipe.isFailure(state, ingredient, success));
 	}
 	
-	public static void assertFailure(State s, IngredientRecipe ingredient, ObjectInstance failure) {
-		Assert.assertFalse(Recipe.isSuccess(s, ingredient, failure));
-		Assert.assertTrue(Recipe.isFailure(s, ingredient, failure));
+	public static void assertFailure(State state, IngredientRecipe ingredient, ObjectInstance failure) {
+		Assert.assertFalse(Recipe.isSuccess(state, ingredient, failure));
+		Assert.assertTrue(Recipe.isFailure(state, ingredient, failure));
 	}
 	
-	public static void assertActionApplicable(Action a, State s, String[] params) {
-		Assert.assertTrue(a.applicableInState(s, params));
+	public static void assertActionApplicable(Action a, State state, String[] params) {
+		Assert.assertTrue(a.applicableInState(state, params));
 	}
 	
-	public static void assertActionNotApplicable(Action a, State s, String[] params) {
-		Assert.assertFalse(a.applicableInState(s, params));
+	public static void assertActionNotApplicable(Action a, State state, String[] params) {
+		Assert.assertFalse(a.applicableInState(state, params));
 	}
 	
 	public static void assertSpaceOn(ObjectInstance space) {
@@ -229,5 +214,29 @@ public class BakingAsserts {
 	
 	public static void assertSpaceOff(ObjectInstance space) {
 		Assert.assertFalse(SpaceFactory.getOnOff(space));
+	}
+	
+	public static void assertHasToolTrait(ObjectInstance ingredient, String trait) {
+		Assert.assertTrue(IngredientFactory.getToolTraits(ingredient).contains(trait));
+	}
+	
+	public static void assertHasToolTrait(IngredientRecipe ingredient, String trait) {
+		Assert.assertTrue(ingredient.getToolTraits().contains(trait));
+	}
+	
+	public static void assertHasToolAttribute(ObjectInstance ingredient, String attribute) {
+		Assert.assertTrue(IngredientFactory.getToolAttributes(ingredient).contains(attribute));
+	}
+	
+	public static void assertHasToolAttribute(IngredientRecipe ingredient, String attribute) {
+		Assert.assertTrue(ingredient.getToolAttributes().contains(attribute));
+	}
+	
+	public static void assertDoesntHaveToolAttribute(ObjectInstance ingredient, String attribute) {
+		Assert.assertFalse(IngredientFactory.getToolAttributes(ingredient).contains(attribute));
+	}
+	
+	public static void assertDoesntHasToolAttribute(IngredientRecipe ingredient, String attribute) {
+		Assert.assertFalse(ingredient.getToolAttributes().contains(attribute));
 	}
 }

@@ -2,7 +2,7 @@ package edu.brown.cs.h2r.baking.ObjectFactories;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
+import java.util.HashSet;
 
 import burlap.oomdp.core.Attribute;
 import burlap.oomdp.core.Domain;
@@ -187,7 +187,7 @@ public class ContainerFactory {
 
 	public static Set<String> getContentNames(ObjectInstance container) {
 		Set<String> names = container.getAllRelationalTargets(ContainerFactory.attributeContains);
-		return new TreeSet<String>(names);
+		return new HashSet<String>(names);
 	}
 	
 	public static String getSpaceName(ObjectInstance container) {
@@ -203,8 +203,9 @@ public class ContainerFactory {
 	}
 	
 	public static Set<String> getConstituentContentNames(ObjectInstance container, State state) {
-		Set<String> names = new TreeSet<String>();
-		for (String name : container.getAllRelationalTargets(ContainerFactory.attributeContains)) {
+		Set<String> names = new HashSet<String>();
+		Set<String> contents = container.getAllRelationalTargets(ContainerFactory.attributeContains);
+		for (String name : contents) {
 			ObjectInstance ing = state.getObject(name);
 			if (IngredientFactory.isSimple(ing)) {
 				names.add(name);
@@ -216,8 +217,9 @@ public class ContainerFactory {
 	}
 	
 	public static Set<String> getConstituentSwappedContentNames(ObjectInstance container, State state) {
-		Set<String> ingredients = new TreeSet<String>();
-		for (String name : ContainerFactory.getContentNames(container)) {
+		Set<String> ingredients = new HashSet<String>();
+		Set<String> contents = ContainerFactory.getContentNames(container);
+		for (String name : contents) {
 			ObjectInstance ing = state.getObject(name);
 			if (IngredientFactory.isSimple(ing) || IngredientFactory.isSwapped(ing)) {
 				ingredients.add(name);
@@ -246,4 +248,25 @@ public class ContainerFactory {
 		int receiving_int = receiving ? ContainerFactory.RECEIVING: 0;
 		return baking_int|mixing_int|heating_int|receiving_int;
 	}
+	
+	public static boolean hasABakedContent(State state, ObjectInstance container) {
+		Set<String> receivingContentNames = ContainerFactory.getContentNames(container);
+		for (String name : receivingContentNames) {
+			if (IngredientFactory.isBakedIngredient(state.getObject(name))) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public static boolean hasAHeatedContent(State state, ObjectInstance container) {
+		Set<String> receivingContentNames = ContainerFactory.getContentNames(container);
+		for (String name : receivingContentNames) {
+			if (IngredientFactory.isHeatedIngredient(state.getObject(name))) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 }
