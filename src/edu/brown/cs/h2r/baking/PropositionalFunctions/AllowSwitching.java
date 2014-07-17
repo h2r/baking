@@ -2,7 +2,6 @@ package edu.brown.cs.h2r.baking.PropositionalFunctions;
 
 import java.util.List;
 
-import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;

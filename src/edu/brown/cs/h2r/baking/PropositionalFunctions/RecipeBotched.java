@@ -34,7 +34,7 @@ public class RecipeBotched extends BakingPropositionalFunction {
 				// Conversely, if a non-top level ingredient "gets by" without being melted or baked,
 				// then the failure will be detected once that ingredient is added to some other ingredient,
 				// and this large ingredient is checked for failure.
-				if (Recipe.isFailure(state, goalIng.makeFakeAttributeCopy(ingredient), ingredient)) {
+				if (Recipe.isFailure(state, goalIng.makeFakeFailureCopy(ingredient), ingredient)) {
 					failed = true;
 				} else {
 					notFail = true;

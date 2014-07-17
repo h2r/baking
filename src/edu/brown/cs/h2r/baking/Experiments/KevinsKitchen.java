@@ -1,7 +1,6 @@
 package edu.brown.cs.h2r.baking.Experiments;
 
 import java.io.IOException;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -247,6 +246,7 @@ public class KevinsKitchen implements DomainGenerator {
 		EpisodeAnalysis episodeAnalysis = p.evaluateBehavior(currentState, rf, recipeTerminalFunction,100);
 
 		State endState = episodeAnalysis.getState(episodeAnalysis.stateSequence.size() - 1);
+		//System.out.println("Succeeded : " + recipeTerminalFunction.isTerminal(endState));
 
 		List<ObjectInstance> finalObjects = 
 				new ArrayList<ObjectInstance>(endState.getObjectsOfTrueClass(IngredientFactory.ClassNameComplex));

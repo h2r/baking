@@ -8,7 +8,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.TreeSet;
 
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
@@ -25,42 +24,66 @@ public class IngredientKnowledgebase {
 	public static final String NONMELTABLE = "unsaturated";
 	public static final String LUBRICANT = "lubricant";
 	
-	private static final String TRAITFILE = "IngredientTraits.txt";
-	private static final String COMBINATIONFILE = "FakeCombinations.txt";
-	private static final String COMBINATIONTRAITFILE = "CombinationTraits.txt";
-	private static final String TOOLTRAITFILE = "IngredientToolTraits.txt";
-	
-	private AbstractMap<String, Set<String>> traitMap;
-	private AbstractMap<String, Set<String>> combinationTraitMap;
-	private AbstractMap<String, Set<String>> allTraits;
 	private AbstractMap<String, ArrayList<Set<String>>> combinationMap;
 	private AbstractMap<String, IngredientRecipe> allIngredients;
-	private AbstractMap<String, Set<String>> toolTraitMap;
+	private AbstractMap<String, Set<String>> traitMap, toolTraitMap, combinationTraitMap;
+	private BakingParser parser;
 	public IngredientKnowledgebase() {
-		this.traitMap = new TraitParser(IngredientKnowledgebase.TRAITFILE).getMap();
-		this.toolTraitMap = new TraitParser(IngredientKnowledgebase.TOOLTRAITFILE).getMap();
-		this.combinationTraitMap = new TraitParser(IngredientKnowledgebase.COMBINATIONTRAITFILE).getMap();
-		this.allTraits = generateAllTraitMap();
-		this.combinationMap = new CombinationParser(IngredientKnowledgebase.COMBINATIONFILE).getMap();
-		this.allIngredients = generateAllIngredients();
+		this.parser = new BakingParser();
+		this.traitMap = new HashMap<String, Set<String>>();
+		this.toolTraitMap = new HashMap<String, Set<String>>();
+		this.allIngredients = new HashMap<String, IngredientRecipe>();
+		this.generateAllIngredients();
+		this.combinationTraitMap = new HashMap<String, Set<String>>();
+		this.combinationMap = new HashMap<String, ArrayList<Set<String>>>();
+		this.generateCombinations();
 	}
 	
-	private AbstractMap<String, IngredientRecipe> generateAllIngredients() {
-		AbstractMap<String, IngredientRecipe> allIngredients = new HashMap<String, IngredientRecipe>();
-		for (Entry<String, Set<String>> entry : this.traitMap.entrySet()) {
+	private void generateAllIngredients() {
+		for (Entry<String, BakingInformation> entry : this.parser.getIngredientMap().entrySet()) {
 			String name = entry.getKey();
 			IngredientRecipe ing = new IngredientRecipe(name, Recipe.NO_ATTRIBUTES);
-			Set<String> traits = entry.getValue();
-			Set<String> toolTraits = this.toolTraitMap.get(name);
+			BakingInformation info = entry.getValue();
+			List<String> traits = null;
+			List<String> toolTraits = null;
+			try {
+				traits = info.getListOfString(BakingInformation.ingredientTraits);
+				toolTraits = info.getListOfString(BakingInformation.ingredientToolTraits);
+			} catch (BakingCastException e) {
+				e.printStackTrace();
+			}
 			if (traits != null) {
 				ing.addTraits(traits);
 			}
 			if (toolTraits != null) {
 				ing.addToolTraits(toolTraits);
 			}
-			allIngredients.put(name, ing);
+			this.allIngredients.put(name, ing);
+			this.traitMap.put(name, new HashSet<String>(traits));
+			this.toolTraitMap.put(name, new HashSet<String>(toolTraits));
 		}
-		return allIngredients;
+	}
+	
+	private void generateCombinations() {
+		for (Entry<String, BakingInformation> entry : this.parser.getCombinationMap().entrySet()) {
+			String name = entry.getKey();
+			//IngredientRecipe ing = new IngredientRecipe(name, Recipe.NO_ATTRIBUTES);
+			BakingInformation info = entry.getValue();
+			List<String> traits = null;
+			List<List<String>> combinations = null;
+			try {
+				traits = info.getListOfString(BakingInformation.combinationTraits);
+				combinations = info.getListOfList(BakingInformation.combinationPossibleCombinations);
+			} catch (BakingCastException e) {
+				e.printStackTrace();
+			}
+			this.combinationTraitMap.put(name, new HashSet<String>(traits));
+			ArrayList<Set<String>> realCombinations = new ArrayList<Set<String>>();
+			for (List<String> combination : combinations) {
+				realCombinations.add(new HashSet<String>(combination));
+			}
+			this.combinationMap.put(name, realCombinations);
+		}
 	}
 	
 	public List<IngredientRecipe> getIngredientList() {
@@ -137,15 +160,6 @@ public class IngredientKnowledgebase {
 		}
 		return ingredients;
 	}
-	private AbstractMap<String,Set<String>> generateAllTraitMap() {
-		AbstractMap<String, Set<String>> allTraits = new HashMap<String, Set<String>>();
-		allTraits.putAll(this.traitMap);
-		allTraits.putAll(combinationTraitMap);
-		return allTraits;
-	}
-	public AbstractMap<String, Set<String>> getTraitMap() {
-		return this.allTraits;
-	}
 	
 	public Set<String> getTraits(String ingredient) {
 		if (this.traitMap.containsKey(ingredient)) {
@@ -166,7 +180,7 @@ public class IngredientKnowledgebase {
 		for (String content : contents) {
 			contains.add(state.getObject(content));
 		}
-		Set<String> keys = this.combinationMap.keySet();
+		int contentSize = contents.size();
 		for (Entry<String, ArrayList<Set<String>>> entry : this.combinationMap.entrySet()) {
 			String key = entry.getKey();
 			ArrayList<Set<String>> possibleCombinations = entry.getValue();
@@ -175,6 +189,9 @@ public class IngredientKnowledgebase {
 				// a "collection" (that is, a collection of dry ingredients, or a collection of wet
 				// ingredients).
 				if (necessaryTraits.size() == 1) {
+					if (contentSize != 1) {
+						continue;
+					}
 					String[] traitArray = new String[1];
 					String trait = necessaryTraits.toArray(traitArray)[0];
 					Boolean match = true;
@@ -188,6 +205,9 @@ public class IngredientKnowledgebase {
 					}
 					
 				} else {
+					if (contentSize != 2) {
+						continue;
+					}
 					String[] traitArray = new String[necessaryTraits.size()];
 					necessaryTraits.toArray(traitArray);
 					ObjectInstance[] contentArray = new ObjectInstance[contains.size()];

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import edu.brown.cs.h2r.baking.IngredientRecipe;
@@ -95,6 +96,15 @@ public class AllowPouring extends BakingPropositionalFunction {
 				}
 			}
 		}
+		ObjectInstance space = state.getObject(ContainerFactory.getSpaceName(receivingContainer));
+		boolean willBake = SpaceFactory.isSwitchable(space) && SpaceFactory.getOnOff(space);
+		if (willBake) {
+			for (String name : pouringContentNames) {
+				if (!this.checkBakingIngredient(state.getObject(name))) {
+					return false;
+				}
+			}
+		}
 		return true;
 	}
 	
@@ -124,6 +134,15 @@ public class AllowPouring extends BakingPropositionalFunction {
 					if (!this.checkHeatingIngredient(state.getObject(name))) {
 						return false;
 					}
+				}
+			}
+		}
+		ObjectInstance space = state.getObject(ContainerFactory.getSpaceName(receivingContainer));
+		boolean willHeat = SpaceFactory.isSwitchable(space) && SpaceFactory.getOnOff(space);
+		if (willHeat) {
+			for (String name : pouringContentNames) {
+				if (!this.checkHeatingIngredient(state.getObject(name))) {
+					return false;
 				}
 			}
 		}
@@ -161,6 +180,12 @@ public class AllowPouring extends BakingPropositionalFunction {
 		for (IngredientRecipe ingredient : contents) {
 			if (ingredient.getName().equals(name)) {
 				return ingredient.getHeated();
+			}
+		}
+		for (Entry<String, IngredientRecipe> entry : this.topLevelIngredient.getNecessaryTraits().entrySet()) {
+			String trait = entry.getKey();
+			if (IngredientFactory.getTraits(object).contains(trait)) {
+				return entry.getValue().getHeated();
 			}
 		}
 		return false;

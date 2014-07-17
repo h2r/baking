@@ -145,10 +145,10 @@ public class TestIngredientRecipe {
 	public void testBrownies() {
 		topLevelIngredient = new Brownies().topLevelIngredient;
 		this.setUp();
-		swappedIngredientList = Arrays.asList("dry_ingredients", "wet_ingredients", "brownie_batter");
-		constituentNecessaryTraits = Arrays.asList("salt", "sugar", "flour", "fat");
+		swappedIngredientList = Arrays.asList("butter", "dry_ingredients", "wet_ingredients", "brownie_batter");
+		constituentNecessaryTraits = Arrays.asList("salt", "sugar", "flour");
 		constituentIngredients = new ArrayList<IngredientRecipe>();
-		constituentIngredientList = Arrays.asList("baking_powder", "cocoa", "vanilla", "eggs");
+		constituentIngredientList = Arrays.asList("baking_powder", "cocoa", "vanilla", "eggs", "butter");
 		for (String ingredient : constituentIngredientList) {
 			IngredientRecipe i = knowledgebase.getIngredient(ingredient);
 			constituentIngredients.add(i);

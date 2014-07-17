@@ -440,6 +440,7 @@ public class IngredientFactory {
 		for (ObjectInstance obj : allIngredients) {
 			match = false;
 			List<IngredientRecipe> contents = goal.getContents();
+			contents.add(goal);
 			for (IngredientRecipe ing : contents) {
 				if (ing.getName().equals(obj.getName())) {
 					IngredientFactory.setAttributes(obj, ing.generateAttributeNumber(), ing.getToolAttributes());
@@ -458,14 +459,21 @@ public class IngredientFactory {
 				}
 			}
 			if (match) {
-				if (IngredientFactory.getUseCount(obj) == 1) {
-					ObjectInstance hidden = makeHiddenObjectCopy(state, domain, obj);
-					ObjectInstance container = state.getObject(IngredientFactory.getContainer(hidden));
-					ContainerFactory.removeIngredient(container, hidden.getName());
-					state.removeObject(obj);
-					state.addObject(hidden);
+				// Check is swappedfor simple-ingredient subgoals
+				boolean bool1 = obj.getName().equals(goal.getName());
+				boolean bool2 = !goal.getSwapped();
+				if (bool1 == bool2) {
+					if (IngredientFactory.getUseCount(obj) <= 1) {
+						ObjectInstance hidden = makeHiddenObjectCopy(state, domain, obj);
+						ObjectInstance container = state.getObject(IngredientFactory.getContainer(hidden));
+						ContainerFactory.removeIngredient(container, hidden.getName());
+						state.removeObject(obj);
+						state.addObject(hidden);
+					}
 				}
+				if (IngredientFactory.getUseCount(obj) > 0) {
 					IngredientFactory.setUseCount(obj, IngredientFactory.getUseCount(obj) -1);
+				}
 			}
 		}
 		

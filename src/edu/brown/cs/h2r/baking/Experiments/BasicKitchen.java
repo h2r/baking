@@ -3,7 +3,6 @@ package edu.brown.cs.h2r.baking.Experiments;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
 import burlap.behavior.statehashing.NameDependentStateHashFactory;
 import burlap.behavior.statehashing.StateHashFactory;
@@ -164,7 +163,7 @@ public class BasicKitchen implements DomainGenerator {
 		this.recipe.resetSubgoals();
 		this.recipe.setUpSubgoals(this.domain);
 		if (this.recipeSubgoals == null) {
-			this.recipeSubgoals = new ArrayList(this.recipe.getSubgoals());
+			this.recipeSubgoals = new ArrayList<BakingSubgoal>(this.recipe.getSubgoals());
 			this.completedSubgoals = new boolean[this.recipeSubgoals.size()];
 		}
 		
