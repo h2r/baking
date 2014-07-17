@@ -30,6 +30,7 @@ import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.SADomain;
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
+import edu.brown.cs.h2r.baking.Knowledgebase.BakingParser;
 import edu.brown.cs.h2r.baking.Knowledgebase.IngredientKnowledgebase;
 import edu.brown.cs.h2r.baking.Knowledgebase.ToolKnowledgebase;
 import burlap.oomdp.core.Domain;
@@ -112,6 +113,8 @@ public class KevinsKitchen implements DomainGenerator {
 				state.addObject(ToolFactory.getNewSimpleToolObjectInstance(domain, name, toolTrait, toolAttribute, SpaceFactory.SPACE_COUNTER));
 			}
 		}
+		
+		BakingParser info = new BakingParser();
 		
 		// Out of all the ingredients in our kitchen, plan over only those that might be useful!
 		IngredientKnowledgebase knowledgebase = new IngredientKnowledgebase();

@@ -1,6 +1,7 @@
 package edu.brown.cs.h2r.baking;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.HashMap;
@@ -111,7 +112,7 @@ public class IngredientRecipe {
 		this.useCount = count;
 	}
 	
-	public void addToolTraits(Set<String> traits) {
+	public void addToolTraits(Collection<String> traits) {
 		this.toolTraits.addAll(traits);
 	}
 	
@@ -142,7 +143,7 @@ public class IngredientRecipe {
 		this.traits.add(trait);
 	}
 	
-	public void addTraits(Set<String> traits) {
+	public void addTraits(Collection<String> traits) {
 		for (String trait : traits) {
 			this.addTraits(trait);
 		}
