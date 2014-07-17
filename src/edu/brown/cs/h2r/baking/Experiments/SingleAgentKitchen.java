@@ -150,7 +150,7 @@ public class SingleAgentKitchen implements DomainGenerator {
 				new ArrayList<ObjectInstance>(endState.getObjectsOfTrueClass(IngredientFactory.ClassNameComplex));
 		List<ObjectInstance> containerObjects =
 				new ArrayList<ObjectInstance>(endState.getObjectsOfTrueClass(ContainerFactory.ClassName));
-		ExperimentHelper.checkIngredientCompleted(ingredient, endState, finalObjects, containerObjects);
+		ExperimentHelper.makeSwappedIngredientObject(ingredient, endState, finalObjects, containerObjects);
 		return endState;
 	}
 	

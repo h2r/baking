@@ -1,4 +1,5 @@
 package edu.brown.cs.h2r.baking.actions;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
@@ -29,50 +30,51 @@ public class MixAction extends BakingAction {
 	}
 	
 	@Override
-	public boolean applicableInState(State state, String[] params) {
-		if (!super.applicableInState(state, params)) {
-			return false;
-		}
+	public BakingActionResult checkActionIsApplicableInState(State state, String[] params) {
+		BakingActionResult superResult = super.checkActionIsApplicableInState(state, params);
 		
+		if (!superResult.getIsSuccess()) {
+			return superResult;
+		}
+
+		String agentName = params[0];
 		ObjectInstance agent =  state.getObject(params[0]);
 		
 		if (AgentFactory.isRobot(agent)) {
-			return false;
+			return BakingActionResult.failure("Robot cannot perform this action");
 		}
-		ObjectInstance containerInstance = state.getObject(params[1]);
+		
+		String containerName = params[1];
+		ObjectInstance containerInstance = state.getObject(containerName);
 		
 		if (ContainerFactory.getContentNames(containerInstance).isEmpty()) {
-			return false;
+			return BakingActionResult.failure(containerName + " is empty");
 		}
 		
-		if (!ContainerFactory.isMixingContainer(containerInstance)) {
-			return false;
-		}
 		// move to should mix probably!
 		if (ContainerFactory.getContentNames(containerInstance).size() < 2) {
-			return false;
+			return BakingActionResult.failure(containerName + " containers only one ingredient");
 		}
 		
 		String containerSpaceName = ContainerFactory.getSpaceName(containerInstance);
 		if (containerSpaceName == null) {
-			return false;
+			return BakingActionResult.failure(containerName + " is not in any space");
 		}
 
-		ObjectInstance pouringContainerSpaceObject = state.getObject(containerSpaceName);
-		if (pouringContainerSpaceObject == null) {
-			return false;
+		ObjectInstance mixingContainerSpaceName = state.getObject(containerSpaceName);
+		if (mixingContainerSpaceName == null) {
+			return BakingActionResult.failure(containerSpaceName + " does not exist");
 		}
-		
-		String agentOfSpace = SpaceFactory.getAgent(pouringContainerSpaceObject).iterator().next();
-		if (!agentOfSpace.equalsIgnoreCase(agent.getName()))
-		{		
-			return false;
+
+		if (SpaceFactory.isBaking(mixingContainerSpaceName)) {
+			return BakingActionResult.failure(mixingContainerSpaceName + " is not suitable for mixing!");
 		}
-				
-		if (!SpaceFactory.isWorking(pouringContainerSpaceObject)) {
-			return false;
-		}
-		return true;
+		return BakingActionResult.success();
+	}
+	
+	@Override
+	public boolean applicableInState(State state, String[] params) {
+		return this.checkActionIsApplicableInState(state, params).getIsSuccess();
 	}
 
 	@Override
@@ -95,7 +97,7 @@ public class MixAction extends BakingAction {
 			this.combineIngredients(state, domain, ingredient, container, res);
 		} else {
 			Set<ObjectInstance> hidden_copies = new HashSet<ObjectInstance>();
-			Set<String> traits = new TreeSet<String>();
+			Set<String> traits;
 			Set<ObjectInstance> objects = new HashSet<ObjectInstance>();
 			for (String obj : contents) {
 				objects.add(state.getObject(obj));
@@ -103,11 +105,10 @@ public class MixAction extends BakingAction {
 			ObjectInstance[] objectArray = new ObjectInstance[objects.size()];
 			objects.toArray(objectArray);
 			//find mutual traits
-			for (String trait: IngredientFactory.getTraits(objectArray[0])) {
-				if (IngredientFactory.getTraits(objectArray[1]).contains(trait)) {
-					traits.add(trait);
-				}
-			}
+			Set<String> allTraits = IngredientFactory.getTraits(objectArray[0]);
+			traits = new HashSet<String>(IngredientFactory.getTraits(objectArray[1]));
+			traits.retainAll(allTraits);
+		
 			// hide objects
 			for (String name: contents) {
 				ObjectInstance ing = state.getObject(name);
@@ -130,8 +131,14 @@ public class MixAction extends BakingAction {
 			ContainerFactory.addIngredient(container, newIngredient.getName());
 			IngredientFactory.changeIngredientContainer(newIngredient, container.getName());
 			
+			ObjectInstance receivingSpace = state.getObject(ContainerFactory.getSpaceName(container));
+			if (SpaceFactory.isBaking(receivingSpace) && SpaceFactory.getOnOff(receivingSpace)) {
+				IngredientFactory.bakeIngredient(newIngredient);
+			} else if (SpaceFactory.isHeating(receivingSpace) && SpaceFactory.getOnOff(receivingSpace)) {
+				IngredientFactory.heatIngredient(newIngredient);
+			}
 			
-			ExperimentHelper.checkIngredientCompleted(ingredient.makeFakeAttributeCopy(newIngredient), state, asList(newIngredient), state.getObjectsOfTrueClass(ContainerFactory.ClassName));
+			this.makeSwappedIngredient(state, newIngredient);
 		}
 	}
 	
@@ -140,31 +147,55 @@ public class MixAction extends BakingAction {
 	}
 	
 	public void combineIngredients(State state, Domain domain, IngredientRecipe recipe, ObjectInstance container, String toswap) {
-		Set<String> traits = new TreeSet<String>();
+		Set<String> traits = new HashSet<String>(recipe.getTraits());
 		//get the actual traits from the trait thing
-		for (String trait : recipe.getTraits()) {
-			traits.add(trait);
-		}
 		Set<String> ings = ContainerFactory.getContentNames(container);
-		ObjectInstance new_ing = IngredientFactory.getNewComplexIngredientObjectInstance(
+		ObjectInstance newIng = IngredientFactory.getNewComplexIngredientObjectInstance(
 				domain.getObjectClass(IngredientFactory.ClassNameComplex), toswap, Recipe.NO_ATTRIBUTES, true, "",new TreeSet<String>(), new TreeSet<String>(), traits, ings);
 		// Make the hidden Copies
-		Set<ObjectInstance> hidden_copies = new HashSet<ObjectInstance>();
+		Set<ObjectInstance> hiddenCopies = new HashSet<ObjectInstance>();
 		for (String name : ings) {
 			ObjectInstance ob = state.getObject(name);
-			if (!IngredientFactory.isSimple(ob)) {
-				hidden_copies.add(IngredientFactory.makeHiddenObjectCopy(state, domain, ob));
-			}
+			hiddenCopies.add(IngredientFactory.makeHiddenObjectCopy(state, domain, ob));
 		}
 		ContainerFactory.removeContents(container);
 		for (String name : ings) {
 			state.removeObject(state.getObject(name));
 		}
-		for (ObjectInstance ob : hidden_copies) {
+		for (ObjectInstance ob : hiddenCopies) {
 			state.addObject(ob);
 		}
 		ContainerFactory.addIngredient(container, toswap);
-		IngredientFactory.changeIngredientContainer(new_ing, container.getName());
-		state.addObject(new_ing);
+		IngredientFactory.changeIngredientContainer(newIng, container.getName());
+		
+		ObjectInstance receivingSpace = state.getObject(ContainerFactory.getSpaceName(container));
+		if (SpaceFactory.isBaking(receivingSpace) && SpaceFactory.getOnOff(receivingSpace)) {
+			IngredientFactory.bakeIngredient(newIng);
+		} else if (SpaceFactory.isHeating(receivingSpace) && SpaceFactory.getOnOff(receivingSpace)) {
+			IngredientFactory.heatIngredient(newIng);
+		}
+		state.addObject(newIng);
+	}
+	
+	public String makeSwappedIngredient(State state, ObjectInstance newIngredient) {
+		// Call to makeFakeAttributeCopy here is to ensure we can make a swapped ingredient even
+		// if in reality, said swapped ingredient has to eventually be baked/heated/peeled...
+		if (Recipe.isSuccess(state, ingredient.makeFakeAttributeCopy(newIngredient), newIngredient)) {
+			return ExperimentHelper.makeSwappedIngredientObject(ingredient.makeFakeAttributeCopy(newIngredient),
+					state, asList(newIngredient), state.getObjectsOfTrueClass(ContainerFactory.ClassName));
+		} else {
+			//For the online game, ingredient is always the topLevelIngredient, so check all possible
+			// swapped ingredients
+			Collection<IngredientRecipe> swappedIngs= IngredientRecipe.getRecursiveSwappedIngredients(ingredient).values();
+			for (IngredientRecipe swapped : swappedIngs) {
+				IngredientRecipe swappedCopy = swapped.makeFakeAttributeCopy(newIngredient);
+				if (Recipe.isSuccess(state, swapped.makeFakeAttributeCopy(newIngredient), newIngredient)) {
+					return ExperimentHelper.makeSwappedIngredientObject(swappedCopy, state, 
+							asList(newIngredient), state.getObjectsOfTrueClass(ContainerFactory.ClassName));
+					
+				}
+			}
+		}
+		return null;
 	}
 }

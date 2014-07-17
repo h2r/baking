@@ -11,15 +11,19 @@ import java.util.Set;
 import org.yaml.snakeyaml.Yaml;
 
 
-public class ToolParser {
+public class BakingParser {
+	
+	private static final String COMBINATIONS = "Combinations.yaml";
+	private static final String INGREDIENTS = "Ingredients.yaml";
 
-	private AbstractMap<String, BakingInformation> map;
-	public ToolParser(String filename) {
-		this.map = generateMap(filename);
+	private AbstractMap<String, BakingInformation> combinationMap, ingredientMap;
+	public BakingParser() {
+		this.combinationMap = generateMap(BakingParser.COMBINATIONS);
+		this.ingredientMap = generateMap(BakingParser.INGREDIENTS);
 	}
 
 	private AbstractMap<String, BakingInformation> generateMap(String filename) {
-		AbstractMap<String, BakingInformation> tools = new HashMap<String, BakingInformation>();
+		AbstractMap<String, BakingInformation> information = new HashMap<String, BakingInformation>();
 		ClassLoader CLDR = this.getClass().getClassLoader();
 		
 		URL resourceURL = CLDR.getResource(filename);
@@ -42,21 +46,25 @@ public class ToolParser {
 			AbstractMap<String, AbstractMap<String, Object>> data = ((AbstractMap<String, AbstractMap<String, Object>>)yaml.load(in));
 			for (Entry<String, AbstractMap<String, Object>>  entry : data.entrySet()) {
 				BakingInformation info = new BakingInformation(entry.getValue());
-				String tool = entry.getKey();
-				tools.put(tool, info);
+				String key = entry.getKey();
+				information.put(key, info);
 			}
 		} catch (ClassCastException e) {
 			e.printStackTrace();
 		}
-		return tools;
+		return information;
 	}
 	
-	public AbstractMap<String, BakingInformation> getMap() {
-		return this.map;
+	public AbstractMap<String, BakingInformation> getCombinationMap() {
+		return this.combinationMap;
 	}
 	
-	public Set<String> getIngredientNames() {
+	public AbstractMap<String, BakingInformation> getIngredientMap() {
+		return this.ingredientMap;
+	}
+	
+	/*public Set<String> getIngredientNames() {
 		return this.map.keySet();
-	}
+	}*/
 }
 

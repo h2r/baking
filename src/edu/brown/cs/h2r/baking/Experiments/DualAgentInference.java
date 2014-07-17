@@ -165,7 +165,6 @@ public class DualAgentInference  implements DomainGenerator {
 		State endState = startingState;
 		List<GroundedAction> fullActions = new ArrayList<GroundedAction>();
 		List<Double> fullReward = new ArrayList<Double>();
-		boolean currentAgent = false;
 		while (!finished) {
 			//currentAgent = !currentAgent;
 			//RewardFunction recipeRewardFunction = (currentAgent) ? humanRewardFunction : robotRewardFunction;

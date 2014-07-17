@@ -1,8 +1,9 @@
 package edu.brown.cs.h2r.baking.ObjectFactories;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
-import java.util.TreeSet;
 
 import burlap.oomdp.core.Attribute;
 import burlap.oomdp.core.Domain;
@@ -21,7 +22,7 @@ public class IngredientFactory {
 	public static final String ClassNameSimpleHidden = "simple_hidden_ingredient";
 	public static final String ClassNameComplexHidden = "complex_hidden_ingredient";
 	private static final String attributeBaked = "baked";
-	private static final String attributeMelted = "melted";
+	private static final String attributeHeated = "heated";
 	private static final String attributeMixed = "mixed";
 	private static final String attributeContainer = "container";
 	private static final String attributeContains = "contents";
@@ -31,7 +32,7 @@ public class IngredientFactory {
 	private static final String attributeToolTraits = "toolTrait";
 	private static final String attributeToolAttributes = "toolAttribute";
 	private static final String[] booleanAttributes= {IngredientFactory.attributeBaked, 
-		IngredientFactory.attributeMelted, IngredientFactory.attributeMixed};
+		IngredientFactory.attributeHeated, IngredientFactory.attributeMixed};
 
 	private static ObjectClass createObjectClass(Domain domain, String className) {
 		ObjectClass objectClass = new ObjectClass(domain, className);
@@ -40,7 +41,7 @@ public class IngredientFactory {
 		objectClass.addAttribute(mixingAttribute);
 		
 		Attribute heatingAttribute = 
-				new Attribute(domain, IngredientFactory.attributeMelted, Attribute.AttributeType.BOOLEAN);
+				new Attribute(domain, IngredientFactory.attributeHeated, Attribute.AttributeType.BOOLEAN);
 		objectClass.addAttribute(heatingAttribute);
 		
 		Attribute receivingAttribute =
@@ -111,7 +112,7 @@ public class IngredientFactory {
 			int attributes, int useCount, Set<String> traits, Set<String> toolTraits,
 			Set<String> toolAttributes, String ingredientContainer) {
 		ObjectInstance newInstance = new ObjectInstance(simpleIngredientClass, name);
-		IngredientFactory.setAttributes(newInstance, attributes);
+		IngredientFactory.setAttributes(newInstance, attributes, toolAttributes);
 		newInstance.setValue(IngredientFactory.attributeUseCount, useCount);
 		for (String trait : traits) {
 			newInstance.addRelationalTarget(IngredientFactory.attributeTraits, trait);
@@ -135,7 +136,7 @@ public class IngredientFactory {
 			int attributes, boolean swapped, String ingredientContainer, Set<String> traits, 
 			Set<String> toolTraits, Set<String> toolAttributes, Iterable<String> contents) {
 		ObjectInstance newInstance = new ObjectInstance(complexIngredientClass, name);
-		IngredientFactory.setAttributes(newInstance, attributes);
+		IngredientFactory.setAttributes(newInstance, attributes, toolAttributes);
 		newInstance.setValue(IngredientFactory.attributeUseCount, 1);
 		newInstance.setValue(IngredientFactory.attributeSwapped, swapped ? 1 : 0);
 		
@@ -165,9 +166,9 @@ public class IngredientFactory {
 	public static ObjectInstance getNewIngredientInstance(ObjectInstance objectInstance, String name) {
 		Boolean baked = IngredientFactory.isBakedIngredient(objectInstance);
 		Boolean mixed = IngredientFactory.isMixedIngredient(objectInstance);
-		Boolean melted = IngredientFactory.isMeltedIngredient(objectInstance);
+		Boolean heated = IngredientFactory.isHeatedIngredient(objectInstance);
 		
-		int attributes = IngredientRecipe.generateAttributeNumber(mixed, melted, baked);
+		int attributes = IngredientRecipe.generateAttributeNumber(mixed, heated, baked);
 		int useCount = IngredientFactory.getUseCount(objectInstance);
 		String container = IngredientFactory.getContainer(objectInstance);
 		Set<String> traits = IngredientFactory.getTraits(objectInstance);
@@ -188,7 +189,7 @@ public class IngredientFactory {
 	
 	public static ObjectInstance getNewIngredientInstance(IngredientRecipe ingredient, String name, ObjectClass oc) {
 		int attributes = IngredientRecipe.generateAttributeNumber(ingredient.getBaked(), ingredient.getMixed(), 
-				ingredient.getMelted());
+				ingredient.getHeated());
 		Boolean swapped = ingredient.getSwapped();
 		int useCount = ingredient.getUseCount();
 		String container = "";
@@ -198,8 +199,9 @@ public class IngredientFactory {
 		if (ingredient.isSimple()) {
 			return IngredientFactory.getNewSimpleIngredientObjectInstance(oc, name, attributes, useCount, traits, toolTraits, toolAttributes, container);
 		}
-		Set<String> contents = new TreeSet<String>();
-		for (IngredientRecipe ing : ingredient.getContents()) {
+		Set<String> contents = new HashSet<String>();
+		List<IngredientRecipe> ingContents = ingredient.getContents();
+		for (IngredientRecipe ing : ingContents) {
 			contents.add(ing.getName());
 		}
 		return IngredientFactory.getNewComplexIngredientObjectInstance(oc, name, attributes, swapped, container, traits, toolTraits, toolAttributes, contents);
@@ -224,7 +226,8 @@ public class IngredientFactory {
 			IngredientRecipe ingredientRecipe) {
 		List<ObjectInstance> newInstances = new ArrayList<ObjectInstance>();
 		
-		for (IngredientRecipe subIngredient : ingredientRecipe.getContents()) {
+		List<IngredientRecipe> subIngredients = ingredientRecipe.getContents();
+		for (IngredientRecipe subIngredient : subIngredients) {
 			if (subIngredient.isSimple()) {
 				newInstances.add(IngredientFactory.getNewIngredientInstance(subIngredient, subIngredient.getName(), simpleIngredientClass));
 			}
@@ -235,8 +238,9 @@ public class IngredientFactory {
 	public static List<ObjectInstance> getComplexIngredients(ObjectClass complexIngredientClass,IngredientRecipe ingredientRecipe) {
 		List<ObjectInstance> newInstances = new ArrayList<ObjectInstance>();
 		
-		for (IngredientRecipe subIngredient : ingredientRecipe.getContents()) {
-			if (!subIngredient.isSimple()) {
+		List<IngredientRecipe> subIngredients = ingredientRecipe.getContents();
+		for (IngredientRecipe subIngredient : subIngredients) {
+				if (!subIngredient.isSimple()) {
 				newInstances.add(IngredientFactory.getNewIngredientInstance(subIngredient, subIngredient.getName(), complexIngredientClass));
 			}
 		}
@@ -289,8 +293,8 @@ public class IngredientFactory {
 		return ingredient.getDiscValForAttribute(IngredientFactory.attributeMixed) == 1;
 	}
 	
-	public static Boolean isMeltedIngredient(ObjectInstance ingredient) {
-		return ingredient.getDiscValForAttribute(IngredientFactory.attributeMelted) == 1;
+	public static Boolean isHeatedIngredient(ObjectInstance ingredient) {
+		return ingredient.getDiscValForAttribute(IngredientFactory.attributeHeated) == 1;
 	}
 	
 	public static void mixIngredient(ObjectInstance ingredient) {
@@ -301,8 +305,8 @@ public class IngredientFactory {
 		ingredient.setValue(IngredientFactory.attributeBaked, 1);
 	}
 	
-	public static void meltIngredient(ObjectInstance ingredient) {
-		ingredient.setValue(IngredientFactory.attributeMelted, 1);
+	public static void heatIngredient(ObjectInstance ingredient) {
+		ingredient.setValue(IngredientFactory.attributeHeated, 1);
 	}
 	
 	public static void setUseCount(ObjectInstance ingredient, int count) {
@@ -322,7 +326,7 @@ public class IngredientFactory {
 	}
 	
 	public static Set<String> getContentsForIngredient(ObjectInstance ingredient) {
-		return new TreeSet<String>(ingredient.getAllRelationalTargets(IngredientFactory.attributeContains));
+		return new HashSet<String>(ingredient.getAllRelationalTargets(IngredientFactory.attributeContains));
 	}
 
 	public static void setSwapped(ObjectInstance ingredient) {
@@ -349,6 +353,10 @@ public class IngredientFactory {
 		return object.getAllRelationalTargets(IngredientFactory.attributeToolAttributes);
 	}
 	
+	public static boolean hasToolAttribute(ObjectInstance object, String attribute) {
+		return IngredientFactory.getToolAttributes(object).contains(attribute);
+	}
+	
 	public static void addToolAttribute(ObjectInstance object, String attribute) {
 		object.addRelationalTarget(IngredientFactory.attributeToolAttributes, attribute);
 	}
@@ -359,13 +367,18 @@ public class IngredientFactory {
 		}
 	}
 	
+	public static boolean hasToolTrait(ObjectInstance object, String trait) {
+		return IngredientFactory.getToolTraits(object).contains(trait);
+	}
+	
 	
 	public static Set<String> getRecursiveContentsForIngredient(State state, ObjectInstance ingredient) {
-		Set<String> contents = new TreeSet<String>();
-		for (String content_name : IngredientFactory.getIngredientContents(ingredient)) {
-			ObjectInstance content = state.getObject(content_name);
+		Set<String> contents = new HashSet<String>();
+		Set<String> ingredientContents = IngredientFactory.getIngredientContents(ingredient);
+		for (String contentName : ingredientContents) {
+			ObjectInstance content = state.getObject(contentName);
 			if (IngredientFactory.isSimple(content)) {
-				contents.add(content_name);
+				contents.add(contentName);
 			} else {
 				contents.addAll(getRecursiveContentsForIngredient(state, content));
 			}
@@ -374,15 +387,16 @@ public class IngredientFactory {
 	}
 	
 	public static Set<String> getRecursiveContentsAndSwapped(State state, ObjectInstance ingredient) {
-		Set<String> contents = new TreeSet<String>();
+		Set<String> contents = new HashSet<String>();
 		if (IngredientFactory.isSimple(ingredient)) {
 			contents.add(ingredient.getName());
 			return contents;
 		}
-		for (String content_name : IngredientFactory.getIngredientContents(ingredient)) {
-			ObjectInstance content = state.getObject(content_name);
+		Set<String> ingredientContents = IngredientFactory.getIngredientContents(ingredient);
+		for (String contentName : ingredientContents) {
+			ObjectInstance content = state.getObject(contentName);
 			if (IngredientFactory.isSimple(content) || IngredientFactory.isSwapped(content)) {
-				contents.add(content_name);
+				contents.add(contentName);
 			} else {
 				contents.addAll(getRecursiveContentsAndSwapped(state, content));
 			}
@@ -390,7 +404,7 @@ public class IngredientFactory {
 		return contents;
 	}
 	
-	public static ObjectInstance makeHiddenObjectCopy(State s, Domain domain, ObjectInstance object) {
+	public static ObjectInstance makeHiddenObjectCopy(State state, Domain domain, ObjectInstance object) {
 		ObjectInstance hidden;
 		ObjectClass oc;
 		if (isSimple(object)) {
@@ -404,11 +418,14 @@ public class IngredientFactory {
 		hidden.initializeValueObjects();
 		String multi = Attribute.AttributeType.MULTITARGETRELATIONAL.name();
 		String relational = Attribute.AttributeType.RELATIONAL.name();
-		for (Value v : hidden.getValues()) {
+		
+		List<Value> values = hidden.getValues();
+		for (Value v : values) {
 			String name = v.attName();
 			String attributeType = v.getAttribute().type.name();
 			if (attributeType.equals(multi) || attributeType.equals(relational)) {
-				for (String val : object.getAllRelationalTargets(name)) {
+				Set<String> targets = object.getAllRelationalTargets(name);
+				for (String val : targets) {
 					hidden.addRelationalTarget(name, val);
 				}
 			} else {
@@ -422,30 +439,41 @@ public class IngredientFactory {
 		Boolean match;
 		for (ObjectInstance obj : allIngredients) {
 			match = false;
-			for (IngredientRecipe ing : goal.getContents()) {
+			List<IngredientRecipe> contents = goal.getContents();
+			contents.add(goal);
+			for (IngredientRecipe ing : contents) {
 				if (ing.getName().equals(obj.getName())) {
+					IngredientFactory.setAttributes(obj, ing.generateAttributeNumber(), ing.getToolAttributes());
 					match = true;
 					break;
 				}
 			}
 			if (!match) {
-				for (String trait : goal.getNecessaryTraits().keySet()) {
-					if (IngredientFactory.getTraits(obj).contains(trait)) {
+				for (Entry<String, IngredientRecipe> entry : goal.getNecessaryTraits().entrySet()) {
+					if (IngredientFactory.getTraits(obj).contains(entry.getKey())) {
+						IngredientRecipe ing = entry.getValue();
+						IngredientFactory.setAttributes(obj, ing.generateAttributeNumber(), ing.getToolAttributes());
 						match = true;
 						break;
 					}
 				}
 			}
 			if (match) {
-				if (IngredientFactory.getUseCount(obj) == 1) {
-					ObjectInstance hidden = makeHiddenObjectCopy(state, domain, obj);
-					ObjectInstance container = state.getObject(IngredientFactory.getContainer(hidden));
-					ContainerFactory.removeIngredient(container, hidden.getName());
-					state.removeObject(obj);
-					state.addObject(hidden);
-				} //else {
+				// Check is swappedfor simple-ingredient subgoals
+				boolean bool1 = obj.getName().equals(goal.getName());
+				boolean bool2 = !goal.getSwapped();
+				if (bool1 == bool2) {
+					if (IngredientFactory.getUseCount(obj) <= 1) {
+						ObjectInstance hidden = makeHiddenObjectCopy(state, domain, obj);
+						ObjectInstance container = state.getObject(IngredientFactory.getContainer(hidden));
+						ContainerFactory.removeIngredient(container, hidden.getName());
+						state.removeObject(obj);
+						state.addObject(hidden);
+					}
+				}
+				if (IngredientFactory.getUseCount(obj) > 0) {
 					IngredientFactory.setUseCount(obj, IngredientFactory.getUseCount(obj) -1);
-				//}
+				}
 			}
 		}
 		
@@ -456,8 +484,8 @@ public class IngredientFactory {
 	 * this attribute is already fulfilled.
 	 */
 	public static void clearBooleanAttributes(ObjectInstance obj) {
-		for (String att_name : IngredientFactory.booleanAttributes) {
-			obj.setValue(att_name, 0);
+		for (String attName : IngredientFactory.booleanAttributes) {
+			obj.setValue(attName, 0);
 		}		
 	}
 	
@@ -473,9 +501,12 @@ public class IngredientFactory {
 		return IngredientFactory.getTraits(ingredient).contains(IngredientKnowledgebase.LUBRICANT);
 	}
 	
-	public static void setAttributes(ObjectInstance ingredient, int attributes) {
+	public static void setAttributes(ObjectInstance ingredient, int attributes, Set<String> toolAttributes) {
 		ingredient.setValue(IngredientFactory.attributeBaked, ((attributes & Recipe.BAKED) == Recipe.BAKED) ? 1 : 0);
-		ingredient.setValue(IngredientFactory.attributeMelted, ((attributes & Recipe.MELTED) == Recipe.MELTED) ? 1 : 0);
+		ingredient.setValue(IngredientFactory.attributeHeated, ((attributes & Recipe.HEATED) == Recipe.HEATED) ? 1 : 0);
 		ingredient.setValue(IngredientFactory.attributeMixed, ((attributes & Recipe.MIXED) == Recipe.MIXED) ? 1 : 0);
+		for (String attribute : toolAttributes) {
+			IngredientFactory.addToolAttribute(ingredient, attribute);
+		}
 	}
 }

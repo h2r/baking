@@ -1,5 +1,6 @@
 package edu.brown.cs.h2r.baking.PropositionalFunctions;
 
+import java.util.List;
 import java.util.Set;
 
 import edu.brown.cs.h2r.baking.IngredientRecipe;
@@ -17,63 +18,68 @@ public class AllowMoving extends BakingPropositionalFunction {
 		super(name, domain, new String[]{AgentFactory.ClassName, ContainerFactory.ClassName, SpaceFactory.ClassName}, ingredient) ;
 	}
 	@Override
-	public boolean isTrue(State s, String[] params) {
-		ObjectInstance space = s.getObject(params[2]);
-		ObjectInstance container = s.getObject(params[1]);
-		ObjectInstance current_space = s.getObject(ContainerFactory.getSpaceName(container));
-		
+	public boolean isTrue(State state, String[] params) {
+		ObjectInstance space = state.getObject(params[2]);
+		ObjectInstance container = state.getObject(params[1]);		
 		Set<String> contents = ContainerFactory.getContentNames(container);
 		
 		
 		if (!ContainerFactory.isEmptyContainer(container)) {
 			if (SpaceFactory.isBaking(space)) {
-				if (this.topLevelIngredient.getBaked() && contents.contains(this.topLevelIngredient.getName()) ) {
-					if (!IngredientFactory.isBakedIngredient(s.getObject(topLevelIngredient.getName()))) {
+				return this.checkMoveToBaking(state, contents);
+			} else if (SpaceFactory.isHeating(space)) {
+				return this.checkMoveToHeating(state, contents);
+			} else {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private boolean checkMoveToBaking(State state, Set<String> contents) {
+		String ingredientName = topLevelIngredient.getName();
+		boolean recipeIngBaked = this.topLevelIngredient.getBaked();
+		if (recipeIngBaked && contents.contains(ingredientName) ) {
+			boolean objIngBaked = IngredientFactory.isBakedIngredient(state.getObject(ingredientName));
+			if (!objIngBaked) {
+				return true;
+			}
+		} else {
+			List<IngredientRecipe> ingredientContents = this.topLevelIngredient.getContents();
+			for (IngredientRecipe ing : ingredientContents) {
+				String name = ing.getName();
+				ObjectInstance obj = state.getObject(name);
+				if (ing.getBaked() && contents.contains(name)) {
+					if (!IngredientFactory.isBakedIngredient(obj)) {
 						return true;
 					}
-				} else {
-					for (IngredientRecipe ing : this.topLevelIngredient.getContents()) {
-						if (ing.getBaked() && contents.contains(ing.getName())) {
-							if (!IngredientFactory.isBakedIngredient(s.getObject(ing.getName()))) {
-								return true;
-							}
-						}
-					}
 				}
-			} else if (SpaceFactory.isHeating(space)) {
-				if (this.topLevelIngredient.getMelted() && contents.contains(this.topLevelIngredient.getName()) ) {
-					if (!IngredientFactory.isMeltedIngredient(s.getObject(topLevelIngredient.getName()))) {
-						if (!IngredientFactory.isMeltedAtRoomTemperature(s.getObject(this.topLevelIngredient.getName()))) {
-							return true;
-						}
-					}
-				} else {
-					for (IngredientRecipe ing : this.topLevelIngredient.getContents()) {
-						if (ing.getMelted() && contents.contains(ing.getName())) {
-							if (!IngredientFactory.isMeltedIngredient(s.getObject(ing.getName()))) {
-								if (!IngredientFactory.isMeltedAtRoomTemperature(s.getObject(ing.getName()))) {
-									return true;
-								}
-							}
-						}
-					}
-				}
-			} else {
-				if (SpaceFactory.isHeating(current_space)) {
-					for (String name : contents) {
-						if (IngredientFactory.isMeltedIngredient(s.getObject(name))) {
-							return true;
-						}
-					}
-				}
-				else if (SpaceFactory.isBaking(current_space)) {
-					for (String name : contents) {
-						if (IngredientFactory.isBakedIngredient(s.getObject(name))) {
-							return true;
-						}
-					}
-				} else {
+			}
+		}
+		return false;
+	}
+	
+	private boolean checkMoveToHeating(State state, Set<String> contents) {
+		String ingredientName = topLevelIngredient.getName();
+		boolean recipeIngHeated = this.topLevelIngredient.getHeated();
+		ObjectInstance topLevelObj = state.getObject(ingredientName);
+		if (recipeIngHeated && contents.contains(ingredientName) ) {
+			if (!IngredientFactory.isHeatedIngredient(topLevelObj)) {
+				if (!IngredientFactory.isMeltedAtRoomTemperature(topLevelObj)) {
 					return true;
+				}
+			}
+		} else {
+			List<IngredientRecipe> ingredientContents = this.topLevelIngredient.getContents();
+			for (IngredientRecipe ing : ingredientContents) {
+				String name = ing.getName();
+				ObjectInstance obj = state.getObject(name);
+				if (ing.getHeated() && contents.contains(name)) {
+					if (!IngredientFactory.isHeatedIngredient(obj)) {
+						if (!IngredientFactory.isMeltedAtRoomTemperature(obj)) {
+							return true;
+						}
+					}
 				}
 			}
 		}

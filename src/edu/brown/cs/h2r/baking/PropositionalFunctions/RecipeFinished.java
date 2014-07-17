@@ -25,6 +25,7 @@ public class RecipeFinished extends BakingPropositionalFunction {
 		else
 		{*/
 		List<ObjectInstance> ingredients = state.getObjectsOfTrueClass(IngredientFactory.ClassNameComplex);
+		ingredients.addAll(state.getObjectsOfTrueClass(IngredientFactory.ClassNameSimple));
 		for (ObjectInstance ingredient: ingredients) {
 			if (Recipe.isSuccess(state, this.topLevelIngredient, ingredient)) {
 				return true;

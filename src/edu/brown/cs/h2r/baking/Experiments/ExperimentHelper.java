@@ -135,7 +135,7 @@ public class ExperimentHelper {
 		return nextState;
 	}
 	
-	public static void checkIngredientCompleted(IngredientRecipe ingredient,
+	public static String makeSwappedIngredientObject(IngredientRecipe ingredient,
 			State endState, List<ObjectInstance> finalObjects,
 			List<ObjectInstance> containerObjects) {
 		ObjectInstance namedIngredient;
@@ -153,8 +153,10 @@ public class ExperimentHelper {
 				ContainerFactory.addIngredient(containerInstance, ingredient.getName());
 				endState.removeObject(obj);
 				endState.addObject(namedIngredient);
+				return namedIngredient.getName();
 			}
 		}
+		return null;
 	}
 	
 	public static State setPrimaryAgent(State state, String agent)

@@ -15,12 +15,12 @@ public class BakingPropositionalFunction extends PropositionalFunction {
 		this.topLevelIngredient = ingredient;
 	}
 	@Override
-	public boolean isTrue(State s, String[] params) {
+	public boolean isTrue(State state, String[] params) {
 		return false;
 	}
 	
-	public void changeTopLevelIngredient(IngredientRecipe new_ingredient) {
-		this.topLevelIngredient = new_ingredient;
+	public void changeTopLevelIngredient(IngredientRecipe newIngredient) {
+		this.topLevelIngredient = newIngredient;
 	}
 	
 	public IngredientRecipe getTopLevelIngredient() {
