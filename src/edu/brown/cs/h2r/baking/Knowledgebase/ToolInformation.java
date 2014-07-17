@@ -26,11 +26,11 @@ public class ToolInformation extends LinkedHashMap<String, Object> {
 		this.put(key, object);
 	}
 	
-	public void setError(Boolean isError) {
+	public void setError(boolean isError) {
 		this.put(ToolInformation.ERROR_KEY, isError);
 	}
 	
-	public Boolean getError() {
+	public boolean getError() {
 		if (this.containsKey(ToolInformation.ERROR_KEY)) {
 			try {
 				return this.getBoolean(ToolInformation.ERROR_KEY);
@@ -54,16 +54,16 @@ public class ToolInformation extends LinkedHashMap<String, Object> {
 		this.setObject(key, value);
 	}
 	
-	public Boolean getBoolean(String key)  throws ToolCastException  {
+	public boolean getBoolean(String key)  throws ToolCastException  {
 		try {
-			return (Boolean)this.getObject(key);
+			return (boolean)this.getObject(key);
 		}
 		catch (ClassCastException e) {
 			throw e;
 		}
 	}
 	
-	public void setBoolean(String key, Boolean value) {
+	public void setBoolean(String key, boolean value) {
 		this.setObject(key, value);
 	}
 }
