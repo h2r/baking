@@ -9,7 +9,6 @@ import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
-import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 
 public class PeelAction extends BakingAction {
 	public static final String className = "peel";

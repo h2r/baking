@@ -47,8 +47,8 @@ public class IngredientKnowledgebase {
 			List<String> traits = null;
 			List<String> toolTraits = null;
 			try {
-				traits = info.getList(BakingInformation.ingredientTraits);
-				toolTraits = info.getList(BakingInformation.ingredientToolTraits);
+				traits = info.getListOfString(BakingInformation.ingredientTraits);
+				toolTraits = info.getListOfString(BakingInformation.ingredientToolTraits);
 			} catch (BakingCastException e) {
 				e.printStackTrace();
 			}
@@ -72,8 +72,8 @@ public class IngredientKnowledgebase {
 			List<String> traits = null;
 			List<List<String>> combinations = null;
 			try {
-				traits = info.getList(BakingInformation.combinationTraits);
-				combinations = info.getList(BakingInformation.combinationPossibleCombinations);
+				traits = info.getListOfString(BakingInformation.combinationTraits);
+				combinations = info.getListOfList(BakingInformation.combinationPossibleCombinations);
 			} catch (BakingCastException e) {
 				e.printStackTrace();
 			}

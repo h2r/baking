@@ -27,7 +27,6 @@ public class IngredientRecipe {
 	private List<IngredientRecipe> contents;
 	private int useCount;
 	private AbstractMap<String, IngredientRecipe> necessaryTraits;
-	private Set<String> recipeToolAttributes;
 	
 	public IngredientRecipe(String name, int attributes) {
 		this.name = name;
@@ -39,7 +38,6 @@ public class IngredientRecipe {
 		this.traits = new HashSet<String>();
 		this.toolTraits = new HashSet<String>();
 		this.toolAttributes = new HashSet<String>();
-		this.recipeToolAttributes = new HashSet<String>();
 	}
 	
 	public IngredientRecipe(String name, int attributes, Boolean swapped, List<IngredientRecipe> contents) {
@@ -54,7 +52,23 @@ public class IngredientRecipe {
 		this.necessaryTraits = new HashMap<String, IngredientRecipe>();
 		this.toolTraits = new HashSet<String>();
 		this.toolAttributes = new HashSet<String>();
-		this.recipeToolAttributes = new HashSet<String>();
+	}
+	
+	//Copy Constructor
+	public IngredientRecipe(String name, int attributes, boolean recipeBaked, boolean recipeHeated, List<IngredientRecipe> contents,
+			boolean swapped, int useCount, Set<String> traits, AbstractMap<String, IngredientRecipe> necessaryTraits,
+			Set<String> toolTraits, Set<String> toolAttributes) {
+		this.name = name;
+		this.setAttributes(attributes);
+		this.recipeBaked = recipeBaked;
+		this.recipeHeated = recipeHeated;
+		this.contents = new ArrayList<IngredientRecipe>(contents);
+		this.swapped = swapped;
+		this.useCount = useCount;
+		this.traits = new HashSet<String>(traits);
+		this.necessaryTraits = new HashMap<String, IngredientRecipe>(necessaryTraits);
+		this.toolTraits = new HashSet<String>(toolTraits);
+		this.toolAttributes = new HashSet<String>(toolAttributes);
 	}
 	
 	public Boolean isSimple() {
@@ -297,6 +311,25 @@ public class IngredientRecipe {
 		return newIng;
 	}
 	
+	// Makes an ingredient copy of the object. Any attributes the object doesn't have are
+	// ignored (and theingredient copy won't have them either), but any attributes the object
+	// does have will only transfer only if the ingredient has them too. This way, we prevent false positives
+	// for the failure method, but also properly catch a failure.
+	public IngredientRecipe makeFakeFailureCopy(ObjectInstance obj) {
+		boolean mixed = this.getMixed() && IngredientFactory.isMixedIngredient(obj);
+		boolean heated = this.getHeated() && IngredientFactory.isHeatedIngredient(obj);
+		boolean baked = this.getBaked() && IngredientFactory.isBakedIngredient(obj);
+		int attributes = generateAttributeNumber(mixed, heated, baked);
+		List<IngredientRecipe> contents = new ArrayList<IngredientRecipe>();
+		if (!this.isSimple()) {
+			contents.addAll(this.getContents());
+		}
+		IngredientRecipe newIng = new IngredientRecipe(this.getName(), attributes, this.getSwapped(),
+				contents);
+		newIng.addNecessaryTraits(this.getNecessaryTraits());
+		return newIng;
+	}
+	
 	public void setAttributes(int attributes) {
 		this.baked = ((attributes & Recipe.BAKED) == Recipe.BAKED) ? true : false;
 		this.heated = ((attributes & Recipe.HEATED) == Recipe.HEATED) ? true : false;
@@ -374,38 +407,31 @@ public class IngredientRecipe {
 		return this.recipeHeated;
 	}
 	
-	public void changeName(String newName) {
-		this.name = newName;
+	public IngredientRecipe getCopyWithNewName(String newName) {
+		int attributes = this.generateAttributeNumber();
+		boolean recipeBaked = this.getRecipeBaked();
+		boolean recipeHeated = this.getRecipeHeated();
+		List<IngredientRecipe> contents = this.getContents();
+		boolean swapped = this.getSwapped();
+		int useCount = this.getUseCount();
+		Set<String> traits = this.getTraits();
+		AbstractMap<String, IngredientRecipe> necessaryTraits = this.getNecessaryTraits();
+		Set<String> toolTraits = this.getToolTraits();
+		Set<String> toolAttributes = this.getToolAttributes();
+		return new IngredientRecipe(newName, attributes, recipeBaked, recipeHeated, contents,
+				swapped, useCount, traits, necessaryTraits, toolTraits, toolAttributes);
 	}
 	
-	public IngredientRecipe makeCopy() {
-		String name = this.getName();
-		int attributes = this.generateAttributeNumber();
-		IngredientRecipe newIng = new IngredientRecipe(name, attributes);
-		if( this.getRecipeBaked()) {
-			newIng.setRecipeBaked();
+	public boolean objectHasExtraAttribute(ObjectInstance object) {
+		if (IngredientFactory.isMixedIngredient(object)) {
+			return !this.getMixed();
 		}
-		if (this.getRecipeHeated()) {
-			newIng.setRecipeHeated();
+		if (IngredientFactory.isBakedIngredient(object)) {
+			return !this.getBaked();
 		}
-		if (!this.isSimple()) {
-			newIng.addContents(this.getContents());
+		if (IngredientFactory.isHeatedIngredient(object)) {
+			return !this.getHeated();
 		}
-		if(this.getSwapped()) {
-			newIng.setSwapped();
-		}
-		newIng.setUseCount(this.getUseCount());
-		newIng.addTraits(this.getTraits());
-		if (!this.getNecessaryTraits().isEmpty()) {
-			newIng.addNecessaryTraits(this.getNecessaryTraits());
-		}
-		newIng.addToolTraits(this.getToolTraits());
-		newIng.addToolAttributes(this.getToolAttributes());
-		return newIng;
-	}
-	public IngredientRecipe getCopyWithNewName(String newName) {
-		IngredientRecipe newIng = this.makeCopy();
-		newIng.changeName(newName);
-		return newIng;
+		return false;
 	}
 }

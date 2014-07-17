@@ -20,9 +20,7 @@ public class AllowMoving extends BakingPropositionalFunction {
 	@Override
 	public boolean isTrue(State state, String[] params) {
 		ObjectInstance space = state.getObject(params[2]);
-		ObjectInstance container = state.getObject(params[1]);
-		ObjectInstance currentSpace = state.getObject(ContainerFactory.getSpaceName(container));
-		
+		ObjectInstance container = state.getObject(params[1]);		
 		Set<String> contents = ContainerFactory.getContentNames(container);
 		
 		

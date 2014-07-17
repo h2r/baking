@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.TreeSet;
 
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
 import edu.brown.cs.h2r.baking.Knowledgebase.IngredientKnowledgebase;
@@ -301,9 +300,16 @@ public abstract class Recipe {
 			// If the recipe is complete, then we didn't fail. Go logic
 			return false;
 		}
-		
+		// Object has been heated/baked, when it wasn't supposed to!
+		if (ingredientRecipe.objectHasExtraAttribute(object)) {
+			return true;
+		}
 		if (IngredientFactory.isSwapped(object)) {
-			return ingredientRecipe.getName().equals(object.getName());
+			if (ingredientRecipe.getName().equals(object.getName())) {
+				if (ingredientRecipe.AttributesMatch(object)) {
+					return false;
+				}
+			}
 		}
 		
 		if (ingredientRecipe.isSimple())

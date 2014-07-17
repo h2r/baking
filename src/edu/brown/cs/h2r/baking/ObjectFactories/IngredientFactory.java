@@ -460,7 +460,9 @@ public class IngredientFactory {
 			}
 			if (match) {
 				// Check is swappedfor simple-ingredient subgoals
-				if (obj.getName().equals(goal.getName()) == !goal.getSwapped()) {
+				boolean bool1 = obj.getName().equals(goal.getName());
+				boolean bool2 = !goal.getSwapped();
+				if (bool1 == bool2) {
 					if (IngredientFactory.getUseCount(obj) <= 1) {
 						ObjectInstance hidden = makeHiddenObjectCopy(state, domain, obj);
 						ObjectInstance container = state.getObject(IngredientFactory.getContainer(hidden));

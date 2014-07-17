@@ -84,20 +84,21 @@ public class BakingInformation extends LinkedHashMap<String, Object> {
 		}
 	}
 	
-	public List getList(String key) throws BakingCastException {
+	public List<String> getListOfString(String key) throws BakingCastException {
 		try {
-			return (ArrayList)this.get(key);
+			return (ArrayList<String>)this.get(key);
 		}
 		catch (ClassCastException e) {
 			throw e;
 		}
 	}
 	
-	public void setList(String key, List value) {
-		this.setObject(key, value);
-	}
-	
-	public void setMap(String key, AbstractMap<String, Object> map) {
-		AbstractMap<String, Object> toSet = new LinkedHashMap<String, Object>(map);
+	public List<List<String>> getListOfList(String key) throws BakingCastException {
+		try {
+			return (ArrayList<List<String>>)this.get(key);
+		}
+		catch (ClassCastException e) {
+			throw e;
+		}
 	}
 }

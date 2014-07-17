@@ -97,7 +97,7 @@ public class MixAction extends BakingAction {
 			this.combineIngredients(state, domain, ingredient, container, res);
 		} else {
 			Set<ObjectInstance> hidden_copies = new HashSet<ObjectInstance>();
-			Set<String> traits = new TreeSet<String>();
+			Set<String> traits;
 			Set<ObjectInstance> objects = new HashSet<ObjectInstance>();
 			for (String obj : contents) {
 				objects.add(state.getObject(obj));
@@ -106,7 +106,7 @@ public class MixAction extends BakingAction {
 			objects.toArray(objectArray);
 			//find mutual traits
 			Set<String> allTraits = IngredientFactory.getTraits(objectArray[0]);
-			traits = new HashSet(IngredientFactory.getTraits(objectArray[1]));
+			traits = new HashSet<String>(IngredientFactory.getTraits(objectArray[1]));
 			traits.retainAll(allTraits);
 		
 			// hide objects
@@ -150,33 +150,31 @@ public class MixAction extends BakingAction {
 		Set<String> traits = new HashSet<String>(recipe.getTraits());
 		//get the actual traits from the trait thing
 		Set<String> ings = ContainerFactory.getContentNames(container);
-		ObjectInstance new_ing = IngredientFactory.getNewComplexIngredientObjectInstance(
+		ObjectInstance newIng = IngredientFactory.getNewComplexIngredientObjectInstance(
 				domain.getObjectClass(IngredientFactory.ClassNameComplex), toswap, Recipe.NO_ATTRIBUTES, true, "",new TreeSet<String>(), new TreeSet<String>(), traits, ings);
 		// Make the hidden Copies
-		Set<ObjectInstance> hidden_copies = new HashSet<ObjectInstance>();
+		Set<ObjectInstance> hiddenCopies = new HashSet<ObjectInstance>();
 		for (String name : ings) {
 			ObjectInstance ob = state.getObject(name);
-			//if (!IngredientFactory.isSimple(ob)) {
-				hidden_copies.add(IngredientFactory.makeHiddenObjectCopy(state, domain, ob));
-			//}
+			hiddenCopies.add(IngredientFactory.makeHiddenObjectCopy(state, domain, ob));
 		}
 		ContainerFactory.removeContents(container);
 		for (String name : ings) {
 			state.removeObject(state.getObject(name));
 		}
-		for (ObjectInstance ob : hidden_copies) {
+		for (ObjectInstance ob : hiddenCopies) {
 			state.addObject(ob);
 		}
 		ContainerFactory.addIngredient(container, toswap);
-		IngredientFactory.changeIngredientContainer(new_ing, container.getName());
+		IngredientFactory.changeIngredientContainer(newIng, container.getName());
 		
 		ObjectInstance receivingSpace = state.getObject(ContainerFactory.getSpaceName(container));
 		if (SpaceFactory.isBaking(receivingSpace) && SpaceFactory.getOnOff(receivingSpace)) {
-			IngredientFactory.bakeIngredient(new_ing);
+			IngredientFactory.bakeIngredient(newIng);
 		} else if (SpaceFactory.isHeating(receivingSpace) && SpaceFactory.getOnOff(receivingSpace)) {
-			IngredientFactory.heatIngredient(new_ing);
+			IngredientFactory.heatIngredient(newIng);
 		}
-		state.addObject(new_ing);
+		state.addObject(newIng);
 	}
 	
 	public String makeSwappedIngredient(State state, ObjectInstance newIngredient) {

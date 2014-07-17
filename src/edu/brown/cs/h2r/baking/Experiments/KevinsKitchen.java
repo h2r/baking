@@ -1,7 +1,6 @@
 package edu.brown.cs.h2r.baking.Experiments;
 
 import java.io.IOException;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -30,7 +29,6 @@ import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.SADomain;
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
-import edu.brown.cs.h2r.baking.Knowledgebase.BakingParser;
 import edu.brown.cs.h2r.baking.Knowledgebase.IngredientKnowledgebase;
 import edu.brown.cs.h2r.baking.Knowledgebase.ToolKnowledgebase;
 import burlap.oomdp.core.Domain;
@@ -113,8 +111,6 @@ public class KevinsKitchen implements DomainGenerator {
 				state.addObject(ToolFactory.getNewSimpleToolObjectInstance(domain, name, toolTrait, toolAttribute, SpaceFactory.SPACE_COUNTER));
 			}
 		}
-		
-		BakingParser info = new BakingParser();
 		
 		// Out of all the ingredients in our kitchen, plan over only those that might be useful!
 		IngredientKnowledgebase knowledgebase = new IngredientKnowledgebase();
@@ -250,6 +246,7 @@ public class KevinsKitchen implements DomainGenerator {
 		EpisodeAnalysis episodeAnalysis = p.evaluateBehavior(currentState, rf, recipeTerminalFunction,100);
 
 		State endState = episodeAnalysis.getState(episodeAnalysis.stateSequence.size() - 1);
+		//System.out.println("Succeeded : " + recipeTerminalFunction.isTerminal(endState));
 
 		List<ObjectInstance> finalObjects = 
 				new ArrayList<ObjectInstance>(endState.getObjectsOfTrueClass(IngredientFactory.ClassNameComplex));

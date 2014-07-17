@@ -1,6 +1,5 @@
 package edu.brown.cs.h2r.baking.ObjectFactories;
 
-import java.util.List;
 import java.util.Set;
 
 import edu.brown.cs.h2r.baking.IngredientRecipe;
