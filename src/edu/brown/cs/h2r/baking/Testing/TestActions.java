@@ -3,6 +3,7 @@ package edu.brown.cs.h2r.baking.Testing;
 import org.junit.Assert;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 import org.junit.*;
@@ -14,7 +15,7 @@ import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.SADomain;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
-import edu.brown.cs.h2r.baking.Knowledgebase.IngredientKnowledgebase;
+import edu.brown.cs.h2r.baking.Knowledgebase.Knowledgebase;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
@@ -25,7 +26,7 @@ import edu.brown.cs.h2r.baking.actions.*;
 
 public class TestActions {
 
-	IngredientKnowledgebase knowledgebase;
+	Knowledgebase knowledgebase;
 	State state;
 	Domain domain;
 	List<ObjectInstance> allIngredients;
@@ -97,10 +98,9 @@ public class TestActions {
 	
 	@Test
 	public void testMixAction() {
-		topLevelIngredient = new Brownies().topLevelIngredient;
-		knowledgebase = new IngredientKnowledgebase();
-		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
-		knowledgebase.newCombinationMap("IngredientCombinations.txt");
+		Recipe recipe = new Brownies();
+		knowledgebase = new Knowledgebase();
+		allIngredients = knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
 		allIngredients.add(IngredientFactory.getNewIngredientInstance(knowledgebase.
 				getIngredient("orange_juice"), "orange_juice", domain.getObjectClass("simple_ingredient")));
 		this.setUpState();
@@ -160,10 +160,9 @@ public class TestActions {
 	
 	@Test
 	public void testMixActionOnStove() {
-		topLevelIngredient = new Brownies().topLevelIngredient;
-		knowledgebase = new IngredientKnowledgebase();
-		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
-		knowledgebase.newCombinationMap("IngredientCombinations.txt");
+		Recipe recipe = new Brownies();
+		knowledgebase = new Knowledgebase();
+		allIngredients = knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
 		this.setUpState();
 		Action mix = new MixAction(domain, topLevelIngredient);
 		((MixAction)mix).changeKnowledgebase(knowledgebase);
@@ -190,9 +189,9 @@ public class TestActions {
 		
 	@Test
 	public void testMoveAction() {	
-		topLevelIngredient = new Brownies().topLevelIngredient;
-		knowledgebase = new IngredientKnowledgebase();
-		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
+		Recipe recipe = new Brownies();
+		knowledgebase = new Knowledgebase();
+		allIngredients = knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
 		this.setUpState();
 		Action move = new MoveAction(domain, topLevelIngredient);
 		
@@ -237,9 +236,9 @@ public class TestActions {
 	
 	@Test
 	public void testMoveActionBake() {
-		topLevelIngredient = new Brownies().topLevelIngredient;
-		knowledgebase = new IngredientKnowledgebase();
-		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
+		Recipe recipe = new Brownies();
+		knowledgebase = new Knowledgebase();
+		allIngredients = knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
 		this.setUpState();
 		Action move = new MoveAction(domain, topLevelIngredient);
 		Action switch_a = new SwitchAction(domain);
@@ -272,9 +271,9 @@ public class TestActions {
 	
 	@Test
 	public void testMoveActionMelt() {
-		topLevelIngredient = new Brownies().topLevelIngredient;
-		knowledgebase = new IngredientKnowledgebase();
-		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
+		Recipe recipe = new Brownies();
+		knowledgebase = new Knowledgebase();
+		allIngredients = knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
 		this.setUpState();
 		Action move = new MoveAction(domain, topLevelIngredient);
 		Action switchA = new SwitchAction(domain);
@@ -301,9 +300,9 @@ public class TestActions {
 	
 	@Test
 	public void testPourAction() {
-		topLevelIngredient = new Brownies().topLevelIngredient;
-		knowledgebase = new IngredientKnowledgebase();
-		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
+		Recipe recipe = new Brownies();
+		knowledgebase = new Knowledgebase();
+		allIngredients = knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
 		this.setUpState();
 		Action pour = new PourAction(domain, topLevelIngredient);
 		
@@ -333,9 +332,9 @@ public class TestActions {
 	
 	@Test
 	public void testPourToStove() {
-		topLevelIngredient = new Brownies().topLevelIngredient;
-		knowledgebase = new IngredientKnowledgebase();
-		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
+		Recipe recipe = new Brownies();
+		knowledgebase = new Knowledgebase();
+		allIngredients = knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
 		this.setUpState();
 		Action pour = new PourAction(domain, topLevelIngredient);
 		Action switchA = new SwitchAction(domain);
@@ -355,9 +354,9 @@ public class TestActions {
 	
 	@Test
 	public void testSwitchAction() {
-		topLevelIngredient = new Brownies().topLevelIngredient;
-		knowledgebase = new IngredientKnowledgebase();
-		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
+		Recipe recipe = new Brownies();
+		knowledgebase = new Knowledgebase();
+		allIngredients = knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
 		this.setUpState();
 		Action switchA = new SwitchAction(domain);
 		
@@ -381,9 +380,9 @@ public class TestActions {
 	
 	@Test
 	public void testSwitchActionBake() {
-		topLevelIngredient = new Brownies().topLevelIngredient;
-		knowledgebase = new IngredientKnowledgebase();
-		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
+		Recipe recipe = new Brownies();
+		knowledgebase = new Knowledgebase();
+		allIngredients = knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
 		this.setUpState();
 		Action move = new MoveAction(domain, topLevelIngredient);
 		Action switchA = new SwitchAction(domain);
@@ -413,9 +412,9 @@ public class TestActions {
 	
 	@Test
 	public void testSwitchActionMelt() {
-		topLevelIngredient = new Brownies().topLevelIngredient;
-		knowledgebase = new IngredientKnowledgebase();
-		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
+		Recipe recipe = new Brownies();
+		knowledgebase = new Knowledgebase();
+		allIngredients = knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
 		this.setUpState();
 		Action move = new MoveAction(domain, topLevelIngredient);
 		Action switchA = new SwitchAction(domain);
@@ -436,10 +435,10 @@ public class TestActions {
 	}
 	
 	@Test
-	public void testUseAction() {
-		topLevelIngredient = new MashedPotatoes().topLevelIngredient;
-		knowledgebase = new IngredientKnowledgebase();
-		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
+	public void testUseActionSimple() {
+		Recipe recipe = new MashedPotatoes();
+		knowledgebase = new Knowledgebase();
+		allIngredients = knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
 		this.setUpState();
 		Action use = new UseAction(domain, topLevelIngredient);
 		
@@ -461,5 +460,148 @@ public class TestActions {
 		BakingAsserts.assertHasToolAttribute(state.getObject("potatoes"), "peeled");
 		BakingAsserts.assertActionNotApplicable(use, state, new String[] {"human", "peeler", "butter_bowl"});
 
+	}
+	
+	@Test
+	public void testToolCarryEmpty() {
+		Recipe recipe = new MashedPotatoes();		
+		knowledgebase = new Knowledgebase();
+		knowledgebase.addTools(domain, state, SpaceFactory.SPACE_COUNTER);
+		allIngredients = knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
+		this.setUpState();
+		Action use = new UseAction(domain, topLevelIngredient);
+		
+		ObjectInstance potatoes = state.getObject("potatoes");
+		IngredientFactory.addToolTrait(potatoes, "strainable");
+		
+		state = use.performAction(state, new String[] {"human", "strainer", "potatoes_bowl"});
+		ObjectInstance strainer = state.getObject("strainer");
+		BakingAsserts.assertToolHasIngredient(strainer, "potatoes");
+		BakingAsserts.assertContainerIsEmpty(state.getObject("potatoes_bowl"));
+	}
+	
+	@Test
+	public void testToolCarryInclude() {
+		Recipe recipe = new MashedPotatoes();		
+		knowledgebase = new Knowledgebase();
+		knowledgebase.addTools(domain, state, SpaceFactory.SPACE_COUNTER);
+		allIngredients = knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
+		this.setUpState();
+		Action use = new UseAction(domain, topLevelIngredient);
+		Action pour = new PourAction(domain, topLevelIngredient);
+		ObjectInstance fakeTool = ToolFactory.getNewCarryingToolObjectInstance(domain, "fakeTool", "fake",
+				"faked", SpaceFactory.SPACE_COUNTER, Arrays.asList("liquid"), new HashSet<String>());
+		state.addObject(fakeTool);
+		
+		ObjectInstance water = state.getObject("water");
+		IngredientFactory.addToolTrait(water, "fake");
+		
+		state = pour.performAction(state, new String[] {"human", "water_bowl", "mixing_bowl_1"});
+		state = pour.performAction(state, new String[] {"human", "potatoes_bowl", "mixing_bowl_1"});
+		state = use.performAction(state, new String[] {"human", "fakeTool", "mixing_bowl_1"});
+		
+		
+		ObjectInstance strainer = state.getObject("fakeTool");
+		BakingAsserts.assertToolHasIngredient(strainer, "water");
+		BakingAsserts.assertContainerContains(state.getObject("mixing_bowl_1"), "potatoes");
+	}
+	
+	@Test
+	public void testToolCarryIncludeNotApplicable() {
+		Recipe recipe = new MashedPotatoes();
+		knowledgebase = new Knowledgebase();
+		knowledgebase.addTools(domain, state, SpaceFactory.SPACE_COUNTER);
+		allIngredients = knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
+		this.setUpState();
+		Action use = new UseAction(domain, topLevelIngredient);
+		Action pour = new PourAction(domain, topLevelIngredient);
+		ObjectInstance fakeTool = ToolFactory.getNewCarryingToolObjectInstance(domain, "fakeTool", "fake",
+				"faked", SpaceFactory.SPACE_COUNTER, Arrays.asList("liquid", "salt"), new HashSet<String>());
+		state.addObject(fakeTool);
+		
+		ObjectInstance water = state.getObject("water");
+		IngredientFactory.addToolTrait(water, "fake");
+		
+		state = pour.performAction(state, new String[] {"human", "water_bowl", "mixing_bowl_1"});
+		state = pour.performAction(state, new String[] {"human", "potatoes_bowl", "mixing_bowl_1"});
+		state = pour.performAction(state, new String[] {"human", "salt_bowl", "mixing_bowl_1"});
+		// Fake tool includes only liquids and salts. But, only water has the fake tooltrait, so
+		// fake tool should be able to do stuff to salt (since it is a salt, which is included for the tool)
+		// but salt doesn't have the correct tool trait.
+		BakingAsserts.assertActionNotApplicable(use, state, new String[] {"human", "fakeTool", "mixing_bowl_1"});
+	}
+	
+	@Test
+	public void testToolCarryExclude() {
+		Recipe recipe = new MashedPotatoes();
+		knowledgebase = new Knowledgebase();
+		knowledgebase.addTools(domain, state, SpaceFactory.SPACE_COUNTER);
+		allIngredients = knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
+		this.setUpState();
+		Action use = new UseAction(domain, topLevelIngredient);
+		Action pour = new PourAction(domain, topLevelIngredient);
+		
+		ObjectInstance potatoes = state.getObject("potatoes");
+		IngredientFactory.addToolTrait(potatoes, "strainable");
+		
+		state = pour.performAction(state, new String[] {"human", "water_bowl", "mixing_bowl_1"});
+		state = pour.performAction(state, new String[] {"human", "potatoes_bowl", "mixing_bowl_1"});
+		state = use.performAction(state, new String[] {"human", "strainer", "mixing_bowl_1"});
+		
+		
+		ObjectInstance strainer = state.getObject("strainer");
+		BakingAsserts.assertToolHasIngredient(strainer, "potatoes");
+		BakingAsserts.assertContainerContains(state.getObject("mixing_bowl_1"), "water");
+	}
+	
+	@Test
+	public void testToolCarryExcludeNotApplicable() {
+		Recipe recipe = new MashedPotatoes();
+		knowledgebase = new Knowledgebase();
+		knowledgebase.addTools(domain, state, SpaceFactory.SPACE_COUNTER);
+		allIngredients = knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
+		this.setUpState();
+		Action use = new UseAction(domain, topLevelIngredient);
+		Action pour = new PourAction(domain, topLevelIngredient);
+		
+		ObjectInstance potatoes = state.getObject("potatoes");
+		IngredientFactory.addToolTrait(potatoes, "strainable");
+		
+		state = pour.performAction(state, new String[] {"human", "water_bowl", "mixing_bowl_1"});
+		state = pour.performAction(state, new String[] {"human", "potatoes_bowl", "mixing_bowl_1"});
+		state = pour.performAction(state, new String[] {"human", "salt_bowl", "mixing_bowl_1"});
+		
+		// Strainer would exclude all liquids (water), so it would work on salt and potatoes. But, only
+		// potatoes are "strainable", so strainer can't be used on the bowl since salt should be strained,
+		// but it doens't have the correct toolTrait.
+		BakingAsserts.assertActionNotApplicable(use, state, new String[] {"human", "strainer", "mixing_bowl_1"});
+	}
+
+	
+	@Test
+	public void testToolCarryFull() {
+		Recipe recipe = new MashedPotatoes();
+		knowledgebase = new Knowledgebase();
+		recipe.setUpSubgoals(domain);
+		recipe.addIngredientSubgoals();
+		allIngredients = knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
+		knowledgebase.addTools(domain, state, SpaceFactory.SPACE_COUNTER);
+		this.setUpState();
+		Action use = new UseAction(domain, topLevelIngredient);
+		Action pour = new PourAction(domain, topLevelIngredient);
+		
+		ObjectInstance potatoes = state.getObject("potatoes");
+		IngredientFactory.addToolTrait(potatoes, "strainable");
+		
+		state = pour.performAction(state, new String[] {"human", "water_bowl", "mixing_bowl_1"});
+		state = pour.performAction(state, new String[] {"human", "potatoes_bowl", "mixing_bowl_1"});
+		state = use.performAction(state, new String[] {"human", "strainer", "mixing_bowl_1"});
+		ObjectInstance strainer = state.getObject("strainer");
+		BakingAsserts.assertToolHasIngredient(strainer, "potatoes");
+		BakingAsserts.assertContainerContains(state.getObject("mixing_bowl_1"), "water");
+		
+		state = use.performAction(state, new String[] {"human", "strainer", "mixing_bowl_2"});
+		BakingAsserts.assertToolIsEmpty(state.getObject("strainer"));
+		BakingAsserts.assertContainerContains(state.getObject("mixing_bowl_2"), "potatoes");
 	}
 }

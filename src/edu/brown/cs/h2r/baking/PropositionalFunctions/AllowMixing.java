@@ -17,6 +17,7 @@ public class AllowMixing extends BakingPropositionalFunction {
 	}
 	@Override
 	public boolean isTrue(State state, String[] params) {
+		
 		ObjectInstance containerInstance = state.getObject(params[1]);
 		int contentAmount = ContainerFactory.getContentNames(containerInstance).size();
 		int neededAmount =  this.topLevelIngredient.getContents().size() 

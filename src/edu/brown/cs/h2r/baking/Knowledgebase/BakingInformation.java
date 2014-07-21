@@ -11,7 +11,9 @@ public class BakingInformation extends LinkedHashMap<String, Object> {
 	private static final String ERROR_KEY= "Error";
 	public static final String toolTrait = "trait";
 	public static final String toolAttribute = "attribute";
-	public static final String toolTransportable = "transportable";
+	public static final String toolCanCarry = "canCarry";
+	public static final String toolInclude = "include";
+	public static final String toolExclude = "exclude";
 	
 	public static final String ingredientTraits = "traits";
 	public static final String ingredientToolTraits = "toolTraits";

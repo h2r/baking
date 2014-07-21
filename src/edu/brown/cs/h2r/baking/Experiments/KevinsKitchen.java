@@ -29,8 +29,7 @@ import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.SADomain;
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
-import edu.brown.cs.h2r.baking.Knowledgebase.IngredientKnowledgebase;
-import edu.brown.cs.h2r.baking.Knowledgebase.ToolKnowledgebase;
+import edu.brown.cs.h2r.baking.Knowledgebase.Knowledgebase;
 import burlap.oomdp.core.Domain;
 import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
@@ -99,13 +98,10 @@ public class KevinsKitchen implements DomainGenerator {
 			state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, SpaceFactory.SPACE_COUNTER));
 		}
 		
-		// Get the tools!
-		ToolKnowledgebase toolKnowledgebase = new ToolKnowledgebase();
-		toolKnowledgebase.addTools(domain, state, "counter");
-		
 		// Out of all the ingredients in our kitchen, plan over only those that might be useful!
-		IngredientKnowledgebase knowledgebase = new IngredientKnowledgebase();
-		this.allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, recipe.topLevelIngredient);
+		Knowledgebase knowledgebase = new Knowledgebase();
+		this.allIngredients = knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
+		knowledgebase.addTools(domain, state, SpaceFactory.SPACE_COUNTER);
 	
 		System.out.println("\n\nPlanner will now plan the "+recipe.topLevelIngredient.getName()+" recipe!");
 		
@@ -164,11 +160,13 @@ public class KevinsKitchen implements DomainGenerator {
 		}
 
 		for (ObjectInstance ingredientInstance : ingredientInstances) {
-			if (IngredientFactory.getUseCount(ingredientInstance) >= 1) {
-				ObjectInstance ing = currentState.getObject(ingredientInstance.getName());
-				IngredientFactory.changeIngredientContainer(ing, ing.getName()+"_bowl");
-				ContainerFactory.addIngredient(currentState.getObject(ing.getName()+"_bowl"), ing.getName());
-				SpaceFactory.addContainer(currentState.getObject(SpaceFactory.SPACE_COUNTER), currentState.getObject(ing.getName()+"_bowl"));
+			if (IngredientFactory.isHiddenIngredient(ingredientInstance)) {
+				if (IngredientFactory.getUseCount(ingredientInstance) >= 1) {
+					ObjectInstance ing = currentState.getObject(ingredientInstance.getName());
+					IngredientFactory.changeIngredientContainer(ing, ing.getName()+"_bowl");
+					ContainerFactory.addIngredient(currentState.getObject(ing.getName()+"_bowl"), ing.getName());
+					SpaceFactory.addContainer(currentState.getObject(SpaceFactory.SPACE_COUNTER), currentState.getObject(ing.getName()+"_bowl"));
+				}
 			}
 		}
 		
@@ -238,7 +236,6 @@ public class KevinsKitchen implements DomainGenerator {
 		EpisodeAnalysis episodeAnalysis = p.evaluateBehavior(currentState, rf, recipeTerminalFunction,100);
 
 		State endState = episodeAnalysis.getState(episodeAnalysis.stateSequence.size() - 1);
-		//System.out.println("Succeeded : " + recipeTerminalFunction.isTerminal(endState));
 
 		List<ObjectInstance> finalObjects = 
 				new ArrayList<ObjectInstance>(endState.getObjectsOfTrueClass(IngredientFactory.ClassNameComplex));
@@ -262,11 +259,11 @@ public class KevinsKitchen implements DomainGenerator {
 		KevinsKitchen kitchen = new KevinsKitchen();
 		Domain domain = kitchen.generateDomain();
 		kitchen.PlanRecipeOneAgent(domain, new MashedPotatoes());
-		kitchen.PlanRecipeOneAgent(domain, new Brownies());
-		kitchen.PlanRecipeOneAgent(domain, new DeviledEggs());
-		kitchen.PlanRecipeOneAgent(domain, new CucumberSalad());
-		kitchen.PlanRecipeOneAgent(domain, new MoltenLavaCake());
-		kitchen.PlanRecipeOneAgent(domain, new PeanutButterCookies());
-		kitchen.PlanRecipeOneAgent(domain, new PecanPie());
+		//kitchen.PlanRecipeOneAgent(domain, new Brownies());
+		//kitchen.PlanRecipeOneAgent(domain, new DeviledEggs());
+		//kitchen.PlanRecipeOneAgent(domain, new CucumberSalad());
+		//kitchen.PlanRecipeOneAgent(domain, new MoltenLavaCake());
+		//kitchen.PlanRecipeOneAgent(domain, new PeanutButterCookies());
+		//kitchen.PlanRecipeOneAgent(domain, new PecanPie());
 	}
 }

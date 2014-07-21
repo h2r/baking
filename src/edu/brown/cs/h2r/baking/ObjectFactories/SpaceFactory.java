@@ -180,4 +180,8 @@ public class SpaceFactory {
 		int switchableInt = switchable ? SpaceFactory.SWITCHABLE : 0;
 		return bakingInt|heatingInt|workingInt|switchableInt;
 	}
+	
+	public static boolean spaceWillHeat(ObjectInstance space) {
+		return SpaceFactory.isHeating(space) && SpaceFactory.getOnOff(space);
+	}
 }

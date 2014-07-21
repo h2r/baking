@@ -13,13 +13,15 @@ import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
+import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.ToolFactory;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 
 
-public class IngredientKnowledgebase {
+public class Knowledgebase {
 	
 	public static final String NONMELTABLE = "unsaturated";
 	public static final String LUBRICANT = "lubricant";
@@ -27,8 +29,9 @@ public class IngredientKnowledgebase {
 	private AbstractMap<String, ArrayList<Set<String>>> combinationMap;
 	private AbstractMap<String, IngredientRecipe> allIngredients;
 	private AbstractMap<String, Set<String>> traitMap, toolTraitMap, combinationTraitMap;
+	private AbstractMap<String, BakingInformation> toolMap;
 	private BakingParser parser;
-	public IngredientKnowledgebase() {
+	public Knowledgebase() {
 		this.parser = new BakingParser();
 		this.traitMap = new HashMap<String, Set<String>>();
 		this.toolTraitMap = new HashMap<String, Set<String>>();
@@ -37,6 +40,7 @@ public class IngredientKnowledgebase {
 		this.combinationTraitMap = new HashMap<String, Set<String>>();
 		this.combinationMap = new HashMap<String, ArrayList<Set<String>>>();
 		this.generateCombinations();
+		this.toolMap = parser.getToolMap();
 	}
 	
 	private void generateAllIngredients() {
@@ -86,6 +90,38 @@ public class IngredientKnowledgebase {
 		}
 	}
 	
+	public void addTools(Domain domain, State state, String space) {
+		for (Entry<String, BakingInformation> entry : this.toolMap.entrySet()) {
+			String name = entry.getKey();
+			BakingInformation info = entry.getValue();
+			String toolTrait = null;
+			String toolAttribute = null;
+			Set<String> includes = new HashSet<String>();
+			Set<String> excludes = new HashSet<String>();
+			boolean transportable = false;
+			try {
+				toolTrait = info.getString(BakingInformation.toolTrait);
+				toolAttribute = info.getString(BakingInformation.toolAttribute);
+				transportable = info.getBoolean(BakingInformation.toolCanCarry);
+				if (info.containsKey(BakingInformation.toolExclude)) {
+					excludes = new HashSet<String>(info.getListOfString(BakingInformation.toolExclude));
+				}
+				if (info.containsKey(BakingInformation.toolInclude)) {
+					includes = new HashSet<String>(info.getListOfString(BakingInformation.toolInclude));
+				}
+			} catch (BakingCastException e) {
+				e.printStackTrace();
+			}
+			
+			if (transportable) {
+				state.addObject(ToolFactory.getNewCarryingToolObjectInstance(domain, name, toolTrait, toolAttribute,
+						space,includes, excludes));
+			} else {
+				state.addObject(ToolFactory.getNewSimpleToolObjectInstance(domain, name, toolTrait, toolAttribute, space));
+			}
+		}
+	}
+	
 	public List<IngredientRecipe> getIngredientList() {
 		List<IngredientRecipe> ingredients = new ArrayList<IngredientRecipe>();
 		ingredients.addAll(allIngredients.values());
@@ -107,6 +143,14 @@ public class IngredientKnowledgebase {
 		return ingredientObjects;
 	}
 	
+	public List<ObjectInstance> getRecipeObjectInstanceList(State state, Domain domain, Recipe recipe) {
+		List<ObjectInstance> objs = new ArrayList<ObjectInstance>();
+		for (BakingSubgoal sg : recipe.getIngredientSubgoals()) {
+			IngredientRecipe ing = sg.getIngredient();
+			objs.addAll(this.getPotentialIngredientObjectInstanceList(state, domain, ing));
+		}
+		return objs;
+	}
 	public List<ObjectInstance> getPotentialIngredientObjectInstanceList(State state, Domain domain, IngredientRecipe tlIngredient) {
 		List<ObjectInstance> ingredientObjects = new ArrayList<ObjectInstance>();
 		List<IngredientRecipe> ingredients = this.getPotentialIngredientList(state, domain, tlIngredient);
@@ -227,9 +271,5 @@ public class IngredientKnowledgebase {
 		}
 		// no combination found, return an empty string.
 		return "";
-	}
-	
-	public void newCombinationMap(String filename) {
-		this.combinationMap = new CombinationParser(filename).getMap();
 	}
 }

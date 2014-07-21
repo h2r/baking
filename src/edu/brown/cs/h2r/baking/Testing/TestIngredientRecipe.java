@@ -15,7 +15,7 @@ import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.SADomain;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
-import edu.brown.cs.h2r.baking.Knowledgebase.IngredientKnowledgebase;
+import edu.brown.cs.h2r.baking.Knowledgebase.Knowledgebase;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
@@ -24,7 +24,7 @@ import edu.brown.cs.h2r.baking.Recipes.*;
 
 
 public class TestIngredientRecipe {
-	IngredientKnowledgebase knowledgebase;
+	Knowledgebase knowledgebase;
 	State state;
 	Domain domain;
 	List<String> constituentNecessaryTraits, constituentIngredientList, swappedIngredientList;
@@ -49,7 +49,7 @@ public class TestIngredientRecipe {
 			state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "counter"));
 		}
 		
-		knowledgebase = new IngredientKnowledgebase();
+		knowledgebase = new Knowledgebase();
 		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
 		ObjectClass containerClass = domain.getObjectClass(ContainerFactory.ClassName);		
 		ObjectInstance counterSpace = state.getObject("counter");

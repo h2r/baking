@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import edu.brown.cs.h2r.baking.IngredientRecipe;
-import edu.brown.cs.h2r.baking.Knowledgebase.IngredientKnowledgebase;
+import edu.brown.cs.h2r.baking.Knowledgebase.Knowledgebase;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.State;
 
@@ -27,7 +27,7 @@ public class IngredientNecessaryForRecipe extends BakingPropositionalFunction {
 					return true;
 				}
 			}
-			IngredientKnowledgebase knowledgebase = new IngredientKnowledgebase();
+			Knowledgebase knowledgebase = new Knowledgebase();
 			Set<String> ingredientTraits = this.topLevelIngredient.getConstituentNecessaryTraits().keySet();
 			Set<String> traits = knowledgebase.getTraits(name);
 			for (String trait : traits) {

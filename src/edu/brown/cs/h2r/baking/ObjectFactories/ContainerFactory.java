@@ -1,5 +1,6 @@
 package edu.brown.cs.h2r.baking.ObjectFactories;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
@@ -62,7 +63,7 @@ public class ContainerFactory {
 	}
 	
 	public static ObjectInstance getNewObjectInstance(ObjectClass containerClass, String name, 
-			int attributes, List<String> contents, String containerSpace) {
+			int attributes, Collection<String> contents, String containerSpace) {
 		ObjectInstance newInstance = new ObjectInstance(containerClass, name);
 		setAttributes(newInstance, attributes);
 		newInstance.setValue(ContainerFactory.attributeGreased, 0);
@@ -135,6 +136,18 @@ public class ContainerFactory {
 			String name, String ingredient, String containerSpace) {
 		return ContainerFactory.getNewObjectInstance(domain.getObjectClass(ContainerFactory.ClassName), 
 				name, ContainerFactory.NO_ATTRIBUTES, Arrays.asList(ingredient), containerSpace);
+	}
+	
+	public static ObjectInstance getNewFakeToolContainerObjectInstance(ObjectClass containerClass, 
+			String name, Collection<String> contents, String containerSpace) {
+		return ContainerFactory.getNewObjectInstance(containerClass, name,
+				ContainerFactory.NO_ATTRIBUTES, contents, containerSpace);
+	}
+	
+	public static ObjectInstance getNewFakeToolContainerObjectInstance(Domain domain, String name,
+			Collection<String> contents, String containerSpace) {
+		return ContainerFactory.getNewObjectInstance(domain.getObjectClass(ContainerFactory.ClassName), 
+				name, ContainerFactory.NO_ATTRIBUTES, contents, containerSpace);
 	}
 
 	public static void addIngredient(ObjectInstance container, String ingredient) {

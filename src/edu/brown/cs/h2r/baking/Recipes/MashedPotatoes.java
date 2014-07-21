@@ -5,9 +5,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import burlap.oomdp.core.Domain;
+import burlap.oomdp.core.ObjectInstance;
 import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
+import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
 
@@ -24,8 +27,7 @@ public class MashedPotatoes extends Recipe {
 		IngredientRecipe saltedWater = 
 				new IngredientRecipe("salted_water", Recipe.HEATED, Recipe.SWAPPED, saltedWaterList);
 		saltedWater.addNecessaryTrait("salt", Recipe.HEATED);
-		
-		
+		this.subgoalIngredients.put("salted_water", saltedWater);
 		
 		List<IngredientRecipe> cookedPotatoesList = new ArrayList<IngredientRecipe>();
 		IngredientRecipe potatoes = knowledgebase.getIngredient("potatoes");
@@ -34,6 +36,7 @@ public class MashedPotatoes extends Recipe {
 		cookedPotatoesList.add(potatoes);
 		cookedPotatoesList.add(saltedWater);
 		IngredientRecipe cookedPotatoes = new IngredientRecipe("potatoes_in_water", Recipe.HEATED, Recipe.SWAPPED, cookedPotatoesList);
+		this.subgoalIngredients.put("potatoes_in_water", cookedPotatoes);
 		
 		List<IngredientRecipe> ingredientList = new ArrayList<IngredientRecipe>();
 		ingredientList.add(cookedPotatoes);
@@ -41,6 +44,7 @@ public class MashedPotatoes extends Recipe {
 		ingredientList.add(knowledgebase.getIngredient("eggs"));
 		IngredientRecipe mashedPotatoes = new IngredientRecipe("Mashed_potatoes", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList);
 		this.topLevelIngredient = mashedPotatoes;
+		this.subgoalIngredients.put("Mashed_potatoes", mashedPotatoes);
 	}
 
 	@Override
@@ -52,16 +56,14 @@ public class MashedPotatoes extends Recipe {
 	}
 	
 	public void setUpSubgoals(Domain domain) {
-		AbstractMap<String, IngredientRecipe> swappedIngredients = IngredientRecipe.getRecursiveSwappedIngredients(this.topLevelIngredient);
-		
 		BakingPropositionalFunction saltedWaterPf = 
-				new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("salted_water"));
-		BakingSubgoal saltedWaterSubgoal = new BakingSubgoal(saltedWaterPf, swappedIngredients.get("salted_water"));
+				new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("salted_water"));
+		BakingSubgoal saltedWaterSubgoal = new BakingSubgoal(saltedWaterPf, this.subgoalIngredients.get("salted_water"));
 		this.subgoals.add(saltedWaterSubgoal);
 		
 		BakingPropositionalFunction cookedPotatoesPF = 
-				new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("potatoes_in_water"));
-		BakingSubgoal cookedPotatoesSubgoal = new BakingSubgoal(cookedPotatoesPF, swappedIngredients.get("potatoes_in_water"));
+				new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("potatoes_in_water"));
+		BakingSubgoal cookedPotatoesSubgoal = new BakingSubgoal(cookedPotatoesPF, this.subgoalIngredients.get("potatoes_in_water"));
 		cookedPotatoesSubgoal.addPrecondition(saltedWaterSubgoal);
 		this.subgoals.add(cookedPotatoesSubgoal);
 		

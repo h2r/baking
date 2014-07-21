@@ -22,6 +22,9 @@ public class AllowGreasing extends BakingPropositionalFunction {
 		if (this.subgoal == null) {
 			return false;
 		}
+		if (this.topLevelIngredient == null) {
+			return true;
+		}
 		String subgoalClassName = this.subgoal.getGoal().getClassName();
 		if (subgoalClassName.equals(AffordanceCreator.CONTAINERGREASED_PF)) {
 			// If the subgoal hasn't been fulfilled by some binding on the state

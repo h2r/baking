@@ -12,7 +12,7 @@ import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.Value;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
-import edu.brown.cs.h2r.baking.Knowledgebase.IngredientKnowledgebase;
+import edu.brown.cs.h2r.baking.Knowledgebase.Knowledgebase;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 
 public class IngredientFactory {
@@ -297,6 +297,12 @@ public class IngredientFactory {
 		return ingredient.getDiscValForAttribute(IngredientFactory.attributeHeated) == 1;
 	}
 	
+	public static boolean isHiddenIngredient(ObjectInstance ingredient) {
+		String ocName = ingredient.getObjectClass().name;
+		return (ocName.equals(IngredientFactory.ClassNameSimpleHidden) ||
+				ocName.equals(IngredientFactory.ClassNameComplexHidden));
+	}
+	
 	public static void mixIngredient(ObjectInstance ingredient) {
 		ingredient.setValue(IngredientFactory.attributeMixed, 1);
 	}
@@ -494,11 +500,11 @@ public class IngredientFactory {
 	}
 
 	public static boolean isMeltedAtRoomTemperature(ObjectInstance ingredient) {
-		return IngredientFactory.getTraits(ingredient).contains(IngredientKnowledgebase.NONMELTABLE);
+		return IngredientFactory.getTraits(ingredient).contains(Knowledgebase.NONMELTABLE);
 	}
 	
 	public static boolean isLubricant(ObjectInstance ingredient) {
-		return IngredientFactory.getTraits(ingredient).contains(IngredientKnowledgebase.LUBRICANT);
+		return IngredientFactory.getTraits(ingredient).contains(Knowledgebase.LUBRICANT);
 	}
 	
 	public static void setAttributes(ObjectInstance ingredient, int attributes, Set<String> toolAttributes) {

@@ -13,7 +13,7 @@ import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.SADomain;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
-import edu.brown.cs.h2r.baking.Knowledgebase.IngredientKnowledgebase;
+import edu.brown.cs.h2r.baking.Knowledgebase.Knowledgebase;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
@@ -21,7 +21,7 @@ import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import edu.brown.cs.h2r.baking.Recipes.*;
 
 public class TestRecipeFailure {
-		IngredientKnowledgebase knowledgebase;
+		Knowledgebase knowledgebase;
 		State state;
 		Domain domain;
 		List<ObjectInstance> allIngredients;
@@ -94,7 +94,7 @@ public class TestRecipeFailure {
 		@Test
 		public void badAttributesSubgoal() {
 			topLevelIngredient = new MashedPotatoes().topLevelIngredient;
-			knowledgebase = new IngredientKnowledgebase();
+			knowledgebase = new Knowledgebase();
 			allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
 			setUpState();
 			
@@ -112,7 +112,7 @@ public class TestRecipeFailure {
 		@Test
 		public void extraTraitIngredient() {
 			topLevelIngredient = new MashedPotatoes().topLevelIngredient;
-			knowledgebase = new IngredientKnowledgebase();
+			knowledgebase = new Knowledgebase();
 			allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
 			setUpState();
 			
@@ -130,7 +130,7 @@ public class TestRecipeFailure {
 		@Test
 		public void extraIngredientInSubgoal() {
 			topLevelIngredient = new CucumberSalad().topLevelIngredient;
-			knowledgebase = new IngredientKnowledgebase();
+			knowledgebase = new Knowledgebase();
 			allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
 			setUpState();
 			ObjectClass ob = domain.getObjectClass("complex_ingredient");
@@ -158,7 +158,7 @@ public class TestRecipeFailure {
 		@Test
 		public void cantCompleteRecipe() {
 			topLevelIngredient = new MashedPotatoes().topLevelIngredient;
-			knowledgebase = new IngredientKnowledgebase();
+			knowledgebase = new Knowledgebase();
 			allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
 			
 			int index = 0;
@@ -185,7 +185,7 @@ public class TestRecipeFailure {
 		@Test
 		public void notEnoughIngredient() {
 			topLevelIngredient = new MashedPotatoes().topLevelIngredient;
-			knowledgebase = new IngredientKnowledgebase();
+			knowledgebase = new Knowledgebase();
 			allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
 			setUpState();
 			IngredientFactory.setUseCount(state.getObject("eggs"), 0);

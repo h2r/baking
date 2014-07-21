@@ -10,7 +10,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
-import edu.brown.cs.h2r.baking.Knowledgebase.IngredientKnowledgebase;
+import edu.brown.cs.h2r.baking.Knowledgebase.Knowledgebase;
 import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
@@ -26,9 +26,10 @@ import java.util.AbstractMap;
 public abstract class Recipe {
 	
 	public IngredientRecipe topLevelIngredient;
-	protected IngredientKnowledgebase knowledgebase;
+	protected Knowledgebase knowledgebase;
 	protected List<BakingSubgoal> subgoals, ingredientSubgoals;
 	protected Set<String> recipeToolAttributes;
+	protected AbstractMap<String, IngredientRecipe> subgoalIngredients;
 	
 	public static final int NO_ATTRIBUTES = 0;
 	public static final int MIXED = 1;
@@ -39,10 +40,11 @@ public abstract class Recipe {
 	
 	public Recipe()
 	{
-		this.knowledgebase = new IngredientKnowledgebase();
+		this.knowledgebase = new Knowledgebase();
 		this.subgoals = new ArrayList<BakingSubgoal>();
 		this.ingredientSubgoals = new ArrayList<BakingSubgoal>();
 		this.recipeToolAttributes = new HashSet<String>();
+		this.subgoalIngredients = new HashMap<String, IngredientRecipe>();
 	}
 	
 	public List<String> getRecipeProcedures() {

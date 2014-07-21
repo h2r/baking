@@ -7,11 +7,14 @@ import java.util.Set;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.Action;
+
 import org.junit.Assert;
+
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.ToolFactory;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 
 public class BakingAsserts {
@@ -239,4 +242,17 @@ public class BakingAsserts {
 	public static void assertDoesntHasToolAttribute(IngredientRecipe ingredient, String attribute) {
 		Assert.assertFalse(ingredient.getToolAttributes().contains(attribute));
 	}
+	
+	public static void assertContainerIsEmpty(ObjectInstance container) {
+		Assert.assertTrue(ContainerFactory.isEmptyContainer(container));
+	}
+	
+	public static void assertToolIsEmpty(ObjectInstance tool) {
+		Assert.assertTrue(ToolFactory.getContents(tool).isEmpty());
+	}
+	
+	public static void assertToolHasIngredient(ObjectInstance tool, String ingredient) {
+		Assert.assertTrue(ToolFactory.getContents(tool).contains(ingredient));
+	}
+	
 }

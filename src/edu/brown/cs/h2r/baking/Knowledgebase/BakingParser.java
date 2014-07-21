@@ -15,11 +15,13 @@ public class BakingParser {
 	
 	private static final String COMBINATIONS = "Combinations.yaml";
 	private static final String INGREDIENTS = "Ingredients.yaml";
+	private static final String TOOLS = "Tools.yaml";
 
-	private AbstractMap<String, BakingInformation> combinationMap, ingredientMap;
+	private AbstractMap<String, BakingInformation> combinationMap, ingredientMap, toolMap;
 	public BakingParser() {
 		this.combinationMap = generateMap(BakingParser.COMBINATIONS);
 		this.ingredientMap = generateMap(BakingParser.INGREDIENTS);
+		this.toolMap = generateMap(BakingParser.TOOLS);
 	}
 
 	private AbstractMap<String, BakingInformation> generateMap(String filename) {
@@ -63,8 +65,8 @@ public class BakingParser {
 		return this.ingredientMap;
 	}
 	
-	/*public Set<String> getIngredientNames() {
-		return this.map.keySet();
-	}*/
+	public AbstractMap<String, BakingInformation> getToolMap() {
+		return this.toolMap;
+	}
 }
 

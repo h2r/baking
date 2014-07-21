@@ -11,7 +11,7 @@ import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import edu.brown.cs.h2r.baking.Experiments.ExperimentHelper;
-import edu.brown.cs.h2r.baking.Knowledgebase.IngredientKnowledgebase;
+import edu.brown.cs.h2r.baking.Knowledgebase.Knowledgebase;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.actions.BakingAction;
 import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
@@ -23,10 +23,10 @@ import edu.brown.cs.h2r.baking.Recipes.Recipe;
 
 public class MixAction extends BakingAction {	
 	public static final String className = "mix";
-	private IngredientKnowledgebase knowledgebase;
+	private Knowledgebase knowledgebase;
 	public MixAction(Domain domain, IngredientRecipe ingredient) {
 		super(MixAction.className, domain, ingredient, new String[] {AgentFactory.ClassName, ContainerFactory.ClassName});
-		this.knowledgebase = new IngredientKnowledgebase();
+		this.knowledgebase = new Knowledgebase();
 	}
 	
 	@Override
@@ -142,7 +142,7 @@ public class MixAction extends BakingAction {
 		}
 	}
 	
-	public void changeKnowledgebase(IngredientKnowledgebase kb) {
+	public void changeKnowledgebase(Knowledgebase kb) {
 		this.knowledgebase = kb;
 	}
 	

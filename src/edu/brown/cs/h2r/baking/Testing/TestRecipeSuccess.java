@@ -13,7 +13,7 @@ import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.SADomain;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
-import edu.brown.cs.h2r.baking.Knowledgebase.IngredientKnowledgebase;
+import edu.brown.cs.h2r.baking.Knowledgebase.Knowledgebase;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
@@ -22,7 +22,7 @@ import edu.brown.cs.h2r.baking.Recipes.*;
 
 public class TestRecipeSuccess {
 
-	IngredientKnowledgebase knowledgebase;
+	Knowledgebase knowledgebase;
 	State state;
 	Domain domain;
 	List<ObjectInstance> allIngredients;
@@ -94,7 +94,7 @@ public class TestRecipeSuccess {
 	@Test
 	public void testSwappedIngredientsSuccess() {
 		topLevelIngredient = new PecanPie().topLevelIngredient;
-		knowledgebase = new IngredientKnowledgebase();
+		knowledgebase = new Knowledgebase();
 		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
 		setUpState();
 		ObjectClass complexClass = domain.getObjectClass("complex_ingredient");
@@ -127,7 +127,7 @@ public class TestRecipeSuccess {
 	@Test
 	public void testSwappedCombinationSuccess() {
 		topLevelIngredient = new DeviledEggs().topLevelIngredient;
-		knowledgebase = new IngredientKnowledgebase();
+		knowledgebase = new Knowledgebase();
 		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
 		setUpState();
 		

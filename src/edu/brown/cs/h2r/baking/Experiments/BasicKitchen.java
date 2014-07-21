@@ -17,10 +17,11 @@ import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.SADomain;
 import edu.brown.cs.h2r.baking.BakingSubgoal;
+import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
-import edu.brown.cs.h2r.baking.Knowledgebase.IngredientKnowledgebase;
+import edu.brown.cs.h2r.baking.Knowledgebase.Knowledgebase;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
@@ -48,11 +49,11 @@ public class BasicKitchen implements DomainGenerator {
 	List<BakingSubgoal> recipeSubgoals;
 	boolean[] completedSubgoals;
 	
-	IngredientKnowledgebase knowledgebase;
+	Knowledgebase knowledgebase;
 	
 	public BasicKitchen(Recipe recipe) {
 		this.recipe = recipe;
-		knowledgebase = new IngredientKnowledgebase();
+		knowledgebase = new Knowledgebase();
 		this.stateHashFactory = new NameDependentStateHashFactory();
 	}
 	
@@ -120,7 +121,7 @@ public class BasicKitchen implements DomainGenerator {
 		ObjectInstance shelfSpace = state.getObject(SpaceFactory.SPACE_COUNTER);
 		
 		List<ObjectInstance> ingredientInstances = 
-				this.knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, recipe.topLevelIngredient);
+				knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
 		
 		this.ingredientContainers = 
 				Recipe.getContainers(containerClass, ingredientInstances, shelfSpace.getName());
@@ -161,6 +162,7 @@ public class BasicKitchen implements DomainGenerator {
 		}
 
 		this.recipe.resetSubgoals();
+		this.recipe.addIngredientSubgoals();
 		this.recipe.setUpSubgoals(this.domain);
 		if (this.recipeSubgoals == null) {
 			this.recipeSubgoals = new ArrayList<BakingSubgoal>(this.recipe.getSubgoals());
