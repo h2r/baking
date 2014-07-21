@@ -163,7 +163,6 @@ public class MixAction extends BakingAction {
 			state.removeObject(state.getObject(name));
 		}
 		for (ObjectInstance ob : hiddenCopies) {
-			state.removeObject(ob.getName());
 			state.addObject(ob);
 		}
 		ContainerFactory.addIngredient(container, toswap);

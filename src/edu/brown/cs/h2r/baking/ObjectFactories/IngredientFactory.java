@@ -473,7 +473,9 @@ public class IngredientFactory {
 						ObjectInstance hidden = makeHiddenObjectCopy(state, domain, obj);
 						ObjectInstance container = state.getObject(IngredientFactory.getContainer(hidden));
 						ContainerFactory.removeIngredient(container, hidden.getName());
-						state.removeObject(obj);
+						if (!IngredientFactory.isHiddenIngredient(state.getObject(obj.getName()))) {
+							state.removeObject(obj);
+						}
 						state.addObject(hidden);
 					}
 				}

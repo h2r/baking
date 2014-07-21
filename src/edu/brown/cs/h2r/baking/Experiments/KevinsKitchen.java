@@ -160,7 +160,7 @@ public class KevinsKitchen implements DomainGenerator {
 		}
 
 		for (ObjectInstance ingredientInstance : ingredientInstances) {
-			if (IngredientFactory.isHiddenIngredient(ingredientInstance)) {
+			if (!IngredientFactory.isHiddenIngredient(ingredientInstance)) {
 				if (IngredientFactory.getUseCount(ingredientInstance) >= 1) {
 					ObjectInstance ing = currentState.getObject(ingredientInstance.getName());
 					IngredientFactory.changeIngredientContainer(ing, ing.getName()+"_bowl");
