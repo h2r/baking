@@ -259,11 +259,11 @@ public class KevinsKitchen implements DomainGenerator {
 		KevinsKitchen kitchen = new KevinsKitchen();
 		Domain domain = kitchen.generateDomain();
 		kitchen.PlanRecipeOneAgent(domain, new MashedPotatoes());
-		//kitchen.PlanRecipeOneAgent(domain, new Brownies());
-		//kitchen.PlanRecipeOneAgent(domain, new DeviledEggs());
-		//kitchen.PlanRecipeOneAgent(domain, new CucumberSalad());
-		//kitchen.PlanRecipeOneAgent(domain, new MoltenLavaCake());
-		//kitchen.PlanRecipeOneAgent(domain, new PeanutButterCookies());
-		//kitchen.PlanRecipeOneAgent(domain, new PecanPie());
+		kitchen.PlanRecipeOneAgent(domain, new Brownies());
+		kitchen.PlanRecipeOneAgent(domain, new DeviledEggs());
+		kitchen.PlanRecipeOneAgent(domain, new CucumberSalad());
+		kitchen.PlanRecipeOneAgent(domain, new MoltenLavaCake());
+		kitchen.PlanRecipeOneAgent(domain, new PeanutButterCookies());
+		kitchen.PlanRecipeOneAgent(domain, new PecanPie());
 	}
 }
