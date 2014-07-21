@@ -6,6 +6,7 @@ import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
+import edu.brown.cs.h2r.baking.Knowledgebase.Knowledgebase;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
@@ -111,7 +112,7 @@ public class PourAction extends BakingAction {
 		for (String ingredient : ingredients) {
 			ObjectInstance ingredientInstance = state.getObject(ingredient);
 			if (on) {
-				IngredientFactory.heatIngredient(ingredientInstance);
+				Knowledgebase.heatIngredient(state, receivingContainer, ingredientInstance);
 			}
 			IngredientFactory.changeIngredientContainer(ingredientInstance, receivingContainer.getName());
 		}

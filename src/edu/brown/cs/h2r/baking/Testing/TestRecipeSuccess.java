@@ -104,20 +104,20 @@ public class TestRecipeSuccess {
 				"butter", "light_corn_syrup", "salt", "eggs");
 		ObjectInstance finishedFilling = IngredientFactory.getNewComplexIngredientObjectInstance(
 				complexClass, "finished_filling", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, "mixing_bowl_2", 
-				new HashSet<String>(), new HashSet<String>(), new HashSet<String>(), fillingContents);
+				null, null, new HashSet<String>(), new HashSet<String>(), new HashSet<String>(), fillingContents);
 		
 		List<String> crustContents = Arrays.asList("eggs", "brown_sugar", 
 				"butter", "salt", "flour");
 		ObjectInstance crust = IngredientFactory.getNewComplexIngredientObjectInstance(
 				complexClass, "pie_crust", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, "mixing_bowl_1",
-				new HashSet<String>(), new HashSet<String>(), new HashSet<String>(), crustContents);
+				null, null, new HashSet<String>(), new HashSet<String>(), new HashSet<String>(), crustContents);
 		
 		state.addObject(finishedFilling);
 		state.addObject(crust);
 		// Make the object we're testing!
 		ObjectInstance pie = IngredientFactory.getNewComplexIngredientObjectInstance(
 				complexClass, "PecanPie", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, "mixing_bowl_1", 
-				new HashSet<String>(), new HashSet<String>(), new HashSet<String>(), Arrays.asList("finished_filling", "pie_crust"));
+				null, null, new HashSet<String>(), new HashSet<String>(), new HashSet<String>(), Arrays.asList("finished_filling", "pie_crust"));
 		
 		IngredientFactory.bakeIngredient(pie);
 		BakingAsserts.assertSuccess(state, topLevelIngredient, pie);
@@ -133,14 +133,14 @@ public class TestRecipeSuccess {
 		
 		ObjectInstance finishedMix = IngredientFactory.getNewComplexIngredientObjectInstance(
 				domain.getObjectClass("complex_ingredient"), "finished_mix", Recipe.NO_ATTRIBUTES,
-				Recipe.SWAPPED, "mixing_bowl_2", new HashSet<String>(), new HashSet<String>(), new HashSet<String>(), Arrays.asList("egg_yolks", 
+				Recipe.SWAPPED, "mixing_bowl_2", null, null, new HashSet<String>(), new HashSet<String>(), new HashSet<String>(), Arrays.asList("egg_yolks", 
 						"salt", "pepper", "dijon_mustard", "sweet_gherkins", "chopped_tarragon", "shallots"));
 		
 		state.addObject(finishedMix);
 		
 		ObjectInstance deviledEggs = IngredientFactory.getNewComplexIngredientObjectInstance(
 				domain.getObjectClass("complex_ingredient"), "DeviledEggs", Recipe.NO_ATTRIBUTES, 
-				Recipe.SWAPPED, "mixing_bowl_1", new HashSet<String>(), new HashSet<String>(), new HashSet<String>(),
+				Recipe.SWAPPED, "mixing_bowl_1", null, null, new HashSet<String>(), new HashSet<String>(), new HashSet<String>(),
 				Arrays.asList("egg_whites", "finished_mix"));
 
 		BakingAsserts.assertSuccess(state, topLevelIngredient, deviledEggs);

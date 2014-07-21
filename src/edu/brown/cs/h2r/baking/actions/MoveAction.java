@@ -6,6 +6,7 @@ import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
+import edu.brown.cs.h2r.baking.Knowledgebase.Knowledgebase;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
@@ -95,13 +96,14 @@ public class MoveAction extends BakingAction {
 	
 	private static void movingToHeatingSpace(State state, ObjectInstance spaceInstance, ObjectInstance containerInstance) {
 		if (!ContainerFactory.isEmptyContainer(containerInstance) && ContainerFactory.isHeatingContainer(containerInstance)) {
-			Set<String> names = ContainerFactory.getContentNames(containerInstance);
+			/*Set<String> names = ContainerFactory.getContentNames(containerInstance);
 			for (String name : names) {
 				ObjectInstance ing = state.getObject(name);
 				if (!IngredientFactory.isMeltedAtRoomTemperature(ing)) {
-					IngredientFactory.heatIngredient(ing);
+					Knowledgebase.heatIngredient(container, ing);
 				}
-			}
+			}*/
+			Knowledgebase.heatContainer(state, containerInstance);
 		}
 	}
 }

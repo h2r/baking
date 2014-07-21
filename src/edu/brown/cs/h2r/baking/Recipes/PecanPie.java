@@ -23,17 +23,20 @@ public class PecanPie extends Recipe {
 		IngredientRecipe dryCrust = new IngredientRecipe("dry_crust", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList);
 		dryCrust.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
 		dryCrust.addNecessaryTrait("sugar", Recipe.NO_ATTRIBUTES);
+		this.subgoalIngredients.put(dryCrust.getName(), dryCrust);
 		
 		List<IngredientRecipe> ingredientList2 = new ArrayList<IngredientRecipe>();
 		ingredientList2.add(knowledgebase.getIngredient("butter"));
 		ingredientList2.add(dryCrust);
 		IngredientRecipe flakyCrust = new IngredientRecipe("flaky_crust", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList2);
+		this.subgoalIngredients.put(flakyCrust.getName(), flakyCrust);
 
 		
 		List<IngredientRecipe> ingredientList3 = new ArrayList<IngredientRecipe>();
 		ingredientList3.add(knowledgebase.getIngredient("eggs"));
 		ingredientList3.add(flakyCrust);
 		IngredientRecipe pieCrust = new IngredientRecipe("pie_crust", Recipe.BAKED, Recipe.SWAPPED, ingredientList3);
+		this.subgoalIngredients.put(pieCrust.getName(), pieCrust);
 
 		
 		List<IngredientRecipe> ingredientList4 = new ArrayList<IngredientRecipe>();
@@ -42,7 +45,7 @@ public class PecanPie extends Recipe {
 		IngredientRecipe pieMix = new IngredientRecipe("pie_mix", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList4);
 		pieMix.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
 		pieMix.addNecessaryTrait("sugar", Recipe.NO_ATTRIBUTES);
-		
+		this.subgoalIngredients.put(pieMix.getName(), pieMix);
 		
 		List<IngredientRecipe> ingredientList5 = new ArrayList<IngredientRecipe>();
 		ingredientList5.add(knowledgebase.getIngredient("pecans"));
@@ -50,58 +53,59 @@ public class PecanPie extends Recipe {
 		ingredientList5.add(knowledgebase.getIngredient("vanilla"));
 		ingredientList5.add(pieMix);
 		IngredientRecipe filling = new IngredientRecipe("filling", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList5);
-		
+		this.subgoalIngredients.put(filling.getName(), filling);
 
 		List<IngredientRecipe> ingredientList6 = new ArrayList<IngredientRecipe>();
 		ingredientList6.add(filling);
 		ingredientList6.add(knowledgebase.getIngredient("eggs"));
 		IngredientRecipe finishedFilling = new IngredientRecipe("finished_filling", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList6);
+		this.subgoalIngredients.put(finishedFilling.getName(), finishedFilling);
 		
 		List<IngredientRecipe> ingredientList7 = new ArrayList<IngredientRecipe>();
 		ingredientList7.add(finishedFilling);
 		ingredientList7.add(pieCrust);
 		IngredientRecipe pecanPie = new IngredientRecipe("PecanPie", Recipe.BAKED, Recipe.SWAPPED, ingredientList7);
 		this.topLevelIngredient = pecanPie;
+		this.subgoalIngredients.put(pecanPie.getName(), pecanPie);
 	}
 	
 	public void setUpSubgoals(Domain domain) {
-		AbstractMap<String, IngredientRecipe> swappedIngredients = IngredientRecipe.getRecursiveSwappedIngredients(this.topLevelIngredient);
 		BakingPropositionalFunction pf1 = new SpaceOn(AffordanceCreator.SPACEON_PF, domain, this.topLevelIngredient, SpaceFactory.SPACE_OVEN);
 		BakingSubgoal sg1 = new BakingSubgoal(pf1, this.topLevelIngredient);
 		this.subgoals.add(sg1);
 		
-		BakingPropositionalFunction pf2 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("dry_crust"));
-		BakingSubgoal sg2 = new BakingSubgoal(pf2, swappedIngredients.get("dry_crust"));
+		BakingPropositionalFunction pf2 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("dry_crust"));
+		BakingSubgoal sg2 = new BakingSubgoal(pf2, this.subgoalIngredients.get("dry_crust"));
 		sg2.addPrecondition(sg1);
 		this.subgoals.add(sg2);
 
-		BakingPropositionalFunction pf3 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("flaky_crust"));
-		BakingSubgoal sg3 = new BakingSubgoal(pf3, swappedIngredients.get("flaky_crust"));
+		BakingPropositionalFunction pf3 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("flaky_crust"));
+		BakingSubgoal sg3 = new BakingSubgoal(pf3, this.subgoalIngredients.get("flaky_crust"));
 		sg3.addPrecondition(sg2);
 		this.subgoals.add(sg3);
 		
-		BakingPropositionalFunction pf4 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("pie_crust"));
-		BakingSubgoal sg4 = new BakingSubgoal(pf4, swappedIngredients.get("pie_crust"));
+		BakingPropositionalFunction pf4 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("pie_crust"));
+		BakingSubgoal sg4 = new BakingSubgoal(pf4, this.subgoalIngredients.get("pie_crust"));
 		sg4.addPrecondition(sg3);
 		this.subgoals.add(sg4);
 		
-		BakingPropositionalFunction pf5 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("pie_mix"));
-		BakingSubgoal sg5 = new BakingSubgoal(pf5, swappedIngredients.get("pie_mix"));
+		BakingPropositionalFunction pf5 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("pie_mix"));
+		BakingSubgoal sg5 = new BakingSubgoal(pf5, this.subgoalIngredients.get("pie_mix"));
 		sg5.addPrecondition(sg4);
 		this.subgoals.add(sg5);
 		
-		BakingPropositionalFunction pf6 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("filling"));
-		BakingSubgoal sg6 = new BakingSubgoal(pf6, swappedIngredients.get("filling"));
+		BakingPropositionalFunction pf6 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("filling"));
+		BakingSubgoal sg6 = new BakingSubgoal(pf6, this.subgoalIngredients.get("filling"));
 		sg6.addPrecondition(sg5);
 		this.subgoals.add(sg6);
 		
-		BakingPropositionalFunction pf7 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("finished_filling"));
-		BakingSubgoal sg7 = new BakingSubgoal(pf7, swappedIngredients.get("finished_filling"));
+		BakingPropositionalFunction pf7 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("finished_filling"));
+		BakingSubgoal sg7 = new BakingSubgoal(pf7, this.subgoalIngredients.get("finished_filling"));
 		sg7.addPrecondition(sg6);
 		this.subgoals.add(sg7);
 		
-		BakingPropositionalFunction pf8 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("PecanPie"));
-		BakingSubgoal sg8 = new BakingSubgoal(pf8, swappedIngredients.get("PecanPie"));
+		BakingPropositionalFunction pf8 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("PecanPie"));
+		BakingSubgoal sg8 = new BakingSubgoal(pf8, this.subgoalIngredients.get("PecanPie"));
 		sg8.addPrecondition(sg4);
 		sg8.addPrecondition(sg7);
 		this.subgoals.add(sg8);

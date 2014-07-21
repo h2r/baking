@@ -5,6 +5,7 @@ import java.util.Set;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
+import edu.brown.cs.h2r.baking.Knowledgebase.Knowledgebase;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
@@ -81,11 +82,13 @@ public class SwitchAction extends BakingAction {
 			ObjectInstance container = state.getObject(name);
 			if (!ContainerFactory.isEmptyContainer(container) &&
 					ContainerFactory.isHeatingContainer(container)) {
-				for (String ing : ContainerFactory.getContentNames(container)) {
+				Knowledgebase.heatContainer(state, container);
+
+				/*for (String ing : ContainerFactory.getContentNames(container)) {
 					if (!IngredientFactory.isMeltedAtRoomTemperature(state.getObject(ing))) {
-						IngredientFactory.heatIngredient(state.getObject(ing));
+						Knowledgebase.heatIngredient(container, state.getObject(ing));
 					}				
-				}
+				}*/
 			}
 		}
 	}

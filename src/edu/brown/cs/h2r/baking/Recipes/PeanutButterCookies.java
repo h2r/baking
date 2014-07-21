@@ -22,11 +22,13 @@ public class PeanutButterCookies extends Recipe {
 		ingredientList.add(knowledgebase.getIngredient("peanut_butter"));
 		IngredientRecipe creamed = new IngredientRecipe("creamed_ingredients", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList);
 		creamed.addNecessaryTrait("sugar", Recipe.NO_ATTRIBUTES);
+		this.subgoalIngredients.put(creamed.getName(), creamed);
 		
 		List<IngredientRecipe> ingredientList2 = new ArrayList<IngredientRecipe>();
 		ingredientList2.add(creamed);
 		ingredientList2.add(knowledgebase.getIngredient("eggs"));
 		IngredientRecipe wetIngredients = new IngredientRecipe("wet_ingredients", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList2);
+		this.subgoalIngredients.put(wetIngredients.getName(), wetIngredients);
 		
 		List<IngredientRecipe> ingredientList3 = new ArrayList<IngredientRecipe>();
 		ingredientList3.add(knowledgebase.getIngredient("baking_soda"));
@@ -34,6 +36,7 @@ public class PeanutButterCookies extends Recipe {
 		IngredientRecipe dryIngredients = new IngredientRecipe("dry_ingredients", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList3);
 		dryIngredients.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
 		dryIngredients.addNecessaryTrait("flour", Recipe.NO_ATTRIBUTES);
+		this.subgoalIngredients.put(dryIngredients.getName(), dryIngredients);
 		
 		List<IngredientRecipe> ingredientList4 = new ArrayList<IngredientRecipe>();
 		ingredientList4.add(wetIngredients);
@@ -41,31 +44,31 @@ public class PeanutButterCookies extends Recipe {
 		
 		IngredientRecipe cookies = new IngredientRecipe("peanutButterCookies", Recipe.BAKED, Recipe.SWAPPED, ingredientList4);
 		this.topLevelIngredient = cookies;
+		this.subgoalIngredients.put(cookies.getName(), cookies);
 	}
 	
 	public void setUpSubgoals(Domain domain) {
-		AbstractMap<String, IngredientRecipe> swappedIngredients = IngredientRecipe.getRecursiveSwappedIngredients(this.topLevelIngredient);
 		BakingPropositionalFunction pf1 = new SpaceOn(AffordanceCreator.SPACEON_PF, domain, this.topLevelIngredient, "oven");
 		BakingSubgoal sg1 = new BakingSubgoal(pf1, this.topLevelIngredient);
 		this.subgoals.add(sg1);
 		
-		BakingPropositionalFunction pf2 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("creamed_ingredients"));
-		BakingSubgoal sg2 = new BakingSubgoal(pf2, swappedIngredients.get("creamed_ingredients"));
+		BakingPropositionalFunction pf2 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("creamed_ingredients"));
+		BakingSubgoal sg2 = new BakingSubgoal(pf2, this.subgoalIngredients.get("creamed_ingredients"));
 		sg2.addPrecondition(sg1);
 		this.subgoals.add(sg2);
 
-		BakingPropositionalFunction pf3 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("wet_ingredients"));
-		BakingSubgoal sg3 = new BakingSubgoal(pf3, swappedIngredients.get("wet_ingredients"));
+		BakingPropositionalFunction pf3 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("wet_ingredients"));
+		BakingSubgoal sg3 = new BakingSubgoal(pf3, this.subgoalIngredients.get("wet_ingredients"));
 		sg3.addPrecondition(sg2);
 		this.subgoals.add(sg3);
 		
-		BakingPropositionalFunction pf4 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("dry_ingredients"));
-		BakingSubgoal sg4 = new BakingSubgoal(pf4, swappedIngredients.get("dry_ingredients"));
+		BakingPropositionalFunction pf4 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("dry_ingredients"));
+		BakingSubgoal sg4 = new BakingSubgoal(pf4, this.subgoalIngredients.get("dry_ingredients"));
 		sg4.addPrecondition(sg1);
 		this.subgoals.add(sg4);
 		
-		BakingPropositionalFunction pf5 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("peanutButterCookies"));
-		BakingSubgoal sg5 = new BakingSubgoal(pf5, swappedIngredients.get("peanutButterCookies"));
+		BakingPropositionalFunction pf5 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("peanutButterCookies"));
+		BakingSubgoal sg5 = new BakingSubgoal(pf5, this.subgoalIngredients.get("peanutButterCookies"));
 		sg5.addPrecondition(sg3);
 		sg5.addPrecondition(sg4);
 		this.subgoals.add(sg5);

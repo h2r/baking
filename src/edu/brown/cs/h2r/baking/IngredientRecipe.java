@@ -23,6 +23,8 @@ public class IngredientRecipe {
 	private Set<String> traits;
 	private Set<String> toolTraits;
 	private Set<String> toolAttributes;
+	private String heatingInformation;
+	private String heatedState;
 	private String name;
 	private Boolean swapped;
 	private List<IngredientRecipe> contents;
@@ -57,8 +59,8 @@ public class IngredientRecipe {
 	
 	//Copy Constructor
 	public IngredientRecipe(String name, int attributes, boolean recipeBaked, boolean recipeHeated, List<IngredientRecipe> contents,
-			boolean swapped, int useCount, Set<String> traits, AbstractMap<String, IngredientRecipe> necessaryTraits,
-			Set<String> toolTraits, Set<String> toolAttributes) {
+			boolean swapped, int useCount, String heatingInfo, String heatedState, Set<String> traits, AbstractMap<String, 
+			IngredientRecipe> necessaryTraits, Set<String> toolTraits, Set<String> toolAttributes) {
 		this.name = name;
 		this.setAttributes(attributes);
 		this.recipeBaked = recipeBaked;
@@ -66,6 +68,8 @@ public class IngredientRecipe {
 		this.contents = new ArrayList<IngredientRecipe>(contents);
 		this.swapped = swapped;
 		this.useCount = useCount;
+		this.heatingInformation = heatingInfo;
+		this.heatedState = heatedState;
 		this.traits = new HashSet<String>(traits);
 		this.necessaryTraits = new HashMap<String, IngredientRecipe>(necessaryTraits);
 		this.toolTraits = new HashSet<String>(toolTraits);
@@ -234,6 +238,12 @@ public class IngredientRecipe {
 		this.necessaryTraits.put(trait, ing);
 	}
 	
+	public void addNecessaryTrait(String trait, int attributes, String heatedState) {
+		IngredientRecipe ing = new IngredientRecipe(trait, attributes);
+		ing.setHeatedState(heatedState);
+		this.necessaryTraits.put(trait, ing);
+	}
+	
 	public void addNecessaryTraits(AbstractMap<String, IngredientRecipe> necessaryTraits) {
 		this.necessaryTraits.putAll(necessaryTraits);
 	}
@@ -271,6 +281,16 @@ public class IngredientRecipe {
 		}
 		if (this.getHeated()) {
 			if (!(IngredientFactory.isHeatedIngredient(object) || IngredientFactory.isMeltedAtRoomTemperature(object))) {
+				return false;
+			}
+			String ingHeatedState = this.getHeatedState();
+			String objHeatedState = IngredientFactory.getHeatedState(object);
+			if (ingHeatedState == null) {
+				if (!objHeatedState.equals("")) {
+					return false;
+				}
+			}
+			else if (!ingHeatedState.equals(objHeatedState)) {
 				return false;
 			}
 		} else {
@@ -415,12 +435,14 @@ public class IngredientRecipe {
 		List<IngredientRecipe> contents = this.getContents();
 		boolean swapped = this.getSwapped();
 		int useCount = this.getUseCount();
+		String heatingInfo = this.getHeatingInfo();
+		String heatedState = this.getHeatedState();
 		Set<String> traits = this.getTraits();
 		AbstractMap<String, IngredientRecipe> necessaryTraits = this.getNecessaryTraits();
 		Set<String> toolTraits = this.getToolTraits();
 		Set<String> toolAttributes = this.getToolAttributes();
 		return new IngredientRecipe(newName, attributes, recipeBaked, recipeHeated, contents,
-				swapped, useCount, traits, necessaryTraits, toolTraits, toolAttributes);
+				swapped, useCount, heatingInfo, heatedState, traits, necessaryTraits, toolTraits, toolAttributes);
 	}
 	
 	public boolean objectHasExtraAttribute(ObjectInstance object) {
@@ -442,5 +464,25 @@ public class IngredientRecipe {
 	
 	public Set<String> getRecipeToolAttributes() {
 		return this.recipeToolAttributes;
+	}
+	
+	public void addHeatingInformation(String info) {
+		this.heatingInformation = info;
+	}
+	
+	public String getHeatingInfo() {
+		return this.heatingInformation;
+	}
+	
+	public boolean hasHeatingInfo() {
+		return this.heatingInformation != null;
+	}
+	
+	public String getHeatedState() {
+		return this.heatedState;
+	}
+	
+	public void setHeatedState(String heatedState) {
+		this.heatedState = heatedState;
 	}
 }

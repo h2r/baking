@@ -230,7 +230,6 @@ public class ToolFactory {
 	
 	public static void addIngredientToTool(State state, ObjectInstance tool, ObjectInstance ingredient) {
 		ObjectInstance ingredientContainer = state.getObject(IngredientFactory.getContainer(ingredient));
-		IngredientFactory.addToolAttribute(ingredient, ToolFactory.getToolAttribute(tool));
 		tool.addRelationalTarget(ToolFactory.attributeContains, ingredient.getName());
 		IngredientFactory.changeIngredientContainer(ingredient, tool.getName());
 		ContainerFactory.removeIngredient(ingredientContainer, ingredient.getName());	

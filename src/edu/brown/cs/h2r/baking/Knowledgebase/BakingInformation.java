@@ -17,6 +17,7 @@ public class BakingInformation extends LinkedHashMap<String, Object> {
 	
 	public static final String ingredientTraits = "traits";
 	public static final String ingredientToolTraits = "toolTraits";
+	public static final String ingredientHeatingInformation = "heatingInformation";
 	
 	public static final String combinationTraits = "traits";
 	public static final String combinationPossibleCombinations = "possibleCombinations";
@@ -53,6 +54,10 @@ public class BakingInformation extends LinkedHashMap<String, Object> {
 	
 	public String getString(String key) throws BakingCastException {
 		try {
+			Object string = this.getObject(key);
+			if (string == null) {
+				return "";
+			}
 			return (String)this.getObject(key);
 		}
 		catch (ClassCastException e) {

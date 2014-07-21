@@ -50,9 +50,11 @@ public class Knowledgebase {
 			BakingInformation info = entry.getValue();
 			List<String> traits = null;
 			List<String> toolTraits = null;
+			String heatingInfo = null;
 			try {
 				traits = info.getListOfString(BakingInformation.ingredientTraits);
 				toolTraits = info.getListOfString(BakingInformation.ingredientToolTraits);
+				heatingInfo = info.getString(BakingInformation.ingredientHeatingInformation);
 			} catch (BakingCastException e) {
 				e.printStackTrace();
 			}
@@ -61,6 +63,9 @@ public class Knowledgebase {
 			}
 			if (toolTraits != null) {
 				ing.addToolTraits(toolTraits);
+			}
+			if (heatingInfo != null) {
+				ing.addHeatingInformation(heatingInfo);
 			}
 			this.allIngredients.put(name, ing);
 			this.traitMap.put(name, new HashSet<String>(traits));
@@ -95,7 +100,7 @@ public class Knowledgebase {
 			String name = entry.getKey();
 			BakingInformation info = entry.getValue();
 			String toolTrait = null;
-			String toolAttribute = null;
+			String toolAttribute = "";
 			Set<String> includes = new HashSet<String>();
 			Set<String> excludes = new HashSet<String>();
 			boolean transportable = false;
@@ -271,5 +276,65 @@ public class Knowledgebase {
 		}
 		// no combination found, return an empty string.
 		return "";
+	}
+	
+	// Any ingredient added that is heated will get the heated attribute. Also, depending on the container
+	// it will get a tool attribute added that shows what effect heating the object had. For example,
+	// heating liquids will (or heating with a loquid) will give the boiled attribute, or a meltable 
+	// will be melted (if not heated with other liquids).
+	public static void heatIngredient(State state, ObjectInstance container, ObjectInstance ing) {
+		boolean containsLiquid = false;
+		Set<ObjectInstance> contents = new HashSet<ObjectInstance>();
+		for (String name : ContainerFactory.getContentNames(container)) {
+			ObjectInstance obj = state.getObject(name);
+			contents.add(obj);
+			if (IngredientFactory.getTraits(obj).contains("liquid")) {
+				containsLiquid = true;
+				break;
+			}
+		}
+		if (containsLiquid) {
+			IngredientFactory.setHeatedState(ing, "boiled");
+		} else {
+			if (IngredientFactory.getTraits(ing).contains("liquid")) {
+				IngredientFactory.setHeatedState(ing, "boiled");
+				for (ObjectInstance obj : contents) {
+					IngredientFactory.setHeatedState(obj, "boiled");
+				}
+			} else {
+				String heatingInfo = IngredientFactory.getHeatingInfo(ing);
+				if (heatingInfo != null) {
+					IngredientFactory.setHeatedState(ing, heatingInfo);
+				}
+			}
+		}
+		IngredientFactory.heatIngredient(ing);
+	}
+	
+	public static void heatContainer(State state, ObjectInstance container) {
+		boolean containsLiquid = false;
+		Set<ObjectInstance> contents = new HashSet<ObjectInstance>();
+		
+		for (String name : ContainerFactory.getContentNames(container)) {
+			ObjectInstance obj = state.getObject(name);
+			contents.add(obj);
+			if (IngredientFactory.getTraits(obj).contains("liquid")) {
+				containsLiquid = true;
+			}
+		}
+		if (containsLiquid) {
+			for (ObjectInstance ing : contents) {
+				IngredientFactory.setHeatedState(ing, "boiled");
+				IngredientFactory.heatIngredient(ing);
+			}
+		} else {
+			for (ObjectInstance ing : contents) {
+				String heatingInfo = IngredientFactory.getHeatingInfo(ing);
+				if (heatingInfo != null) {
+					IngredientFactory.setHeatedState(ing, heatingInfo);
+				}
+				IngredientFactory.heatIngredient(ing);
+			}
+		}
 	}
 }

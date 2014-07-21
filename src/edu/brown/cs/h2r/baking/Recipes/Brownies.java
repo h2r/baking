@@ -33,17 +33,17 @@ public class Brownies extends Recipe {
 		IngredientRecipe butter = knowledgebase.getIngredient("butter");
 		butter.setSwapped();
 		butter.setHeated();
-		//IngredientRecipe meltedFat = new IngredientRecipe("meltedFat", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, new ArrayList<IngredientRecipe>());
+		butter.setHeatedState("melted");
+		this.subgoalIngredients.put(butter.getName(), butter);
 		
 		List<IngredientRecipe> ingredientList = new ArrayList<IngredientRecipe>();
 		ingredientList.add(knowledgebase.getIngredient("vanilla"));
 		ingredientList.add(knowledgebase.getIngredient("eggs"));
-		//ingredientList.add(meltedFat);
 		ingredientList.add(butter);
 		
 		IngredientRecipe wetIngs = new IngredientRecipe("wet_ingredients", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList);
 		wetIngs.addNecessaryTrait("sugar", Recipe.NO_ATTRIBUTES);
-		//wetIngs.addNecessaryTrait("fat", Recipe.HEATED);
+		this.subgoalIngredients.put(wetIngs.getName(), wetIngs);
 		
 		// In a large saucepan, melt 1/2 cup butter.
 		
@@ -59,16 +59,17 @@ public class Brownies extends Recipe {
 		// Add the necessaryTraits and their respective attributes
 		dryIngs.addNecessaryTrait("flour", Recipe.NO_ATTRIBUTES);
 		dryIngs.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
+		this.subgoalIngredients.put(dryIngs.getName(), dryIngs);
 		
 		List<IngredientRecipe> ingredientList3 = new ArrayList<IngredientRecipe>();
 		ingredientList3.add(dryIngs);
 		ingredientList3.add(wetIngs);
 		IngredientRecipe brownies = new IngredientRecipe("brownie_batter", Recipe.BAKED, Recipe.SWAPPED, ingredientList3);
 		this.topLevelIngredient = brownies;
+		this.subgoalIngredients.put(brownies.getName(), brownies);
 	}
 	
 	public void setUpSubgoals(Domain domain) {
-		AbstractMap<String, IngredientRecipe> swappedIngredients = IngredientRecipe.getRecursiveSwappedIngredients(this.topLevelIngredient);
 		BakingPropositionalFunction pf1 = new SpaceOn(AffordanceCreator.SPACEON_PF, domain, this.topLevelIngredient, SpaceFactory.SPACE_OVEN);
 		BakingSubgoal sg1 = new BakingSubgoal(pf1, this.topLevelIngredient);
 		this.subgoals.add(sg1);
@@ -77,25 +78,25 @@ public class Brownies extends Recipe {
 		BakingSubgoal sg2 = new BakingSubgoal(pf2, this.topLevelIngredient);
 		this.subgoals.add(sg2);
 
-		BakingPropositionalFunction meltedFatPF = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("butter"));
-		BakingSubgoal meltedFatSG = new BakingSubgoal(meltedFatPF, swappedIngredients.get("butter"));
+		BakingPropositionalFunction meltedFatPF = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("butter"));
+		BakingSubgoal meltedFatSG = new BakingSubgoal(meltedFatPF, this.subgoalIngredients.get("butter"));
 		this.subgoals.add(meltedFatSG);
 		meltedFatSG.addPrecondition(sg1);
 		meltedFatSG.addPrecondition(sg2);
 		
-		BakingPropositionalFunction pf3 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("wet_ingredients"));
-		BakingSubgoal sg3 = new BakingSubgoal(pf3, swappedIngredients.get("wet_ingredients"));
+		BakingPropositionalFunction pf3 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("wet_ingredients"));
+		BakingSubgoal sg3 = new BakingSubgoal(pf3, this.subgoalIngredients.get("wet_ingredients"));
 		sg3.addPrecondition(meltedFatSG);
 		this.subgoals.add(sg3);
 		
-		BakingPropositionalFunction pf4 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("dry_ingredients"));
-		BakingSubgoal sg4 = new BakingSubgoal(pf4, swappedIngredients.get("dry_ingredients"));
+		BakingPropositionalFunction pf4 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("dry_ingredients"));
+		BakingSubgoal sg4 = new BakingSubgoal(pf4, this.subgoalIngredients.get("dry_ingredients"));
 		sg4.addPrecondition(sg1);
 		sg4.addPrecondition(sg2);
 		this.subgoals.add(sg4);
 		
-		BakingPropositionalFunction pf5 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("brownies"));
-		BakingSubgoal sg5 = new BakingSubgoal(pf5, swappedIngredients.get("brownie_batter"));
+		BakingPropositionalFunction pf5 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("brownies"));
+		BakingSubgoal sg5 = new BakingSubgoal(pf5, this.subgoalIngredients.get("brownie_batter"));
 		sg5.addPrecondition(sg1);
 		sg5.addPrecondition(sg3);
 		sg5.addPrecondition(sg4);

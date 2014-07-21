@@ -22,6 +22,7 @@ public class CucumberSalad extends Recipe {
 		ingredientList.add(knowledgebase.getIngredient("tomatoes"));
 		ingredientList.add(knowledgebase.getIngredient("cucumbers"));
 		IngredientRecipe salad = new IngredientRecipe("Salad", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList);
+		this.subgoalIngredients.put(salad.getName(), salad);
 		
 		List<IngredientRecipe> ingredientList2 = new ArrayList<IngredientRecipe>();
 		ingredientList2.add(knowledgebase.getIngredient("pepper"));
@@ -29,26 +30,27 @@ public class CucumberSalad extends Recipe {
 		IngredientRecipe dressing = new IngredientRecipe("dressing", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList2);
 		dressing.addNecessaryTrait("lemon", Recipe.NO_ATTRIBUTES);
 		dressing.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
+		this.subgoalIngredients.put(dressing.getName(), dressing);
 		
 		List<IngredientRecipe> ingredientList3= new ArrayList<IngredientRecipe>();
 		ingredientList3.add(salad);
 		ingredientList3.add(dressing);
 		IngredientRecipe cucumberSalad = new IngredientRecipe("CucumberSalad", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList3);
 		this.topLevelIngredient = cucumberSalad;
+		this.subgoalIngredients.put(cucumberSalad.getName(), cucumberSalad);
 	}
 	
 	public void setUpSubgoals(Domain domain) {
-		AbstractMap<String, IngredientRecipe> swappedIngredients = IngredientRecipe.getRecursiveSwappedIngredients(this.topLevelIngredient);
-		BakingPropositionalFunction pf1 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("Salad"));
-		BakingSubgoal sg1 = new BakingSubgoal(pf1, swappedIngredients.get("Salad"));
+		BakingPropositionalFunction pf1 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("Salad"));
+		BakingSubgoal sg1 = new BakingSubgoal(pf1, this.subgoalIngredients.get("Salad"));
 		this.subgoals.add(sg1);
 		
-		BakingPropositionalFunction pf2 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("dressing"));
-		BakingSubgoal sg2 = new BakingSubgoal(pf2, swappedIngredients.get("dressing"));
+		BakingPropositionalFunction pf2 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("dressing"));
+		BakingSubgoal sg2 = new BakingSubgoal(pf2, this.subgoalIngredients.get("dressing"));
 		this.subgoals.add(sg2);
 		
-		BakingPropositionalFunction pf3 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("CucumberSalad"));
-		BakingSubgoal sg3 = new BakingSubgoal(pf3, swappedIngredients.get("CucumberSalad"));
+		BakingPropositionalFunction pf3 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("CucumberSalad"));
+		BakingSubgoal sg3 = new BakingSubgoal(pf3, this.subgoalIngredients.get("CucumberSalad"));
 		sg3.addPrecondition(sg1);
 		sg3.addPrecondition(sg2);
 		this.subgoals.add(sg3);

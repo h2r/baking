@@ -24,24 +24,24 @@ public class MashedPotatoes extends Recipe {
 		IngredientRecipe water = knowledgebase.getIngredient("water");
 		saltedWaterList.add(water);
 		water.setHeated();
+		water.setHeatedState("boiled");
 		IngredientRecipe saltedWater = 
 				new IngredientRecipe("salted_water", Recipe.HEATED, Recipe.SWAPPED, saltedWaterList);
-		saltedWater.addNecessaryTrait("salt", Recipe.HEATED);
+		saltedWater.addNecessaryTrait("salt", Recipe.HEATED, "boiled");
+		saltedWater.setHeatedState("boiled");
 		this.subgoalIngredients.put("salted_water", saltedWater);
 		
-		List<IngredientRecipe> cookedPotatoesList = new ArrayList<IngredientRecipe>();
 		IngredientRecipe potatoes = knowledgebase.getIngredient("potatoes");
 		potatoes.addToolAttribute("peeled");
+		potatoes.setSwapped();
 		potatoes.setHeated();
-		cookedPotatoesList.add(potatoes);
-		cookedPotatoesList.add(saltedWater);
-		IngredientRecipe cookedPotatoes = new IngredientRecipe("potatoes_in_water", Recipe.HEATED, Recipe.SWAPPED, cookedPotatoesList);
-		this.subgoalIngredients.put("potatoes_in_water", cookedPotatoes);
+		potatoes.setHeatedState("boiled");
+		this.subgoalIngredients.put("potatoes", potatoes);
 		
 		List<IngredientRecipe> ingredientList = new ArrayList<IngredientRecipe>();
-		ingredientList.add(cookedPotatoes);
 		ingredientList.add(knowledgebase.getIngredient("butter"));
 		ingredientList.add(knowledgebase.getIngredient("eggs"));
+		ingredientList.add(potatoes);
 		IngredientRecipe mashedPotatoes = new IngredientRecipe("Mashed_potatoes", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList);
 		this.topLevelIngredient = mashedPotatoes;
 		this.subgoalIngredients.put("Mashed_potatoes", mashedPotatoes);
@@ -61,16 +61,14 @@ public class MashedPotatoes extends Recipe {
 		BakingSubgoal saltedWaterSubgoal = new BakingSubgoal(saltedWaterPf, this.subgoalIngredients.get("salted_water"));
 		this.subgoals.add(saltedWaterSubgoal);
 		
-		BakingPropositionalFunction cookedPotatoesPF = 
-				new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("potatoes_in_water"));
-		BakingSubgoal cookedPotatoesSubgoal = new BakingSubgoal(cookedPotatoesPF, this.subgoalIngredients.get("potatoes_in_water"));
-		cookedPotatoesSubgoal.addPrecondition(saltedWaterSubgoal);
-		this.subgoals.add(cookedPotatoesSubgoal);
+		BakingPropositionalFunction boiledPotatoesPF = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("potatoes"));
+		BakingSubgoal boiledPotatoesSG = new BakingSubgoal(boiledPotatoesPF, this.subgoalIngredients.get("potatoes"));
+		boiledPotatoesSG.addPrecondition(saltedWaterSubgoal);
+		this.subgoals.add(boiledPotatoesSG);
 		
 		BakingPropositionalFunction pf1 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.topLevelIngredient);
 		BakingSubgoal sg1 = new BakingSubgoal(pf1, this.topLevelIngredient);
-		sg1.addPrecondition(cookedPotatoesSubgoal);
-		
+		sg1.addPrecondition(boiledPotatoesSG);
 		this.subgoals.add(sg1);
 	}
 }

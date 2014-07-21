@@ -38,7 +38,6 @@ public class UseAction extends BakingAction {
 			ObjectInstance ingredient = state.getObject(name);
 			containerObjs.add(ingredient);
 		}
-		
 		boolean canBeUsed = false;
 		if (ToolFactory.toolCanCarry(tool)) {
 			if (ToolFactory.isEmpty(tool)) {
