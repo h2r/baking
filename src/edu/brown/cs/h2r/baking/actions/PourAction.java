@@ -56,9 +56,6 @@ public class PourAction extends BakingAction {
 			throw new RuntimeException("One of the pouring containers is not in any space");
 		}
 		
-		if (SpaceFactory.isBaking(receivingContainerSpace)) {
-			return BakingActionResult.failure(receivingContainerName + " is in the " +  receivingContainerSpaceName+ " which is a baking space!");
-		}
 		ObjectInstance pouringContainerSpaceObject = state.getObject(pouringContainerSpaceName);
 		
 		String agentOfSpace = SpaceFactory.getAgent(pouringContainerSpaceObject).iterator().next();
@@ -92,42 +89,16 @@ public class PourAction extends BakingAction {
 	
 	private void pour(State state, ObjectInstance pouringContainer, ObjectInstance receivingContainer)
 	{
-		ObjectInstance receivingSpace = state.getObject(ContainerFactory.getSpaceName(receivingContainer));
-		if (SpaceFactory.isHeating(receivingSpace)) {
-			PourAction.pourIntoHeating(state, pouringContainer, receivingContainer, receivingSpace);
-		} else {
-			PourAction.pourIntoWorking(state, pouringContainer, receivingContainer);
-		}
-	}
-	
-	// If an ingredient is poured into a heating space that is turned on, then it will get the
-	// appropiate attribute.
-	private static void pourIntoHeating(State state, ObjectInstance pouringContainer, 
-			ObjectInstance receivingContainer, ObjectInstance receivingSpace) {
+		boolean bake = ContainerFactory.isBakingContainer(receivingContainer);
 		Set<String> ingredients = ContainerFactory.getContentNames(pouringContainer);
 		ContainerFactory.addIngredients(receivingContainer, ingredients);
 		ContainerFactory.removeContents(pouringContainer);
-		boolean on = SpaceFactory.getOnOff(receivingSpace);
 		for (String ingredient : ingredients) {
 			ObjectInstance ingredientInstance = state.getObject(ingredient);
-			if (on) {
-				IngredientFactory.heatIngredient(ingredientInstance);
+			IngredientFactory.changeIngredientContainer(ingredientInstance, receivingContainer.getName());
+			if (bake) {
+				IngredientFactory.bakeIngredient(ingredientInstance);
 			}
-			IngredientFactory.changeIngredientContainer(ingredientInstance, receivingContainer.getName());
 		}
 	}
-	
-	private static void pourIntoWorking(State state, ObjectInstance pouringContainer, 
-			ObjectInstance receivingContainer) {
-		Set<String> ingredients = ContainerFactory.getContentNames(pouringContainer);
-		ContainerFactory.addIngredients(receivingContainer, ingredients);
-		ContainerFactory.removeContents(pouringContainer);
-		for (String ingredient : ingredients) {
-			ObjectInstance ingredientInstance = state.getObject(ingredient);
-			IngredientFactory.changeIngredientContainer(ingredientInstance, receivingContainer.getName());
-		}
-		
-		
-	}
-	
 }

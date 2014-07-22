@@ -12,13 +12,10 @@ import org.yaml.snakeyaml.Yaml;
 
 
 public class BakingParser {
-	
-	private static final String COMBINATIONS = "Combinations.yaml";
 	private static final String INGREDIENTS = "Ingredients.yaml";
 
-	private AbstractMap<String, BakingInformation> combinationMap, ingredientMap;
+	private AbstractMap<String, BakingInformation> ingredientMap;
 	public BakingParser() {
-		this.combinationMap = generateMap(BakingParser.COMBINATIONS);
 		this.ingredientMap = generateMap(BakingParser.INGREDIENTS);
 	}
 
@@ -55,16 +52,8 @@ public class BakingParser {
 		return information;
 	}
 	
-	public AbstractMap<String, BakingInformation> getCombinationMap() {
-		return this.combinationMap;
-	}
-	
 	public AbstractMap<String, BakingInformation> getIngredientMap() {
 		return this.ingredientMap;
 	}
-	
-	/*public Set<String> getIngredientNames() {
-		return this.map.keySet();
-	}*/
 }
 

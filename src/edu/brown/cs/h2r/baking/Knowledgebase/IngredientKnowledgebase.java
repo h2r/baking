@@ -24,9 +24,8 @@ public class IngredientKnowledgebase {
 	public static final String NONMELTABLE = "unsaturated";
 	public static final String LUBRICANT = "lubricant";
 	
-	private AbstractMap<String, ArrayList<Set<String>>> combinationMap;
 	private AbstractMap<String, IngredientRecipe> allIngredients;
-	private AbstractMap<String, Set<String>> traitMap, toolTraitMap, combinationTraitMap;
+	private AbstractMap<String, Set<String>> traitMap, toolTraitMap;
 	private BakingParser parser;
 	public IngredientKnowledgebase() {
 		this.parser = new BakingParser();
@@ -34,9 +33,6 @@ public class IngredientKnowledgebase {
 		this.toolTraitMap = new HashMap<String, Set<String>>();
 		this.allIngredients = new HashMap<String, IngredientRecipe>();
 		this.generateAllIngredients();
-		this.combinationTraitMap = new HashMap<String, Set<String>>();
-		this.combinationMap = new HashMap<String, ArrayList<Set<String>>>();
-		this.generateCombinations();
 	}
 	
 	private void generateAllIngredients() {
@@ -61,28 +57,6 @@ public class IngredientKnowledgebase {
 			this.allIngredients.put(name, ing);
 			this.traitMap.put(name, new HashSet<String>(traits));
 			this.toolTraitMap.put(name, new HashSet<String>(toolTraits));
-		}
-	}
-	
-	private void generateCombinations() {
-		for (Entry<String, BakingInformation> entry : this.parser.getCombinationMap().entrySet()) {
-			String name = entry.getKey();
-			//IngredientRecipe ing = new IngredientRecipe(name, Recipe.NO_ATTRIBUTES);
-			BakingInformation info = entry.getValue();
-			List<String> traits = null;
-			List<List<String>> combinations = null;
-			try {
-				traits = info.getListOfString(BakingInformation.combinationTraits);
-				combinations = info.getListOfList(BakingInformation.combinationPossibleCombinations);
-			} catch (BakingCastException e) {
-				e.printStackTrace();
-			}
-			this.combinationTraitMap.put(name, new HashSet<String>(traits));
-			ArrayList<Set<String>> realCombinations = new ArrayList<Set<String>>();
-			for (List<String> combination : combinations) {
-				realCombinations.add(new HashSet<String>(combination));
-			}
-			this.combinationMap.put(name, realCombinations);
 		}
 	}
 	
@@ -165,71 +139,6 @@ public class IngredientKnowledgebase {
 		if (this.traitMap.containsKey(ingredient)) {
 			return this.traitMap.get(ingredient);
 		}
-		if (this.combinationTraitMap.containsKey(ingredient)) {
-			return this.combinationTraitMap.get(ingredient);
-		}
 		return new HashSet<String>();
-	}
-	
-	// Determine whether the ingredient in the container can be swapped out (flour + liquid -> flour).
-	// If a match is found, return the name of the combination found.
-	public String canCombine(State state, ObjectInstance container) {
-		Set<ObjectInstance> contains = new HashSet<>();
-		// get contents
-		Set<String> contents = ContainerFactory.getContentNames(container);
-		for (String content : contents) {
-			contains.add(state.getObject(content));
-		}
-		int contentSize = contents.size();
-		for (Entry<String, ArrayList<Set<String>>> entry : this.combinationMap.entrySet()) {
-			String key = entry.getKey();
-			ArrayList<Set<String>> possibleCombinations = entry.getValue();
-			for (Set<String> necessaryTraits : possibleCombinations) {
-				// If there's only one necessary trait, then this combination can be treated like
-				// a "collection" (that is, a collection of dry ingredients, or a collection of wet
-				// ingredients).
-				if (necessaryTraits.size() == 1) {
-					if (contentSize != 1) {
-						continue;
-					}
-					String[] traitArray = new String[1];
-					String trait = necessaryTraits.toArray(traitArray)[0];
-					Boolean match = true;
-					for (ObjectInstance obj : contains) {
-						if (!IngredientFactory.getTraits(obj).contains(trait)) {
-							match = false;
-						}
-					}
-					if (match) {
-						return key;
-					}
-					
-				} else {
-					if (contentSize != 2) {
-						continue;
-					}
-					String[] traitArray = new String[necessaryTraits.size()];
-					necessaryTraits.toArray(traitArray);
-					ObjectInstance[] contentArray = new ObjectInstance[contains.size()];
-					contains.toArray(contentArray);
-					// If the combination has two traits (flour + liquid), then check that either ingredient
-					// 1 has trait 1 and ingredient 2 has trait 2 or vice versa!
-					if ((IngredientFactory.getTraits(contentArray[0]).contains(traitArray[0])) 
-							&& (IngredientFactory.getTraits(contentArray[1]).contains(traitArray[1]))) {
-						return key;
-					}
-					if ((IngredientFactory.getTraits(contentArray[0]).contains(traitArray[1])) 
-							&& (IngredientFactory.getTraits(contentArray[1]).contains(traitArray[0]))) {
-						return key;
-					}
-				}
-			}
-		}
-		// no combination found, return an empty string.
-		return "";
-	}
-	
-	public void newCombinationMap(String filename) {
-		this.combinationMap = new CombinationParser(filename).getMap();
 	}
 }

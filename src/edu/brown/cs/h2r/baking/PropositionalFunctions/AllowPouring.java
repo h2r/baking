@@ -33,12 +33,6 @@ public class AllowPouring extends BakingPropositionalFunction {
 			}
 		}
 		
-		if (ContainerFactory.isHeatingContainer(receivingContainer)) {
-			if (!this.checkPourIntoHeatingContainer(state, pouringContainer, receivingContainer)) {
-				return false;
-			}
-		}
-		
 		// Avoid useless pouring back and forth!
 		if (ContainerFactory.isReceivingContainer(pouringContainer) && 
 				ContainerFactory.isMixingContainer(receivingContainer) && ContainerFactory.isEmptyContainer(receivingContainer)) {
@@ -108,46 +102,6 @@ public class AllowPouring extends BakingPropositionalFunction {
 		return true;
 	}
 	
-	private boolean checkPourIntoHeatingContainer(State state, ObjectInstance pouringContainer,
-			ObjectInstance receivingContainer) {
-
-		/**
-		 * If the container is empty then we only want to add in ingredients that we must
-		 * heat, as per the recipe.
-		 * Conversely, if the container is not empty:
-		 * a) If it contains an already heated ingredient, then we can assume that we don't need to
-		 * put the container back on the burner, and therefore we can add any ingredients.
-		 * b) If all of the ingredients are non-heated, then we must assume that this container is meant
-		 * to go on the heating surface in the near future, and therefore we will only add any ingredients
-		 * that the recipe calls for to be heated.
-		 */
-		Set<String> pouringContentNames = ContainerFactory.getContentNames(pouringContainer);
-		if (ContainerFactory.isEmptyContainer(receivingContainer)) {
-			for (String name : pouringContentNames) {
-				if (!this.checkHeatingIngredient(state.getObject(name))) {
-					return false;
-				}
-			}
-		} else {
-			if (!ContainerFactory.hasAHeatedContent(state, receivingContainer)) {
-				for (String name : pouringContentNames) {
-					if (!this.checkHeatingIngredient(state.getObject(name))) {
-						return false;
-					}
-				}
-			}
-		}
-		ObjectInstance space = state.getObject(ContainerFactory.getSpaceName(receivingContainer));
-		boolean willHeat = SpaceFactory.isSwitchable(space) && SpaceFactory.getOnOff(space);
-		if (willHeat) {
-			for (String name : pouringContentNames) {
-				if (!this.checkHeatingIngredient(state.getObject(name))) {
-					return false;
-				}
-			}
-		}
-		return true;
-	}
 	
 	// checks to see if an ingredient is baked in the recipe
 	private boolean checkBakingIngredient(ObjectInstance object) {
@@ -162,30 +116,6 @@ public class AllowPouring extends BakingPropositionalFunction {
 		for (IngredientRecipe ingredient : contents) {
 			if (ingredient.getName().equals(name)) {
 				return ingredient.getBaked();
-			}
-		}
-		return false;
-	}
-	
-	// Checks to see if an ingredient is heated for the recipe
-	private boolean checkHeatingIngredient(ObjectInstance object) {
-		String name = object.getName();
-		if (IngredientFactory.isHeatedIngredient(object)) {
-			return false;
-		}
-		if (this.topLevelIngredient.getName().equals(name)) {
-			return topLevelIngredient.getHeated();
-		}
-		List<IngredientRecipe> contents = this.topLevelIngredient.getContents();
-		for (IngredientRecipe ingredient : contents) {
-			if (ingredient.getName().equals(name)) {
-				return ingredient.getHeated();
-			}
-		}
-		for (Entry<String, IngredientRecipe> entry : this.topLevelIngredient.getNecessaryTraits().entrySet()) {
-			String trait = entry.getKey();
-			if (IngredientFactory.getTraits(object).contains(trait)) {
-				return entry.getValue().getHeated();
 			}
 		}
 		return false;
