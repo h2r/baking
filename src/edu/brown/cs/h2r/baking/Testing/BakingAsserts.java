@@ -208,14 +208,6 @@ public class BakingAsserts {
 		Assert.assertFalse(a.applicableInState(state, params));
 	}
 	
-	public static void assertSpaceOn(ObjectInstance space) {
-		Assert.assertTrue(SpaceFactory.getOnOff(space));
-	}
-	
-	public static void assertSpaceOff(ObjectInstance space) {
-		Assert.assertFalse(SpaceFactory.getOnOff(space));
-	}
-	
 	public static void assertHasToolTrait(ObjectInstance ingredient, String trait) {
 		Assert.assertTrue(IngredientFactory.getToolTraits(ingredient).contains(trait));
 	}

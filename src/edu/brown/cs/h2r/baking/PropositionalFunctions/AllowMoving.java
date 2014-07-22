@@ -25,65 +25,8 @@ public class AllowMoving extends BakingPropositionalFunction {
 		
 		
 		if (!ContainerFactory.isEmptyContainer(container)) {
-			if (SpaceFactory.isBaking(space)) {
-				return this.checkMoveToBaking(state, contents);
-			} else if (SpaceFactory.isHeating(space)) {
-				return this.checkMoveToHeating(state, contents);
-			} else {
-				return true;
-			}
+			return true;
 		}
 		return false;
 	}
-	
-	private boolean checkMoveToBaking(State state, Set<String> contents) {
-		String ingredientName = topLevelIngredient.getName();
-		boolean recipeIngBaked = this.topLevelIngredient.getBaked();
-		if (recipeIngBaked && contents.contains(ingredientName) ) {
-			boolean objIngBaked = IngredientFactory.isBakedIngredient(state.getObject(ingredientName));
-			if (!objIngBaked) {
-				return true;
-			}
-		} else {
-			List<IngredientRecipe> ingredientContents = this.topLevelIngredient.getContents();
-			for (IngredientRecipe ing : ingredientContents) {
-				String name = ing.getName();
-				ObjectInstance obj = state.getObject(name);
-				if (ing.getBaked() && contents.contains(name)) {
-					if (!IngredientFactory.isBakedIngredient(obj)) {
-						return true;
-					}
-				}
-			}
-		}
-		return false;
-	}
-	
-	private boolean checkMoveToHeating(State state, Set<String> contents) {
-		String ingredientName = topLevelIngredient.getName();
-		boolean recipeIngHeated = this.topLevelIngredient.getHeated();
-		ObjectInstance topLevelObj = state.getObject(ingredientName);
-		if (recipeIngHeated && contents.contains(ingredientName) ) {
-			if (!IngredientFactory.isHeatedIngredient(topLevelObj)) {
-				if (!IngredientFactory.isMeltedAtRoomTemperature(topLevelObj)) {
-					return true;
-				}
-			}
-		} else {
-			List<IngredientRecipe> ingredientContents = this.topLevelIngredient.getContents();
-			for (IngredientRecipe ing : ingredientContents) {
-				String name = ing.getName();
-				ObjectInstance obj = state.getObject(name);
-				if (ing.getHeated() && contents.contains(name)) {
-					if (!IngredientFactory.isHeatedIngredient(obj)) {
-						if (!IngredientFactory.isMeltedAtRoomTemperature(obj)) {
-							return true;
-						}
-					}
-				}
-			}
-		}
-		return false;
-	}
-
 }

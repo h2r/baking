@@ -39,14 +39,6 @@ public class MoveAction extends BakingAction {
 			return BakingActionResult.failure(containerName + " is already in " + spaceName);
 		}
 		
-		if (SpaceFactory.isBaking(space) && !ContainerFactory.isBakingContainer(container)) {
-			return BakingActionResult.failure(spaceName + " can only contain baking containers");
-		}
-		
-		if (SpaceFactory.isHeating(space) && !ContainerFactory.isHeatingContainer(container)) {
-			return BakingActionResult.failure(spaceName + " can only contain heating containers");
-		}
-		
 		return BakingActionResult.success();		
 	}
 	
@@ -72,36 +64,5 @@ public class MoveAction extends BakingAction {
 		ContainerFactory.changeContainerSpace(containerInstance, spaceInstance.getName());
 		SpaceFactory.addContainer(spaceInstance, containerInstance);
 		SpaceFactory.removeContainer(oldSpaceObject, containerInstance);
-		
-		if (SpaceFactory.getOnOff(spaceInstance)) {
-			if (SpaceFactory.isBaking(spaceInstance)) {
-				MoveAction.movingToBakingSpace(state, spaceInstance, containerInstance);
-			}
-			if (SpaceFactory.isHeating(spaceInstance)) {
-				MoveAction.movingToHeatingSpace(state, spaceInstance, containerInstance);
-			}
-		}
-	}
-	
-	private static void movingToBakingSpace(State state, ObjectInstance spaceInstance, ObjectInstance containerInstance) {
-		if (!ContainerFactory.isEmptyContainer(containerInstance) && ContainerFactory.isBakingContainer(containerInstance)) {
-			Set<String> names = ContainerFactory.getContentNames(containerInstance);
-			for (String name : names) {
-				ObjectInstance ing = state.getObject(name);
-				IngredientFactory.bakeIngredient(ing);
-			}
-		}
-	}
-	
-	private static void movingToHeatingSpace(State state, ObjectInstance spaceInstance, ObjectInstance containerInstance) {
-		if (!ContainerFactory.isEmptyContainer(containerInstance) && ContainerFactory.isHeatingContainer(containerInstance)) {
-			Set<String> names = ContainerFactory.getContentNames(containerInstance);
-			for (String name : names) {
-				ObjectInstance ing = state.getObject(name);
-				if (!IngredientFactory.isMeltedAtRoomTemperature(ing)) {
-					IngredientFactory.heatIngredient(ing);
-				}
-			}
-		}
 	}
 }

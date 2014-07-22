@@ -65,10 +65,6 @@ public class MixAction extends BakingAction {
 		if (mixingContainerSpaceName == null) {
 			return BakingActionResult.failure(containerSpaceName + " does not exist");
 		}
-
-		if (SpaceFactory.isBaking(mixingContainerSpaceName)) {
-			return BakingActionResult.failure(mixingContainerSpaceName + " is not suitable for mixing!");
-		}
 		return BakingActionResult.success();
 	}
 	
@@ -128,11 +124,6 @@ public class MixAction extends BakingAction {
 		IngredientFactory.changeIngredientContainer(newIngredient, container.getName());
 		
 		ObjectInstance receivingSpace = state.getObject(ContainerFactory.getSpaceName(container));
-		if (SpaceFactory.isBaking(receivingSpace) && SpaceFactory.getOnOff(receivingSpace)) {
-			IngredientFactory.bakeIngredient(newIngredient);
-		} else if (SpaceFactory.isHeating(receivingSpace) && SpaceFactory.getOnOff(receivingSpace)) {
-			IngredientFactory.heatIngredient(newIngredient);
-		}
 		
 		this.makeSwappedIngredient(state, newIngredient);
 	}
@@ -164,11 +155,6 @@ public class MixAction extends BakingAction {
 		IngredientFactory.changeIngredientContainer(newIng, container.getName());
 		
 		ObjectInstance receivingSpace = state.getObject(ContainerFactory.getSpaceName(container));
-		if (SpaceFactory.isBaking(receivingSpace) && SpaceFactory.getOnOff(receivingSpace)) {
-			IngredientFactory.bakeIngredient(newIng);
-		} else if (SpaceFactory.isHeating(receivingSpace) && SpaceFactory.getOnOff(receivingSpace)) {
-			IngredientFactory.heatIngredient(newIng);
-		}
 		state.addObject(newIng);
 	}
 	

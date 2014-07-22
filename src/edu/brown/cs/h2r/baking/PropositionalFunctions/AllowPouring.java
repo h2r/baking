@@ -90,13 +90,9 @@ public class AllowPouring extends BakingPropositionalFunction {
 				}
 			}
 		}
-		ObjectInstance space = state.getObject(ContainerFactory.getSpaceName(receivingContainer));
-		boolean willBake = SpaceFactory.isSwitchable(space) && SpaceFactory.getOnOff(space);
-		if (willBake) {
-			for (String name : pouringContentNames) {
-				if (!this.checkBakingIngredient(state.getObject(name))) {
-					return false;
-				}
+		for (String name : pouringContentNames) {
+			if (!this.checkBakingIngredient(state.getObject(name))) {
+				return false;
 			}
 		}
 		return true;

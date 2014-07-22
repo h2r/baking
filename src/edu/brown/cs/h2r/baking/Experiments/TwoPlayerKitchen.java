@@ -53,9 +53,6 @@ public class TwoPlayerKitchen implements DomainGenerator {
 		//Action bake = new BakeAction(domain);
 		Action pour = new PourAction(domain, recipe.topLevelIngredient);
 		Action move = new MoveAction(domain, recipe.topLevelIngredient);
-		state.addObject(SpaceFactory.getNewBakingSpaceObjectInstance(this.domain, "Oven", null, ""));
-		state.addObject(SpaceFactory.getNewHeatingSpaceObjectInstance(this.domain, "Stove Top", null, ""));
-		
 		
 		List<String> mixingContainers = Arrays.asList("Large Bowl");
 		for (String container : mixingContainers) { 
@@ -63,13 +60,10 @@ public class TwoPlayerKitchen implements DomainGenerator {
 		}
 		
 		List<String> heatingContainers = Arrays.asList("Large Pot", "Large Saucepan");
-		for (String container : heatingContainers) { 
-			state.addObject(ContainerFactory.getNewHeatingContainerObjectInstance(domain, container, null, "counter"));
-		}
 		
 		List<String> bakingContainers = Arrays.asList("Baking Dish");
 		for (String container : bakingContainers) { 
-			state.addObject(ContainerFactory.getNewHeatingContainerObjectInstance(domain, container, null, "counter"));
+			state.addObject(ContainerFactory.getNewBakingContainerObjectInstance(domain, container, null, "counter"));
 		}
 		
 		List<String> containers = new ArrayList<String>();

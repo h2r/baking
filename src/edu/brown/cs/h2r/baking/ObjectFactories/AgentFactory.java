@@ -10,6 +10,9 @@ public class AgentFactory {
 	public static final String ClassName = "agent";
 	private static final String attributeRobot = "robot";
 	
+	public static final String agentRobot = "robot";
+	public static final String agentHuman = "human";
+	
 	public static ObjectClass getObjectClass(Domain domain)
 	{
 		ObjectClass objectClass = domain.getObjectClass(AgentFactory.ClassName);
@@ -51,6 +54,14 @@ public class AgentFactory {
 	
 	public static Boolean isRobot(ObjectInstance objectInstance) {
 		return (objectInstance.getDiscValForAttribute(AgentFactory.attributeRobot) == 1);
+	}
+	
+	public static String getCorrectAgentSpaceName(ObjectInstance agent) {
+		String agentName = agent.getName();
+		if (agentName.equals(AgentFactory.agentHuman)) {
+			return SpaceFactory.SPACE_ROBOT;
+		}
+		return SpaceFactory.SPACE_HUMAN;
 	}
 	
 }
