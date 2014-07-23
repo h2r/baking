@@ -9,6 +9,7 @@ import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.BowlsClean;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
 
 public class Brownies extends Recipe {
@@ -49,7 +50,7 @@ public class Brownies extends Recipe {
 	
 	public void setUpSubgoals(Domain domain) {
 		AbstractMap<String, IngredientRecipe> swappedIngredients = IngredientRecipe.getRecursiveSwappedIngredients(this.topLevelIngredient);
-		
+		BowlsClean clean = ((BowlsClean)domain.getPropFunction(AffordanceCreator.CLEAN_PF));
 		BakingPropositionalFunction pf3 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("wet_ingredients"));
 		BakingSubgoal sg3 = new BakingSubgoal(pf3, swappedIngredients.get("wet_ingredients"));
 		this.subgoals.add(sg3);

@@ -9,14 +9,18 @@ import java.util.List;
 
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
+import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
+import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.singleagent.Action;
 import edu.brown.cs.h2r.baking.Experiments.HackathonKitchen;
+import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
 import edu.brown.cs.h2r.baking.Knowledgebase.IngredientKnowledgebase;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.BowlsClean;
 import edu.brown.cs.h2r.baking.Recipes.Brownies;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.actions.MixAction;
@@ -31,34 +35,45 @@ public class KitchenDomain {
 	private IngredientKnowledgebase knowledgebase;
 	private AbstractMap<String, ObjectInstance> allIngredientsMap;
 	private HackathonKitchen kitchen;
+	private Action mix, pour, move;
 	
 	private static double robotTop = 100;
 	private static double robotBottom = 0;
 	private static double robotLeft = 0;
-	private static double robotRight = 50;
+	private static double robotRight = 40;
 	
 	private static double humanTop = 100;
 	private static double humanBottom = 0;
-	private static double humanLeft = 50;
-	private static double humanRight = 100;
+	private static double humanLeft = 40;
+	private static double humanRight = 80;
+	
+	private static double dirtyTop = 100;
+	private static double dirtyBottom = 0;
+	private static double dirtyLeft = 80;
+	private static double dirtyRight = 100;
 	
 	public KitchenDomain() {
 		this.kitchen = new HackathonKitchen();
 		this.domain = kitchen.generateDomain();
 		this.recipe = new Brownies();
 		this.state = new State();
-		
-		Action mix = new MixAction(domain, recipe.topLevelIngredient);
-		Action pour = new PourAction(domain, recipe.topLevelIngredient);
-		Action move = new MoveAction(domain, recipe.topLevelIngredient);
+		final PropositionalFunction cleanBowl = new BowlsClean(
+				AffordanceCreator.CLEAN_PF, this.domain, this.recipe.topLevelIngredient);
+
+		this.mix = new MixAction(domain, recipe.topLevelIngredient);
+		this.pour = new PourAction(domain, recipe.topLevelIngredient);
+		this.move = new MoveAction(domain, recipe.topLevelIngredient);
 		
 		
 		this.addAgents();
 		this.setUpRegions();
 		knowledgebase = new IngredientKnowledgebase();
 		this.allIngredientsMap = this.generateAllIngredientMap();
+		this.setUpRecipe();
+		kitchen.addAllIngredients(this.allIngredientsMap.values());
 		
-		this.TestSettingUp();
+		this.testSettingUp();
+		this.testActions();
 		this.plan();
 	}
 	
@@ -82,6 +97,7 @@ public class KitchenDomain {
 		// butter_bowl => butter
 		ObjectInstance container = ContainerFactory.getNewIngredientContainerObjectInstance(
 				this.domain, containerName, ingredientName, space, x, y, z);
+		ContainerFactory.setUsed(container);
 		// should the ingredient be added to the state here?
 		ObjectInstance ing = this.allIngredientsMap.get(ingredientName);
 		IngredientFactory.changeIngredientContainer(ing, containerName);
@@ -89,9 +105,26 @@ public class KitchenDomain {
 		this.state.addObject(container);
 	}
 	
+	public void takePourAction(String[] params) {
+		this.state = ((PourAction)this.pour).performAction(this.state, params);
+		this.checkAndClearSubgoals();
+	}
+	
+	public void takeMoveAction(String[] params) {
+		this.state = ((MoveAction)this.move).performAction(this.state, params);
+		this.checkAndClearSubgoals();
+	}
+	
+	public void takeMixAction(String[] params) {
+		this.state = ((MixAction)this.mix).performAction(this.state, params);
+		this.checkAndClearSubgoals();
+	}
+	
 	public void plan() {
-		kitchen.addAllIngredients(this.allIngredientsMap.values());
-		kitchen.PlanHackathon(this.domain, this.state, this.recipe);
+		while (this.recipe.getSubgoals().size() > 0 ) {
+			this.state = kitchen.PlanHackathon(this.domain, this.state, this.recipe);
+			this.checkAndClearSubgoals();
+		}
 	}
 	
 	private String determineSpace(double x) {
@@ -111,9 +144,15 @@ public class KitchenDomain {
 		return map;
 	}
 	
+	private void setUpRecipe() {
+		this.recipe.setUpSubgoals(this.domain);
+		this.recipe.addIngredientSubgoals();
+		this.recipe.addRequiredRecipeAttributes();
+	}
+	
 	private void addAgents() {
 		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, AgentFactory.agentHuman));
-		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, AgentFactory.agentHuman));
+		//state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, AgentFactory.agentHuman));
 	}
 	
 	private void setUpRegions() {
@@ -121,15 +160,34 @@ public class KitchenDomain {
 				new ArrayList<String>(), AgentFactory.agentHuman, humanTop, humanBottom, humanLeft, humanRight));
 		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, SpaceFactory.SPACE_ROBOT, 
 				new ArrayList<String>(), AgentFactory.agentRobot, robotTop, robotBottom, robotLeft, robotRight));
+		state.addObject(SpaceFactory.getNewDirtySpaceObjectInstance(domain, SpaceFactory.SPACE_DIRTY, 
+				new ArrayList<String>(), AgentFactory.agentHuman, dirtyTop, dirtyBottom, dirtyLeft, dirtyRight));
 	}
 	
-	private void TestSettingUp() {
+	private void checkAndClearSubgoals() {
+		BakingSubgoal completed = null;
+		for (BakingSubgoal sg : this.recipe.getSubgoals()) {
+			if (sg.goalCompleted(this.state)) {
+				if (sg.allPreconditionsCompleted(this.state)) {
+					completed = sg;
+					break;
+				}
+			}
+		}
+		if (completed != null) {
+			this.recipe.removeSubgoal(completed);
+			IngredientFactory.hideUnecessaryIngredients(this.state, domain,
+					completed.getIngredient(), new ArrayList<ObjectInstance>(this.allIngredientsMap.values()));
+		}
+	}
+	
+	private void testSettingUp() {
 		//add two bowls
-		addMixingContainer("Mixing_Bowl_1", 75, 75, 75);
-		addMixingContainer("Mixing_Bowl_2", 75, 75, 75);
+		addMixingContainer("mixing_bowl_1", 75, 75, 75);
+		addMixingContainer("mixing_bowl_2", 75, 75, 75);
 		
 		//add baking dish
-		addBakingContainer("Baking_Dish", 75, 75, 75);
+		addBakingContainer("baking_dish", 75, 75, 75);
 		
 		//add ingredients (containers)
 		addIngredientContainer("flour_bowl", 75, 75, 75);
@@ -145,8 +203,13 @@ public class KitchenDomain {
 		addIngredientContainer("vanilla_bowl", 75, 75, 75);
 	}
 	
+	public void testActions() {
+		this.takePourAction(new String[] {"human", "vanilla_bowl", "mixing_bowl_1"});
+		this.takePourAction(new String[] {"human", "flour_bowl", "mixing_bowl_2"});
+	}
+	
 	public static void main(String[] args) throws IOException {
-		KitchenDomain domain = new KitchenDomain();
+		KitchenDomain kitchenDomain = new KitchenDomain();
 	}
 	
 }

@@ -12,6 +12,7 @@ public class SpaceFactory {
 
 	public static final String ClassName = "space";
 	private static final String attributeWorking = "working";
+	private static final String attributeDirty = "dirty";
 	private static final String attributeContains = "contains";
 	private static final String attributeAgent = "agent";
 	
@@ -19,13 +20,16 @@ public class SpaceFactory {
 	private static final String	attributeBottom = "bottom";
 	private static final String	attributeLeft = "left";
 	private static final String attributeRight = "right";
+	
 
 	public static final String SPACE_COUNTER = "counter";
 	
 	public static final String SPACE_HUMAN = "humanCounter";
 	public static final String SPACE_ROBOT = "robotCounter";
+	public static final String SPACE_DIRTY = "dirtyCounter";
 	public static final int NO_ATTRIBUTES= 0 ;
 	public static final int WORKING = 1;
+	public static final int DIRTY = 2;
 	
 	public static ObjectClass createObjectClass(Domain domain)
 	{
@@ -36,6 +40,10 @@ public class SpaceFactory {
 			Attribute receivingAttribute =
 					new Attribute(domain, SpaceFactory.attributeWorking, Attribute.AttributeType.BOOLEAN);
 			objectClass.addAttribute(receivingAttribute);
+			
+			Attribute dirtyAttribute =
+					new Attribute(domain, SpaceFactory.attributeDirty, Attribute.AttributeType.BOOLEAN);
+			objectClass.addAttribute(dirtyAttribute);
 			
 			objectClass.addAttribute(
 					new Attribute(domain, SpaceFactory.attributeContains, 
@@ -145,6 +153,21 @@ public class SpaceFactory {
 				bottom, left, right);
 	}
 	
+	public static ObjectInstance getNewDirtySpaceObjectInstance(ObjectClass spaceClass, 
+			String name, List<String> containers, String agent, double top, double bottom,
+			double left, double right) {
+		return SpaceFactory.getNewObjectInstance(spaceClass, name, SpaceFactory.DIRTY, containers, agent,
+				top, bottom, left, right);
+	}
+	
+	public static ObjectInstance getNewDirtySpaceObjectInstance(Domain domain, 
+			String name, List<String> containers, String agent, double top, double bottom,
+			double left, double right) {
+		return SpaceFactory.getNewObjectInstance(
+				SpaceFactory.createObjectClass(domain), name, SpaceFactory.DIRTY, containers, agent, top,
+				bottom, left, right);
+	}
+	
 	public static ObjectInstance getNewWorkingSpaceObjectInstance(Domain domain, 
 			String name, List<String> containers, String agent) {
 		return SpaceFactory.getNewObjectInstance(
@@ -173,6 +196,7 @@ public class SpaceFactory {
 	
 	public static void setAttributes(ObjectInstance object, int attributes) {
 		object.setValue(SpaceFactory.attributeWorking, ((attributes & SpaceFactory.WORKING) == SpaceFactory.WORKING) ? 1: 0);
+		object.setValue(SpaceFactory.attributeDirty, ((attributes & SpaceFactory.DIRTY) == SpaceFactory.DIRTY) ? 1: 0);
 	}
 	
 	public static int generateAttributeNumber(Boolean baking, Boolean heating, Boolean working, Boolean switchable) {

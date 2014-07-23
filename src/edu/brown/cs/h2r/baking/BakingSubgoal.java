@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.BowlsClean;
 import burlap.oomdp.core.GroundedProp;
 import burlap.oomdp.core.State;
 
@@ -12,6 +13,7 @@ public class BakingSubgoal {
 	private BakingPropositionalFunction goal;
 	private List<BakingSubgoal> preconditions;
 	private IngredientRecipe ingredient;
+	private BowlsClean clean;
 	
 	public BakingSubgoal(BakingPropositionalFunction pf, IngredientRecipe ingredient) {
 		this.goal = pf;
@@ -36,6 +38,11 @@ public class BakingSubgoal {
 		Boolean completed = false;
 		for (GroundedProp gp : this.goal.getAllGroundedPropsForState(state)) {
 			if (gp.isTrue(state)) {
+				/*for (GroundedProp cleangp : this.clean.getAllGroundedPropsForState(state)) {
+					if (!cleangp.isTrue(state)) {
+						return false;
+					}
+				}*/
 				completed = true;
 				break;
 			}
@@ -63,5 +70,9 @@ public class BakingSubgoal {
 	
 	public IngredientRecipe getIngredient() {
 		return this.ingredient;
+	}
+	
+	public void addClean(BowlsClean clean) {
+		this.clean = clean;
 	}
 }

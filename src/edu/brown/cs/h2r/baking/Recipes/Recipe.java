@@ -541,6 +541,10 @@ public abstract class Recipe {
 		return this.subgoals;
 	}
 	
+	public void removeSubgoal(BakingSubgoal sg) {
+		this.subgoals.remove(sg);
+	}
+	
 	public void addIngredientSubgoals() {
 		for (BakingSubgoal sg : subgoals) {
 			if (sg.getGoal().getClassName().equals(AffordanceCreator.FINISH_PF)) {

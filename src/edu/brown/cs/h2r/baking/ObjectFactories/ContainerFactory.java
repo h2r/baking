@@ -19,6 +19,7 @@ public class ContainerFactory {
 	private static final String attributeReceiving = "receiving";
 	private static final String attributeContains = "contains";
 	private static final String attributeSpace = "space";
+	private static final String attributeUsed = "used";
 	
 	private static final String attributeX = "attX";
 	private static final String attributeY = "attY";
@@ -43,6 +44,10 @@ public class ContainerFactory {
 		Attribute receivingAttribute =
 				new Attribute(domain, ContainerFactory.attributeReceiving, Attribute.AttributeType.BOOLEAN);
 		objectClass.addAttribute(receivingAttribute);
+		
+		Attribute usedAttribute =
+				new Attribute(domain, ContainerFactory.attributeUsed, Attribute.AttributeType.BOOLEAN);
+		objectClass.addAttribute(usedAttribute);
 		
 		objectClass.addAttribute(
 				new Attribute(domain, ContainerFactory.attributeContains, 
@@ -74,6 +79,7 @@ public class ContainerFactory {
 		newInstance.setValue(ContainerFactory.attributeX, 0);
 		newInstance.setValue(ContainerFactory.attributeY, 0);
 		newInstance.setValue(ContainerFactory.attributeZ, 0);
+		newInstance.setValue(ContainerFactory.attributeUsed, false);
 		
 		if (contents != null)
 		{
@@ -93,6 +99,7 @@ public class ContainerFactory {
 			int attributes, List<String> contents, String containerSpace, double x, double y, double z) {
 		ObjectInstance newInstance = new ObjectInstance(containerClass, name);
 		setAttributes(newInstance, attributes);
+		newInstance.setValue(ContainerFactory.attributeUsed, false);
 		
 		newInstance.setValue(ContainerFactory.attributeX, x);
 		newInstance.setValue(ContainerFactory.attributeY, y);
@@ -334,5 +341,13 @@ public class ContainerFactory {
 	
 	public static void setZ(ObjectInstance container, double z) {
 		container.setValue(ContainerFactory.attributeZ, z);
+	}
+	
+	public static void setUsed(ObjectInstance container) {
+		container.setValue(ContainerFactory.attributeUsed, true);
+	}
+	
+	public static boolean getUsed(ObjectInstance container) {
+		return container.getBooleanValue(ContainerFactory.attributeUsed);
 	}
 }

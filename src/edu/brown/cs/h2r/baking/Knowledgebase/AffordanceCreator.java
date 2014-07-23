@@ -27,6 +27,7 @@ public class AffordanceCreator {
 	public static final String BOTCHED_PF = "botched";
 	public static final String CONTAINERGREASED_PF = "containerGreasedPF";
 	public static final String INGREDIENT_PF = "ingredientPF";
+	public static final String CLEAN_PF = "clean";
 	
 	private ArrayList<PFAtom> mixPFAtoms;
 	private ArrayList<PFAtom> movePFAtoms;

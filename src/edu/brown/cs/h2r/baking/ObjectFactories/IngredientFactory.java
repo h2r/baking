@@ -469,6 +469,7 @@ public class IngredientFactory {
 						ContainerFactory.removeIngredient(container, hidden.getName());
 						state.removeObject(obj);
 						state.addObject(hidden);
+						ContainerFactory.changeContainerSpace(container, SpaceFactory.SPACE_DIRTY);
 					}
 				}
 				if (IngredientFactory.getUseCount(obj) > 0) {

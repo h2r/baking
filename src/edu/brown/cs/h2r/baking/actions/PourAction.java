@@ -89,6 +89,10 @@ public class PourAction extends BakingAction {
 	
 	private void pour(State state, ObjectInstance pouringContainer, ObjectInstance receivingContainer)
 	{
+		if (ContainerFactory.isEmptyContainer(receivingContainer) && 
+				!ContainerFactory.getUsed(receivingContainer)) {
+			ContainerFactory.setUsed(receivingContainer);
+		}
 		boolean bake = ContainerFactory.isBakingContainer(receivingContainer);
 		Set<String> ingredients = ContainerFactory.getContentNames(pouringContainer);
 		ContainerFactory.addIngredients(receivingContainer, ingredients);
