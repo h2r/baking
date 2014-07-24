@@ -194,7 +194,7 @@ public class KitchenDomain {
 					completed.getIngredient(), new ArrayList<ObjectInstance>(this.allIngredientsMap.values()));
 		}
 	}
-	public void Test() {
+	public void test() {
 		this.testSettingUp();
 		this.testActions();
 	}
