@@ -3,6 +3,7 @@ package edu.brown.cs.h2r.baking;
 import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -36,6 +37,9 @@ public class KitchenDomain {
 	private AbstractMap<String, ObjectInstance> allIngredientsMap;
 	private HackathonKitchen kitchen;
 	private Action mix, pour, move;
+	
+	private List<String> bakingDishes = new ArrayList<String>(Arrays.asList("baking_dish"));
+	private List<String> mixingBowls = new ArrayList<String>(Arrays.asList("mixing_bowl_1", "mixing_bowl_2"));
 	
 	private static double robotTop = 100;
 	private static double robotBottom = 0;
@@ -77,21 +81,31 @@ public class KitchenDomain {
 		this.plan();
 	}
 	
-	public void addMixingContainer(String name, double x, double y, double z) {
+	public void addContainer(String name, double x, double y, double z) {
+		if (this.bakingDishes.contains(name)) {
+			this.addBakingContainer(name, x, y, z);
+		} else if (this.mixingBowls.contains(name)) {
+			this.addMixingContainer(name, x, y, z);
+		} else {
+			this.addIngredientContainer(name, x, y, z);
+		}
+	}
+	
+	private void addMixingContainer(String name, double x, double y, double z) {
 		String space = determineSpace(x);
 		ObjectInstance container = ContainerFactory.getNewMixingContainerObjectInstance(
 				this.domain, name, new ArrayList<String>(), space, x, y, z);
 		this.state.addObject(container);
 	}
 	
-	public void addBakingContainer(String name, double x, double y, double z){
+	private void addBakingContainer(String name, double x, double y, double z){
 		String space = determineSpace(x);
 		ObjectInstance container = ContainerFactory.getNewBakingContainerObjectInstance(
 				this.domain, name, new ArrayList<String>(), space, x, y, z);
 		this.state.addObject(container);
 	}
 	
-	public void addIngredientContainer(String containerName, double x, double y, double z) {
+	private void addIngredientContainer(String containerName, double x, double y, double z) {
 		String space = determineSpace(x);
 		String ingredientName = containerName.substring(0, containerName.length()-5);
 		// butter_bowl => butter
