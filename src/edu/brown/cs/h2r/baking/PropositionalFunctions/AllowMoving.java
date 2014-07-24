@@ -22,6 +22,9 @@ public class AllowMoving extends BakingPropositionalFunction {
 	}
 	@Override
 	public boolean isTrue(State state, String[] params) {
+		if (params[0].equals(AgentFactory.agentHuman)) {
+			return false;
+		}
 		ObjectInstance space = state.getObject(params[2]);
 		String spaceName = space.getName();
 		ObjectInstance container = state.getObject(params[1]);		

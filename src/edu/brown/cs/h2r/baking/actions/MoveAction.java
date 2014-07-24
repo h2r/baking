@@ -27,14 +27,28 @@ public class MoveAction extends BakingAction {
 		
 		String spaceName = params[2];
 		ObjectInstance space = state.getObject(spaceName);
-		String agentName = SpaceFactory.getAgent(space).iterator().next();
-		String paramAgentName = params[0];
-		if (!agentName.isEmpty() && !agentName.equalsIgnoreCase(paramAgentName)) {
-			return BakingActionResult.failure(paramAgentName + " cannot move objects to the " + spaceName);
-		}
-		
+		String agentName = params[0];
 		String containerName = params[1];
 		ObjectInstance container = state.getObject(containerName);
+		/*if (!agentName.isEmpty() && !agentName.equalsIgnoreCase(paramAgentName)) {
+			return BakingActionResult.failure(paramAgentName + " cannot move objects to the " + spaceName);
+		}*/
+		
+		if (agentName.equals(AgentFactory.agentRobot)) {
+			if (spaceName.equals(SpaceFactory.SPACE_HUMAN)) {
+				return BakingActionResult.failure("Robot can't move containers to human space");
+			}
+			if (ContainerFactory.getSpaceName(container).equals(SpaceFactory.SPACE_HUMAN)) {
+				return BakingActionResult.failure("Robot can't move containers from human space");
+			}
+		} else {
+			if (spaceName.equals(SpaceFactory.SPACE_DIRTY)) {
+				return BakingActionResult.failure("Human can't move stuff to dirty");
+			}
+			if (ContainerFactory.getSpaceName(container).equals(SpaceFactory.SPACE_ROBOT)) {
+				return BakingActionResult.failure("Human can't move containers from robot space");
+			}
+		}
 		if (ContainerFactory.getSpaceName(container).equals(spaceName)) {
 			return BakingActionResult.failure(containerName + " is already in " + spaceName);
 		}

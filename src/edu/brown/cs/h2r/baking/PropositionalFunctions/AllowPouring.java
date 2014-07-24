@@ -24,6 +24,9 @@ public class AllowPouring extends BakingPropositionalFunction {
 	}
 	@Override
 	public boolean isTrue(State state, String[] params) {
+		if (params[0].equals(AgentFactory.agentHuman)) {
+			return false;
+		}
 		ObjectInstance pouringContainer = state.getObject(params[1]);
 		ObjectInstance receivingContainer = state.getObject(params[2]);
 		

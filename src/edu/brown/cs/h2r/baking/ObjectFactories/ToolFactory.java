@@ -58,7 +58,7 @@ public class ToolFactory {
 			String type, String toolSpace, double x, double y, double z) {
 		ObjectInstance newInstance = new ObjectInstance(toolClass, name);
 		newInstance.setValue(ToolFactory.attributeUsed, false);
-		newInstance.setValue(ToolFactory.attributeType, type);
+		newInstance.addRelationalTarget(ToolFactory.attributeType, type);
 		
 		newInstance.setValue(ToolFactory.attributeX, x);
 		newInstance.setValue(ToolFactory.attributeY, y);
@@ -74,7 +74,7 @@ public class ToolFactory {
 	public static ObjectInstance getNewObjectInstance(Domain domain, String name, 
 			String type, String containerSpace, double x, double y, double z) {
 		return ToolFactory.getNewObjectInstance(
-				domain.getObjectClass(ContainerFactory.ClassName), name, type, containerSpace, x, y, z);
+				domain.getObjectClass(ToolFactory.ClassName), name, type, containerSpace, x, y, z);
 	}
 	
 	public static void changetoolSpace(ObjectInstance tool, String toolSpace) {

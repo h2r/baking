@@ -36,6 +36,7 @@ import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.RecipeTerminalFunction;
 import edu.brown.cs.h2r.baking.ObjectFactories.*;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.BowlsClean;
 import edu.brown.cs.h2r.baking.Recipes.*;
 import edu.brown.cs.h2r.baking.actions.*;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
@@ -73,11 +74,14 @@ public class KevinsKitchen implements DomainGenerator {
 		if (this.topLevelIngredient == null) {
 			this.topLevelIngredient = recipe.topLevelIngredient;
 		}
+		final PropositionalFunction cleanBowl = new BowlsClean(
+				AffordanceCreator.CLEAN_PF, domain, recipe.topLevelIngredient);
 		
 		recipe.setUpSubgoals(domain);
 		// creates ingredient-only subgoals 
 		recipe.addIngredientSubgoals();
 		recipe.addRequiredRecipeAttributes();
+		
 		
 		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
 		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2", "baking_dish");

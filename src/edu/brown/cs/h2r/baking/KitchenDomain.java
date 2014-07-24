@@ -9,12 +9,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 
+import burlap.behavior.affordances.AffordancesController;
+import burlap.behavior.singleagent.Policy;
+import burlap.behavior.singleagent.planning.QComputablePlanner;
+import burlap.behavior.singleagent.planning.commonpolicies.AffordanceGreedyQPolicy;
+import burlap.behavior.statehashing.NameDependentStateHashFactory;
+import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.singleagent.Action;
+import burlap.oomdp.singleagent.GroundedAction;
+import burlap.oomdp.singleagent.common.UniformCostRF;
 import edu.brown.cs.h2r.baking.Experiments.HackathonKitchen;
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
 import edu.brown.cs.h2r.baking.Knowledgebase.IngredientKnowledgebase;
@@ -24,6 +32,8 @@ import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ToolFactory;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.BowlsClean;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
 import edu.brown.cs.h2r.baking.Recipes.Brownies;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.actions.MixAction;
@@ -39,6 +49,7 @@ public class KitchenDomain {
 	private AbstractMap<String, ObjectInstance> allIngredientsMap;
 	private HackathonKitchen kitchen;
 	private Action mix, pour, move;
+	private TerminalFunction tf;
 	
 	private List<String> bakingDishes = new ArrayList<String>(Arrays.asList("baking_dish"));
 	private List<String> mixingBowls = new ArrayList<String>(Arrays.asList(ContainerFactory.DRY_BOWL, ContainerFactory.WET_BOWL));
@@ -67,6 +78,11 @@ public class KitchenDomain {
 		this.state = new State();
 		final PropositionalFunction cleanBowl = new BowlsClean(
 				AffordanceCreator.CLEAN_PF, this.domain, this.recipe.topLevelIngredient);
+		final RecipeFinished finish = new RecipeFinished(AffordanceCreator.FINISH_PF, this.domain,
+				this.recipe.topLevelIngredient);
+		final RecipeBotched botched = new RecipeBotched(AffordanceCreator.FINISH_PF, this.domain,
+				this.recipe.topLevelIngredient);
+		 this.tf = new RecipeTerminalFunction(cleanBowl, finish, botched);
 
 		this.mix = new MixAction(domain, recipe.topLevelIngredient);
 		this.pour = new PourAction(domain, recipe.topLevelIngredient);
@@ -80,6 +96,9 @@ public class KitchenDomain {
 		this.allIngredientsMap = this.generateAllIngredientMap();
 		this.setUpRecipe();
 		kitchen.addAllIngredients(this.allIngredientsMap.values());
+		
+		this.testSettingUp();
+		this.plan();
 	}
 	
 	public State getCurrentState() {
@@ -151,13 +170,10 @@ public class KitchenDomain {
 	
 	public void plan() {
 		boolean added = false;
-		while (this.recipe.getSubgoals().size() > 0 ) {
-			this.state = kitchen.PlanHackathon(this.domain, this.state, this.recipe);
-			this.checkAndClearSubgoals();
-		}
-		
+		do {
 		String action = this.getRandomParam();
 		String[] params = this.allParams.get(action);
+		System.out.println(Arrays.toString(params));
 		this.allParams.remove(action);
 		added = this.addParams(action);
 		
@@ -167,6 +183,8 @@ public class KitchenDomain {
 			this.takePourAction(params);
 			this.moveDirty(params);
 		}
+		this.robotTakeAction();
+		} while (!this.allParams.isEmpty() || added);
 		
 		// make planner get action
 	}
@@ -196,7 +214,7 @@ public class KitchenDomain {
 	
 	private void addAgents() {
 		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, AgentFactory.agentHuman));
-		//state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, AgentFactory.agentHuman));
+		state.addObject(AgentFactory.getNewRobotAgentObjectInstance(domain, AgentFactory.agentRobot));
 	}
 	
 	private void setUpRegions() {
@@ -261,12 +279,12 @@ public class KitchenDomain {
 	}
 	
 	private boolean addParams(String prevAction) { 
-		if (!(this.allParams.containsKey("pourCocoa") && this.allParams.containsKey("pourFlour"))) {
+		if (!this.allParams.containsKey("pourCocoa") && !this.allParams.containsKey("pourFlour")) {
 			this.allParams.put("mixDry", new String[] {"human", "dry_bowl"});
 			return true;
 		}
 		
-		if (!(this.allParams.containsKey("pourEggs") && this.allParams.containsKey("pourButter"))) {
+		if (!this.allParams.containsKey("pourEggs") && !this.allParams.containsKey("pourButter")) {
 			this.allParams.put("mixWet", new String[] {"human", "wet_bowl"});
 			return true;
 		}
@@ -304,6 +322,7 @@ public class KitchenDomain {
 			String agent = "human";
 			String bowl = prevParams[1];
 			String space = SpaceFactory.SPACE_ROBOT;
+			System.out.println(agent + " move " + bowl + " to " + space);
 			this.takeMoveAction(new String[] {agent, bowl, space});
 		}
 	}
@@ -313,6 +332,24 @@ public class KitchenDomain {
 		List<String> params = new ArrayList<String> (this.allParams.keySet());
 		return params.get(rand);
 		
+	}
+	
+	private void robotTakeAction() {
+		Policy p = this.generatePolicy();
+		GroundedAction ga = ((GroundedAction)p.getAction(this.state));
+		this.state = ga.executeIn(this.state);
+		System.out.println(Arrays.toString(ga.params));
+		
+	}
+	
+	private Policy generatePolicy() {
+		AffordanceCreator affCreator = new AffordanceCreator(this.domain, this.state, this.recipe.topLevelIngredient);
+		AffordancesController controller = affCreator.getAffController();
+		BellmanAffordanceRTDP planner = new BellmanAffordanceRTDP(this.domain, 
+				new UniformCostRF(),this.tf, 0.99, new NameDependentStateHashFactory(), 0, 20, 0.05, 20, controller);
+
+		Policy p = new AffordanceGreedyQPolicy(controller, (QComputablePlanner)planner);
+		return p;
 	}
 	private void testActions() {
 		//this.takePourAction(new String[] {"human", "vanilla_bowl", "mixing_bowl_1"});
