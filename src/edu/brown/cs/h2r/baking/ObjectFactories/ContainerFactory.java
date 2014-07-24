@@ -25,6 +25,9 @@ public class ContainerFactory {
 	private static final String attributeY = "attY";
 	private static final String attributeZ = "attZ";
 	
+	public static final String DRY_BOWL = "dry_bowl";
+	public static final String WET_BOWL = "wet_bowl";
+	
 	public static final int NO_ATTRIBUTES = 0;
 	public static final int BAKING = 1;
 	public static final int MIXING = 2;
@@ -349,5 +352,15 @@ public class ContainerFactory {
 	
 	public static boolean getUsed(ObjectInstance container) {
 		return container.getBooleanValue(ContainerFactory.attributeUsed);
+	}
+	
+	public static boolean dryContainersFinished(State state) {
+		ObjectInstance dryBowl = state.getObject(ContainerFactory.DRY_BOWL);
+		return dryBowl.getAllRelationalTargets(ContainerFactory.attributeContains).size() > 1;
+	}
+	
+	public static boolean wetContainersFinished(State state) {
+		ObjectInstance wetBowl = state.getObject(ContainerFactory.WET_BOWL);
+		return wetBowl.getAllRelationalTargets(ContainerFactory.attributeContains).size() > 1;
 	}
 }

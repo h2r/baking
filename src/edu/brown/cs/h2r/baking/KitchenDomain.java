@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
@@ -21,6 +22,7 @@ import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.ToolFactory;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.BowlsClean;
 import edu.brown.cs.h2r.baking.Recipes.Brownies;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
@@ -39,8 +41,10 @@ public class KitchenDomain {
 	private Action mix, pour, move;
 	
 	private List<String> bakingDishes = new ArrayList<String>(Arrays.asList("baking_dish"));
-	private List<String> mixingBowls = new ArrayList<String>(Arrays.asList("mixing_bowl_1", "mixing_bowl_2"));
+	private List<String> mixingBowls = new ArrayList<String>(Arrays.asList(ContainerFactory.DRY_BOWL, ContainerFactory.WET_BOWL));
+	private List<String> tools = new ArrayList<String>(Arrays.asList(ToolFactory.SPATULA, ToolFactory.WHISK));
 	
+	private AbstractMap<String, String[]> allParams;
 	private static double robotTop = 100;
 	private static double robotBottom = 0;
 	private static double robotLeft = 0;
@@ -68,6 +72,7 @@ public class KitchenDomain {
 		this.pour = new PourAction(domain, recipe.topLevelIngredient);
 		this.move = new MoveAction(domain, recipe.topLevelIngredient);
 		
+		this.allParams = this.setupParams();
 		
 		this.addAgents();
 		this.setUpRegions();
@@ -81,7 +86,10 @@ public class KitchenDomain {
 		return this.state;
 	}
 	
-	public void addContainer(String name, double x, double y, double z) {
+	public void addObject(String name, double x, double y, double z) {
+		if (this.tools.contains(name)) {
+			this.addTool(name, x, y ,z);
+		}
 		if (this.bakingDishes.contains(name)) {
 			this.addBakingContainer(name, x, y, z);
 		} else if (this.mixingBowls.contains(name)) {
@@ -91,6 +99,13 @@ public class KitchenDomain {
 		}
 	}
 	
+	private void addTool(String name, double x, double y, double z) {
+		String type = ToolFactory.determineType(name);
+		String space = determineSpace(x);
+		ObjectInstance tool = ToolFactory.getNewObjectInstance(this.domain, 
+				name, type, space, x, y, z);
+		this.state.addObject(tool);
+	}
 	private void addMixingContainer(String name, double x, double y, double z) {
 		String space = determineSpace(x);
 		ObjectInstance container = ContainerFactory.getNewMixingContainerObjectInstance(
@@ -135,10 +150,25 @@ public class KitchenDomain {
 	}
 	
 	public void plan() {
+		boolean added = false;
 		while (this.recipe.getSubgoals().size() > 0 ) {
 			this.state = kitchen.PlanHackathon(this.domain, this.state, this.recipe);
 			this.checkAndClearSubgoals();
 		}
+		
+		String action = this.getRandomParam();
+		String[] params = this.allParams.get(action);
+		this.allParams.remove(action);
+		added = this.addParams(action);
+		
+		if (params.length == 2) {
+			this.takeMixAction(params);
+		} else {
+			this.takePourAction(params);
+			this.moveDirty(params);
+		}
+		
+		// make planner get action
 	}
 	
 	private String determineSpace(double x) {
@@ -201,29 +231,92 @@ public class KitchenDomain {
 	
 	private void testSettingUp() {
 		//add two bowls
-		addMixingContainer("mixing_bowl_1", 75, 75, 75);
-		addMixingContainer("mixing_bowl_2", 75, 75, 75);
+		addMixingContainer(ContainerFactory.DRY_BOWL, 75, 75, 75);
+		addMixingContainer(ContainerFactory.WET_BOWL, 75, 75, 75);
+		
+		//add two tools
+		addTool(ToolFactory.WHISK, 25, 25, 25);
+		addTool(ToolFactory.SPATULA, 25, 25, 25);
 		
 		//add baking dish
 		addBakingContainer("baking_dish", 75, 75, 75);
 		
 		//add ingredients (containers)
 		addIngredientContainer("flour_bowl", 75, 75, 75);
-		addIngredientContainer("baking_powder_bowl", 75, 75, 75);
-		addIngredientContainer("salt_bowl", 75, 75, 75);
-		addIngredientContainer("sea_salt_bowl", 75, 75, 75);
 		addIngredientContainer("cocoa_bowl", 75, 75, 75);
 		
 		addIngredientContainer("eggs_bowl", 75, 75, 75);
 		addIngredientContainer("butter_bowl", 75, 75, 75);
-		addIngredientContainer("white_sugar_bowl", 75, 75, 75);
-		addIngredientContainer("brown_sugar_bowl", 75, 75, 75);
-		addIngredientContainer("vanilla_bowl", 75, 75, 75);
+	}
+	private AbstractMap<String, String[]> setupParams() {
+		AbstractMap<String, String[]> params = new HashMap<String, String[]>();
+		
+		params.put("pourCocoa", new String[] {"human", "cocoa_bowl", "dry_bowl"});
+		params.put("pourFlour", new String[] {"human", "flour_bowl", "dry_bowl"});
+		
+		params.put("pourEggs", new String[] {"human", "eggs_bowl", "wet_bowl"});
+		params.put("pourButter", new String[] {"human", "butter_bowl", "wet_bowl"});
+		
+		return params;
 	}
 	
+	private boolean addParams(String prevAction) { 
+		if (!(this.allParams.containsKey("pourCocoa") && this.allParams.containsKey("pourFlour"))) {
+			this.allParams.put("mixDry", new String[] {"human", "dry_bowl"});
+			return true;
+		}
+		
+		if (!(this.allParams.containsKey("pourEggs") && this.allParams.containsKey("pourButter"))) {
+			this.allParams.put("mixWet", new String[] {"human", "wet_bowl"});
+			return true;
+		}
+		
+		if (this.allParams.isEmpty() && (prevAction.equals("mixWet") || prevAction.equals("mixDry"))) {
+			this.allParams.put("pourWet", new String[] {"human", "wet_bowl", "dry_bowl"});
+			this.allParams.put("pourDry", new String[] {"human", "dry_bowl", "wet_bowl"});
+			return true;
+		}
+		
+		if (this.allParams.size() == 1 &&  this.allParams.containsKey("pourDry")) {
+			this.allParams.put("mixBrowniesDryBowl", new String[] {"human", "dry_bowl"});
+			return true;
+		}
+		
+		if (this.allParams.size() == 1 && this.allParams.containsKey("pourWet")) {
+			this.allParams.put("mixBrowniesWetBowl", new String[] {"human", "wet_bowl"});
+			return true;
+		}
+		
+		if (this.allParams.isEmpty() && prevAction.equals("mixBrowniesDryBowl")) {
+			this.allParams.put("pourBrownies", new String[] {"human", "dry_bowl", "baking_dish"});
+			return true;
+		}
+		
+		if (this.allParams.isEmpty() && prevAction.equals("mixBrowniesWetBowl")) {
+			this.allParams.put("pourBrownies", new String[] {"human", "wet_bowl", "baking_dish"});
+			return true;
+		}
+		return false;
+	}
+	
+	private void moveDirty(String[] prevParams) {
+		if (prevParams.length == 3) {
+			String agent = "human";
+			String bowl = prevParams[1];
+			String space = SpaceFactory.SPACE_ROBOT;
+			this.takeMoveAction(new String[] {agent, bowl, space});
+		}
+	}
+	
+	private String getRandomParam() {
+		int rand = new Random().nextInt(this.allParams.size());
+		List<String> params = new ArrayList<String> (this.allParams.keySet());
+		return params.get(rand);
+		
+	}
 	private void testActions() {
-		this.takePourAction(new String[] {"human", "vanilla_bowl", "mixing_bowl_1"});
-		this.takePourAction(new String[] {"human", "flour_bowl", "mixing_bowl_2"});
+		//this.takePourAction(new String[] {"human", "vanilla_bowl", "mixing_bowl_1"});
+		//this.takePourAction(new String[] {"human", "flour_bowl", "mixing_bowl_2"});
 	}
 	
 	public static void main(String[] args) throws IOException {
