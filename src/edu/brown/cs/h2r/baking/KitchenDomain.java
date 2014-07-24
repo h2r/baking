@@ -75,10 +75,10 @@ public class KitchenDomain {
 		this.allIngredientsMap = this.generateAllIngredientMap();
 		this.setUpRecipe();
 		kitchen.addAllIngredients(this.allIngredientsMap.values());
-		
-		this.testSettingUp();
-		this.testActions();
-		this.plan();
+	}
+	
+	public State getCurrentState() {
+		return this.state;
 	}
 	
 	public void addContainer(String name, double x, double y, double z) {
@@ -194,6 +194,10 @@ public class KitchenDomain {
 					completed.getIngredient(), new ArrayList<ObjectInstance>(this.allIngredientsMap.values()));
 		}
 	}
+	public void Test() {
+		this.testSettingUp();
+		this.testActions();
+	}
 	
 	private void testSettingUp() {
 		//add two bowls
@@ -217,7 +221,7 @@ public class KitchenDomain {
 		addIngredientContainer("vanilla_bowl", 75, 75, 75);
 	}
 	
-	public void testActions() {
+	private void testActions() {
 		this.takePourAction(new String[] {"human", "vanilla_bowl", "mixing_bowl_1"});
 		this.takePourAction(new String[] {"human", "flour_bowl", "mixing_bowl_2"});
 	}
