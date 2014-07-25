@@ -12,7 +12,7 @@ import edu.brown.cs.h2r.baking.ObjectFactories.ToolFactory;
 public class HandAction extends BakingAction {
 	public static final String className = "hand";
 	public HandAction(Domain domain, IngredientRecipe ingredient) {
-		super("move", domain, ingredient, new String[] {AgentFactory.ClassName, ToolFactory.ClassName, SpaceFactory.ClassName});
+		super(HandAction.className, domain, ingredient, new String[] {AgentFactory.ClassName, ToolFactory.ClassName, SpaceFactory.ClassName});
 	}
 	
 	public BakingActionResult checkActionIsApplicableInState(State state, String[] params) {
@@ -22,9 +22,9 @@ public class HandAction extends BakingAction {
 			return superResult;
 		}
 		
-		if (!AgentFactory.isRobot(state.getObject(params[0]))) {
+		/*if (!AgentFactory.isRobot(state.getObject(params[0]))) {
 			return BakingActionResult.failure("only robots can hand!");
-		}
+		}*/
 		
 		String spaceName = params[2];
 		ObjectInstance space = state.getObject(spaceName);
@@ -32,6 +32,12 @@ public class HandAction extends BakingAction {
 		String toolName = params[1];
 		ObjectInstance tool = state.getObject(toolName);
 		String toolSpaceName = ContainerFactory.getSpaceName(tool);
+		
+		if (AgentFactory.isRobot(state.getObject(params[0]))) {
+			if (!toolSpaceName.equals(SpaceFactory.SPACE_ROBOT)) {
+				return BakingActionResult.failure(toolName + " not in " + SpaceFactory.SPACE_ROBOT);
+			}
+		}
 				
 		if (toolSpaceName.equals(SpaceFactory.SPACE_DIRTY)) {
 			return BakingActionResult.failure(toolName + " is already in " + spaceName);
@@ -42,6 +48,19 @@ public class HandAction extends BakingAction {
 		}
 		
 		return BakingActionResult.success();		
+	}
+	
+	protected State performActionHelper(State state, String[] params) {
+		super.performActionHelper(state, params);
+		ObjectInstance toolInstance = state.getObject(params[1]);
+		ObjectInstance spaceInstance = state.getObject(params[2]);
+		this.hand(state, toolInstance, spaceInstance);
+		return state;
+	}
+	
+	private void hand(State state, ObjectInstance tool, ObjectInstance space) {
+		ToolFactory.setUsed(tool);
+		ToolFactory.changetoolSpace(tool, space.getName());
 	}
 
 }

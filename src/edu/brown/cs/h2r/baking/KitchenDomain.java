@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import burlap.behavior.affordances.AffordancesController;
 import burlap.behavior.singleagent.Policy;
@@ -50,7 +51,7 @@ public class KitchenDomain {
 	private IngredientKnowledgebase knowledgebase;
 	private AbstractMap<String, ObjectInstance> allIngredientsMap;
 	private HackathonKitchen kitchen;
-	private Action mix, pour, move;
+	private Action mix, pour, move, hand;
 	private TerminalFunction tf;
 	private RewardFunction rf;
 	
@@ -59,6 +60,7 @@ public class KitchenDomain {
 	private List<String> tools = new ArrayList<String>(Arrays.asList(ToolFactory.SPATULA, ToolFactory.WHISK));
 	
 	private AbstractMap<String, String[]> allParams;
+	private Set<String> doneActions;
 	private static double robotTop = 100;
 	private static double robotBottom = 0;
 	private static double robotLeft = 0;
@@ -91,8 +93,10 @@ public class KitchenDomain {
 		this.mix = new MixAction(domain, recipe.topLevelIngredient);
 		this.pour = new PourAction(domain, recipe.topLevelIngredient);
 		this.move = new MoveAction(domain, recipe.topLevelIngredient);
+		this.hand = new HandAction(domain, recipe.topLevelIngredient);
 		
 		this.allParams = this.setupParams();
+		this.doneActions = new HashSet<String>();
 		
 		this.addAgents();
 		this.setUpRegions();
@@ -100,9 +104,6 @@ public class KitchenDomain {
 		this.allIngredientsMap = this.generateAllIngredientMap();
 		this.setUpRecipe();
 		kitchen.addAllIngredients(this.allIngredientsMap.values());
-		
-		this.testSettingUp();
-		this.plan();
 	}
 	
 	public State getCurrentState() {
@@ -179,18 +180,33 @@ public class KitchenDomain {
 		String[] params = this.allParams.get(action);
 		System.out.println(Arrays.toString(params));
 		this.allParams.remove(action);
+		this.doneActions.add(action);
 		added = this.addParams(action);
 		
 		if (params.length == 2) {
 			this.takeMixAction(params);
+			if (params[1].equals(ContainerFactory.DRY_BOWL)) {
+				String whiskSpace = ToolFactory.getSpaceName(this.state.getObject(ToolFactory.WHISK));
+				if (whiskSpace.equals(SpaceFactory.SPACE_HUMAN)) {
+					this.state = this.hand.performAction(this.state, new String[] 
+							{"human", ToolFactory.WHISK, SpaceFactory.SPACE_ROBOT});
+					System.out.println("human move whisk to robotCounter");
+				} else {
+					this.state = this.hand.performAction(this.state, new String[] 
+							{"human", ToolFactory.SPATULA, SpaceFactory.SPACE_ROBOT});
+					System.out.println("human move spatula to robotCounter");
+				}
+			} else {
+				this.state = this.hand.performAction(this.state, new String[] 
+						{"human", ToolFactory.SPATULA, SpaceFactory.SPACE_ROBOT});
+				System.out.println("human move spatula to robotCounter");
+			}
 		} else {
 			this.takePourAction(params);
 			this.moveDirty(params);
 		}
 		this.robotTakeAction();
 		} while (!this.allParams.isEmpty() || added);
-		
-		// make planner get action
 	}
 	
 	private String determineSpace(double x) {
@@ -299,39 +315,64 @@ public class KitchenDomain {
 	
 	private boolean addParams(String prevAction) { 
 		if (!this.allParams.containsKey("pourCocoa") && !this.allParams.containsKey("pourFlour")) {
-			this.allParams.put("mixDry", new String[] {"human", "dry_bowl"});
-			return true;
+			if (!this.doneActions.contains("mixDry")) {
+				this.allParams.put("mixDry", new String[] {"human", "dry_bowl"});
+				return true;
+			}
 		}
 		
 		if (!this.allParams.containsKey("pourEggs") && !this.allParams.containsKey("pourButter")) {
-			this.allParams.put("mixWet", new String[] {"human", "wet_bowl"});
-			return true;
+			if (!this.doneActions.contains("mixWet")) {
+				this.allParams.put("mixWet", new String[] {"human", "wet_bowl"});
+				return true;
+			}
 		}
 		
 		if (this.allParams.isEmpty() && (prevAction.equals("mixWet") || prevAction.equals("mixDry"))) {
-			this.allParams.put("pourWet", new String[] {"human", "wet_bowl", "dry_bowl"});
-			this.allParams.put("pourDry", new String[] {"human", "dry_bowl", "wet_bowl"});
-			return true;
+			boolean added = false;
+			if (!this.doneActions.contains("pourWet")) {
+				this.allParams.put("pourWet", new String[] {"human", "wet_bowl", "dry_bowl"});
+				added = true;
+			}
+			if (!this.doneActions.contains("pourDry")) {
+				this.allParams.put("pourDry", new String[] {"human", "dry_bowl", "wet_bowl"});
+				added = true;
+			}
+			if (added){
+				return true;
+			}
 		}
 		
 		if (this.allParams.size() == 1 &&  this.allParams.containsKey("pourDry")) {
-			this.allParams.put("mixBrowniesDryBowl", new String[] {"human", "dry_bowl"});
-			return true;
+			if (!this.doneActions.contains("mixBrowniesDryBowl")) {
+				this.allParams.put("mixBrowniesDryBowl", new String[] {"human", "dry_bowl"});
+				this.allParams.remove("pourDry");
+				this.doneActions.add("pourDry");
+				return true;
+			}
 		}
 		
 		if (this.allParams.size() == 1 && this.allParams.containsKey("pourWet")) {
-			this.allParams.put("mixBrowniesWetBowl", new String[] {"human", "wet_bowl"});
-			return true;
+			if (!this.doneActions.contains("mixBrowniesWetBowl")) {
+				this.allParams.put("mixBrowniesWetBowl", new String[] {"human", "wet_bowl"});
+				this.allParams.remove("pourWet");
+				this.doneActions.add("pourWet");
+				return true;
+			}
 		}
 		
 		if (this.allParams.isEmpty() && prevAction.equals("mixBrowniesDryBowl")) {
-			this.allParams.put("pourBrownies", new String[] {"human", "dry_bowl", "baking_dish"});
-			return true;
+			if (!this.doneActions.contains("pourBrownies")) {
+				this.allParams.put("pourBrownies", new String[] {"human", "dry_bowl", "baking_dish"});
+				return true;
+			}
 		}
 		
 		if (this.allParams.isEmpty() && prevAction.equals("mixBrowniesWetBowl")) {
-			this.allParams.put("pourBrownies", new String[] {"human", "wet_bowl", "baking_dish"});
-			return true;
+			if (!this.doneActions.contains("pourBrownies")) {
+				this.allParams.put("pourBrownies", new String[] {"human", "wet_bowl", "baking_dish"});
+				return true;
+			}
 		}
 		return false;
 	}

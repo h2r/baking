@@ -35,21 +35,38 @@ public class AllowHanding extends BakingPropositionalFunction {
 		
 		boolean dirty = ToolFactory.getUsed(toolInstance);
 		
+		if (toolInstance.getName().equals(ToolFactory.SPATULA) && spaceName.equals("dirtyCounter")) {
+			return false;
+		}
+		
 		// If it is in robot space
 		if (toolSpaceName.equals(SpaceFactory.SPACE_ROBOT)) {
 			if (dirty) {
 				if (spaceName.equals(SpaceFactory.SPACE_DIRTY)) {
 					return true;
 				}
-				return false;
+				if (ContainerFactory.wetContainersFinished(state) || ContainerFactory.dryContainersFinished(state)) {
+					String wetSpace = ContainerFactory.getSpaceName(state.getObject(ContainerFactory.WET_BOWL));
+					String drySpace = ContainerFactory.getSpaceName(state.getObject(ContainerFactory.DRY_BOWL));
+					if (!wetSpace.equals(SpaceFactory.SPACE_HUMAN) || !drySpace.equals(SpaceFactory.SPACE_HUMAN)) {
+						return toolInstance.getName().equals(ToolFactory.SPATULA);
+					}
+				}
 			} else {
 				if (spaceName.equals(SpaceFactory.SPACE_HUMAN)) {
-					if (toolType.equals(ToolFactory.whiskType)) {
-						return ContainerFactory.dryContainersFinished(state);
+					if (ContainerFactory.dryContainersFinished(state)) {
+						if (toolType.equals(ToolFactory.whiskType)) {
+								return !ToolFactory.getUsed(state.getObject(ToolFactory.WHISK));
+						} else {
+							return ToolFactory.getUsed(state.getObject(ToolFactory.WHISK));
+						}
 					} else {
-						return ContainerFactory.wetContainersFinished(state);
+						if (toolType.equals(ToolFactory.whiskType)) {
+							return false;
+						} else {
+							return ContainerFactory.wetContainersFinished(state);
+						}
 					}
-					
 				} else {
 					return false;
 				}
