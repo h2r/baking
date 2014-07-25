@@ -22,6 +22,7 @@ import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
+import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.common.UniformCostRF;
 import edu.brown.cs.h2r.baking.Experiments.HackathonKitchen;
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
@@ -36,6 +37,7 @@ import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
 import edu.brown.cs.h2r.baking.Recipes.Brownies;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
+import edu.brown.cs.h2r.baking.actions.HandAction;
 import edu.brown.cs.h2r.baking.actions.MixAction;
 import edu.brown.cs.h2r.baking.actions.MoveAction;
 import edu.brown.cs.h2r.baking.actions.PourAction;
@@ -50,6 +52,7 @@ public class KitchenDomain {
 	private HackathonKitchen kitchen;
 	private Action mix, pour, move;
 	private TerminalFunction tf;
+	private RewardFunction rf;
 	
 	private List<String> bakingDishes = new ArrayList<String>(Arrays.asList("baking_dish"));
 	private List<String> mixingBowls = new ArrayList<String>(Arrays.asList(ContainerFactory.DRY_BOWL, ContainerFactory.WET_BOWL));
@@ -83,6 +86,7 @@ public class KitchenDomain {
 		final RecipeBotched botched = new RecipeBotched(AffordanceCreator.FINISH_PF, this.domain,
 				this.recipe.topLevelIngredient);
 		 this.tf = new RecipeTerminalFunction(cleanBowl, finish, botched);
+		 this.rf = this.generateRewardFunction();
 
 		this.mix = new MixAction(domain, recipe.topLevelIngredient);
 		this.pour = new PourAction(domain, recipe.topLevelIngredient);
@@ -210,6 +214,21 @@ public class KitchenDomain {
 		this.recipe.setUpSubgoals(this.domain);
 		this.recipe.addIngredientSubgoals();
 		this.recipe.addRequiredRecipeAttributes();
+	}
+	
+	private RewardFunction generateRewardFunction() {
+		RewardFunction rf = new RewardFunction() {
+			@Override
+			// Uniform cost function for an optimistic algorithm that guarantees convergence.
+			public double reward(State state, GroundedAction a, State sprime) {
+				String actionName = a.actionName();
+				if (actionName.equals(HandAction.className)) {
+					return 10;
+				}
+				return 1;
+			}
+		};
+		return rf;
 	}
 	
 	private void addAgents() {
@@ -346,7 +365,7 @@ public class KitchenDomain {
 		AffordanceCreator affCreator = new AffordanceCreator(this.domain, this.state, this.recipe.topLevelIngredient);
 		AffordancesController controller = affCreator.getAffController();
 		BellmanAffordanceRTDP planner = new BellmanAffordanceRTDP(this.domain, 
-				new UniformCostRF(),this.tf, 0.99, new NameDependentStateHashFactory(), 0, 20, 0.05, 20, controller);
+				this.rf ,this.tf, 0.99, new NameDependentStateHashFactory(), 0, 20, 0.05, 20, controller);
 
 		Policy p = new AffordanceGreedyQPolicy(controller, (QComputablePlanner)planner);
 		return p;
