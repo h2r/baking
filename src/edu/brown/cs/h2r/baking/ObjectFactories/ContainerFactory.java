@@ -363,4 +363,12 @@ public class ContainerFactory {
 		ObjectInstance wetBowl = state.getObject(ContainerFactory.WET_BOWL);
 		return wetBowl.getAllRelationalTargets(ContainerFactory.attributeContains).size() > 1;
 	}
+	
+	public static boolean isDryIngBowl(String name) {
+		return name.equals("flour_bowl") || name.equals("cocoa_bowl");
+	}
+	
+	public static boolean isWetIngBowl(String name) {
+		return name.equals("butter_bowl") || name.equals("eggs_bowl");
+	}
 }

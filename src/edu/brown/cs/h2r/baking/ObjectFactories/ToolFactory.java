@@ -21,7 +21,7 @@ public class ToolFactory {
 	public static final String WHISK = "whisk";
 	public static final String whiskType = "dry";
 	public static final String SPATULA = "spatula";
-	public static final String spatualType = "wet";
+	public static final String spatulaType = "wet";
 
 	
 	public static ObjectClass createObjectClass(Domain domain)
@@ -139,6 +139,6 @@ public class ToolFactory {
 		if (name.equals(ToolFactory.WHISK)) {
 			return ToolFactory.whiskType;
 		}
-		return ToolFactory.spatualType;
+		return ToolFactory.spatulaType;
 	}
 }
