@@ -317,6 +317,14 @@ public class KitchenDomain {
 		addObject("butter_bowl", 75, 75, 75);
 	}
 
+	public String[] getRobotActionParams() {
+		GroundedAction nextAction = this.getRobotAction();
+		String[] actionParams = new String[nextAction.params.length + 1];
+		actionParams[0] = nextAction.action.getName();
+		System.arraycopy(action.params, 0, nextAction, 1, action.params.length);
+		return actionParams;
+	}
+
 	// gets the next action the robot should take
 	private GroundedAction getRobotAction() {
 		Policy p = this.generatePolicy();
