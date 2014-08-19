@@ -111,11 +111,11 @@ public class KitchenDomain {
 		
 		// Code for alternate planner that mimics a user taking actions and the agent reacting
 		// accrodingly. More information at the bottom of the file.
-		this.debug = false;
-		this.allParams = this.setupParams();
-		this.doneActions = new HashSet<String>();
-		this.testSettingUp();
-		this.plan();
+		//this.debug = false;
+		//this.allParams = this.setupParams();
+		//this.doneActions = new HashSet<String>();
+		//this.testSettingUp();
+		//this.plan();
 		
 		/**
 		 * This very simple domain assumes actions based solely on what the robot has in front of it.
@@ -148,7 +148,7 @@ public class KitchenDomain {
 		 * bowl/tool into the "dirty area" of the counter). 
 		 */
 		this.getNewCleanState();
-		this.testPresumptions();
+		//this.testPresumptions();
 	}
 	
 	public State getCurrentState() {
@@ -164,14 +164,19 @@ public class KitchenDomain {
 	
 	// adds an object (tool or container) to the state
 	public void addObject(String name, double x, double y, double z) {
+		
 		if (this.tools.contains(name)) {
 			this.addTool(name, x, y ,z);
 		} else if (this.bakingDishes.contains(name)) {
 			this.addBakingContainer(name, x, y, z);
 		} else if (this.mixingBowls.contains(name)) {
 			this.addMixingContainer(name, x, y, z);
-		} else {
+		} else if (this.allIngredientsMap.containsKey(name)){
 			this.addIngredientContainer(name, x, y, z);
+		}
+		else
+		{
+			System.out.println("Object " + name + " was identified, but not in the assumed state space. Ignoring");
 		}
 	}
 	
@@ -203,6 +208,7 @@ public class KitchenDomain {
 		ObjectInstance container = ContainerFactory.getNewIngredientContainerObjectInstance(
 				this.domain, containerName, ingredientName, space, x, y, z);
 		ContainerFactory.setUsed(container);
+		System.out.println("Ingredient name: " + ingredientName);
 		ObjectInstance ing = this.allIngredientsMap.get(ingredientName);
 		IngredientFactory.changeIngredientContainer(ing, containerName);
 		this.state.addObject(ing);
@@ -253,6 +259,7 @@ public class KitchenDomain {
 		List<ObjectInstance> objs = this.knowledgebase.getPotentialIngredientObjectInstanceList(
 				this.state, this.domain, this.recipe.topLevelIngredient);
 		for (ObjectInstance obj : objs) {
+			System.out.println("Adding " + obj.getName() + " to map");
 			map.put(obj.getName(), obj);
 		}
 		return map;
@@ -318,15 +325,23 @@ public class KitchenDomain {
 	}
 
 	public String[] getRobotActionParams() {
+		if (this.state == null)
+		{
+			throw new RuntimeException("Current state is null. This should not happen");
+		}
 		GroundedAction nextAction = this.getRobotAction();
 		String[] actionParams = new String[nextAction.params.length + 1];
 		actionParams[0] = nextAction.action.getName();
-		System.arraycopy(action.params, 0, nextAction, 1, action.params.length);
+		System.arraycopy(nextAction.params, 0, nextAction, 1, nextAction.params.length);
 		return actionParams;
 	}
 
 	// gets the next action the robot should take
 	private GroundedAction getRobotAction() {
+		if (this.state == null)
+		{
+			throw new RuntimeException("Current state is null. This should not happen");
+		}
 		Policy p = this.generatePolicy();
 		GroundedAction ga = ((GroundedAction)p.getAction(this.state));
 		return ga;
@@ -335,6 +350,10 @@ public class KitchenDomain {
 	
 	// generates a polic to use for planning
 	private Policy generatePolicy() {
+		if (this.state == null)
+		{
+			throw new RuntimeException("Current state is null. This should not happen");
+		}
 		AffordanceCreator affCreator = new AffordanceCreator(this.domain, this.state, this.recipe.topLevelIngredient);
 		AffordancesController controller = affCreator.getAffController();
 		BellmanAffordanceRTDP planner = new BellmanAffordanceRTDP(this.domain, 
