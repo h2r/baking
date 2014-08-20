@@ -8,7 +8,8 @@ import org.junit.runners.Suite;
 	TestIngredientRecipe.class,
 	TestRecipeSuccess.class,
 	TestRecipeFailure.class,
-	TestActions.class
+	TestActions.class,
+	TestConstrainedStateSpace.class
 })
 public class BakingTestSuite {
 
