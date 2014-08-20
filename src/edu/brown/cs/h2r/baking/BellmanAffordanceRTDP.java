@@ -53,46 +53,54 @@ public class BellmanAffordanceRTDP extends AffordanceRTDP {
 		}
 		
 		// get all actions and Q values
-		List <QValue> allQValues = new ArrayList<QValue>();
-		for(Action a : actions){
-			List<GroundedAction> applications = a.getAllApplicableGroundedActions(sh.s);
-			for(GroundedAction ga : applications){
-				allQValues.add(this.getQ(sh, ga, matching));
-			}
-		}
+		//List <QValue> allQValues = new ArrayList<QValue>();
+		//for(Action a : actions){
+		//	List<GroundedAction> applications = a.getAllApplicableGroundedActions(sh.s);
+		//	for(GroundedAction ga : applications){
+		//		allQValues.add(this.getQ(sh, ga, matching));
+		//	}
+		//}
 		
 		
 		// Have affordances prune away all unnecessary actions
 		List<QValue> affFilteredQValues = new ArrayList<QValue>();
-		List<AbstractGroundedAction> qActions = new ArrayList<AbstractGroundedAction>();
-		for(QValue q : allQValues){
-			qActions.add(q.a);
-		}
-		
-		qActions = this.affController.filterIrrelevantActionsInState(qActions, sh.s);
-		
-		for(QValue q : allQValues){
-			if(qActions.contains(q.a)){
-				affFilteredQValues.add(q);
-			}
-		}
-		
-		// If Affordances prune away all actions, back off to full action set 
-		if (affFilteredQValues.isEmpty()) {
-			affFilteredQValues = allQValues;
+		List<AbstractGroundedAction> qActions = this.affController.getPrunedActionSetForState(sh.s);
+		if (qActions.isEmpty()) {
+			throw new RuntimeException("No valid actions have been found for this state. Your affordances may be too strict");
 		}
 
+		for(AbstractGroundedAction ga : qActions){
+			affFilteredQValues.add(this.getQ(sh, (GroundedAction)ga, matching));
+		}
+		
+		//for(QValue q : allQValues){
+		//	qActions.add(q.a);
+		//}
+		
+		//qActions = 
+		
+		//for(QValue q : allQValues){
+		//	if(qActions.contains(q.a)){
+		//		affFilteredQValues.add(q);
+		//	}
+		//}
+		
+		// If Affordances prune away all actions, back off to full action set 
+		//if (affFilteredQValues.isEmpty()) {
+		//	affFilteredQValues = allQValues;
+		//}
+
 		// Find max Q values
-		List <QValue> maxActions = new ArrayList<QValue>();
-		maxActions.add(affFilteredQValues.get(0));
-		for(int i = 0; i < affFilteredQValues.size(); i++){
-			QValue q = affFilteredQValues.get(i);
-			if(q.q == maxQ){
-				maxActions.add(q);
-			}
-			else if(q.q > maxQ){
-				maxActions.clear();
-				maxActions.add(q);
+		//List <QValue> maxActions = new ArrayList<QValue>();
+		//maxActions.add(affFilteredQValues.get(0));
+		for (QValue q : affFilteredQValues) {
+			//if(q.q == maxQ){
+			//	maxActions.add(q);
+			//}
+			//else if(q.q > maxQ){
+			//	maxActions.clear();
+			//	maxActions.add(q);
+			if (q.q > maxQ) {
 				maxQ = q.q;
 			}
 		}

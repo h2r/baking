@@ -2,10 +2,12 @@ package edu.brown.cs.h2r.baking;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
 import burlap.oomdp.core.GroundedProp;
 import burlap.oomdp.core.State;
+import burlap.oomdp.logicalexpressions.LogicalExpression;
 
 public class BakingSubgoal {
 
@@ -63,5 +65,29 @@ public class BakingSubgoal {
 	
 	public IngredientRecipe getIngredient() {
 		return this.ingredient;
+	}
+	
+	public LogicalExpression getLogicalPrecondition() {
+		LogicalExpression expression = new LogicalExpression() {
+			
+			@Override
+			protected void remapVariablesInThisExpression(
+					Map<String, String> fromToVariableMap) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public boolean evaluateIn(State s) {
+				return BakingSubgoal.this.goal.isTrue(s, "");
+			}
+			
+			@Override
+			public LogicalExpression duplicate() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+		};
+		return expression;
 	}
 }
