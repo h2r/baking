@@ -40,7 +40,8 @@ import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.actions.BakingAction;
 
-public class Baxter implements Agent{
+public class Baxter implements Agent {
+	
 	private static String agentClass = "robot";
 	private static IngredientKnowledgebase knowledgebase = new IngredientKnowledgebase();
 	private Recipe recipe;
@@ -53,15 +54,13 @@ public class Baxter implements Agent{
 		
 	@Override
 	public AbstractGroundedAction getAction(State state) {
-		if (this.recipe != null)
-		{
+		if (this.recipe != null) {
 			return this.getActionForCurrentRecipe(state);
 		}
 		return null;
 	}
 	
-	public boolean canPerformActionInState(GroundedAction action, State state)
-	{
+	public boolean canPerformActionInState(GroundedAction action, State state) {
 		String[] params = action.params;
 		params[0] = Baxter.agentClass;
 		return action.action.applicableInState(state, params);
@@ -81,12 +80,10 @@ public class Baxter implements Agent{
 		RecipeBotched failed = ((RecipeBotched)this.domain.getPropFunction(AffordanceCreator.BOTCHED_PF));
 		if (failed != null) {
 			failed.clearSubgoals();
-			for (BakingSubgoal goal : this.recipe.getIngredientSubgoals())
-			{
+			for (BakingSubgoal goal : this.recipe.getIngredientSubgoals()) {
 				failed.addSubgoal(goal);
 			}
 		}
-		
 		
 		List<AbstractGroundedAction> actionSequence = new ArrayList<AbstractGroundedAction>();
 		for (BakingSubgoal goal : activeSubgoals) {
@@ -113,8 +110,7 @@ public class Baxter implements Agent{
 		for (AbstractGroundedAction abstractAction : actionSequence)
 		{
 			groundedAction = (GroundedAction)abstractAction;
-			if (this.canPerformActionInState(groundedAction, state))
-			{
+			if (this.canPerformActionInState(groundedAction, state)) {
 				return abstractAction;
 			}
 		}
