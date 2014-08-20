@@ -194,12 +194,12 @@ public class Baxter implements Agent {
 		if(affordanceMode) {
 			PropositionalFunction pf = subgoal.getGoal();
 			
-			PFAtom goalAtom = new PFAtom((PropositionalFunction)subgoal.getGoal());
-			affController.setCurrentGoal(goalAtom);
+			//PFAtom goalAtom = new PFAtom((PropositionalFunction)subgoal.getGoal());
+			//affController.setCurrentGoal(goalAtom);
 			// RTDP planner that also uses affordances to trim action space during the Bellman update
 			planner = new BellmanAffordanceRTDP(domain, rf, recipeTerminalFunction, gamma, hashFactory, vInit, numRollouts, maxDelta, maxDepth, affController);
 			planner.toggleDebugPrinting(false);
-			planner.planFromState(currentState);
+			planner.planFromStateAndCount(currentState);
 			
 			// Create a Q-greedy policy from the planner
 			p = new AffordanceGreedyQPolicy(affController, (QComputablePlanner)planner);
