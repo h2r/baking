@@ -1,9 +1,7 @@
 package edu.brown.cs.h2r.baking.Agents;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import burlap.behavior.affordances.AffordancesController;
 import burlap.behavior.singleagent.EpisodeAnalysis;
@@ -16,6 +14,7 @@ import burlap.behavior.statehashing.NameDependentStateHashFactory;
 import burlap.behavior.statehashing.StateHashFactory;
 import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.Domain;
+import burlap.oomdp.core.GroundedProp;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.PropositionalFunction;
@@ -164,6 +163,8 @@ public class Baxter implements Agent {
 			((BakingPropositionalFunction)pf).setSubgoal(subgoal);
 		}
 		subgoal.getGoal().changeTopLevelIngredient(ingredient);
+		
+		// TODO I don't think this is quite doing the optimal thing in regards to multiple agents.
 		final PropositionalFunction isSuccess = subgoal.getGoal();
 		final PropositionalFunction isFailure = domain.getPropFunction(AffordanceCreator.BOTCHED_PF);
 
@@ -189,20 +190,26 @@ public class Baxter implements Agent {
 		
 		boolean affordanceMode = true;
 		RTDP planner;
-		Policy p;
+		Policy p = null;
 		AffordancesController affController = theCreator.getAffController();
 		if(affordanceMode) {
 			PropositionalFunction pf = subgoal.getGoal();
-			
+			PFAtom subgoalAtom;
+			for (GroundedProp propFunction : pf.getAllGroundedPropsForState(currentState)) {
+				subgoalAtom = new PFAtom(propFunction);
+				affController.setCurrentGoal(subgoalAtom);
+				
+				planner = new BellmanAffordanceRTDP(domain, rf, recipeTerminalFunction, gamma, hashFactory, vInit, numRollouts, maxDelta, maxDepth, affController);
+				planner.toggleDebugPrinting(false);
+				planner.planFromStateAndCount(currentState);
+				
+				// Create a Q-greedy policy from the planner
+				p = new AffordanceGreedyQPolicy(affController, (QComputablePlanner)planner);
+			}
 			//PFAtom goalAtom = new PFAtom((PropositionalFunction)subgoal.getGoal());
-			//affController.setCurrentGoal(goalAtom);
-			// RTDP planner that also uses affordances to trim action space during the Bellman update
-			planner = new BellmanAffordanceRTDP(domain, rf, recipeTerminalFunction, gamma, hashFactory, vInit, numRollouts, maxDelta, maxDepth, affController);
-			planner.toggleDebugPrinting(false);
-			planner.planFromStateAndCount(currentState);
 			
-			// Create a Q-greedy policy from the planner
-			p = new AffordanceGreedyQPolicy(affController, (QComputablePlanner)planner);
+			// RTDP planner that also uses affordances to trim action space during the Bellman update
+			
 
 		} else {
 			planner = new RTDP(domain, rf, recipeTerminalFunction, gamma, hashFactory, vInit, numRollouts, maxDelta, maxDepth);
@@ -210,6 +217,9 @@ public class Baxter implements Agent {
 			
 			// Create a Q-greedy policy from the planner
 			p = new GreedyQPolicy((QComputablePlanner)planner);
+		}
+		if (p == null) {
+			return currentState;
 		}
 		
 		// Print out the planning results

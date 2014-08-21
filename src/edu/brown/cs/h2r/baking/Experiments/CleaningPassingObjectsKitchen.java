@@ -47,6 +47,7 @@ import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
 import edu.brown.cs.h2r.baking.Recipes.Brownies;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.actions.BakingAction;
+import edu.brown.cs.h2r.baking.actions.CleanContainerAction;
 import edu.brown.cs.h2r.baking.actions.GreaseAction;
 import edu.brown.cs.h2r.baking.actions.MixAction;
 import edu.brown.cs.h2r.baking.actions.MoveAction;
@@ -92,6 +93,7 @@ public class CleaningPassingObjectsKitchen implements DomainGenerator {
 		Action grease = new GreaseAction(domain);
 		Action aSwitch = new SwitchAction(domain);
 		Action peel = new PeelAction(domain, this.topLevelIngredient);
+		Action clean = new CleanContainerAction(domain);
 
 		return domain;
 	}
@@ -103,7 +105,12 @@ public class CleaningPassingObjectsKitchen implements DomainGenerator {
 		this.recipe.addIngredientSubgoals();
 		this.recipe.addRequiredRecipeAttributes();
 		
-		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
+		ObjectInstance human = AgentFactory.getNewHumanAgentObjectInstance(domain, "human");
+		state.addObject(human);
+		
+		ObjectInstance baxter = AgentFactory.getNewRobotAgentObjectInstance(domain, "baxter");
+		state.addObject(baxter);
+		
 		List<String> containers = 
 				Arrays.asList("mixing_bowl_1", "mixing_bowl_2", "baking_dish", "melting_pot");
 		
@@ -174,7 +181,7 @@ public class CleaningPassingObjectsKitchen implements DomainGenerator {
 	public String[] getRobotsAction(State state)
 	{
 		AbstractGroundedAction action = this.agent.getAction(state);
-		return action.params;
+		return (action == null) ? null : action.params;
 	}
 	
 	public static void main(String[] args)
@@ -194,7 +201,12 @@ public class CleaningPassingObjectsKitchen implements DomainGenerator {
 			System.out.println("Observing " + item + " on counter");
 			state = kitchen.addObservationContainerInRegion(state, item, "counter");
 			params = kitchen.getRobotsAction(state);
-			System.out.println("Robot takes action: " + params.toString());
+			if (params == null) {
+				System.out.println("Robot does nothing");
+			}
+			else {
+				System.out.println("Robot takes action: " + params.toString());
+			}
 		}
 	}
 }

@@ -84,9 +84,11 @@ public class MixAction extends BakingAction {
 		this.mix(state, containerInstance);
 		return state;
 	}
+	
 	private void mix(State state, String container) {
 		mix(state, state.getObject(container));
 	}
+	
 	private void mix(State state, ObjectInstance container)
 	{	
 		ObjectClass complexIngredientClass = this.domain.getObjectClass(IngredientFactory.ClassNameComplex);

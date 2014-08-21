@@ -3,9 +3,6 @@ package edu.brown.cs.h2r.baking.Knowledgebase;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.brown.cs.h2r.baking.IngredientRecipe;
-import edu.brown.cs.h2r.baking.PropositionalFunctions.*;
-import edu.brown.cs.h2r.baking.actions.*;
 import burlap.behavior.affordances.AffordanceDelegate;
 import burlap.behavior.affordances.AffordancesController;
 import burlap.behavior.affordances.HardAffordance;
@@ -16,6 +13,23 @@ import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
 import burlap.oomdp.logicalexpressions.PFAtom;
 import burlap.oomdp.singleagent.GroundedAction;
+import edu.brown.cs.h2r.baking.IngredientRecipe;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.AllowGreasing;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.AllowMixing;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.AllowMoving;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.AllowPeeling;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.AllowPouring;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.AllowSwitching;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.ContainerGreased;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.SpaceOn;
+import edu.brown.cs.h2r.baking.actions.GreaseAction;
+import edu.brown.cs.h2r.baking.actions.MixAction;
+import edu.brown.cs.h2r.baking.actions.MoveAction;
+import edu.brown.cs.h2r.baking.actions.PeelAction;
+import edu.brown.cs.h2r.baking.actions.PourAction;
+import edu.brown.cs.h2r.baking.actions.SwitchAction;
 
 public class AffordanceCreator {
 	public static final String HEAT_PF = "heatPF";

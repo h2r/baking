@@ -1,8 +1,9 @@
 package edu.brown.cs.h2r.baking.ObjectFactories;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.HashSet;
 
 import burlap.oomdp.core.Attribute;
 import burlap.oomdp.core.Domain;
@@ -19,6 +20,7 @@ public class ContainerFactory {
 	private static final String attributeHeating = "heating";
 	private static final String attributeReceiving = "receiving";
 	private static final String attributeContains = "contains";
+	private static final String attributeDirtied = "dirtied";
 	private static final String attributeGreased = "greased";
 	private static final String attributeSpace = "space";
 	
@@ -53,6 +55,10 @@ public class ContainerFactory {
 		
 		objectClass.addAttribute(
 				new Attribute(domain, ContainerFactory.attributeContains, 
+						Attribute.AttributeType.MULTITARGETRELATIONAL));
+		
+		objectClass.addAttribute(
+				new Attribute(domain, ContainerFactory.attributeDirtied, 
 						Attribute.AttributeType.MULTITARGETRELATIONAL));
 		
 		objectClass.addAttribute(
@@ -138,18 +144,19 @@ public class ContainerFactory {
 	}
 
 	public static void addIngredient(ObjectInstance container, String ingredient) {
+		container.clearRelationalTargets(ContainerFactory.attributeDirtied);
 		container.addRelationalTarget(ContainerFactory.attributeContains, ingredient);
 	}
 	
-	public static void addIngredients(ObjectInstance container, Iterable<String> ingredients) {
+	public static void addIngredients(ObjectInstance container, Collection<String> ingredients) {
 		if (ingredients != null) {
-			for (String ingredient : ingredients) {
-				ContainerFactory.addIngredient(container, ingredient);
-			}
+			container.addAllRelationalTargets(ContainerFactory.attributeContains, ingredients);
 		}
 	}
 	
 	public static void removeContents(ObjectInstance container) {
+		Set<String> ingredients = container.getAllRelationalTargets(ContainerFactory.attributeContains);
+		container.addAllRelationalTargets(ContainerFactory.attributeDirtied, ingredients);
 		container.clearRelationalTargets(ContainerFactory.attributeContains);
 	}
 	
@@ -199,7 +206,15 @@ public class ContainerFactory {
 	}
 	
 	public static Boolean isEmptyContainer(ObjectInstance container) {
-		return getContentNames(container).isEmpty();
+		return container.getAllRelationalTargets(ContainerFactory.attributeContains).isEmpty();
+	}
+	
+	public static Boolean isDirtyContainer(ObjectInstance container) {
+		return !container.getAllRelationalTargets(ContainerFactory.attributeDirtied).isEmpty();
+	}
+	
+	public Set<String> getDirtyContents(ObjectInstance container) {
+		return container.getAllRelationalTargets(ContainerFactory.attributeDirtied);
 	}
 	
 	public static Set<String> getConstituentContentNames(ObjectInstance container, State state) {
@@ -232,6 +247,10 @@ public class ContainerFactory {
 	
 	public static void removeIngredient(ObjectInstance container, String name) {
 		container.removeRelationalTarget(ContainerFactory.attributeContains, name);
+	}
+	
+	public static void cleanContainer(ObjectInstance container) {
+		container.clearRelationalTargets(ContainerFactory.attributeDirtied);
 	}
 	
 	public static void setAttributes(ObjectInstance object, int attributes) {

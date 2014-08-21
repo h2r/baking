@@ -553,6 +553,15 @@ public abstract class Recipe {
 		return this.ingredientSubgoals;
 	}
 	
+	public List<BakingSubgoal> getCleanupSubgoals() {
+		List<BakingSubgoal> cleanupGoals = new ArrayList<BakingSubgoal>();
+		for (BakingSubgoal subgoal : this.ingredientSubgoals) {
+			subgoal.getIngredient();
+		}
+		
+		return cleanupGoals;
+	}
+	
 	public void setUpRecipeToolAttributes() {
 		for (IngredientRecipe ing : this.topLevelIngredient.getConstituentIngredients()) {
 			this.recipeToolAttributes.addAll(ing.getToolAttributes());
