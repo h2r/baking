@@ -63,10 +63,12 @@ public class CleaningPassingObjectsKitchen implements DomainGenerator {
 	private IngredientRecipe topLevelIngredient;
 	private Recipe recipe;
 	private Agent agent;
+	IngredientKnowledgebase knowledgebase;
 	public CleaningPassingObjectsKitchen(Recipe recipe)
 	{
 		this.recipe = recipe;
 		this.topLevelIngredient = recipe.topLevelIngredient;
+		this.knowledgebase = new IngredientKnowledgebase();
 	}
 	
 	public void setAgent(Agent agent)
@@ -144,6 +146,36 @@ public class CleaningPassingObjectsKitchen implements DomainGenerator {
 			state.addObject(containerObject);
 		}
 		
+		ObjectClass containerClass = domain.getObjectClass(ContainerFactory.ClassName);		
+		ObjectInstance counterSpace = state.getObject(SpaceFactory.SPACE_COUNTER);
+
+		List<ObjectInstance> ingredientInstances =
+				this.knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, recipe.topLevelIngredient);
+		List<ObjectInstance> containerInstances = Recipe.getContainers(containerClass, ingredientInstances, counterSpace.getName());
+		
+		
+		for (ObjectInstance ingredientInstance : ingredientInstances) {
+			if (state.getObject(ingredientInstance.getName()) == null) {
+				state.addObject(ingredientInstance);
+			}
+		}
+		
+		for (ObjectInstance containerInstance : containerInstances) {
+			if (state.getObject(containerInstance.getName()) == null) {
+				ContainerFactory.changeContainerSpace(containerInstance, counterSpace.getName());
+				state.addObject(containerInstance);
+			}
+		}
+
+		for (ObjectInstance ingredientInstance : ingredientInstances) {
+			if (IngredientFactory.getUseCount(ingredientInstance) >= 1) {
+				ObjectInstance ing = state.getObject(ingredientInstance.getName());
+				IngredientFactory.changeIngredientContainer(ing, ing.getName()+"_bowl");
+				ContainerFactory.addIngredient(state.getObject(ing.getName()+"_bowl"), ing.getName());
+				SpaceFactory.addContainer(state.getObject(SpaceFactory.SPACE_COUNTER), state.getObject(ing.getName()+"_bowl"));
+			}
+		}
+		
 		// Get the tools!
 		ToolKnowledgebase toolKnowledgebase = new ToolKnowledgebase();
 		for (Entry<String, String[]> tool : toolKnowledgebase.getToolMap().entrySet()) {
@@ -189,7 +221,8 @@ public class CleaningPassingObjectsKitchen implements DomainGenerator {
 		Recipe brownies = new Brownies();
 		CleaningPassingObjectsKitchen kitchen = new CleaningPassingObjectsKitchen(brownies);
 		Domain domain = kitchen.generateDomain();
-		Agent baxter = new Baxter(domain, brownies);
+		StateHashFactory hashFactory = new NameDependentStateHashFactory();
+		Agent baxter = new Baxter(domain, brownies, hashFactory);
 		kitchen.setAgent(baxter);
 		
 		State state = kitchen.generateInitialState(domain);

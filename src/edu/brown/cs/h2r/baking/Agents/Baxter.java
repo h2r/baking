@@ -6,6 +6,7 @@ import java.util.List;
 import burlap.behavior.affordances.AffordancesController;
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.Policy;
+import burlap.behavior.singleagent.planning.OOMDPPlanner;
 import burlap.behavior.singleagent.planning.QComputablePlanner;
 import burlap.behavior.singleagent.planning.commonpolicies.AffordanceGreedyQPolicy;
 import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
@@ -24,6 +25,7 @@ import burlap.oomdp.logicalexpressions.PFAtom;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
+import burlap.oomdp.singleagent.common.UniformCostRF;
 import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.BellmanAffordanceRTDP;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
@@ -41,14 +43,30 @@ import edu.brown.cs.h2r.baking.actions.BakingAction;
 
 public class Baxter implements Agent {
 	
+	private static int numRollouts = 300; // RTDP
+	private static int maxDepth = 10; // RTDP
+	private static double vInit = 0;
+	private static double maxDelta = .01;
+	private static double gamma = 0.99;
+	
+	private static boolean affordanceMode = true;
+	private static RewardFunction rf = new UniformCostRF();
+	private StateHashFactory hashFactory;
+	
 	private static String agentClass = "robot";
 	private static IngredientKnowledgebase knowledgebase = new IngredientKnowledgebase();
 	private Recipe recipe;
 	private Domain domain;
+	private List<Action> domainActions;
+	private List<PropositionalFunction> domainPFs;
 	
-	public Baxter(Domain domain, Recipe recipe) {
+	public Baxter(Domain domain, Recipe recipe, StateHashFactory hashFactory) {
 		this.recipe = recipe;
 		this.domain = domain;
+		this.domainActions = domain.getActions();
+		this.domainPFs = domain.getPropFunctions();
+		this.hashFactory = hashFactory;
+		this.addSubgoalsToPF();
 	}
 		
 	@Override
@@ -74,7 +92,19 @@ public class Baxter implements Agent {
 	
 		// Find actionable subgoals
 		List<BakingSubgoal> activeSubgoals = this.getActiveSubgoalsInState(beginningState, recipe.getSubgoals());
+				
+		List<AbstractGroundedAction> actionSequence = new ArrayList<AbstractGroundedAction>();
+		while (!activeSubgoals.isEmpty()) {
+			for (BakingSubgoal goal : activeSubgoals) {
+				state = this.planIngredient(actionSequence, state, ingredients, goal.getIngredient(), goal);
+			}
+			activeSubgoals = this.getActiveSubgoalsInState(state, recipe.getSubgoals());
+		}
 		
+		return this.getFirstViableActionInState(beginningState, actionSequence);
+	}
+
+	protected void addSubgoalsToPF() {
 		// To the failed propFunction, add in all subgoals for a recipe that are based on an ingredient.
 		RecipeBotched failed = ((RecipeBotched)this.domain.getPropFunction(AffordanceCreator.BOTCHED_PF));
 		if (failed != null) {
@@ -83,13 +113,6 @@ public class Baxter implements Agent {
 				failed.addSubgoal(goal);
 			}
 		}
-		
-		List<AbstractGroundedAction> actionSequence = new ArrayList<AbstractGroundedAction>();
-		for (BakingSubgoal goal : activeSubgoals) {
-			state = this.planIngredient(actionSequence, state, ingredients, goal.getIngredient(), goal);
-		}
-		
-		return this.getFirstViableActionInState(beginningState, actionSequence);
 	}
 	
 	protected List<BakingSubgoal> getActiveSubgoalsInState(State state, List<BakingSubgoal> allSubgoals)
@@ -122,127 +145,72 @@ public class Baxter implements Agent {
 		System.out.println(ingredient.getName());
 		State currentState = new State(startingState);
 		
-		ObjectClass containerClass = domain.getObjectClass(ContainerFactory.ClassName);		
-		ObjectInstance counterSpace = currentState.getObject(SpaceFactory.SPACE_COUNTER);
-
-		List<ObjectInstance> ingredientInstances = ingredients;
-		List<ObjectInstance> containerInstances = Recipe.getContainers(containerClass, ingredientInstances, counterSpace.getName());
-		
-		
-		for (ObjectInstance ingredientInstance : ingredientInstances) {
-			if (currentState.getObject(ingredientInstance.getName()) == null) {
-				currentState.addObject(ingredientInstance);
-			}
-		}
-		
-		for (ObjectInstance containerInstance : containerInstances) {
-			if (currentState.getObject(containerInstance.getName()) == null) {
-				ContainerFactory.changeContainerSpace(containerInstance, counterSpace.getName());
-				currentState.addObject(containerInstance);
-			}
-		}
-
-		for (ObjectInstance ingredientInstance : ingredientInstances) {
-			if (IngredientFactory.getUseCount(ingredientInstance) >= 1) {
-				ObjectInstance ing = currentState.getObject(ingredientInstance.getName());
-				IngredientFactory.changeIngredientContainer(ing, ing.getName()+"_bowl");
-				ContainerFactory.addIngredient(currentState.getObject(ing.getName()+"_bowl"), ing.getName());
-				SpaceFactory.addContainer(currentState.getObject(SpaceFactory.SPACE_COUNTER), currentState.getObject(ing.getName()+"_bowl"));
-			}
-		}
-		
-		List<Action> actions = domain.getActions();
-		for (Action action : actions) {
-			((BakingAction)action).changePlanningIngredient(ingredient);
-		}
 		AffordanceCreator theCreator = new AffordanceCreator(domain, currentState, ingredient);
-		// Add the current top level ingredient so we can properly trim the action space
-		List<PropositionalFunction> propFunctions = domain.getPropFunctions();
-		for (PropositionalFunction pf : propFunctions) {
-			((BakingPropositionalFunction)pf).changeTopLevelIngredient(ingredient);
-			((BakingPropositionalFunction)pf).setSubgoal(subgoal);
-		}
-		subgoal.getGoal().changeTopLevelIngredient(ingredient);
+		AffordancesController affordanceController = theCreator.getAffController();
+		this.setupForPlan(ingredient, subgoal, currentState);
 		
 		// TODO I don't think this is quite doing the optimal thing in regards to multiple agents.
 		final PropositionalFunction isSuccess = subgoal.getGoal();
 		final PropositionalFunction isFailure = domain.getPropFunction(AffordanceCreator.BOTCHED_PF);
 
-		
-		//((AllowUsingTool)domain.getPropFunction(AffordanceCreator.USE_PF)).addRecipe(recipe);
-		
 		TerminalFunction recipeTerminalFunction = new RecipeTerminalFunction(isSuccess, isFailure);
-		
-		StateHashFactory hashFactory = new NameDependentStateHashFactory();
-		RewardFunction rf = new RewardFunction() {
-			@Override
-			// Uniform cost function for an optimistic algorithm that guarantees convergence.
-			public double reward(State state, GroundedAction a, State sprime) {
-				return -1;
-			}
-		};
-		
-		int numRollouts = 2000; // RTDP
-		int maxDepth = 10; // RTDP
-		double vInit = 0;
-		double maxDelta = .01;
-		double gamma = 0.99;
-		
-		boolean affordanceMode = true;
-		RTDP planner;
-		Policy p = null;
-		AffordancesController affController = theCreator.getAffController();
-		if(affordanceMode) {
-			PropositionalFunction pf = subgoal.getGoal();
-			PFAtom subgoalAtom;
-			for (GroundedProp propFunction : pf.getAllGroundedPropsForState(currentState)) {
-				subgoalAtom = new PFAtom(propFunction);
-				affController.setCurrentGoal(subgoalAtom);
-				
-				planner = new BellmanAffordanceRTDP(domain, rf, recipeTerminalFunction, gamma, hashFactory, vInit, numRollouts, maxDelta, maxDepth, affController);
-				planner.toggleDebugPrinting(false);
-				planner.planFromStateAndCount(currentState);
-				
-				// Create a Q-greedy policy from the planner
-				p = new AffordanceGreedyQPolicy(affController, (QComputablePlanner)planner);
-			}
-			//PFAtom goalAtom = new PFAtom((PropositionalFunction)subgoal.getGoal());
-			
-			// RTDP planner that also uses affordances to trim action space during the Bellman update
-			
 
+		
+		OOMDPPlanner planner;
+		if(Baxter.affordanceMode) {
+			// RTDP planner that also uses affordances to trim action space during the Bellman update
+			planner = new BellmanAffordanceRTDP(this.domain, Baxter.rf, recipeTerminalFunction, Baxter.gamma, this.hashFactory, 
+					Baxter.vInit, Baxter.numRollouts, Baxter.maxDelta, Baxter.maxDepth, affordanceController);
+			//planner.toggleDebugPrinting(false);
 		} else {
-			planner = new RTDP(domain, rf, recipeTerminalFunction, gamma, hashFactory, vInit, numRollouts, maxDelta, maxDepth);
-			planner.planFromState(currentState);
-			
-			// Create a Q-greedy policy from the planner
-			p = new GreedyQPolicy((QComputablePlanner)planner);
+			planner = new RTDP(this.domain, Baxter.rf, recipeTerminalFunction, Baxter.gamma, this.hashFactory, 
+					Baxter.vInit, Baxter.numRollouts, Baxter.maxDelta, Baxter.maxDepth);
 		}
-		if (p == null) {
-			return currentState;
-		}
+		planner.planFromState(currentState);
+		
+		Policy p = (Baxter.affordanceMode) ? 
+				new AffordanceGreedyQPolicy(affordanceController, (QComputablePlanner)planner) :
+					new GreedyQPolicy((QComputablePlanner)planner);
+
 		
 		// Print out the planning results
 		EpisodeAnalysis episodeAnalysis = p.evaluateBehavior(currentState, rf, recipeTerminalFunction,100);
 		actionSequence.addAll(episodeAnalysis.actionSequence);
 		State endState = episodeAnalysis.getState(episodeAnalysis.stateSequence.size() - 1);
-		//System.out.println("Succeeded : " + recipeTerminalFunction.isTerminal(endState));
+		
+		this.updateState(ingredient, endState);
+		
+		System.out.println(episodeAnalysis.getActionSequenceString(" \n"));
+		ExperimentHelper.printResults(episodeAnalysis.actionSequence, episodeAnalysis.rewardSequence);
+		
+		//if (subgoal.getGoal().getClassName().equals(AffordanceCreator.FINISH_PF)) {
+		//	IngredientFactory.hideUnecessaryIngredients(endState, domain, ingredient, ingredients);
+		//}
+		
+		return endState;
+	}
 
+	protected void updateState(IngredientRecipe ingredient, State endState) {
 		List<ObjectInstance> finalObjects = 
 				new ArrayList<ObjectInstance>(endState.getObjectsOfTrueClass(IngredientFactory.ClassNameComplex));
 		List<ObjectInstance> containerObjects =
 				new ArrayList<ObjectInstance>(endState.getObjectsOfTrueClass(ContainerFactory.ClassName));
 		
 		ExperimentHelper.makeSwappedIngredientObject(ingredient, endState, finalObjects, containerObjects);
-		
-		System.out.println(episodeAnalysis.getActionSequenceString(" \n"));
-		ExperimentHelper.printResults(episodeAnalysis.actionSequence, episodeAnalysis.rewardSequence);
-		
-		if (subgoal.getGoal().getClassName().equals(AffordanceCreator.FINISH_PF)) {
-			IngredientFactory.hideUnecessaryIngredients(endState, domain, ingredient, ingredients);
+	}
+
+	protected void setupForPlan(IngredientRecipe ingredient,
+			BakingSubgoal subgoal, State currentState) {
+		for (Action action : this.domainActions) {
+			((BakingAction)action).changePlanningIngredient(ingredient);
 		}
 		
-		return endState;
+		// Add the current top level ingredient so we can properly trim the action space
+		for (PropositionalFunction pf : this.domainPFs) {
+			((BakingPropositionalFunction)pf).changeTopLevelIngredient(ingredient);
+			((BakingPropositionalFunction)pf).setSubgoal(subgoal);
+		}
+		subgoal.getGoal().changeTopLevelIngredient(ingredient);
 	}
 
 }

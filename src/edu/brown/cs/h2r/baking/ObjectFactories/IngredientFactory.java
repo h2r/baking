@@ -465,8 +465,11 @@ public class IngredientFactory {
 				if (bool1 == bool2) {
 					if (IngredientFactory.getUseCount(obj) <= 1) {
 						ObjectInstance hidden = makeHiddenObjectCopy(state, domain, obj);
-						ObjectInstance container = state.getObject(IngredientFactory.getContainer(hidden));
-						ContainerFactory.removeIngredient(container, hidden.getName());
+						String containerName = IngredientFactory.getContainer(hidden);
+						ObjectInstance container = state.getObject(containerName);
+						if (container != null) {
+							ContainerFactory.removeIngredient(container, hidden.getName());
+						}
 						state.removeObject(obj);
 						state.addObject(hidden);
 					}

@@ -74,13 +74,15 @@ public abstract class Recipe {
 	public static List<ObjectInstance> getContainers(ObjectClass containerClass, List<ObjectInstance> ingredients, String containerSpace)
 	{
 		List<ObjectInstance> containers = new ArrayList<ObjectInstance>();
+		String containerName;
 		for (ObjectInstance ingredient : ingredients)
 		{
+			containerName = ingredient.getName() + "_bowl";
 			ObjectInstance container = 
 					ContainerFactory.getNewIngredientContainerObjectInstance(
-							containerClass, ingredient.getName() + "_bowl", ingredient.getName(), containerSpace);
+							containerClass, containerName, ingredient.getName(), containerSpace);
 			containers.add(container);
-			IngredientFactory.changeIngredientContainer(ingredient, container.getName());
+			IngredientFactory.changeIngredientContainer(ingredient, containerName);
 		}
 		return containers;
 	}

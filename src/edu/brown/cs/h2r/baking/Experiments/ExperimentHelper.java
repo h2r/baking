@@ -4,12 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.MakeSpanFactory;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import burlap.oomdp.core.Domain;
+import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.Action;
@@ -179,5 +181,18 @@ public class ExperimentHelper {
 			}
 		}
 		return null;
+	}
+	
+	public static List<ObjectInstance> getAllConstituentIngredients(Domain domain, State state, Recipe recipe) {
+		List<BakingSubgoal> subgoals = recipe.getIngredientSubgoals();
+		List<IngredientRecipe> constituentIngredients = new ArrayList<IngredientRecipe>();
+		List<ObjectInstance> objects = new ArrayList<ObjectInstance>();
+		ObjectClass ingredientClass = IngredientFactory.createSimpleIngredientObjectClass(domain);
+		for (BakingSubgoal subgoal : subgoals) {
+			IngredientRecipe ingredient = subgoal.getIngredient();
+			objects.addAll(IngredientFactory.getSimpleIngredients(ingredientClass, ingredient));
+		}
+		
+		return objects;
 	}
 }

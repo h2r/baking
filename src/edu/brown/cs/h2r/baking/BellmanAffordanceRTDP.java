@@ -53,6 +53,63 @@ public class BellmanAffordanceRTDP extends AffordanceRTDP {
 		}
 		
 		// get all actions and Q values
+		List <QValue> allQValues = new ArrayList<QValue>();
+		for(Action a : actions){
+			List<GroundedAction> applications = a.getAllApplicableGroundedActions(sh.s);
+			for(GroundedAction ga : applications){
+				allQValues.add(this.getQ(sh, ga, matching));
+			}
+		}
+		
+		
+		// Have affordances prune away all unnecessary actions
+		List<AbstractGroundedAction> qActions = new ArrayList<AbstractGroundedAction>(allQValues.size());
+		for(QValue q : allQValues){
+			qActions.add(q.a);
+		}
+		
+		qActions = this.affController.filterIrrelevantActionsInState(qActions, sh.s);
+		List<QValue> affFilteredQValues = new ArrayList<QValue>();
+		for(QValue q : allQValues){
+			if(qActions.contains(q.a)){
+				affFilteredQValues.add(q);
+			}
+		}
+		
+		// If Affordances prune away all actions, back off to full action set 
+		if (affFilteredQValues.isEmpty()) {
+			affFilteredQValues = allQValues;
+		}
+
+		for (QValue q : affFilteredQValues) {
+			if (q.q > maxQ) {
+				maxQ = q.q;
+			}
+		}
+	
+		// perform bellman update
+		valueFunction.put(sh, maxQ);
+	
+		return maxQ;
+	}
+	/*
+	protected double performBellmanUpdateOn(StateHashTuple sh) {
+		if(this.tf.isTerminal(sh.s)){
+			//terminal states always have a state value of 0
+			valueFunction.put(sh, 0.);
+			return 0;
+		}
+		
+		
+		double maxQ = Double.NEGATIVE_INFINITY;
+		
+		Map<String,String> matching = null;
+		StateHashTuple indexSH = mapToStateIndex.get(sh);
+		if(this.containsParameterizedActions && !this.domain.isObjectIdentifierDependent()){
+			matching = sh.s.getObjectMatchingTo(indexSH.s, false);
+		}
+		
+		// get all actions and Q values
 		//List <QValue> allQValues = new ArrayList<QValue>();
 		//for(Action a : actions){
 		//	List<GroundedAction> applications = a.getAllApplicableGroundedActions(sh.s);
@@ -109,6 +166,6 @@ public class BellmanAffordanceRTDP extends AffordanceRTDP {
 		valueFunction.put(sh, maxQ);
 	
 		return maxQ;
-	}
+	}*/
 }
 

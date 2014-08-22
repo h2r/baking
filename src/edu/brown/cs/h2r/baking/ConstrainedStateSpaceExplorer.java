@@ -6,10 +6,22 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import edu.brown.cs.h2r.baking.Experiments.CleaningPassingObjectsKitchen;
+import edu.brown.cs.h2r.baking.Experiments.KevinsKitchen;
+import edu.brown.cs.h2r.baking.Recipes.Brownies;
+import edu.brown.cs.h2r.baking.Recipes.CucumberSalad;
+import edu.brown.cs.h2r.baking.Recipes.DeviledEggs;
+import edu.brown.cs.h2r.baking.Recipes.MashedPotatoes;
+import edu.brown.cs.h2r.baking.Recipes.MoltenLavaCake;
+import edu.brown.cs.h2r.baking.Recipes.PeanutButterCookies;
+import edu.brown.cs.h2r.baking.Recipes.PecanPie;
+import edu.brown.cs.h2r.baking.Recipes.Recipe;
+
 import burlap.behavior.singleagent.planning.OOMDPPlanner;
 import burlap.behavior.singleagent.planning.deterministic.DeterministicPlanner.PlanningFailedException;
 import burlap.behavior.statehashing.StateHashFactory;
 import burlap.behavior.statehashing.StateHashTuple;
+import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
@@ -76,5 +88,17 @@ public class ConstrainedStateSpaceExplorer {
 		catch (PlanningFailedException e) {
 			return false;
 		}
+	}
+	
+	public static void main(String[] args) {
+		Recipe recipe = new MashedPotatoes();
+		//recipe.getIngredientSubgoals()
+		CleaningPassingObjectsKitchen kitchen = new CleaningPassingObjectsKitchen(new MashedPotatoes());
+		Domain domain = kitchen.generateDomain();
+		State state = kitchen.generateInitialState(domain);
+		//ConstrainedStateSpaceExplorer explorer = new ConstrainedStateSpaceExplorer(planner, domain.getActions());
+		//List<State> states = explorer.getConstrainedStatesAccessibleFromState(state);
+		
+		//System.out.println("States: " + Integer.toString(states.size()));
 	}
 }
