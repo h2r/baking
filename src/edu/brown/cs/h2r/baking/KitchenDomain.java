@@ -115,7 +115,9 @@ public class KitchenDomain {
 		this.allParams = this.setupParams();
 		this.doneActions = new HashSet<String>();
 		this.testSettingUp();
-		this.plan();
+		testStephensAbilityAtUsingThisCode();
+		//this.testSettingUp();
+		//this.plan();
 		
 		/**
 		 * This very simple domain assumes actions based solely on what the robot has in front of it.
@@ -147,8 +149,66 @@ public class KitchenDomain {
 		 * to baxter so it can pickup/place the correct object (be it a tool to the human, or a dirty
 		 * bowl/tool into the "dirty area" of the counter). 
 		 */
-		this.getNewCleanState();
-		this.testPresumptions();
+		//this.getNewCleanState();
+		////this.testPresumptions();
+	}
+	
+	public void testStephensAbilityAtUsingThisCode() {
+	
+		this.takePresumedActions("cocoa_bowl");
+		GroundedAction ga = this.getRobotAction();
+		this.state = ga.executeIn(this.state);
+		System.out.println(this.getGAString(ga));
+		
+		this.takePresumedActions("flour_bowl");
+		ga = this.getRobotAction();
+		this.state = ga.executeIn(this.state);
+		System.out.println(this.getGAString(ga));
+		
+		
+		this.takePresumedActions("eggs_bowl");
+		ga = this.getRobotAction();
+		this.state = ga.executeIn(this.state);
+		System.out.println(this.getGAString(ga));
+		
+		
+		this.takePresumedActions("butter_bowl");
+		ga = this.getRobotAction();
+		this.state = ga.executeIn(this.state);
+		System.out.println(this.getGAString(ga));
+		
+		ga = this.getRobotAction();
+		this.state = ga.executeIn(this.state);
+		System.out.println(this.getGAString(ga));
+		
+		ga = this.getRobotAction();
+		this.state = ga.executeIn(this.state);
+		System.out.println(this.getGAString(ga));
+		
+		ga = this.getRobotAction();
+		this.state = ga.executeIn(this.state);
+		System.out.println(this.getGAString(ga));
+		
+		ga = this.getRobotAction();
+		this.state = ga.executeIn(this.state);
+		System.out.println(this.getGAString(ga));
+		
+		ga = this.getRobotAction();
+		this.state = ga.executeIn(this.state);
+		System.out.println(this.getGAString(ga));
+		
+		ga = this.getRobotAction();
+		this.state = ga.executeIn(this.state);
+		System.out.println(this.getGAString(ga));
+		
+	}
+	
+	public String getGAString(GroundedAction ga) {
+		String str = ga.actionName();
+		for (String param : ga.params) {
+			str += ", " + param;
+		}
+		return str;
 	}
 	
 	public State getCurrentState() {
@@ -299,22 +359,22 @@ public class KitchenDomain {
 	// mimics an initialization message that would, presumably, give us an idea of what's on the table.
 	private void testSettingUp() {
 		
-		addObject(ContainerFactory.DRY_BOWL, 75, 75, 75);
-		addObject(ContainerFactory.WET_BOWL, 75, 75, 75);
+		this.addObject(ContainerFactory.DRY_BOWL, 75, 75, 75);
+		this.addObject(ContainerFactory.WET_BOWL, 75, 75, 75);
 		
 		//add two tools
-		addObject(ToolFactory.WHISK, 25, 25, 25);
-		addObject(ToolFactory.SPATULA, 25, 25, 25);
+		this.addObject(ToolFactory.WHISK, 25, 25, 25);
+		this.addObject(ToolFactory.SPATULA, 25, 25, 25);
 		
 		//add baking dish
-		addObject("baking_dish", 75, 75, 75);
+		this.addObject("baking_dish", 75, 75, 75);
 		
 		//add ingredients (containers)
-		addObject("flour_bowl", 75, 75, 75);
-		addObject("cocoa_bowl", 75, 75, 75);
+		this.addObject("flour_bowl", 75, 75, 75);
+		this.addObject("cocoa_bowl", 75, 75, 75);
 		
-		addObject("eggs_bowl", 75, 75, 75);
-		addObject("butter_bowl", 75, 75, 75);
+		this.addObject("eggs_bowl", 75, 75, 75);
+		this.addObject("butter_bowl", 75, 75, 75);
 	}
 
 	// gets the next action the robot should take
@@ -323,6 +383,16 @@ public class KitchenDomain {
 		GroundedAction ga = ((GroundedAction)p.getAction(this.state));
 		return ga;
 		
+	}
+	
+	public String[] getRobotActionParams() {
+		GroundedAction ga = this.getRobotAction();
+		String[] params = new String[ga.params.length+1];
+		params[0] = ga.actionName();
+		for (int i = 0; i < ga.params.length; i++) {
+			params[i+1] = ga.params[i];
+		}
+		return params;
 	}
 	
 	// generates a polic to use for planning
