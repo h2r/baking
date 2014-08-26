@@ -235,6 +235,12 @@ public class KitchenDomain {
 		}
 	}
 	
+	public void disposeObject(State state, String objectName) {
+		ObjectInstance object = state.getObject(objectName);
+		ContainerFactory.changeContainerSpace(object, SpaceFactory.SPACE_DIRTY);
+	}
+	
+	
 	private void addTool(String name, double x, double y, double z) {
 		String type = ToolFactory.determineType(name);
 		String space = determineSpace(x);
