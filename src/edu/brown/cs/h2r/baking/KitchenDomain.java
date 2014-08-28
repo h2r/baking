@@ -7,16 +7,22 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
 import burlap.behavior.affordances.AffordancesController;
+import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.Policy;
 import burlap.behavior.singleagent.planning.QComputablePlanner;
 import burlap.behavior.singleagent.planning.commonpolicies.AffordanceGreedyQPolicy;
+import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
+import burlap.behavior.singleagent.planning.stochastic.rtdp.RTDP;
 import burlap.behavior.statehashing.NameDependentStateHashFactory;
+import burlap.behavior.statehashing.StateHashFactory;
 import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.Domain;
+import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
@@ -25,6 +31,7 @@ import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.common.UniformCostRF;
+import edu.brown.cs.h2r.baking.Experiments.ExperimentHelper;
 import edu.brown.cs.h2r.baking.Experiments.HackathonKitchen;
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
 import edu.brown.cs.h2r.baking.Knowledgebase.IngredientKnowledgebase;
@@ -33,11 +40,13 @@ import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ToolFactory;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.BowlsClean;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
 import edu.brown.cs.h2r.baking.Recipes.Brownies;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
+import edu.brown.cs.h2r.baking.actions.BakingAction;
 import edu.brown.cs.h2r.baking.actions.HandAction;
 import edu.brown.cs.h2r.baking.actions.MixAction;
 import edu.brown.cs.h2r.baking.actions.MoveAction;
@@ -47,13 +56,16 @@ public class KitchenDomain {
 
 	private Domain domain;
 	private Recipe recipe;
-	private State state;
+	public State state;
+	private State fullState;
+	public List<Policy> policies;
 	private IngredientKnowledgebase knowledgebase;
 	private AbstractMap<String, ObjectInstance> allIngredientsMap;
 	private HackathonKitchen kitchen;
 	private Action mix, pour, move, hand;
-	private TerminalFunction tf;
-	private RewardFunction rf;
+	public TerminalFunction tf;
+	public RewardFunction rf;
+	private List<BakingSubgoal> ingSubgoals;
 	
 	private List<String> bakingDishes = new ArrayList<String>(Arrays.asList("baking_dish"));
 	private List<String> mixingBowls = new ArrayList<String>(Arrays.asList(ContainerFactory.DRY_BOWL, ContainerFactory.WET_BOWL));
@@ -88,13 +100,11 @@ public class KitchenDomain {
 		this.getNewCleanState();
 		
 		// Add Prop functions and terminal functions needed for planning!
-		final PropositionalFunction cleanBowl = new BowlsClean(
-				AffordanceCreator.CLEAN_PF, this.domain, this.recipe.topLevelIngredient);
 		final RecipeFinished finish = new RecipeFinished(AffordanceCreator.FINISH_PF, this.domain,
 				this.recipe.topLevelIngredient);
 		final RecipeBotched botched = new RecipeBotched(AffordanceCreator.FINISH_PF, this.domain,
 				this.recipe.topLevelIngredient);
-		 this.tf = new RecipeTerminalFunction(cleanBowl, finish, botched);
+		 this.tf = new RecipeTerminalFunction(finish, botched);
 		 this.rf = this.generateRewardFunction();
 
 		// add the actions to the domain
@@ -106,6 +116,7 @@ public class KitchenDomain {
 		// Prepare the recipe (not really used, but needed to avoid crashing
 		knowledgebase = new IngredientKnowledgebase();
 		this.allIngredientsMap = this.generateAllIngredientMap();
+		this.setUpContainers();
 		this.setUpRecipe();
 		kitchen.addAllIngredients(this.allIngredientsMap.values());
 		
@@ -114,8 +125,26 @@ public class KitchenDomain {
 		this.debug = false;
 		this.allParams = this.setupParams();
 		this.doneActions = new HashSet<String>();
-		this.testSettingUp();
-		testStephensAbilityAtUsingThisCode();
+		this.ingSubgoals = recipe.getIngredientSubgoals();
+		System.out.println(this.state.toString());
+		for (BakingSubgoal sg : this.ingSubgoals) {
+			List<IngredientRecipe> ingredients = sg.getIngredient().getConstituentIngredients();
+			System.out.println(sg.getIngredient().getName());
+			for (IngredientRecipe ing : ingredients) {
+				System.out.println(ing.getName());
+				System.out.println("baked: " + ing.getBaked());
+				System.out.println("heated: " + ing.getHeated());
+				for (String trait : ing.getNecessaryTraits().keySet()) {
+					System.out.println(trait);
+				}
+			}
+		}
+		
+		
+		this.policies = this.generatePolicies();
+		
+		//this.testSettingUp();
+		//testStephensAbilityAtUsingThisCode();
 		//this.testSettingUp();
 		//this.plan();
 		
@@ -219,7 +248,9 @@ public class KitchenDomain {
 	private void getNewCleanState() {
 		this.state = new State();
 		this.addAgents();
+		this.addContainers();
 		this.setUpRegions();
+		
 	}
 	
 	// adds an object (tool or container) to the state
@@ -264,15 +295,15 @@ public class KitchenDomain {
 	
 	private void addIngredientContainer(String containerName, double x, double y, double z) {
 		String space = determineSpace(x);
+		/*
 		String ingredientName = containerName.substring(0, containerName.length()-5);
 		// butter_bowl => butter
 		ObjectInstance container = ContainerFactory.getNewIngredientContainerObjectInstance(
-				this.domain, containerName, ingredientName, space, x, y, z);
+				this.domain, containerName, ingredientName, space, x, y, z);*/
+		ObjectInstance container = state.getObject(containerName);
+		ContainerFactory.changeContainerSpace(container, space);
 		ContainerFactory.setUsed(container);
-		ObjectInstance ing = this.allIngredientsMap.get(ingredientName);
-		IngredientFactory.changeIngredientContainer(ing, containerName);
-		this.state.addObject(ing);
-		this.state.addObject(container);
+		
 	}
 	
 	// these methods take actions. All of these could probably be subsumed by one method.
@@ -305,13 +336,14 @@ public class KitchenDomain {
 	
 	// Given the x location, determines in what region the object is at.
 	private String determineSpace(double x) {
-		if (x >= robotLeft && x <= robotRight) {
+		return SpaceFactory.SPACE_ROBOT;
+		/*if (x >= robotLeft && x <= robotRight) {
 			return SpaceFactory.SPACE_ROBOT;
 		} else if (x >= humanLeft && x <= humanRight){
 			return SpaceFactory.SPACE_HUMAN;
 		} else {
 			return SpaceFactory.SPACE_DIRTY;
-		}
+		}*/
 	}
 	
 	private AbstractMap<String, ObjectInstance> generateAllIngredientMap() {
@@ -319,14 +351,17 @@ public class KitchenDomain {
 		List<ObjectInstance> objs = this.knowledgebase.getPotentialIngredientObjectInstanceList(
 				this.state, this.domain, this.recipe.topLevelIngredient);
 		for (ObjectInstance obj : objs) {
+			this.state.addObject(obj);
 			map.put(obj.getName(), obj);
 		}
 		return map;
 	}
 	
 	private void setUpRecipe() {
+		this.recipe.setUpSubgoals(this.domain);
 		this.recipe.addIngredientSubgoals();
 		this.recipe.addRequiredRecipeAttributes();
+		
 	}
 	
 	// A simple reward function that gives a higher reward for handing off tools rather than 
@@ -352,6 +387,24 @@ public class KitchenDomain {
 		state.addObject(AgentFactory.getNewRobotAgentObjectInstance(domain, AgentFactory.agentRobot));
 	}
 	
+	private void addContainers() {
+		for (String dish : this.bakingDishes) {
+			ObjectInstance obj = ContainerFactory.getNewBakingContainerObjectInstance(this.domain, dish, null, SpaceFactory.SPACE_HUMAN);
+			this.state.addObject(obj);
+		}
+		
+		for (String bowl : this.mixingBowls) {
+			ObjectInstance obj = ContainerFactory.getNewMixingContainerObjectInstance(this.domain, bowl, null, SpaceFactory.SPACE_HUMAN);
+			this.state.addObject(obj);
+		}
+		
+		for (String tool : this.tools){ 
+			String toolType = (tool.equals(ToolFactory.WHISK)) ? ToolFactory.whiskType : ToolFactory.spatulaType;
+			ObjectInstance obj = ToolFactory.getNewObjectInstance(this.domain, tool, toolType, SpaceFactory.SPACE_ROBOT, 0.0 , 0.0, 0.0);
+			this.state.addObject(obj);
+		}
+	}
+	
 	// adds regions to state
 	private void setUpRegions() {
 		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, SpaceFactory.SPACE_HUMAN, 
@@ -360,6 +413,22 @@ public class KitchenDomain {
 				new ArrayList<String>(), AgentFactory.agentRobot, robotTop, robotBottom, robotLeft, robotRight));
 		state.addObject(SpaceFactory.getNewDirtySpaceObjectInstance(domain, SpaceFactory.SPACE_DIRTY, 
 				new ArrayList<String>(), AgentFactory.agentHuman, dirtyTop, dirtyBottom, dirtyLeft, dirtyRight));
+	}
+	
+	private void setUpContainers() {
+		if (this.allIngredientsMap == null ) {
+			System.err.println("Ingredient map has not been initialized");
+		}
+		if (this.state == null ) {
+			System.err.println("State has not been initialized");
+		}
+		for (Map.Entry<String, ObjectInstance> entry : this.allIngredientsMap.entrySet()) {
+			String ingredientName = entry.getKey();
+			
+			ObjectInstance container = ContainerFactory.getNewIngredientContainerObjectInstance(this.domain, ingredientName + "_bowl", ingredientName, SpaceFactory.SPACE_HUMAN);
+			this.state.addObject(container);
+			IngredientFactory.changeIngredientContainer(entry.getValue(), container.getName());
+		}
 	}
 	
 	// mimics an initialization message that would, presumably, give us an idea of what's on the table.
@@ -385,14 +454,24 @@ public class KitchenDomain {
 
 	// gets the next action the robot should take
 	private GroundedAction getRobotAction() {
-		Policy p = this.generatePolicy();
-		GroundedAction ga = ((GroundedAction)p.getAction(this.state));
-		return ga;
+		GroundedAction ga = null;
+		for (Policy policy : this.policies) {
+			if (policy.isDefinedFor(this.state)) {
+				ga = ((GroundedAction)policy.getAction(this.state));
+				break;
+			}
+		}
+		return (ga == null || ga.params[0] != "robot") ? null : ga;
+		
+		
 		
 	}
 	
 	public String[] getRobotActionParams() {
 		GroundedAction ga = this.getRobotAction();
+		if (ga == null) {
+			return null;
+		}
 		String[] params = new String[ga.params.length+1];
 		params[0] = ga.actionName();
 		for (int i = 0; i < ga.params.length; i++) {
@@ -408,10 +487,135 @@ public class KitchenDomain {
 		BellmanAffordanceRTDP planner = new BellmanAffordanceRTDP(this.domain, 
 				this.rf ,this.tf, 0.99, new NameDependentStateHashFactory(), 0, 20, 0.05, 20, controller);
 
+		//planner.toggleDebugPrinting(true);
+		//planner.planFromState(this.state);
 		Policy p = new AffordanceGreedyQPolicy(controller, (QComputablePlanner)planner);
+		
 		return p;
 	}
 	
+	public State generatePolicy(State startingState, BakingSubgoal subgoal, PropositionalFunction bowlClean, List<Policy> policies)
+	{
+		
+		IngredientRecipe ingredient = subgoal.getIngredient();
+		System.out.println(ingredient.getName());
+		State currentState = new State(startingState);
+		
+		ObjectClass containerClass = domain.getObjectClass(ContainerFactory.ClassName);		
+		ObjectInstance counterSpace = currentState.getObject(SpaceFactory.SPACE_COUNTER);
+		
+		List<Action> actions = domain.getActions();
+		for (Action action : actions) {
+			((BakingAction)action).changePlanningIngredient(ingredient);
+		}
+		AffordanceCreator theCreator = new AffordanceCreator(domain, currentState, ingredient);
+		// Add the current top level ingredient so we can properly trim the action space
+		List<PropositionalFunction> propFunctions = domain.getPropFunctions();
+		for (PropositionalFunction pf : propFunctions) {
+			((BakingPropositionalFunction)pf).changeTopLevelIngredient(ingredient);
+			((BakingPropositionalFunction)pf).setSubgoal(subgoal);
+		}
+		subgoal.getGoal().changeTopLevelIngredient(ingredient);
+		final PropositionalFunction isSuccess = subgoal.getGoal();
+		final PropositionalFunction isFailure = domain.getPropFunction(AffordanceCreator.BOTCHED_PF);
+		if (((RecipeBotched)isFailure).hasNoSubgoals()) {
+			for (BakingSubgoal sg : this.ingSubgoals) {
+				((RecipeBotched)isFailure).addSubgoal(sg);
+			}
+		}		
+		TerminalFunction recipeTerminalFunction = new RecipeTerminalFunction(bowlClean, isSuccess, isFailure);
+		
+		StateHashFactory hashFactory = new NameDependentStateHashFactory();
+		RewardFunction rf = new RewardFunction() {
+			@Override
+			// Uniform cost function for an optimistic algorithm that guarantees convergence.
+			public double reward(State state, GroundedAction a, State sprime) {
+				return -1;
+			}
+		};
+		
+		int numRollouts = 2000; // RTDP
+		int maxDepth = 10; // RTDP
+		double vInit = 0;
+		double maxDelta = .01;
+		double gamma = 0.99;
+		
+		boolean affordanceMode = true;
+		RTDP planner;
+		Policy p;
+		AffordancesController affController = theCreator.getAffController();
+		if(affordanceMode) {
+			// RTDP planner that also uses affordances to trim action space during the Bellman update
+			planner = new BellmanAffordanceRTDP(domain, rf, recipeTerminalFunction, gamma, hashFactory, vInit, numRollouts, maxDelta, maxDepth, affController);
+			planner.toggleDebugPrinting(true);
+			planner.planFromState(currentState);
+			
+			// Create a Q-greedy policy from the planner
+			p = new AffordanceGreedyQPolicy(affController, (QComputablePlanner)planner);
+
+		} else {
+			planner = new RTDP(domain, rf, recipeTerminalFunction, gamma, hashFactory, vInit, numRollouts, maxDelta, maxDepth);
+			planner.planFromState(currentState);
+			
+			// Create a Q-greedy policy from the planner
+			p = new GreedyQPolicy((QComputablePlanner)planner);
+		}
+		
+		// Print out the planning results
+		EpisodeAnalysis episodeAnalysis = p.evaluateBehavior(currentState, rf, recipeTerminalFunction,100);
+
+		State endState = episodeAnalysis.getState(episodeAnalysis.stateSequence.size() - 1);
+		//System.out.println("Succeeded : " + recipeTerminalFunction.isTerminal(endState));
+
+		List<ObjectInstance> finalObjects = 
+				new ArrayList<ObjectInstance>(endState.getObjectsOfTrueClass(IngredientFactory.ClassNameComplex));
+		List<ObjectInstance> containerObjects =
+				new ArrayList<ObjectInstance>(endState.getObjectsOfTrueClass(ContainerFactory.ClassName));
+		
+		ExperimentHelper.makeSwappedIngredientObject(ingredient, endState, finalObjects, containerObjects);
+		
+		System.out.println(episodeAnalysis.getActionSequenceString(" \n"));
+		ExperimentHelper.printResults(episodeAnalysis.actionSequence, episodeAnalysis.rewardSequence);
+		
+		//if (subgoal.getGoal().getClassName().equals(AffordanceCreator.FINISH_PF)) {
+		//	IngredientFactory.hideUnecessaryIngredients(endState, domain, ingredient, new ArrayList<ObjectInstance>(this.allIngredientsMap.values()));
+		//}
+		policies.add(p);
+		return endState;
+	}
+	
+	private List<Policy> generatePolicies() {
+		List<BakingSubgoal> subgoals = recipe.getSubgoals();
+		Set<BakingSubgoal> activeSubgoals = new HashSet<BakingSubgoal>();
+		State initialState = this.state.copy();
+		List<Policy> policies = new ArrayList<Policy>();
+		do {
+			// For all subgoals with all preconditions satisfied
+			for (BakingSubgoal sg : activeSubgoals) {
+				PropositionalFunction bowlsClean = null;
+				System.out.println("Generating policy for subgoal " + sg.getIngredient().getName());
+				if (sg.getGoal().isTrue(initialState, "")) {
+					subgoals.remove(sg);
+					bowlsClean = new BowlsClean(sg.getIngredient().getName() + "_clean", domain, sg.getIngredient());
+				}
+				initialState = this.generatePolicy(initialState, sg, bowlsClean, policies);
+			}
+			activeSubgoals.clear();
+			// Iterate through inactive subgoals to find those who have had all of their
+			// preconditions resolved.
+			for (BakingSubgoal sg : subgoals) {
+				if (sg.allPreconditionsCompleted(initialState)) {
+					activeSubgoals.add(sg);
+				}
+			}	
+		} while (!activeSubgoals.isEmpty());
+		
+		if (policies.isEmpty()) {
+			System.err.println("No policies were generated for the recipe: " + recipe.topLevelIngredient.getName());
+			System.err.println("There should be a total of " + subgoals.size() + " different policies");
+		}
+		return policies;
+	}
 	// returns whether object is in the robot's work area
 	public boolean objectInRobotSpace(String name) {
 		ObjectInstance obj = this.state.getObject(name);

@@ -107,6 +107,13 @@ public class IngredientFactory {
 		
 		return objectClass;
 	}
+	
+	public static ObjectInstance getNewSimpleIngredientObjectInstance(Domain domain, String name, 
+			int attributes, int useCount, Set<String> traits, Set<String> toolTraits,
+			Set<String> toolAttributes, String ingredientContainer) {
+		ObjectClass objClass = domain.getObjectClass(IngredientFactory.ClassNameSimple);
+		return IngredientFactory.getNewSimpleIngredientObjectInstance(objClass, name, attributes, useCount, traits, toolTraits, toolAttributes, ingredientContainer);
+	}
 		
 	public static ObjectInstance getNewSimpleIngredientObjectInstance(ObjectClass simpleIngredientClass, String name, 
 			int attributes, int useCount, Set<String> traits, Set<String> toolTraits,

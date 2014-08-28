@@ -26,10 +26,13 @@ public class RecipeTerminalFunction implements TerminalFunction{
 
 	@Override
 	public boolean isTerminal(State state) {
-		for (GroundedProp cleangp : this.bowlsClean.getAllGroundedPropsForState(state)) {
-			if (!cleangp.isTrue(state)) {
-				return false;
+		if (this.bowlsClean != null) {
+			for (GroundedProp cleangp : this.bowlsClean.getAllGroundedPropsForState(state)) {
+				if (!cleangp.isTrue(state)) {
+					return false;
+				}
 			}
+
 		}
 		return (this.recipeSuccess.somePFGroundingIsTrue(state) ||
 				this.recipeFailure.somePFGroundingIsTrue(state));

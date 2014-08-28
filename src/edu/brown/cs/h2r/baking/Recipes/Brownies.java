@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import burlap.oomdp.core.Domain;
+import burlap.oomdp.core.PropositionalFunction;
 import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
@@ -50,17 +51,23 @@ public class Brownies extends Recipe {
 	
 	public void setUpSubgoals(Domain domain) {
 		AbstractMap<String, IngredientRecipe> swappedIngredients = IngredientRecipe.getRecursiveSwappedIngredients(this.topLevelIngredient);
+		PropositionalFunction cleanBowlWet = new BowlsClean(
+				AffordanceCreator.CLEAN_PF, domain, swappedIngredients.get("wet_ingredients"));
+		
 		BowlsClean clean = ((BowlsClean)domain.getPropFunction(AffordanceCreator.CLEAN_PF));
 		BakingPropositionalFunction pf3 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("wet_ingredients"));
 		BakingSubgoal sg3 = new BakingSubgoal(pf3, swappedIngredients.get("wet_ingredients"));
+		System.out.println("Adding wet ingredients subgoals");
 		this.subgoals.add(sg3);
 		
 		BakingPropositionalFunction pf4 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("dry_ingredients"));
 		BakingSubgoal sg4 = new BakingSubgoal(pf4, swappedIngredients.get("dry_ingredients"));
+		System.out.println("Adding dry ingredient subgoals");
 		this.subgoals.add(sg4);
 		
 		BakingPropositionalFunction pf5 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, swappedIngredients.get("brownies"));
 		BakingSubgoal sg5 = new BakingSubgoal(pf5, swappedIngredients.get("brownie_batter"));
+		System.out.println("Adding combination subgoals");
 		sg5.addPrecondition(sg3);
 		sg5.addPrecondition(sg4);
 		this.subgoals.add(sg5);
