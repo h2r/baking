@@ -90,17 +90,39 @@ public class KevinsKitchen implements DomainGenerator {
 		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, SpaceFactory.SPACE_COUNTER, containers, "human"));
 
 		state.addObject(ContainerFactory.getNewBakingContainerObjectInstance(domain, "baking_dish", null, SpaceFactory.SPACE_COUNTER));
-		//state.addObject(ContainerFactory.getNewHeatingContainerObjectInstance(domain, "melting_pot", null, SpaceFactory.SPACE_COUNTER));
-		//state.addObject(SpaceFactory.getNewBakingSpaceObjectInstance(domain, SpaceFactory.SPACE_OVEN, null, ""));
-		//state.addObject(SpaceFactory.getNewHeatingSpaceObjectInstance(domain, SpaceFactory.SPACE_STOVE, null, ""));
 		
-		for (String container : containers) { 
-			state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, SpaceFactory.SPACE_COUNTER));
-		}
-		
+		ObjectClass containerClass = domain.getObjectClass(ContainerFactory.ClassName);		
+		ObjectInstance counterSpace = state.getObject(SpaceFactory.SPACE_COUNTER);
 		// Out of all the ingredients in our kitchen, plan over only those that might be useful!
 		IngredientKnowledgebase knowledgebase = new IngredientKnowledgebase();
 		this.allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, recipe.topLevelIngredient);
+
+		List<ObjectInstance> ingredientInstances = this.allIngredients;
+		List<ObjectInstance> containerInstances = Recipe.getContainers(containerClass, ingredientInstances, counterSpace.getName());
+		
+		
+		for (ObjectInstance ingredientInstance : ingredientInstances) {
+			if (state.getObject(ingredientInstance.getName()) == null) {
+				state.addObject(ingredientInstance);
+			}
+		}
+		
+		for (ObjectInstance containerInstance : containerInstances) {
+			if (state.getObject(containerInstance.getName()) == null) {
+				ContainerFactory.changeContainerSpace(containerInstance, counterSpace.getName());
+				state.addObject(containerInstance);
+			}
+		}
+
+		for (ObjectInstance ingredientInstance : ingredientInstances) {
+			if (IngredientFactory.getUseCount(ingredientInstance) >= 1) {
+				ObjectInstance ing = state.getObject(ingredientInstance.getName());
+				IngredientFactory.changeIngredientContainer(ing, ing.getName()+"_bowl");
+				ContainerFactory.addIngredient(state.getObject(ing.getName()+"_bowl"), ing.getName());
+				SpaceFactory.addContainer(state.getObject(SpaceFactory.SPACE_COUNTER), state.getObject(ing.getName()+"_bowl"));
+			}
+		}
+		
 	
 		System.out.println("\n\nPlanner will now plan the "+recipe.topLevelIngredient.getName()+" recipe!");
 		
@@ -138,34 +160,6 @@ public class KevinsKitchen implements DomainGenerator {
 		System.out.println(ingredient.getName());
 		State currentState = new State(startingState);
 		
-		ObjectClass containerClass = domain.getObjectClass(ContainerFactory.ClassName);		
-		ObjectInstance counterSpace = currentState.getObject(SpaceFactory.SPACE_COUNTER);
-
-		List<ObjectInstance> ingredientInstances = this.allIngredients;
-		List<ObjectInstance> containerInstances = Recipe.getContainers(containerClass, ingredientInstances, counterSpace.getName());
-		
-		
-		for (ObjectInstance ingredientInstance : ingredientInstances) {
-			if (currentState.getObject(ingredientInstance.getName()) == null) {
-				currentState.addObject(ingredientInstance);
-			}
-		}
-		
-		for (ObjectInstance containerInstance : containerInstances) {
-			if (currentState.getObject(containerInstance.getName()) == null) {
-				ContainerFactory.changeContainerSpace(containerInstance, counterSpace.getName());
-				currentState.addObject(containerInstance);
-			}
-		}
-
-		for (ObjectInstance ingredientInstance : ingredientInstances) {
-			if (IngredientFactory.getUseCount(ingredientInstance) >= 1) {
-				ObjectInstance ing = currentState.getObject(ingredientInstance.getName());
-				IngredientFactory.changeIngredientContainer(ing, ing.getName()+"_bowl");
-				ContainerFactory.addIngredient(currentState.getObject(ing.getName()+"_bowl"), ing.getName());
-				SpaceFactory.addContainer(currentState.getObject(SpaceFactory.SPACE_COUNTER), currentState.getObject(ing.getName()+"_bowl"));
-			}
-		}
 		
 		List<Action> actions = domain.getActions();
 		for (Action action : actions) {
