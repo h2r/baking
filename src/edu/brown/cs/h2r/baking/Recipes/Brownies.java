@@ -30,16 +30,17 @@ public class Brownies extends Recipe {
 		ingredientList.add(knowledgebase.getIngredient("vanilla"));
 		ingredientList.add(knowledgebase.getIngredient("eggs"));
 		ingredientList.add(knowledgebase.getIngredient("butter"));
-		
+		ingredientList.add(knowledgebase.getIngredient("white_sugar"));
 		IngredientRecipe wetIngs = new IngredientRecipe("wet_ingredients", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList);
-		wetIngs.addNecessaryTrait("sugar", Recipe.NO_ATTRIBUTES);		
+		//wetIngs.addNecessaryTrait("sugar", Recipe.NO_ATTRIBUTES);		
 		
 		List<IngredientRecipe> ingredientList2 = new ArrayList<IngredientRecipe>();
 		ingredientList2.add(knowledgebase.getIngredient("baking_powder"));
 		ingredientList2.add(knowledgebase.getIngredient("cocoa"));
+		ingredientList2.add(knowledgebase.getIngredient("flour"));
+		ingredientList2.add(knowledgebase.getIngredient("salt"));
+
 		IngredientRecipe dryIngs = new IngredientRecipe ("dry_ingredients", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList2);
-		dryIngs.addNecessaryTrait("flour", Recipe.NO_ATTRIBUTES);
-		dryIngs.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
 		
 		List<IngredientRecipe> ingredientList3 = new ArrayList<IngredientRecipe>();
 		ingredientList3.add(dryIngs);

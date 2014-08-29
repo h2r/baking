@@ -30,6 +30,12 @@ public class MoveAction extends BakingAction {
 		String agentName = params[0];
 		String containerName = params[1];
 		ObjectInstance container = state.getObject(containerName);
+		
+		String oldSpace = ContainerFactory.getSpaceName(container);
+		
+		if (oldSpace.equals(SpaceFactory.SPACE_DIRTY)) {
+			return BakingActionResult.failure("Can't move things from dirty counter");
+		}
 		/*if (!agentName.isEmpty() && !agentName.equalsIgnoreCase(paramAgentName)) {
 			return BakingActionResult.failure(paramAgentName + " cannot move objects to the " + spaceName);
 		}*/

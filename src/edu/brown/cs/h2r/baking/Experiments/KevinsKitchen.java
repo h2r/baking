@@ -82,6 +82,8 @@ public class KevinsKitchen implements DomainGenerator {
 		recipe.addIngredientSubgoals();
 		recipe.addRequiredRecipeAttributes();
 		
+		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, SpaceFactory.SPACE_COUNTER, null, "human"));
+		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, SpaceFactory.SPACE_DIRTY, null, "human"));
 		
 		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
 		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2", "baking_dish");
@@ -185,7 +187,7 @@ public class KevinsKitchen implements DomainGenerator {
 				((RecipeBotched)isFailure).addSubgoal(sg);
 			}
 		}		
-		TerminalFunction recipeTerminalFunction = new RecipeTerminalFunction(isSuccess, isFailure);
+		TerminalFunction recipeTerminalFunction = new RecipeTerminalFunction(null, isSuccess, isFailure);
 		
 		StateHashFactory hashFactory = new NameDependentStateHashFactory();
 		RewardFunction rf = new RewardFunction() {
