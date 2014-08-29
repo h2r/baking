@@ -45,7 +45,7 @@ public class Brownies extends Recipe {
 		List<IngredientRecipe> ingredientList3 = new ArrayList<IngredientRecipe>();
 		ingredientList3.add(dryIngs);
 		ingredientList3.add(wetIngs);
-		IngredientRecipe brownies = new IngredientRecipe("brownie_batter", Recipe.BAKED, Recipe.SWAPPED, ingredientList3);
+		IngredientRecipe brownies = new IngredientRecipe("brownie_batter", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList3);
 		this.topLevelIngredient = brownies;
 		this.addRequiredRecipeAttributes();
 	}
