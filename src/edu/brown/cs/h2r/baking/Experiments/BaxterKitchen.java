@@ -33,6 +33,7 @@ import edu.brown.cs.h2r.baking.Knowledgebase.Knowledgebase;
 import burlap.oomdp.core.Domain;
 import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
+import edu.brown.cs.h2r.baking.RecipeAgentSpecificMakeSpanRewardFunction;
 import edu.brown.cs.h2r.baking.RecipeTerminalFunction;
 import edu.brown.cs.h2r.baking.ObjectFactories.*;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.AllowUsingTool;
@@ -41,16 +42,15 @@ import edu.brown.cs.h2r.baking.Recipes.*;
 import edu.brown.cs.h2r.baking.actions.*;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
 
-public class KevinsKitchen implements DomainGenerator {
+public class BaxterKitchen {
 	List<ObjectInstance> allIngredients;
 	List<BakingSubgoal> ingSubgoals;
 	private IngredientRecipe topLevelIngredient;
-	public KevinsKitchen() {
+	public BaxterKitchen() {
 
 	}
 	
-	@Override
-	public Domain generateDomain() {
+	public Domain generateDomain(Recipe recipe) {
 		Domain domain = new SADomain();
 		domain.addObjectClass(ContainerFactory.createObjectClass(domain));
 		domain.addObjectClass(IngredientFactory.createSimpleIngredientObjectClass(domain));
@@ -61,17 +61,18 @@ public class KevinsKitchen implements DomainGenerator {
 		domain.addObjectClass(AgentFactory.getObjectClass(domain));
 		domain.addObjectClass(ToolFactory.createObjectClass(domain));
 		domain.setObjectIdentiferDependence(true);
-		return domain;
-	}
-	
-	public void PlanRecipeOneAgent(Domain domain, Recipe recipe) {
-		// Add our actions to the domain.
+		
 		Action mix = new MixAction(domain, recipe.topLevelIngredient);
 		Action pour = new PourAction(domain, recipe.topLevelIngredient);
 		Action move = new MoveAction(domain, recipe.topLevelIngredient);
 		Action grease = new GreaseAction(domain);
 		Action aSwitch = new SwitchAction(domain);
 		Action use = new UseAction(domain, recipe.topLevelIngredient);
+
+		return domain;
+	}
+	
+	public State generateInitialState(Domain domain, Recipe recipe) {
 		State state = new State();
 		
 		// Get the "highest" subgoal in our recipe.
@@ -86,13 +87,17 @@ public class KevinsKitchen implements DomainGenerator {
 		recipe.setUpRecipeToolAttributes();
 		
 		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
+		state.addObject(AgentFactory.getNewRobotAgentObjectInstance(domain, "baxter"));
+		
+		state.addObject(MakeSpanFactory.getNewObjectInstance(domain, "make_span", 2));
+		
 		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2", "baking_dish", "melting_pot");
 		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, SpaceFactory.SPACE_COUNTER, containers, "human"));
 
 		state.addObject(ContainerFactory.getNewBakingContainerObjectInstance(domain, "baking_dish", null, SpaceFactory.SPACE_COUNTER));
 		state.addObject(ContainerFactory.getNewHeatingContainerObjectInstance(domain, "melting_pot", null, SpaceFactory.SPACE_COUNTER));
 		state.addObject(SpaceFactory.getNewBakingSpaceObjectInstance(domain, SpaceFactory.SPACE_OVEN, null, ""));
-		state.addObject(SpaceFactory.getNewHeatingSpaceObjectInstance(domain, SpaceFactory.SPACE_STOVE, null, ""));
+		state.addObject(SpaceFactory.getNewCleaningSpaceObjectInstance(domain, SpaceFactory.SPACE_SINK, null, ""));
 		
 		for (String container : containers) { 
 			state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, SpaceFactory.SPACE_COUNTER));
@@ -132,6 +137,13 @@ public class KevinsKitchen implements DomainGenerator {
 				}
 			}
 		}
+		return state;
+	}
+	
+	public void PlanRecipeOneAgent(Domain domain, Recipe recipe) {
+		// Add our actions to the domain.
+		
+		State state = this.generateInitialState(domain, recipe);
 		
 		System.out.println("\n\nPlanner will now plan the "+recipe.topLevelIngredient.getName()+" recipe!");
 		
@@ -169,11 +181,6 @@ public class KevinsKitchen implements DomainGenerator {
 		System.out.println(ingredient.getName());
 		State currentState = new State(startingState);
 		
-		
-		List<ObjectInstance> ingredientInstances = this.allIngredients;
-		
-		
-		
 		List<Action> actions = domain.getActions();
 		for (Action action : actions) {
 			((BakingAction)action).changePlanningIngredient(ingredient);
@@ -196,18 +203,18 @@ public class KevinsKitchen implements DomainGenerator {
 			}
 		}
 		
-		//((AllowUsingTool)domain.getPropFunction(AffordanceCreator.USE_PF)).addRecipe(recipe);
-		
 		TerminalFunction recipeTerminalFunction = new RecipeTerminalFunction(isSuccess, isFailure);
 		
 		StateHashFactory hashFactory = new NameDependentStateHashFactory();
-		RewardFunction rf = new RewardFunction() {
+		RewardFunction rf = new RecipeAgentSpecificMakeSpanRewardFunction("human");
+		/*
+				new RewardFunction() {
 			@Override
 			// Uniform cost function for an optimistic algorithm that guarantees convergence.
 			public double reward(State state, GroundedAction a, State sprime) {
 				return -1;
 			}
-		};
+		};*/
 		
 		int numRollouts = 2000; // RTDP
 		int maxDepth = 10; // RTDP
@@ -222,7 +229,7 @@ public class KevinsKitchen implements DomainGenerator {
 		if(affordanceMode) {
 			// RTDP planner that also uses affordances to trim action space during the Bellman update
 			planner = new BellmanAffordanceRTDP(domain, rf, recipeTerminalFunction, gamma, hashFactory, vInit, numRollouts, maxDelta, maxDepth, affController);
-			planner.toggleDebugPrinting(false);
+			planner.toggleDebugPrinting(true);
 			planner.planFromState(currentState);
 			
 			// Create a Q-greedy policy from the planner
@@ -260,8 +267,9 @@ public class KevinsKitchen implements DomainGenerator {
 	
 	public static void main(String[] args) throws IOException {
 		
-		KevinsKitchen kitchen = new KevinsKitchen();
-		Domain domain = kitchen.generateDomain();
+		BaxterKitchen kitchen = new BaxterKitchen();
+		Recipe brownies = new Brownies();
+		Domain domain = kitchen.generateDomain(brownies);
 		kitchen.PlanRecipeOneAgent(domain, new Brownies());
 	}
 }

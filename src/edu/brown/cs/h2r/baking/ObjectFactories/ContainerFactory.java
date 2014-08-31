@@ -22,6 +22,7 @@ public class ContainerFactory {
 	private static final String attributeContains = "contains";
 	private static final String attributeGreased = "greased";
 	private static final String attributeSpace = "space";
+	private static final String attributeUsed = "used";
 	
 	public static final int NO_ATTRIBUTES = 0;
 	public static final int BAKING = 1;
@@ -51,6 +52,10 @@ public class ContainerFactory {
 		Attribute greasedAttribute = 
 				new Attribute(domain, ContainerFactory.attributeGreased, Attribute.AttributeType.BOOLEAN);
 		objectClass.addAttribute(greasedAttribute);
+		
+		Attribute usedAttribute =
+				new Attribute(domain, ContainerFactory.attributeUsed, Attribute.AttributeType.BOOLEAN);
+		objectClass.addAttribute(usedAttribute);
 		
 		objectClass.addAttribute(
 				new Attribute(domain, ContainerFactory.attributeContains, 
@@ -151,6 +156,7 @@ public class ContainerFactory {
 	}
 
 	public static void addIngredient(ObjectInstance container, String ingredient) {
+		ContainerFactory.setUsed(container);
 		container.addRelationalTarget(ContainerFactory.attributeContains, ingredient);
 	}
 	
@@ -252,6 +258,7 @@ public class ContainerFactory {
 		object.setValue(ContainerFactory.attributeMixing, ((attributes & ContainerFactory.MIXING) == ContainerFactory.MIXING) ? 1: 0);
 		object.setValue(ContainerFactory.attributeHeating, ((attributes & ContainerFactory.HEATING) == ContainerFactory.HEATING) ? 1: 0);
 		object.setValue(ContainerFactory.attributeReceiving, ((attributes & ContainerFactory.RECEIVING) == ContainerFactory.RECEIVING) ? 1: 0);
+		object.setValue(ContainerFactory.attributeUsed, false);
 	}
 	
 	public static int generateAttributeNumber(Boolean baking, Boolean mixing, Boolean heating, Boolean receiving) {
@@ -280,6 +287,14 @@ public class ContainerFactory {
 			}
 		}
 		return false;
+	}
+	
+	public static void setUsed(ObjectInstance container) {
+		container.setValue(ContainerFactory.attributeUsed, true);
+	}
+	
+	public static boolean getUsed(ObjectInstance container) {
+		return container.getBooleanValue(ContainerFactory.attributeUsed);
 	}
 	
 }
