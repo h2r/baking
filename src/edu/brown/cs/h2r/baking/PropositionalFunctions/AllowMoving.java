@@ -23,17 +23,15 @@ public class AllowMoving extends BakingPropositionalFunction {
 		ObjectInstance container = state.getObject(params[1]);		
 		Set<String> contents = ContainerFactory.getContentNames(container);
 		
-		
-		if (!ContainerFactory.isEmptyContainer(container)) {
-			if (SpaceFactory.isBaking(space)) {
-				return this.checkMoveToBaking(state, contents);
-			} else if (SpaceFactory.isHeating(space)) {
-				return this.checkMoveToHeating(state, contents);
-			} else {
-				return true;
-			}
-		}
-		return false;
+		if (SpaceFactory.isBaking(space)) {
+			return this.checkMoveToBaking(state, contents);
+		} else if (SpaceFactory.isHeating(space)) {
+			return this.checkMoveToHeating(state, contents);
+		} else if (SpaceFactory.isCleaning(space)) { 
+			return this.checkMoveToCleaning(state, container);
+		} else {
+			return !(ContainerFactory.isEmptyContainer(container));
+		} 
 	}
 	
 	private boolean checkMoveToBaking(State state, Set<String> contents) {
@@ -84,6 +82,10 @@ public class AllowMoving extends BakingPropositionalFunction {
 			}
 		}
 		return false;
+	}
+	
+	private boolean checkMoveToCleaning(State state, ObjectInstance container) {
+		return ContainerFactory.getUsed(container) && ContainerFactory.isEmptyContainer(container);
 	}
 
 }
