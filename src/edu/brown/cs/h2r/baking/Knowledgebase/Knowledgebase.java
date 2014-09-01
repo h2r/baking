@@ -150,7 +150,7 @@ public class Knowledgebase {
 	
 	public List<ObjectInstance> getRecipeObjectInstanceList(State state, Domain domain, Recipe recipe) {
 		List<ObjectInstance> objs = new ArrayList<ObjectInstance>();
-		for (BakingSubgoal sg : recipe.getIngredientSubgoals()) {
+		for (BakingSubgoal sg : recipe.getSubgoals()) {
 			IngredientRecipe ing = sg.getIngredient();
 			objs.addAll(this.getPotentialIngredientObjectInstanceList(state, domain, ing));
 		}

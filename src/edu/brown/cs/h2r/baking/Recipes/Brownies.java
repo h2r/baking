@@ -67,26 +67,35 @@ public class Brownies extends Recipe {
 		this.subgoalIngredients.put(brownies.getName(), brownies);
 	}
 	
+	
 	public void setUpSubgoals(Domain domain) {		
+		
 		BakingPropositionalFunction pf3 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("wet_ingredients"));
 		BakingSubgoal sg3 = new BakingSubgoal(pf3, this.subgoalIngredients.get("wet_ingredients"));
-		this.subgoals.add(sg3);
+		//this.subgoals.add(sg3);
 		
-		//BakingPropositionalFunction pf3clean = new ContainersCleaned(AffordanceCreator.CONTAINERS_CLEANED_PF, domain,this.subgoalIngredients.get("wet_ingredients") );
-		//BakingSubgoal sg3clean = new BakingSubgoal(pf3clean, this.subgoalIngredients.get("wet_ingredients"));
+		BakingPropositionalFunction pf3clean = new ContainersCleaned(AffordanceCreator.CONTAINERS_CLEANED_PF, domain,this.subgoalIngredients.get("wet_ingredients") );
+		BakingSubgoal sg3clean = new BakingSubgoal(pf3clean, this.subgoalIngredients.get("wet_ingredients"));
 		//sg3clean.addPrecondition(sg3);
-		//this.subgoals.add(sg3clean);
+		this.subgoals.add(sg3clean);
 		
+				
 		
 		BakingPropositionalFunction pf4 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("dry_ingredients"));
 		BakingSubgoal sg4 = new BakingSubgoal(pf4, this.subgoalIngredients.get("dry_ingredients"));
-		this.subgoals.add(sg4);
+		//this.subgoals.add(sg4);
 		
+		BakingPropositionalFunction pf4clean = new ContainersCleaned(AffordanceCreator.CONTAINERS_CLEANED_PF, domain,this.subgoalIngredients.get("dry_ingredients") );
+		BakingSubgoal sg4clean = new BakingSubgoal(pf4clean, this.subgoalIngredients.get("dry_ingredients"));
+		//sg3clean.addPrecondition(sg3);
+		this.subgoals.add(sg4clean);
+		
+		/*
 		BakingPropositionalFunction pf5 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("brownies"));
 		BakingSubgoal sg5 = new BakingSubgoal(pf5, this.subgoalIngredients.get("brownie_batter"));
 		sg5.addPrecondition(sg3);
 		sg5.addPrecondition(sg4);
-		this.subgoals.add(sg5);
+		this.subgoals.add(sg5);*/
 	}
 	
 	@Override

@@ -23,6 +23,7 @@ public class SpaceFactory {
 	public static final String SPACE_OVEN = "oven";
 	public static final String SPACE_STOVE = "stove";
 	public static final String SPACE_COUNTER = "counter";
+	public static final String SPACE_ROBOT = "robot_counter";
 	public static final String SPACE_SINK = "sink";
 	public static final int NO_ATTRIBUTES= 0 ;
 	public static final int BAKING = 1;

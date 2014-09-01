@@ -47,6 +47,14 @@ public abstract class Recipe {
 		this.subgoalIngredients = new HashMap<String, IngredientRecipe>();
 	}
 	
+	public void init(Domain domain) {
+		this.setUpSubgoals(domain);
+		// creates ingredient-only subgoals 
+		this.addIngredientSubgoals();
+		this.addRequiredRecipeAttributes();
+		this.setUpRecipeToolAttributes();
+	}
+	
 	public List<String> getRecipeProcedures() {
 		return Arrays.asList("Recipe not implemented");
 	}

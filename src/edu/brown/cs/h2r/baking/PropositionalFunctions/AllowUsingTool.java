@@ -24,6 +24,9 @@ public class AllowUsingTool extends BakingPropositionalFunction {
 		ObjectInstance container = state.getObject(params[2]);
 		String attribute = ToolFactory.getToolAttribute(tool);
 		Set<String> tlAttributes = this.topLevelIngredient.getRecipeToolAttributes();
+		if (tlAttributes == null) {
+			return false;
+		}
 		if (!ToolFactory.toolCanCarry(tool)) {
 			return tlAttributes.contains(attribute);
 		}
