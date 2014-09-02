@@ -255,4 +255,10 @@ public class ToolFactory {
 		state.removeObject(fakeContainer);
 		ToolFactory.removeContents(tool);
 	}
+
+	public static void changeToolSpace(ObjectInstance tool, String toolSpace) {
+		if (toolSpace != null) {
+			tool.addRelationalTarget(ToolFactory.attributeSpace, toolSpace);
+		}
+	}
 }

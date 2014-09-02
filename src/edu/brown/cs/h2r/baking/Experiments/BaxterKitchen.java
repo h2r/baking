@@ -47,7 +47,9 @@ import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
 import edu.brown.cs.h2r.baking.Recipes.Brownies;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.actions.BakingAction;
+import edu.brown.cs.h2r.baking.actions.BakingActionResult;
 import edu.brown.cs.h2r.baking.actions.GreaseAction;
+import edu.brown.cs.h2r.baking.actions.HandAction;
 import edu.brown.cs.h2r.baking.actions.MixAction;
 import edu.brown.cs.h2r.baking.actions.MoveAction;
 import edu.brown.cs.h2r.baking.actions.PourAction;
@@ -80,6 +82,8 @@ public class BaxterKitchen {
 		Action grease = new GreaseAction(domain);
 		Action aSwitch = new SwitchAction(domain);
 		Action use = new UseAction(domain, recipe.topLevelIngredient);
+		Action hand = new HandAction(domain, recipe.topLevelIngredient);
+		//Action waitAction = new WaitAction(domain);
 
 		recipe.init(domain);
 		
@@ -108,14 +112,17 @@ public class BaxterKitchen {
 		
 		state.addObject(MakeSpanFactory.getNewObjectInstance(domain, "make_span", 2));
 		
-		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2", "baking_dish", "melting_pot");
+		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2"/*, "baking_dish", "melting_pot"*/);
 		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, SpaceFactory.SPACE_COUNTER, containers, "human"));
 		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, SpaceFactory.SPACE_ROBOT, containers, "baxter"));
 
 		state.addObject(ContainerFactory.getNewBakingContainerObjectInstance(domain, "baking_dish", null, SpaceFactory.SPACE_COUNTER));
-		state.addObject(ContainerFactory.getNewHeatingContainerObjectInstance(domain, "melting_pot", null, SpaceFactory.SPACE_COUNTER));
+		//state.addObject(ContainerFactory.getNewHeatingContainerObjectInstance(domain, "melting_pot", null, SpaceFactory.SPACE_COUNTER));
 		state.addObject(SpaceFactory.getNewBakingSpaceObjectInstance(domain, SpaceFactory.SPACE_OVEN, null, ""));
 		state.addObject(SpaceFactory.getNewCleaningSpaceObjectInstance(domain, SpaceFactory.SPACE_SINK, null, "baxter"));
+		
+		state.addObject(ToolFactory.getNewSimpleToolObjectInstance(domain, "whisk", "", "", SpaceFactory.SPACE_ROBOT));
+		state.addObject(ToolFactory.getNewSimpleToolObjectInstance(domain, "spoon","", "", SpaceFactory.SPACE_ROBOT));
 		
 		for (String container : containers) { 
 			state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, SpaceFactory.SPACE_COUNTER));
@@ -124,7 +131,7 @@ public class BaxterKitchen {
 		// Out of all the ingredients in our kitchen, plan over only those that might be useful!
 		Knowledgebase knowledgebase = new Knowledgebase();
 		this.allIngredients = knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
-		knowledgebase.addTools(domain, state, SpaceFactory.SPACE_COUNTER);
+		//knowledgebase.addTools(domain, state, SpaceFactory.SPACE_COUNTER);
 	
 		for (ObjectInstance ingredientInstance : this.allIngredients) {
 			if (state.getObject(ingredientInstance.getName()) == null) {
@@ -241,7 +248,7 @@ public class BaxterKitchen {
 		if(affordanceMode) {
 			// RTDP planner that also uses affordances to trim action space during the Bellman update
 			planner = new BellmanAffordanceRTDP(domain, rf, recipeTerminalFunction, gamma, hashFactory, vInit, numRollouts, maxDelta, maxDepth, affController);
-			planner.toggleDebugPrinting(false);
+			planner.toggleDebugPrinting(true);
 			planner.planFromState(currentState);
 			
 			// Create a Q-greedy policy from the planner
@@ -254,6 +261,7 @@ public class BaxterKitchen {
 			// Create a Q-greedy policy from the planner
 			p = new GreedyQPolicy((QComputablePlanner)planner);
 		}
+		this.evaluatePolicy(domain, currentState, subgoal, p);
 		return p;
 	}
 	
@@ -313,7 +321,7 @@ public class BaxterKitchen {
 
 	}
 	
-	public void evaluatePolicy(Domain domain, State state, BakingSubgoal subgoal, Policy policy) {
+	public EpisodeAnalysis evaluatePolicy(Domain domain, State state, BakingSubgoal subgoal, Policy policy) {
 		final PropositionalFunction isSuccess = subgoal.getGoal();
 		final PropositionalFunction isFailure = domain.getPropFunction(AffordanceCreator.BOTCHED_PF);
 		
@@ -331,7 +339,7 @@ public class BaxterKitchen {
 				
 		System.out.println(episodeAnalysis.getActionSequenceString(" \n"));
 		ExperimentHelper.printResults(episodeAnalysis.actionSequence, episodeAnalysis.rewardSequence);
-		
+		return episodeAnalysis;
 	}
 	
 	public void setHumanOccupied(State state) {
@@ -358,9 +366,18 @@ public class BaxterKitchen {
 		}
 		Policy policy = this.generatePolicy(domain, state.copy(), currentGoal);
 		
-		this.evaluatePolicy(domain, state.copy(), currentGoal, policy);
-		
-		return this.getParams(policy.getAction(state.copy()));
+		AbstractGroundedAction chosenAction = policy.getAction(state.copy());
+		if (!chosenAction.params[0].equals("baxter")) {
+			chosenAction = null;
+			EpisodeAnalysis ea = this.evaluatePolicy(domain, state.copy(), currentGoal, policy);
+			for (AbstractGroundedAction aga : ea.actionSequence) {
+				GroundedAction ga = (GroundedAction)aga;
+				if (ga.action.applicableInState(state.copy(), ga.params) && ga.params[0].equals("baxter")) {
+					chosenAction = aga;
+				}
+			}
+		}
+		return (chosenAction == null) ? null : this.getParams(chosenAction);
 	}
 	
 	public BakingSubgoal determineSubgoal(Domain domain, State state, List<BakingSubgoal> subgoals) {
@@ -490,7 +507,91 @@ public class BaxterKitchen {
 	public State takeAction(Domain domain, State state, String actionName, String ...params ) {
 		Action action = domain.getAction(actionName);
 		GroundedAction groundedAction = new GroundedAction(action, params);
+		BakingActionResult result = ((BakingAction)action).checkActionIsApplicableInState(state, params);
+		if (!result.getIsSuccess()) {
+			System.err.println(result.getWhyFailed());
+		}
+		
 		return groundedAction.executeIn(state);
+	}
+	
+	public void testRecipeExecution(Domain domain, Recipe recipe) {
+		State state = this.generateInitialState(domain, recipe);
+		List<String[]> actionParams = Arrays.asList(
+				/*new String[] {"pour", "human", "vanilla_bowl", "mixing_bowl_1"},*/
+				/*new String[] {"pour", "human", "eggs_bowl", "mixing_bowl_1"},*/
+				new String[] {"pour", "human", "butter_bowl", "mixing_bowl_1"},
+				new String[] {"move", "baxter", "butter_bowl", SpaceFactory.SPACE_SINK},
+				new String[] {"pour", "human", "white_sugar_bowl", "mixing_bowl_1"},
+				new String[] {"move", "baxter", "white_sugar_bowl", SpaceFactory.SPACE_SINK},
+				new String[] {"hand", "baxter", "whisk", SpaceFactory.SPACE_COUNTER},
+				
+				new String[] {"mix", "human", "mixing_bowl_1", "whisk"},
+				
+				new String[] {"pour", "human", "flour_bowl", "mixing_bowl_2"},
+				
+				new String[] {"move", "baxter", "flour_bowl", SpaceFactory.SPACE_SINK},
+				new String[] {"pour", "human", "cocoa_bowl", "mixing_bowl_2"},
+				new String[] {"move", "baxter", "cocoa_bowl", SpaceFactory.SPACE_SINK},
+				
+				/*new String[] {"pour", "human", "salt_bowl", "mixing_bowl_2"},
+				new String[] {"pour", "human", "baking_powder_bowl", "mixing_bowl_2"},*/
+				
+				new String[] {"hand", "baxter", "spoon", SpaceFactory.SPACE_COUNTER},
+				
+				new String[] {"mix", "human", "mixing_bowl_2", "spoon"},
+				new String[] {"hand", "human", "spoon", SpaceFactory.SPACE_ROBOT},
+				
+				new String[] {"hand", "baxter", "spoon", SpaceFactory.SPACE_SINK},
+				
+				new String[] {"pour", "human", "mixing_bowl_1", "mixing_bowl_2"},
+				new String[] {"move", "baxter", "mixing_bowl_1", SpaceFactory.SPACE_SINK},
+				new String[] {"mix", "human", "mixing_bowl_2", "whisk"},
+				new String[] {"hand", "human", "whisk", SpaceFactory.SPACE_ROBOT},
+				
+				new String[] {"pour", "human", "mixing_bowl_2", "baking_dish"},
+				new String[] {"move", "baxter", "mixing_bowl_2", SpaceFactory.SPACE_SINK},
+				
+				new String[] {"switch", "baxter", SpaceFactory.SPACE_OVEN},
+				new String[] {"move", "human", "baking_dish", SpaceFactory.SPACE_OVEN},
+				new String[] {"hand", "baxter", "whisk", SpaceFactory.SPACE_SINK}
+				
+				
+				
+				);
+		List<BakingSubgoal> subgoals = recipe.getSubgoals();
+		for (String[] params : actionParams) {
+			System.out.println(Arrays.toString(params));
+			State previousState = state.copy();
+			
+			
+			state = this.takeAction(domain, state, params[0], Arrays.copyOfRange(params, 1, params.length));
+			System.out.println((previousState.equals(state)) ? "Failure":"Success");
+			for (BakingSubgoal subgoal : subgoals) {
+				
+				
+				IngredientRecipe ing = subgoal.getIngredient();
+				
+				BakingPropositionalFunction pf = subgoal.getGoal();
+				pf.changeTopLevelIngredient(ing);
+				pf.setSubgoal(subgoal);
+				
+				List<BakingSubgoal> preconditions = subgoal.getPreconditions();
+				//boolean checkSubgoal = true;
+				for (BakingSubgoal precondition : preconditions) {
+					IngredientRecipe ing2 = precondition.getIngredient();
+					BakingPropositionalFunction pf2 = precondition.getGoal();
+					//checkSubgoal &=  pf2.isTrue(state, "");
+					System.out.println("Precondition " + ing2.getName() + ": " + pf2.isTrue(state, ""));
+					
+				}
+				//if (checkSubgoal)
+				System.out.println("Subgoal " + ing.getName() + ": " + pf.isTrue(state, ""));
+				
+				
+				
+			}
+		}
 	}
 	
 	public static void main(String[] args) throws IOException {
@@ -498,8 +599,11 @@ public class BaxterKitchen {
 		BaxterKitchen kitchen = new BaxterKitchen();
 		Recipe brownies = new Brownies();
 		Domain domain = kitchen.generateDomain(brownies);
-		//List<Policy> policies = kitchen.generatePolicies(domain, brownies);
+		//kitchen.testRecipeExecution(domain, brownies);
 		
+		List<Policy> policies = kitchen.generatePolicies(domain, brownies);
+		
+		/*
 		State state = kitchen.generateInitialState(domain, brownies);
 		
 		String container = "cocoa_bowl";
@@ -508,6 +612,7 @@ public class BaxterKitchen {
 		System.out.println(Arrays.toString(action));
 		kitchen.disposeObject(state, container);
 		System.out.println("");
+		
 		action = kitchen.getRobotAction(domain, state, brownies);
 		System.out.println(Arrays.toString(action));
 		System.out.println("");
@@ -519,12 +624,18 @@ public class BaxterKitchen {
 		kitchen.disposeObject(state, container);
 		System.out.println("");
 		
+		action = kitchen.getRobotAction(domain, state, brownies);
+		System.out.println(Arrays.toString(action));
+		System.out.println("");
+		
+		
 		container = "butter_bowl";
 		state = kitchen.addObjectInRobotsSpace(domain, state, container);
 		action = kitchen.getRobotAction(domain, state, brownies);
 		System.out.println(Arrays.toString(action));
 		kitchen.disposeObject(state, container);
 		System.out.println("");
+		
 		action = kitchen.getRobotAction(domain, state, brownies);
 		System.out.println(Arrays.toString(action));
 		System.out.println("");
@@ -534,6 +645,11 @@ public class BaxterKitchen {
 		action = kitchen.getRobotAction(domain, state, brownies);
 		System.out.println(Arrays.toString(action));
 		kitchen.disposeObject(state, container);
+		
+		action = kitchen.getRobotAction(domain, state, brownies);
+		System.out.println(Arrays.toString(action));
+		System.out.println("");*/
+		
 
 		
 	}

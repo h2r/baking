@@ -7,6 +7,7 @@ import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 import edu.brown.cs.h2r.baking.ObjectFactories.MakeSpanFactory;
+import edu.brown.cs.h2r.baking.actions.WaitAction;
 
 public class RecipeAgentSpecificMakeSpanRewardFunction implements RewardFunction {
 
@@ -15,8 +16,8 @@ public class RecipeAgentSpecificMakeSpanRewardFunction implements RewardFunction
 	private double costYou;
 	public RecipeAgentSpecificMakeSpanRewardFunction(String agent) {
 		this.agent = agent;
-		this.costMe = -1;
-		this.costYou = -2;
+		this.costMe = -2;
+		this.costYou = -4;
 	}
 	
 	public RecipeAgentSpecificMakeSpanRewardFunction(String agent, double costMe, double costYou) {
@@ -34,7 +35,9 @@ public class RecipeAgentSpecificMakeSpanRewardFunction implements RewardFunction
 			if (occupiedAgents.contains(a.params[0]) || occupiedAgents.isEmpty()) {
 				return (a.params[0] == this.agent) ? this.costMe : this.costYou;
 			}
-			else {
+			else if (!(a.action instanceof WaitAction)){
+				return -0.5;
+			} else {
 				return 0;
 			}
 		}

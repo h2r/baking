@@ -24,6 +24,7 @@ public class AffordanceCreator {
 	public static final String MOVE_PF = "movePF";
 	public static final String POUR_PF = "pourPF";
 	public static final String USE_PF = "usePF";
+	public static final String HAND_PF = "handPF";
 	public static final String SWITCH_PF = "switchPF";
 	//public static final String PEEL_PF = "peelPF";
 	public static final String GREASE_PF = "greasePF";
@@ -38,6 +39,7 @@ public class AffordanceCreator {
 	
 	private ArrayList<PFAtom> mixPFAtoms;
 	private ArrayList<PFAtom> movePFAtoms;
+	private ArrayList<PFAtom> handPFAtoms;
 	private ArrayList<PFAtom> pourPFAtoms;
 	private ArrayList<PFAtom> greasePFAtoms;
 	private ArrayList<PFAtom> switchPFAtoms;
@@ -61,6 +63,8 @@ public class AffordanceCreator {
 		final PropositionalFunction allowGreasing = new AllowGreasing(AffordanceCreator.GREASE_PF, domain, ingredient);
 		final PropositionalFunction allowSwitching = new AllowSwitching(AffordanceCreator.SWITCH_PF, domain, ingredient);
 		final PropositionalFunction allowUsing = new AllowUsingTool(AffordanceCreator.USE_PF, domain, ingredient);
+		final PropositionalFunction allowHanding = new AllowHanding(AffordanceCreator.HAND_PF, domain, ingredient);
+		
 		//final PropositionalFunction allowPeeling = new AllowPeeling(AffordanceCreator.PEEL_PF, domain, ingredient);
 		final PropositionalFunction isSuccess = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, ingredient);
 		final PropositionalFunction isFailure = new RecipeBotched(AffordanceCreator.BOTCHED_PF, domain, ingredient);
@@ -85,6 +89,13 @@ public class AffordanceCreator {
 		List<GroundedProp> moveGroundedProps = movePF.getAllGroundedPropsForState(state);
 		for (GroundedProp moveGroundedProp : moveGroundedProps) {
 			this.movePFAtoms.add(new PFAtom(moveGroundedProp));
+		}
+		
+		PropositionalFunction handPF = domain.getPropFunction(AffordanceCreator.HAND_PF);
+		this.handPFAtoms = new ArrayList<PFAtom>();
+		List<GroundedProp> handGroundedProps = handPF.getAllGroundedPropsForState(state);
+		for (GroundedProp handGroundedProp : handGroundedProps) {
+			this.handPFAtoms.add(new PFAtom(handGroundedProp));
 		}
 		
 		PropositionalFunction pourPF = domain.getPropFunction(AffordanceCreator.POUR_PF);
@@ -164,6 +175,7 @@ public class AffordanceCreator {
 		
 		setupDelegate(domain, mixPFAtoms, MixAction.className, finishedPFAtom);
 		setupDelegate(domain, movePFAtoms, MoveAction.className, finishedPFAtom);
+		setupDelegate(domain, handPFAtoms, HandAction.className, finishedPFAtom);
 		setupDelegate(domain, pourPFAtoms, PourAction.className, finishedPFAtom);
 		setupDelegate(domain, usePFAtoms, UseAction.className, finishedPFAtom);
 		setupDelegate(domain, greasePFAtoms, GreaseAction.className, containerGreasedPFAtom);

@@ -21,11 +21,14 @@ public class UseAction extends BakingAction {
 	
 	@Override
 	public BakingActionResult checkActionIsApplicableInState(State state, String[] params) {
+		return BakingActionResult.failure("Don't use this action"); /*
 		BakingActionResult superResult = super.checkActionIsApplicableInState(state, params);
 		
 		if (!superResult.getIsSuccess()) {
 			return superResult;
 		}
+		
+	
 		
 		ObjectInstance tool = state.getObject(params[1]);
 		ObjectInstance container = state.getObject(params[2]);
@@ -118,7 +121,7 @@ public class UseAction extends BakingAction {
 			}
 		}
 		
-		return BakingActionResult.success();
+		return BakingActionResult.success(); */
 	}
 	
 	@Override

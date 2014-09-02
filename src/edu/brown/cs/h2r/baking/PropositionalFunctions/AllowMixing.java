@@ -6,6 +6,8 @@ import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.ToolFactory;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
@@ -13,7 +15,7 @@ import burlap.oomdp.core.State;
 public class AllowMixing extends BakingPropositionalFunction {
 
 	public AllowMixing(String name, Domain domain, IngredientRecipe ingredient) {
-		super(name, domain, new String[]{AgentFactory.ClassName, ContainerFactory.ClassName}, ingredient) ;
+		super(name, domain, new String[]{AgentFactory.ClassName, ContainerFactory.ClassName, ToolFactory.ClassName}, ingredient) ;
 	}
 	@Override
 	public boolean isTrue(State state, String[] params) {
@@ -52,6 +54,13 @@ public class AllowMixing extends BakingPropositionalFunction {
 				return false;
 			}
 		}
+		
+		String toolName = params[2];
+		ObjectInstance tool = state.getObject(toolName);
+		if (!ToolFactory.getSpaceName(tool).equals(SpaceFactory.SPACE_COUNTER)) {
+			return false;
+		}
+		
 		
 		return true;
 	}

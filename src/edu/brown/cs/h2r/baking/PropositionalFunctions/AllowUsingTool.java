@@ -20,6 +20,7 @@ public class AllowUsingTool extends BakingPropositionalFunction {
 	}
 	
 	public boolean isTrue(State state, String[] params) {
+		return false; /*
 		ObjectInstance tool = state.getObject(params[1]);
 		ObjectInstance container = state.getObject(params[2]);
 		String attribute = ToolFactory.getToolAttribute(tool);
@@ -52,6 +53,6 @@ public class AllowUsingTool extends BakingPropositionalFunction {
 			boolean allow = allowPouring.isTrue(state, new String[] {params[0], fakeContainer.getName(), params[2]});
 			state.removeObject(fakeContainer.getName());
 			return allow;	
-		}
+		} */
 	}
 }

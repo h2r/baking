@@ -36,8 +36,16 @@ public class MoveAction extends BakingAction {
 		
 		String containerName = params[1];
 		ObjectInstance container = state.getObject(containerName);
-		if (ContainerFactory.getSpaceName(container).equals(spaceName)) {
+		
+		String containerSpaceName = ContainerFactory.getSpaceName(container);
+		ObjectInstance containerSpace = state.getObject(containerSpaceName);
+		
+		if (containerSpaceName.equals(spaceName)) {
 			return BakingActionResult.failure(containerName + " is already in " + spaceName);
+		}
+		
+		if (SpaceFactory.isCleaning(containerSpace)) {
+			return BakingActionResult.failure(containerName + " cannot be moved out of " + containerSpaceName);
 		}
 		
 		if (SpaceFactory.isBaking(space) && !ContainerFactory.isBakingContainer(container)) {

@@ -1,31 +1,38 @@
 package edu.brown.cs.h2r.baking.actions;
+import static java.util.Arrays.asList;
+
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 
-import static java.util.Arrays.asList;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
+import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.Experiments.ExperimentHelper;
 import edu.brown.cs.h2r.baking.Knowledgebase.Knowledgebase;
-import edu.brown.cs.h2r.baking.IngredientRecipe;
-import edu.brown.cs.h2r.baking.actions.BakingAction;
-import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.ToolFactory;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 
 
-public class MixAction extends BakingAction {	
+public class MixAction extends BakingAction {
+	public static final List<String> dries = Arrays.asList("flour", "cocoa", "salt", "baking_powder");
+	public static final List<String> wets = Arrays.asList("eggs", "vanilla", "butter", "white_sugar");
+	public static final List<String> simples = Arrays.asList("flour", "cocoa", "salt", "baking_powder", "eggs", "vanilla", "butter", "white_sugar");
+	
 	public static final String className = "mix";
 	private Knowledgebase knowledgebase;
 	public MixAction(Domain domain, IngredientRecipe ingredient) {
-		super(MixAction.className, domain, ingredient, new String[] {AgentFactory.ClassName, ContainerFactory.ClassName});
+		super(MixAction.className, domain, ingredient, new String[] {AgentFactory.ClassName, ContainerFactory.ClassName, ToolFactory.ClassName});
 		this.knowledgebase = new Knowledgebase();
 	}
 	
@@ -69,6 +76,31 @@ public class MixAction extends BakingAction {
 		if (SpaceFactory.isBaking(mixingContainerSpaceName)) {
 			return BakingActionResult.failure(mixingContainerSpaceName + " is not suitable for mixing!");
 		}
+		
+		Set<String> contents = ContainerFactory.getContentNames(containerInstance);
+		List<String> toolSpecificIngredients = null;
+		
+		String toolName = params[2];
+		
+		if (toolName.equals("whisk")) {
+			toolSpecificIngredients = wets;
+		} else if (toolName.equals("spoon")) {
+			toolSpecificIngredients = dries;
+		} else {
+			return BakingActionResult.failure(toolName + " is not suitable for mixing");
+		}
+		
+		for (String ingredient : contents) {
+			if (!toolSpecificIngredients.contains(ingredient) && simples.contains(ingredient)) {
+				return BakingActionResult.failure(toolName + " cannot touch the ingredient " + ingredient);
+			}
+		}
+		
+		ObjectInstance tool = state.getObject(toolName);
+		if (!ToolFactory.getSpaceName(tool).equals(SpaceFactory.SPACE_COUNTER)) {
+			return BakingActionResult.failure(toolName + " must be on the counter");
+		}
+		
 		return BakingActionResult.success();
 	}
 	
