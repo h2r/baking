@@ -248,7 +248,7 @@ public class BaxterKitchen {
 		if(affordanceMode) {
 			// RTDP planner that also uses affordances to trim action space during the Bellman update
 			planner = new BellmanAffordanceRTDP(domain, rf, recipeTerminalFunction, gamma, hashFactory, vInit, numRollouts, maxDelta, maxDepth, affController);
-			planner.toggleDebugPrinting(true);
+			planner.toggleDebugPrinting(false);
 			planner.planFromState(currentState);
 			
 			// Create a Q-greedy policy from the planner
@@ -367,7 +367,7 @@ public class BaxterKitchen {
 		Policy policy = this.generatePolicy(domain, state.copy(), currentGoal);
 		
 		AbstractGroundedAction chosenAction = policy.getAction(state.copy());
-		if (!chosenAction.params[0].equals("baxter")) {
+		/*if (!chosenAction.params[0].equals("baxter")) {
 			chosenAction = null;
 			EpisodeAnalysis ea = this.evaluatePolicy(domain, state.copy(), currentGoal, policy);
 			for (AbstractGroundedAction aga : ea.actionSequence) {
@@ -376,7 +376,7 @@ public class BaxterKitchen {
 					chosenAction = aga;
 				}
 			}
-		}
+		}*/
 		return (chosenAction == null) ? null : this.getParams(chosenAction);
 	}
 	
@@ -402,14 +402,18 @@ public class BaxterKitchen {
 		for (BakingSubgoal subgoal : likelySubgoals) {
 			double subgoalProbability = 0.0;
 			List<String> containers = this.getContainersForSubgoal(domain, state, subgoal);
+			boolean allContainersInSink = true;
 			for (String containerName : containers) {
 				ObjectInstance container = containerLookup.get(containerName);
-					if (ContainerFactory.getSpaceName(container).equals(SpaceFactory.SPACE_ROBOT)){ 
-						subgoalProbability += 1.0 / containers.size();
-					}
+				String containerSpace = ContainerFactory.getSpaceName(container);
+				if (containerSpace.equals(SpaceFactory.SPACE_ROBOT) ||
+						containerSpace.equals(SpaceFactory.SPACE_SINK)){
+					subgoalProbability += 1.0 / containers.size();
+				}
+				allContainersInSink &= containerSpace.equals(SpaceFactory.SPACE_SINK);
 			}
 			
-			if (subgoalProbability > maxProbability) {
+			if (!allContainersInSink && subgoalProbability > maxProbability) {
 				maxProbability = subgoalProbability;
 				likelySubgoal = subgoal;
 			}
@@ -448,9 +452,13 @@ public class BaxterKitchen {
 	
 	public State disposeObject(State state, String objectName) {
 		ObjectInstance container = state.getObject(objectName);
-		
-		
 		ContainerFactory.changeContainerSpace(container, SpaceFactory.SPACE_SINK);
+		return state;
+	}
+	
+	public State moveObjectCounter(State state, String objectName) {
+		ObjectInstance container = state.getObject(objectName);
+		ContainerFactory.changeContainerSpace(container, SpaceFactory.SPACE_COUNTER);
 		return state;
 	}
 		
@@ -601,9 +609,9 @@ public class BaxterKitchen {
 		Domain domain = kitchen.generateDomain(brownies);
 		//kitchen.testRecipeExecution(domain, brownies);
 		
-		List<Policy> policies = kitchen.generatePolicies(domain, brownies);
+		//List<Policy> policies = kitchen.generatePolicies(domain, brownies);
 		
-		/*
+		
 		State state = kitchen.generateInitialState(domain, brownies);
 		
 		String container = "cocoa_bowl";
@@ -616,6 +624,7 @@ public class BaxterKitchen {
 		action = kitchen.getRobotAction(domain, state, brownies);
 		System.out.println(Arrays.toString(action));
 		System.out.println("");
+		state = kitchen.moveObjectCounter(state, "whisk");
 		
 		container = "flour_bowl";
 		state = kitchen.addObjectInRobotsSpace(domain, state, container);
@@ -648,7 +657,7 @@ public class BaxterKitchen {
 		
 		action = kitchen.getRobotAction(domain, state, brownies);
 		System.out.println(Arrays.toString(action));
-		System.out.println("");*/
+		System.out.println("");
 		
 
 		

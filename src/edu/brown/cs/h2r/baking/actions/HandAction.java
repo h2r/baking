@@ -43,9 +43,9 @@ public class HandAction extends BakingAction {
 		//	return BakingActionResult.failure(toolName + " cannot be moved out of " + toolSpaceName);
 		//}
 		
-		//if (toolSpaceName.equals(spaceName)) {
-		//	return BakingActionResult.failure(toolName + " is already in " + spaceName);
-		//}
+		if (toolSpaceName.equals(spaceName)) {
+			return BakingActionResult.failure(toolName + " is already in " + spaceName);
+		}
 		
 		return BakingActionResult.success();		
 	}
