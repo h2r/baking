@@ -23,7 +23,7 @@ import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.SADomain;
 import edu.brown.cs.h2r.baking.ConstrainedStateSpaceExplorer;
 
-public class TestConstrainedStateSpace {
+public class ConstrainedStateSpaceTest {
 	
 	Domain domain;
 	OOMDPPlanner planner;
@@ -50,7 +50,7 @@ public class TestConstrainedStateSpace {
 			@Override
 			public boolean satisfies(State s) {
 				for (ObjectInstance obj : s.getObjectsOfTrueClass("Value")) {
-					return  obj.getDiscValForAttribute("value") == TestConstrainedStateSpace.this.goalValue;
+					return  obj.getDiscValForAttribute("value") == ConstrainedStateSpaceTest.this.goalValue;
 				}
 				return false;
 			}

@@ -64,7 +64,7 @@ public class BakingInformation extends LinkedHashMap<String, Object> {
 	
 	public boolean getBoolean(String key)  throws BakingCastException  {
 		try {
-			return (boolean)this.getObject(key);
+			return (Boolean)this.getObject(key);
 		}
 		catch (ClassCastException e) {
 			throw e;

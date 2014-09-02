@@ -174,7 +174,7 @@ public class IngredientKnowledgebase {
 	// Determine whether the ingredient in the container can be swapped out (flour + liquid -> flour).
 	// If a match is found, return the name of the combination found.
 	public String canCombine(State state, ObjectInstance container) {
-		Set<ObjectInstance> contains = new HashSet<>();
+		Set<ObjectInstance> contains = new HashSet<ObjectInstance>();
 		// get contents
 		Set<String> contents = ContainerFactory.getContentNames(container);
 		for (String content : contents) {
