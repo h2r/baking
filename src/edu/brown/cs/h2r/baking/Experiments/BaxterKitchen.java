@@ -377,7 +377,7 @@ public class BaxterKitchen {
 				}
 			}
 		}*/
-		return (chosenAction == null) ? null : this.getParams(chosenAction);
+		return (chosenAction == null || !chosenAction.params[0].equals("baxter")) ? null : this.getParams(chosenAction);
 	}
 	
 	public BakingSubgoal determineSubgoal(Domain domain, State state, List<BakingSubgoal> subgoals) {
@@ -624,17 +624,13 @@ public class BaxterKitchen {
 		action = kitchen.getRobotAction(domain, state, brownies);
 		System.out.println(Arrays.toString(action));
 		System.out.println("");
-		state = kitchen.moveObjectCounter(state, "whisk");
+		state = kitchen.moveObjectCounter(state, "spoon");
 		
 		container = "flour_bowl";
 		state = kitchen.addObjectInRobotsSpace(domain, state, container);
 		action = kitchen.getRobotAction(domain, state, brownies);
 		System.out.println(Arrays.toString(action));
 		kitchen.disposeObject(state, container);
-		System.out.println("");
-		
-		action = kitchen.getRobotAction(domain, state, brownies);
-		System.out.println(Arrays.toString(action));
 		System.out.println("");
 		
 		
@@ -653,13 +649,10 @@ public class BaxterKitchen {
 		state = kitchen.addObjectInRobotsSpace(domain, state, container);
 		action = kitchen.getRobotAction(domain, state, brownies);
 		System.out.println(Arrays.toString(action));
+		System.out.println("");
 		kitchen.disposeObject(state, container);
 		
 		action = kitchen.getRobotAction(domain, state, brownies);
 		System.out.println(Arrays.toString(action));
-		System.out.println("");
-		
-
-		
 	}
 }
