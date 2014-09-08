@@ -114,6 +114,8 @@ public class MixAction extends BakingAction {
 		super.performActionHelper(state, params);
 		ObjectInstance containerInstance = state.getObject(params[1]);
 		this.mix(state, containerInstance);
+		ObjectInstance toolInstance = state.getObject(params[2]);
+		ToolFactory.setUsed(toolInstance);		
 		return state;
 	}
 	private void mix(State state, String container) {

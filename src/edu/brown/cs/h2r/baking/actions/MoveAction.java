@@ -44,10 +44,6 @@ public class MoveAction extends BakingAction {
 			return BakingActionResult.failure(containerName + " is already in " + spaceName);
 		}
 		
-		if (SpaceFactory.isCleaning(containerSpace)) {
-			return BakingActionResult.failure(containerName + " cannot be moved out of " + containerSpaceName);
-		}
-		
 		if (SpaceFactory.isBaking(space) && !ContainerFactory.isBakingContainer(container)) {
 			return BakingActionResult.failure(spaceName + " can only contain baking containers");
 		}

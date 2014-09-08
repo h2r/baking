@@ -10,6 +10,7 @@ import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.ToolFactory;
 
 public class ContainersCleaned extends BakingPropositionalFunction {
 
@@ -29,6 +30,21 @@ public class ContainersCleaned extends BakingPropositionalFunction {
 				if (!inSink) {
 					return false;
 				}
+			}
+		}
+		
+		for (ObjectInstance tool : state.getObjectsOfTrueClass(ToolFactory.ClassName)) {
+			boolean isUsed = ToolFactory.isUsed(tool);
+			
+			String spaceName = ToolFactory.getSpaceName(tool);
+			ObjectInstance space = state.getObject(spaceName);
+			boolean inSink = SpaceFactory.isCleaning(space);
+			boolean inRobotCounter = spaceName.equals(SpaceFactory.SPACE_ROBOT);
+			if (isUsed && inRobotCounter) {
+				return false;
+			}
+			if (isUsed) {
+				return true;
 			}
 		}
 		return true;

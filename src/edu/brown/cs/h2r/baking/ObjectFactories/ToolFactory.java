@@ -22,6 +22,7 @@ public class ToolFactory {
 	private static final String attributeCanCarry = "canCarry";
 	private static final String attributeInclude = "incldue";
 	private static final String attributeExclude = "exclude";
+	private static final String attributeUsed = "used";
 	
 	public static final String fakeContainerName = "fakeContainer";
 	
@@ -43,6 +44,9 @@ public class ToolFactory {
 		objectClass.addAttribute(
 				new Attribute(domain, ToolFactory.attributeContains,
 						Attribute.AttributeType.MULTITARGETRELATIONAL));
+		
+		objectClass.addAttribute(
+				new Attribute(domain, ToolFactory.attributeUsed, Attribute.AttributeType.BOOLEAN));
 		
 		Attribute transportableAttribute = 
 				new Attribute(domain, ToolFactory.attributeCanCarry, Attribute.AttributeType.BOOLEAN);
@@ -71,6 +75,7 @@ public class ToolFactory {
 		newInstance.addRelationalTarget(ToolFactory.attributeToolAttribute, attribute);
 		//newInstance.addRelationalTarget(ToolFactory.attributeContains, null);
 		newInstance.setValue(ToolFactory.attributeCanCarry, false);
+		newInstance.setValue(ToolFactory.attributeUsed, false);
 		
 		if (containerSpace != null || containerSpace != "")
 		{
@@ -190,6 +195,14 @@ public class ToolFactory {
 			return true;
 		}
 		return ToolFactory.getContents(tool).isEmpty();
+	}
+	
+	public static boolean isUsed(ObjectInstance tool) {
+		return tool.getBooleanValue(ToolFactory.attributeUsed);
+	}
+	
+	public static void setUsed(ObjectInstance tool) {
+		tool.setValue(ToolFactory.attributeUsed, true);
 	}
 	
 	public static void addInclude(ObjectInstance tool, Collection<String> includes) {

@@ -8,6 +8,7 @@ import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
+import edu.brown.cs.h2r.baking.actions.BakingActionResult;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
@@ -22,6 +23,14 @@ public class AllowMoving extends BakingPropositionalFunction {
 		ObjectInstance space = state.getObject(params[2]);
 		ObjectInstance container = state.getObject(params[1]);		
 		Set<String> contents = ContainerFactory.getContentNames(container);
+		
+		String containerSpaceName = ContainerFactory.getSpaceName(container);
+		ObjectInstance containerSpace = state.getObject(containerSpaceName);
+		
+		if (SpaceFactory.isCleaning(containerSpace)) {
+			return false;
+		}
+		
 		
 		if (SpaceFactory.isBaking(space)) {
 			return this.checkMoveToBaking(state, contents);
