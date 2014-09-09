@@ -32,7 +32,7 @@ public class ContainersCleaned extends BakingPropositionalFunction {
 				}
 			}
 		}
-		
+		/*s
 		for (ObjectInstance tool : state.getObjectsOfTrueClass(ToolFactory.ClassName)) {
 			boolean isUsed = ToolFactory.isUsed(tool);
 			
@@ -46,7 +46,7 @@ public class ContainersCleaned extends BakingPropositionalFunction {
 			if (isUsed) {
 				return true;
 			}
-		}
+		}*/
 		return true;
 	}
 }
