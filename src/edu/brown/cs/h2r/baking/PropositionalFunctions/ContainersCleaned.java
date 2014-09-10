@@ -40,11 +40,8 @@ public class ContainersCleaned extends BakingPropositionalFunction {
 			ObjectInstance space = state.getObject(spaceName);
 			boolean inSink = SpaceFactory.isCleaning(space);
 			boolean inRobotCounter = spaceName.equals(SpaceFactory.SPACE_ROBOT);
-			if (isUsed && inRobotCounter) {
+			if (isUsed && !inSink) {
 				return false;
-			}
-			if (isUsed) {
-				return true;
 			}
 		}
 		return true;
