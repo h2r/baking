@@ -91,11 +91,11 @@ public class Brownies extends Recipe {
 		this.subgoals.add(sg4);
 		
 		
-		/*BakingPropositionalFunction pf5 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("brownies"));
+		BakingPropositionalFunction pf5 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("brownies"));
 		BakingSubgoal sg5 = new BakingSubgoal(pf5, this.subgoalIngredients.get("brownie_batter"));
 		sg5.addPrecondition(sg3);
 		sg5.addPrecondition(sg4);
-		this.subgoals.add(sg5);*/
+		this.subgoals.add(sg5);
 	}
 	
 	@Override

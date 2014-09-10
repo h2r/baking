@@ -531,21 +531,20 @@ public class BaxterKitchen {
 			state = this.takeAction(domain, state, "pour", "human", name, "mixing_bowl_2");
 			state = this.takeAction(domain, state, "move", "baxter", name, SpaceFactory.SPACE_ROBOT);
 		} else if (name.equals("mixing_bowl_1")) {
-			state = this.takeAction(domain, state, "mix", "human", name, "spoon");
 			state = this.takeAction(domain, state, "pour", "human", name, "mixing_bowl_2");
 			state = this.takeAction(domain, state, "move", "baxter", name, SpaceFactory.SPACE_ROBOT);
 			
 			
 		} else if (name.equals("mixing_bowl_2")) {
-			state = this.takeAction(domain, state, "mix", "human", name, "whisk");
 			state = this.takeAction(domain, state, "pour", "human", name, "baking_dish");
 			state = this.takeAction(domain, state, "move", "baxter", name, SpaceFactory.SPACE_ROBOT);
-			
-			
-		} else if (Arrays.asList("whisk", "spoon").contains(name)) {
+		} else if (Arrays.asList("whisk").contains(name)) {
+			state = this.takeAction(domain, state, "mix", "human", "mixing_bowl_2", name);			
 			state = this.takeAction(domain, state, "hand", "baxter", name, SpaceFactory.SPACE_ROBOT);
-		} 
-		
+		} else if (Arrays.asList( "spoon").contains(name)) {
+			state = this.takeAction(domain, state, "mix", "human", "mixing_bowl_1", name);
+			state = this.takeAction(domain, state, "hand", "baxter", name, SpaceFactory.SPACE_ROBOT);
+		}
 		
 		/*else if (ContainerFactory.isMixingContainer(object)) {
 			ObjectInstance wetBowl = state.getObject(ContainerFactory.WET_BOWL);
@@ -739,7 +738,7 @@ public class BaxterKitchen {
 		state = kitchen.disposeObject(state, "whisk");
 		
 		System.out.println("");
-
+		
 		container = "mixing_bowl_1";
 		state = kitchen.addObjectInRobotsSpace(domain, state, container);
 		action = kitchen.getRobotAction(domain, state, brownies);
@@ -748,29 +747,10 @@ public class BaxterKitchen {
 		
 		System.out.println("");
 		
-		container = "spoon";
-		state = kitchen.addObjectInRobotsSpace(domain, state, container);
-		//System.out.println(state.toString());
-		action = kitchen.getRobotAction(domain, state, brownies);
-		System.out.println(Arrays.toString(action));
-		state = kitchen.disposeObject(state, container);
-		
-		System.out.println("");
-
 		
 		container = "mixing_bowl_2";
 		state = kitchen.addObjectInRobotsSpace(domain, state, container);
 		action = kitchen.getRobotAction(domain, state, brownies);
-		System.out.println(Arrays.toString(action));
-		state = kitchen.disposeObject(state, container);
-		
-		System.out.println("");
-		
-		
-		container = "whisk";
-		state = kitchen.addObjectInRobotsSpace(domain, state, container);
-		action = kitchen.getRobotAction(domain, state, brownies);
-		//System.out.println(state.toString());
 		System.out.println(Arrays.toString(action));
 		state = kitchen.disposeObject(state, container);
 		
