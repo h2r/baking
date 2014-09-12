@@ -43,6 +43,7 @@ import edu.brown.cs.h2r.baking.ObjectFactories.MakeSpanFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ToolFactory;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.ContainersCleaned;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
 import edu.brown.cs.h2r.baking.Recipes.Brownies;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
@@ -197,7 +198,8 @@ public class BaxterKitchen {
 	public Policy generatePolicy(Domain domain, State startingState, BakingSubgoal subgoal)
 	{
 		IngredientRecipe ingredient = subgoal.getIngredient();
-		System.out.println(ingredient.getName());
+		String goalType = (subgoal.getGoal().getClass().isAssignableFrom(ContainersCleaned.class)) ? "_clean" : "";
+		System.out.println(ingredient.getName() + goalType);
 		State currentState = new State(startingState);
 		
 		List<Action> actions = domain.getActions();
@@ -235,7 +237,7 @@ public class BaxterKitchen {
 			}
 		};*/
 		
-		int numRollouts = 2000; // RTDP
+		int numRollouts = 300; // RTDP
 		int maxDepth = 10; // RTDP
 		double vInit = 0;
 		double maxDelta = .01;
@@ -337,7 +339,7 @@ public class BaxterKitchen {
 
 		State endState = episodeAnalysis.getState(episodeAnalysis.stateSequence.size() - 1);
 				
-		//System.out.println(episodeAnalysis.getActionSequenceString(" \n"));
+		System.out.println(episodeAnalysis.getActionSequenceString(" \n"));
 		//ExperimentHelper.printResults(episodeAnalysis.actionSequence, episodeAnalysis.rewardSequence);
 		return episodeAnalysis;
 	}
@@ -396,7 +398,8 @@ public class BaxterKitchen {
 		for (BakingSubgoal subgoal : subgoals) {
 			if (subgoal.allPreconditionsCompleted(state) && !subgoal.goalCompleted(state)) {
 				likelySubgoals.add(subgoal);
-				//System.out.println(subgoal.getIngredient().getName());
+				String goalType = (subgoal.getGoal().getClass().isAssignableFrom(ContainersCleaned.class)) ? "_clean" : "";
+				//System.out.println(subgoal.getIngredient().getName() + goalType);
 			}
 		}
 		//System.out.println("");
@@ -440,13 +443,14 @@ public class BaxterKitchen {
 				
 			}
 			
+			String goalType = (subgoal.getGoal().getClass().isAssignableFrom(ContainersCleaned.class)) ? "_clean" : "";
 			if (!allContainersInSink && subgoalProbability > maxProbability) {
-				//System.out.println(subgoal.getIngredient().getName() + ": " + subgoalProbability);
+				//System.out.println(subgoal.getIngredient().getName() + goalType + ": " + subgoalProbability);
 				maxProbability = subgoalProbability;
 				likelySubgoal = subgoal;
 			}
 		}
-		// System.out.println("");
+		 //System.out.println("");
 
 		return likelySubgoal;
 	}
@@ -682,6 +686,7 @@ public class BaxterKitchen {
 		
 		State state = kitchen.generateInitialState(domain, brownies);
 		
+		/*
 		String container = "cocoa_bowl";
 		state = kitchen.addObjectInRobotsSpace(domain, state, container);
 		String[] action = kitchen.getRobotAction(domain, state, brownies);
@@ -697,8 +702,11 @@ public class BaxterKitchen {
 		state = kitchen.disposeObject(state, container);
 		
 		System.out.println("");		
+		*/
+		state = kitchen.addObjectInRobotsSpace(domain, state, "flour_bowl");
+		state = kitchen.addObjectInRobotsSpace(domain, state, "cocoa_bowl");
 		
-		action = kitchen.getRobotAction(domain, state, brownies);
+		String[] action = kitchen.getRobotAction(domain, state, brownies);
 		System.out.println(Arrays.toString(action));
 		state = kitchen.disposeObject(state, "spoon");
 		
@@ -707,7 +715,7 @@ public class BaxterKitchen {
 		
 
 		
-		container = "cocoa_bowl";
+		String container = "cocoa_bowl";
 		state = kitchen.addObjectInRobotsSpace(domain, state, container);
 		action = kitchen.getRobotAction(domain, state, brownies);
 		System.out.println(Arrays.toString(action));

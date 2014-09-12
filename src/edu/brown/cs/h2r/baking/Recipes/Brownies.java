@@ -76,8 +76,8 @@ public class Brownies extends Recipe {
 		BakingPropositionalFunction pf3clean = new ContainersCleaned(AffordanceCreator.CONTAINERS_CLEANED_PF, domain,this.subgoalIngredients.get("wet_ingredients") );
 		BakingSubgoal sg3clean = new BakingSubgoal(pf3clean, this.subgoalIngredients.get("wet_ingredients"));
 		//sg3clean.addPrecondition(sg3);
-		this.subgoals.add(sg3clean);
 		this.subgoals.add(sg3);
+		this.subgoals.add(sg3clean);
 		
 				
 		
@@ -87,8 +87,8 @@ public class Brownies extends Recipe {
 		BakingPropositionalFunction pf4clean = new ContainersCleaned(AffordanceCreator.CONTAINERS_CLEANED_PF, domain,this.subgoalIngredients.get("dry_ingredients") );
 		BakingSubgoal sg4clean = new BakingSubgoal(pf4clean, this.subgoalIngredients.get("dry_ingredients"));
 		//sg3clean.addPrecondition(sg3);
-		this.subgoals.add(sg4clean);
 		this.subgoals.add(sg4);
+		this.subgoals.add(sg4clean);
 		
 		
 		BakingPropositionalFunction pf5 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("brownies"));
