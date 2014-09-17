@@ -668,11 +668,11 @@ public class BaxterKitchen {
 		BaxterKitchen kitchen = new BaxterKitchen();
 		Recipe brownies = new Brownies();
 		Domain domain = kitchen.generateDomain(brownies);
-		//kitchen.testRecipeExecution(domain, brownies);
+		kitchen.testRecipeExecution(domain, brownies);
 		
 		//List<Policy> policies = kitchen.generatePolicies(domain, brownies);
 		
-		
+		/*
 		State state = kitchen.generateInitialState(domain, brownies);
 		
 		String container = "cocoa_bowl";
@@ -753,6 +753,6 @@ public class BaxterKitchen {
 		kitchen.disposeObject(state, container);
 		System.out.println("");
 		
-		
+		*/
 	}
 }
