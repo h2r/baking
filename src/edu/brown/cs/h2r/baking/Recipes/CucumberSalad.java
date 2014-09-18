@@ -13,9 +13,9 @@ import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunctio
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
 
 public class CucumberSalad extends Recipe {
-	
 	public CucumberSalad() {
 		super();
+		this.recipeName = "cucumber salad";
 		List<IngredientRecipe> ingredientList = new ArrayList<IngredientRecipe>();
 
 		ingredientList.add(knowledgebase.getIngredient("red_onions"));

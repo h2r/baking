@@ -16,9 +16,9 @@ import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.SpaceOn;
 
 public class MoltenLavaCake extends Recipe {
-	
 	public MoltenLavaCake() {
 		super();
+		this.recipeName = "molten lava cake";
 		List<IngredientRecipe> ingredientList = new ArrayList<IngredientRecipe>();
 		IngredientRecipe butter = knowledgebase.getIngredient("butter");
 		butter.setHeated();

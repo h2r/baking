@@ -16,9 +16,10 @@ import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.SpaceOn;
 
 
-public class Brownies extends Recipe {
+public class Brownies extends Recipe { 
 	public Brownies() {
 		super();
+		this.recipeName = "brownies";
 		/**
 		 *  Preheat oven to 350 degrees F (175 degrees C).
 		 *	Grease and flour an 8-inch square pan.

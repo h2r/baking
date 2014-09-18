@@ -14,9 +14,9 @@ import edu.brown.cs.h2r.baking.PropositionalFunctions.SpaceOn;
 
 
 public class PeanutButterCookies extends Recipe {
-	
 	public PeanutButterCookies() {
 		super();
+		this.recipeName = "peanut butter cookies";
 		List<IngredientRecipe> ingredientList = new ArrayList<IngredientRecipe>();
 		ingredientList.add(knowledgebase.getIngredient("butter"));
 		ingredientList.add(knowledgebase.getIngredient("peanut_butter"));

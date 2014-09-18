@@ -38,6 +38,8 @@ public abstract class Recipe {
 	public static final Boolean SWAPPED = true;
 	public static final Boolean NOT_SWAPPED = false;
 	
+	protected String recipeName;
+	
 	public Recipe()
 	{
 		this.knowledgebase = new Knowledgebase();
@@ -634,5 +636,9 @@ public abstract class Recipe {
 			Set<String> subgoalToolAttributes = Recipe.getSubgoalToolAttributes(ing);
 			ing.addRecipeToolAttributes(subgoalToolAttributes);
 		}
+	}
+	
+	public String getRecipeName() {
+		return this.recipeName;
 	}
 }

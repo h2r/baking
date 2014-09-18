@@ -16,10 +16,9 @@ import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
 
 
 public class MashedPotatoes extends Recipe {
-
 	public MashedPotatoes() {
 		super();
-		
+		this.recipeName = "mashed potatoes";
 		List<IngredientRecipe> saltedWaterList = new ArrayList<IngredientRecipe>();
 		IngredientRecipe water = knowledgebase.getIngredient("water");
 		saltedWaterList.add(water);

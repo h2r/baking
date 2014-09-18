@@ -47,6 +47,7 @@ import edu.brown.cs.h2r.baking.PropositionalFunctions.ContainersCleaned;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
 import edu.brown.cs.h2r.baking.Recipes.Brownies;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
+import edu.brown.cs.h2r.baking.Recipes.RecipeActionParameters;
 import edu.brown.cs.h2r.baking.actions.BakingAction;
 import edu.brown.cs.h2r.baking.actions.BakingActionResult;
 import edu.brown.cs.h2r.baking.actions.GreaseAction;
@@ -60,9 +61,10 @@ import edu.brown.cs.h2r.baking.actions.UseAction;
 public class BaxterKitchen {
 	List<ObjectInstance> allIngredients;
 	List<BakingSubgoal> ingSubgoals;
+	RecipeActionParameters recipeParams;
 	private IngredientRecipe topLevelIngredient;
 	public BaxterKitchen() {
-
+		recipeParams = new RecipeActionParameters();
 	}
 	
 	public Domain generateDomain(Recipe recipe) {
@@ -597,48 +599,7 @@ public class BaxterKitchen {
 	
 	public void testRecipeExecution(Domain domain, Recipe recipe) {
 		State state = this.generateInitialState(domain, recipe);
-		List<String[]> actionParams = Arrays.asList(
-				/*new String[] {"pour", "human", "vanilla_bowl", "mixing_bowl_1"},*/
-				/*new String[] {"pour", "human", "eggs_bowl", "mixing_bowl_1"},*/
-				new String[] {"pour", "human", "butter_bowl", "mixing_bowl_1"},
-				new String[] {"move", "baxter", "butter_bowl", SpaceFactory.SPACE_SINK},
-				new String[] {"pour", "human", "white_sugar_bowl", "mixing_bowl_1"},
-				new String[] {"move", "baxter", "white_sugar_bowl", SpaceFactory.SPACE_SINK},
-				new String[] {"hand", "baxter", "whisk", SpaceFactory.SPACE_COUNTER},
-				
-				new String[] {"mix", "human", "mixing_bowl_1", "whisk"},
-				
-				new String[] {"pour", "human", "flour_bowl", "mixing_bowl_2"},
-				
-				new String[] {"move", "baxter", "flour_bowl", SpaceFactory.SPACE_SINK},
-				new String[] {"pour", "human", "cocoa_bowl", "mixing_bowl_2"},
-				new String[] {"move", "baxter", "cocoa_bowl", SpaceFactory.SPACE_SINK},
-				
-				/*new String[] {"pour", "human", "salt_bowl", "mixing_bowl_2"},
-				new String[] {"pour", "human", "baking_powder_bowl", "mixing_bowl_2"},*/
-				
-				new String[] {"hand", "baxter", "spoon", SpaceFactory.SPACE_COUNTER},
-				
-				new String[] {"mix", "human", "mixing_bowl_2", "spoon"},
-				new String[] {"hand", "human", "spoon", SpaceFactory.SPACE_ROBOT},
-				
-				new String[] {"hand", "baxter", "spoon", SpaceFactory.SPACE_SINK},
-				
-				new String[] {"pour", "human", "mixing_bowl_1", "mixing_bowl_2"},
-				new String[] {"move", "baxter", "mixing_bowl_1", SpaceFactory.SPACE_SINK},
-				new String[] {"mix", "human", "mixing_bowl_2", "whisk"},
-				new String[] {"hand", "human", "whisk", SpaceFactory.SPACE_ROBOT},
-				
-				new String[] {"pour", "human", "mixing_bowl_2", "baking_dish"},
-				new String[] {"move", "baxter", "mixing_bowl_2", SpaceFactory.SPACE_SINK},
-				
-				new String[] {"switch", "baxter", SpaceFactory.SPACE_OVEN},
-				new String[] {"move", "human", "baking_dish", SpaceFactory.SPACE_OVEN},
-				new String[] {"hand", "baxter", "whisk", SpaceFactory.SPACE_SINK}
-				
-				
-				
-				);
+		List<String[]> actionParams = this.recipeParams.getRecipeParams(recipe.getRecipeName());
 		List<BakingSubgoal> subgoals = recipe.getSubgoals();
 		for (String[] params : actionParams) {
 			System.out.println(Arrays.toString(params));
