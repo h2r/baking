@@ -1,0 +1,302 @@
+package edu.brown.cs.h2r.baking.Recipes;
+
+import java.util.AbstractMap;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+
+import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
+
+public class RecipeActionParameters {
+	AbstractMap<String, List<String[]>> recipeActionParams;
+	
+	public RecipeActionParameters() {
+		this.recipeActionParams = new HashMap<String, List<String[]>>();
+		generateBrowniesParams();
+		generateCucumberSaladParams();
+		generateDeviledEggsParams();
+		generateMoltenLavaCakeParams();
+		generatePeanutButerCookiesParams();
+		generatePecanPieParams();
+	}
+	
+	public List<String[]> getRecipeParams(String recipeName) {
+		return this.recipeActionParams.get(recipeName);
+	}
+	
+	public void generateBrowniesParams() {
+		Brownies brownies = new Brownies();
+		List<String[]> actionParams = Arrays.asList(
+			/*new String[] {"pour", "human", "vanilla_bowl", "mixing_bowl_1"},*/
+			/*new String[] {"pour", "human", "eggs_bowl", "mixing_bowl_1"},*/
+			new String[] {"pour", "human", "butter_bowl", "mixing_bowl_1"},
+			new String[] {"move", "baxter", "butter_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"pour", "human", "white_sugar_bowl", "mixing_bowl_1"},
+			new String[] {"move", "baxter", "white_sugar_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"hand", "baxter", "whisk", SpaceFactory.SPACE_COUNTER},
+			
+			new String[] {"mix", "human", "mixing_bowl_1", "whisk"},
+			
+			new String[] {"pour", "human", "flour_bowl", "mixing_bowl_2"},
+			
+			new String[] {"move", "baxter", "flour_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"pour", "human", "cocoa_bowl", "mixing_bowl_2"},
+			new String[] {"move", "baxter", "cocoa_bowl", SpaceFactory.SPACE_SINK},
+			
+			/*new String[] {"pour", "human", "salt_bowl", "mixing_bowl_2"},
+			new String[] {"pour", "human", "baking_powder_bowl", "mixing_bowl_2"},*/
+			
+			new String[] {"hand", "baxter", "spoon", SpaceFactory.SPACE_COUNTER},
+			
+			new String[] {"mix", "human", "mixing_bowl_2", "spoon"},
+			new String[] {"hand", "human", "spoon", SpaceFactory.SPACE_ROBOT},
+			
+			new String[] {"hand", "baxter", "spoon", SpaceFactory.SPACE_SINK},
+			
+			new String[] {"pour", "human", "mixing_bowl_1", "mixing_bowl_2"},
+			new String[] {"move", "baxter", "mixing_bowl_1", SpaceFactory.SPACE_SINK},
+			new String[] {"mix", "human", "mixing_bowl_2", "whisk"},
+			new String[] {"hand", "human", "whisk", SpaceFactory.SPACE_ROBOT},
+			
+			new String[] {"pour", "human", "mixing_bowl_2", "baking_dish"},
+			new String[] {"move", "baxter", "mixing_bowl_2", SpaceFactory.SPACE_SINK},
+			
+			new String[] {"switch", "baxter", SpaceFactory.SPACE_OVEN},
+			new String[] {"move", "human", "baking_dish", SpaceFactory.SPACE_OVEN},
+			new String[] {"hand", "baxter", "whisk", SpaceFactory.SPACE_SINK}
+		);
+		this.recipeActionParams.put(brownies.getRecipeName(), actionParams);
+	}
+	
+	public void generateCucumberSaladParams() {
+		CucumberSalad recipe = new CucumberSalad();
+		List<String[]> actionParams = Arrays.asList(
+			new String[] {"pour", "human", "red_onion_bowl", "mixing_bowl_1"},
+			new String[] {"move", "baxter", "red_onion_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"pour", "human", "tomatoes_bowl", "mixing_bowl_1"},
+			new String[] {"move", "baxter", "tomatoes_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"pour", "human", "cucumber_bowl", "mixing_bowl_1"},
+			new String[] {"move", "baxter", "cucumber_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"hand", "baxter", "spoon", SpaceFactory.SPACE_COUNTER},
+			
+			new String[] {"mix", "human", "mixing_bowl_1", "spoon"},
+			
+			new String[] {"pour", "human", "lemon_bowl", "mixing_bowl_2"},
+			new String[] {"move", "baxter", "lemon_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"pour", "human", "olive_oil_bowl", "mixing_bowl_2"},
+			new String[] {"move", "baxter", "olive_oil_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"pour", "human", "salt_bowl", "mixing_bowl_2"},
+			new String[] {"move", "baxter", "salt_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"pour", "human", "pepper_bowl", "mixing_bowl_2"},
+			new String[] {"move", "baxter", "pepper_bowl", SpaceFactory.SPACE_SINK},
+			
+			new String[] {"hand", "baxter", "whisk", SpaceFactory.SPACE_COUNTER},
+			
+			new String[] {"mix", "human", "mixing_bowl_2", "whisk"},
+			new String[] {"hand", "human", "whisk", SpaceFactory.SPACE_ROBOT},
+			
+			new String[] {"hand", "baxter", "whisk", SpaceFactory.SPACE_SINK},
+			
+			new String[] {"pour", "human", "mixing_bowl_1", "mixing_bowl_2"},
+			new String[] {"move", "baxter", "mixing_bowl_1", SpaceFactory.SPACE_SINK},
+			new String[] {"mix", "human", "mixing_bowl_2", "spoon"},
+			new String[] {"hand", "human", "spoon", SpaceFactory.SPACE_ROBOT},
+			new String[] {"hand", "baxter", "spoon", SpaceFactory.SPACE_SINK}
+		);
+		this.recipeActionParams.put(recipe.getRecipeName(), actionParams);
+	}
+	
+	public void generateDeviledEggsParams() {
+		DeviledEggs recipe = new DeviledEggs();
+		List<String[]> actionParams = Arrays.asList(
+			new String[] {"pour", "human", "egg_yolk_bowl", "mixing_bowl_1"},
+			new String[] {"move", "baxter", "egg_yolk_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"pour", "human", "pepper_bowl", "mixing_bowl_1"},
+			new String[] {"move", "baxter", "pepper_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"pour", "human", "dijon_mustard_bowl", "mixing_bowl_1"},
+			new String[] {"move", "baxter", "dijon_mustard_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"pour", "human", "salt_bowl", "mixing_bowl_1"},
+			new String[] {"move", "baxter", "salt_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"hand", "baxter", "whisk", SpaceFactory.SPACE_COUNTER},
+			
+			new String[] {"mix", "human", "mixing_bowl_1", "whisk"},
+			
+			new String[] {"pour", "human", "chopped_tarragon_bowl", "mixing_bowl_1"},
+			new String[] {"move", "baxter", "chooped_tarragon_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"pour", "human", "sweet_gherkins_bowl", "mixing_bowl_1"},
+			new String[] {"move", "baxter", "sweet_gherkins_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"pour", "human", "shallots_bowl", "mixing_bowl_1"},
+			new String[] {"move", "baxter", "shallots_bowl", SpaceFactory.SPACE_SINK},
+							
+			new String[] {"mix", "human", "mixing_bowl_1", "whisk"},
+			new String[] {"hand", "human", "whisk", SpaceFactory.SPACE_ROBOT},
+			
+			new String[] {"hand", "baxter", "whisk", SpaceFactory.SPACE_SINK},
+			
+			new String[] {"hand", "baxter", "spoon", SpaceFactory.SPACE_COUNTER},
+			new String[] {"pour", "human", "egg_whites_bowl", "mixing_bowl_1"},
+			new String[] {"move", "baxter", "egg_whites_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"mix", "human", "mixing_bowl_1", "spoon"},
+			new String[] {"hand", "human", "spoon", SpaceFactory.SPACE_ROBOT},
+			new String[] {"hand", "baxter", "spoon", SpaceFactory.SPACE_SINK}
+		);
+		this.recipeActionParams.put(recipe.getRecipeName(), actionParams);
+	}
+	
+	public void generateMashedPotatoesParams() {
+		MashedPotatoes recipe = new MashedPotatoes();
+		List<String[]> actionParams = Arrays.asList(
+			
+		);
+		this.recipeActionParams.put(recipe.getRecipeName(), actionParams);
+	}
+	
+	public void generateMoltenLavaCakeParams() {
+		MoltenLavaCake recipe = new MoltenLavaCake();
+		List<String[]> actionParams = Arrays.asList(
+			new String[] {"pour", "human", "chocoloate_squares_bowl", "mixing_bowl_1"},
+			new String[] {"move", "baxter", "chocolate_squares_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"pour", "human", "butter_bowl", "mixing_bowl_1"},
+			new String[] {"move", "baxter", "butter_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"hand", "baxter", "whisk", SpaceFactory.SPACE_COUNTER},
+			new String[] {"mix", "human", "mixing_bowl_1", "whisk"},
+			new String[] {"hand", "human", "whisk", SpaceFactory.SPACE_ROBOT},
+			new String[] {"hand", "baxter", "whisk", SpaceFactory.SPACE_SINK},
+
+			new String[] {"pour", "human", "white_sugar_bowl", "mixing_bowl_1"},
+			new String[] {"move", "baxter", "white_sugar_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"pour", "human",  "flour_bowl", "mixing_bowl_1"},
+			new String[] {"move", "baxter", "flour_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"hand", "baxter", "spoon", SpaceFactory.SPACE_COUNTER},
+			new String[] {"mix", "human", "mixing_bowl_1", "spoon"},
+			
+			new String[] {"pour", "human", "eggs_bowl_bowl", "mixing_bowl_1"},
+			new String[] {"move", "baxter", "eggs_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"pour", "human", "egg_yolks_bowl_bowl", "mixing_bowl_1"},
+			new String[] {"move", "baxter", "egg_tolks_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"mix", "human", "mixing_bowl_1", "spoon"},
+			
+			new String[] {"pour", "human", "vanilla_bowl", "mixing_bowl_1"},
+			new String[] {"move", "baxter", "vanilla_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"pour", "human", "orange_liqueur_bowl", "mixing_bowl_1"},
+			new String[] {"move", "baxter", "orange_liqueur_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"mix", "human", "mixing_bowl_1", "spoon"},
+											
+			new String[] {"pour", "human", "mixing_bowl_1", "baking_dish"},
+			new String[] {"move", "baxter", "mixing_bowl_1", SpaceFactory.SPACE_SINK},
+			
+			new String[] {"switch", "baxter", SpaceFactory.SPACE_OVEN},
+			new String[] {"move", "human", "baking_dish", SpaceFactory.SPACE_OVEN},
+			new String[] {"hand", "human", "spoon", SpaceFactory.SPACE_ROBOT},
+			new String[] {"hand", "baxter", "spoon", SpaceFactory.SPACE_SINK}
+		);
+		this.recipeActionParams.put(recipe.getRecipeName(), actionParams);
+	}
+	
+	public void generatePeanutButerCookiesParams() {
+		PeanutButterCookies recipe = new PeanutButterCookies();
+		List<String[]> actionParams = Arrays.asList(
+			new String[] {"pour", "human", "peanut_butter_bowl", "mixing_bowl_1"},
+			new String[] {"move", "baxter", "peanut_butter_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"pour", "human", "butter_bowl", "mixing_bowl_1"},
+			new String[] {"move", "baxter", "butter_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"pour", "human", "white_sugar_bowl", "mixing_bowl_1"},
+			new String[] {"move", "baxter", "white_sugar_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"hand", "baxter", "whisk", SpaceFactory.SPACE_COUNTER},
+			
+			new String[] {"mix", "human", "mixing_bowl_1", "whisk"},
+			new String[] {"pour", "human", "eggs_bowl_bowl", "mixing_bowl_1"},
+			new String[] {"move", "baxter", "eggs_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"mix", "human", "mixing_bowl_1", "whisk"},
+
+			new String[] {"pour", "human",  "flour_bowl", "mixing_bowl_2"},
+			new String[] {"move", "baxter", "flour_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"pour", "human",  "baking_powder_bowl", "mixing_bowl_2"},
+			new String[] {"move", "baxter", "baking_powder_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"pour", "human",  "salt_bowl", "mixing_bowl_2"},
+			new String[] {"move", "baxter", "salt_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"pour", "human",  "baking_soda_bowl", "mixing_bowl_2"},
+			new String[] {"move", "baxter", "baking_soda_bowl", SpaceFactory.SPACE_SINK},
+			
+			new String[] {"hand", "baxter", "spoon", SpaceFactory.SPACE_COUNTER},
+			
+			new String[] {"mix", "human", "mixing_bowl_2", "spoon"},
+			new String[] {"hand", "human", "whisk", SpaceFactory.SPACE_ROBOT},
+			
+			new String[] {"hand", "baxter", "whisk", SpaceFactory.SPACE_SINK},
+			
+			new String[] {"pour", "human", "mixing_bowl_1", "mixing_bowl_2"},
+			new String[] {"move", "baxter", "mixing_bowl_1", SpaceFactory.SPACE_SINK},
+			new String[] {"mix", "human", "mixing_bowl_2", "spoon"},
+			new String[] {"hand", "human", "spoon", SpaceFactory.SPACE_ROBOT},
+			
+			new String[] {"pour", "human", "mixing_bowl_2", "baking_dish"},
+			new String[] {"move", "baxter", "mixing_bowl_2", SpaceFactory.SPACE_SINK},
+			
+			new String[] {"switch", "baxter", SpaceFactory.SPACE_OVEN},
+			new String[] {"move", "human", "baking_dish", SpaceFactory.SPACE_OVEN},
+			new String[] {"hand", "baxter", "spoon", SpaceFactory.SPACE_SINK}
+		);
+		this.recipeActionParams.put(recipe.getRecipeName(), actionParams);
+	}
+	
+	public void generatePecanPieParams() {
+		PecanPie recipe = new PecanPie();
+		List<String[]> actionParams = Arrays.asList(
+			new String[] {"pour", "human", "flour_bowl", "mixing_bowl_1"},
+			new String[] {"move", "baxter", "flour_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"pour", "human", "salt_bowl", "mixing_bowl_1"},
+			new String[] {"move", "baxter", "salt_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"pour", "human", "white_sugar_bowl", "mixing_bowl_1"},
+			new String[] {"move", "baxter", "white_sugar_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"hand", "baxter", "whisk", SpaceFactory.SPACE_COUNTER},
+			
+			new String[] {"mix", "human", "mixing_bowl_1", "whisk"},
+			new String[] {"pour", "human", "butter_bowl", "mixing_bowl_1"},
+			new String[] {"move", "baxter", "butter_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"mix", "human", "mixing_bowl_1", "whisk"},
+			new String[] {"pour", "human", "eggs_bowl", "mixing_bowl_1"},
+			new String[] {"move", "baxter", "eggs_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"mix", "human", "mixing_bowl_1", "whisk"},
+			
+			new String[] {"hand", "human", "whisk", SpaceFactory.SPACE_ROBOT},
+			new String[] {"hand", "baxter", "whisk", SpaceFactory.SPACE_SINK},
+
+			new String[] {"pour", "human",  "butter_bowl", "mixing_bowl_2"},
+			new String[] {"move", "baxter", "butter_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"pour", "human",  "white_sugar_bowl", "mixing_bowl_2"},
+			new String[] {"move", "baxter", "white_sugar_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"pour", "human",  "salt_bowl", "mixing_bowl_2"},
+			new String[] {"move", "baxter", "salt_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"pour", "human",  "light_corn_syrup_bowl", "mixing_bowl_2"},
+			new String[] {"move", "baxter", "light_corn_syrup_bowl", SpaceFactory.SPACE_SINK},
+			
+			new String[] {"hand", "baxter", "spoon", SpaceFactory.SPACE_COUNTER},
+			new String[] {"mix", "human", "mixing_bowl_2", "spoon"},
+			new String[] {"pour", "human",  "pecans_bowl", "mixing_bowl_2"},
+			new String[] {"move", "baxter", "pecans_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"pour", "human",  "bourbon_bowl", "mixing_bowl_2"},
+			new String[] {"move", "baxter", "bourbon_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"pour", "human",  "vanilla_bowl", "mixing_bowl_2"},
+			new String[] {"move", "baxter", "vanilla_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"mix", "human", "mixing_bowl_2", "spoon"},
+			new String[] {"pour", "human",  "eggs_bowl", "mixing_bowl_2"},
+			new String[] {"move", "baxter", "eggs_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"mix", "human", "mixing_bowl_2", "spoon"},
+			
+			new String[] {"pour", "human", "mixing_bowl_1", "mixing_bowl_2"},
+			new String[] {"move", "baxter", "mixing_bowl_1", SpaceFactory.SPACE_SINK},
+			new String[] {"mix", "human", "mixing_bowl_2", "spoon"},
+			new String[] {"hand", "human", "spoon", SpaceFactory.SPACE_ROBOT},
+			
+			new String[] {"pour", "human", "mixing_bowl_2", "baking_dish"},
+			new String[] {"move", "baxter", "mixing_bowl_2", SpaceFactory.SPACE_SINK},
+			
+			new String[] {"switch", "baxter", SpaceFactory.SPACE_OVEN},
+			new String[] {"move", "human", "baking_dish", SpaceFactory.SPACE_OVEN},
+			new String[] {"hand", "baxter", "spoon", SpaceFactory.SPACE_SINK}	
+		);
+		this.recipeActionParams.put(recipe.getRecipeName(), actionParams);
+	}
+
+}
