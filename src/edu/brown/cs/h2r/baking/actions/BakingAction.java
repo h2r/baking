@@ -7,6 +7,8 @@ import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.Action;
+import burlap.oomdp.singleagent.ActionObserver;
+import burlap.oomdp.singleagent.GroundedAction;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.MakeSpanFactory;
 
@@ -69,6 +71,23 @@ public abstract class BakingAction extends Action {
 		return this.checkActionIsApplicableInState(state, params).getIsSuccess();
 	}
 
+	@Override
+	public State performAction(State s, String [] params){
+		
+		State resultState = s.semiDeepCopy(params);
+		if(!this.applicableInState(s, params)){
+			return resultState; //can't do anything if it's not applicable in the state so return the current state
+		}
+		
+		resultState = performActionHelper(resultState, params);
+		
+		for(ActionObserver observer : this.actionObservers){
+			observer.actionEvent(resultState, new GroundedAction(this, params), resultState);
+		}
+		
+		return resultState;
+		
+	}
 	@Override
 	protected State performActionHelper(State state, String[] params) {
 		this.addAgentToOccupiedList(state, params[0]);

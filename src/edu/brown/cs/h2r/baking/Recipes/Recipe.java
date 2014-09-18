@@ -15,8 +15,11 @@ import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
+import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.Domain;
 
@@ -45,6 +48,28 @@ public abstract class Recipe {
 		this.ingredientSubgoals = new ArrayList<BakingSubgoal>();
 		this.recipeToolAttributes = new HashSet<String>();
 		this.subgoalIngredients = new HashMap<String, IngredientRecipe>();
+	}
+	
+	public void init(Domain domain) {
+		this.setUpSubgoals(domain);
+		this.addIngredientSubgoals();
+		this.addRequiredRecipeAttributes();
+		this.setUpRecipeToolAttributes();
+	}
+	
+	public BakingPropositionalFunction getFailurePF(Domain domain) {
+		RecipeBotched isFailure = 
+				(RecipeBotched)domain.getPropFunction(AffordanceCreator.BOTCHED_PF);
+		if (isFailure == null) {
+			isFailure = new RecipeBotched(AffordanceCreator.BOTCHED_PF, domain, this.topLevelIngredient);
+		}
+		
+		isFailure.clearSubgoals();
+		for (BakingSubgoal sg : this.getIngredientSubgoals()) {
+			((RecipeBotched)isFailure).addSubgoal(sg);
+		}
+		
+		return isFailure;
 	}
 	
 	public List<String> getRecipeProcedures() {
