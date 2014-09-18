@@ -215,10 +215,11 @@ public class KevinsKitchen implements DomainGenerator {
 		RTDP planner;
 		Policy p;
 		AffordancesController affController = theCreator.getAffController();
+		affController.setCurrentGoal(theCreator.getPFAtom(subgoal.getGoal().getName()));
 		if(affordanceMode) {
 			// RTDP planner that also uses affordances to trim action space during the Bellman update
 			planner = new BellmanAffordanceRTDP(domain, rf, recipeTerminalFunction, gamma, hashFactory, vInit, numRollouts, maxDelta, maxDepth, affController);
-			planner.toggleDebugPrinting(false);
+			//planner.toggleDebugPrinting(false);
 			planner.planFromState(currentState);
 			
 			// Create a Q-greedy policy from the planner
@@ -258,7 +259,7 @@ public class KevinsKitchen implements DomainGenerator {
 		
 		KevinsKitchen kitchen = new KevinsKitchen();
 		Domain domain = kitchen.generateDomain();
-		kitchen.PlanRecipeOneAgent(domain, new MashedPotatoes());
+		//kitchen.PlanRecipeOneAgent(domain, new MashedPotatoes());
 		kitchen.PlanRecipeOneAgent(domain, new Brownies());
 		kitchen.PlanRecipeOneAgent(domain, new DeviledEggs());
 		kitchen.PlanRecipeOneAgent(domain, new CucumberSalad());

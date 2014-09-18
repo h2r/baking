@@ -15,6 +15,7 @@ import burlap.oomdp.core.GroundedProp;
 import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
 import burlap.oomdp.logicalexpressions.PFAtom;
+import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 
 public class AffordanceCreator {
@@ -25,7 +26,6 @@ public class AffordanceCreator {
 	public static final String POUR_PF = "pourPF";
 	public static final String USE_PF = "usePF";
 	public static final String SWITCH_PF = "switchPF";
-	//public static final String PEEL_PF = "peelPF";
 	public static final String GREASE_PF = "greasePF";
 	public static final String FINISH_PF = "success";
 	public static final String BOTCHED_PF = "botched";
@@ -33,17 +33,10 @@ public class AffordanceCreator {
 	public static final String CONTAINERGREASED_PF = "containerGreasedPF";
 	public static final String INGREDIENT_PF = "ingredientPF";
 	
-	private ArrayList<PFAtom> mixPFAtoms;
-	private ArrayList<PFAtom> movePFAtoms;
-	private ArrayList<PFAtom> pourPFAtoms;
-	private ArrayList<PFAtom> greasePFAtoms;
-	private ArrayList<PFAtom> switchPFAtoms;
-	private ArrayList<PFAtom> usePFAtoms;
-	private ArrayList<PFAtom> containerGreasedPFAtoms;
-	private ArrayList<PFAtom> spaceOnPFAtoms;
-	private ArrayList<PFAtom> finishedPFAtoms;
-	private ArrayList<PFAtom> botchedPFAtoms;
+	private ArrayList<String> goalPFs;
+	
 	private List<AffordanceDelegate> affDelegates;
+	private ArrayList<PFAtom> PFAtoms;
 	private PFAtom spaceOnPFAtom;
 	private PFAtom containerGreasedPFAtom;
 	private PFAtom finishedPFAtom;
@@ -58,91 +51,64 @@ public class AffordanceCreator {
 		final PropositionalFunction allowGreasing = new AllowGreasing(AffordanceCreator.GREASE_PF, domain, ingredient);
 		final PropositionalFunction allowSwitching = new AllowSwitching(AffordanceCreator.SWITCH_PF, domain, ingredient);
 		final PropositionalFunction allowUsing = new AllowUsingTool(AffordanceCreator.USE_PF, domain, ingredient);
-		//final PropositionalFunction allowPeeling = new AllowPeeling(AffordanceCreator.PEEL_PF, domain, ingredient);
 		final PropositionalFunction isSuccess = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, ingredient);
 		final PropositionalFunction isFailure = new RecipeBotched(AffordanceCreator.BOTCHED_PF, domain, ingredient);
 		final PropositionalFunction spaceOn = new SpaceOn(AffordanceCreator.SPACEON_PF, domain, ingredient, "");
 		final PropositionalFunction containerGreased = new ContainerGreased(AffordanceCreator.CONTAINERGREASED_PF, domain, ingredient);
 		
 		this.affDelegates = new ArrayList<AffordanceDelegate>();
-		setupPFAtoms(domain, state);
-		setupAffordances(domain, state);
+		
+		createAffordances(domain, state);
 	}
 	
-	public void setupPFAtoms(Domain domain, State state) {
-		PropositionalFunction mixPF = domain.getPropFunction(AffordanceCreator.MIX_PF);
-		this.mixPFAtoms = new ArrayList<PFAtom>();
-		List<GroundedProp> mixGroundedProps = mixPF.getAllGroundedPropsForState(state);
-		for (GroundedProp mixGroundedProp : mixGroundedProps) {
-			this.mixPFAtoms.add(new PFAtom(mixGroundedProp));
-		}
+	public void createGoalPFList() {
+		this.goalPFs = new ArrayList<String>();
+		this.goalPFs.add(AffordanceCreator.FINISH_PF);
+		this.goalPFs.add(AffordanceCreator.BOTCHED_PF);
+		this.goalPFs.add(AffordanceCreator.SPACEON_PF);
+		this.goalPFs.add(AffordanceCreator.CONTAINERGREASED_PF);
 		
-		PropositionalFunction movePF = domain.getPropFunction(AffordanceCreator.MOVE_PF);
-		this.movePFAtoms = new ArrayList<PFAtom>();
-		List<GroundedProp> moveGroundedProps = movePF.getAllGroundedPropsForState(state);
-		for (GroundedProp moveGroundedProp : moveGroundedProps) {
-			this.movePFAtoms.add(new PFAtom(moveGroundedProp));
+	}
+	
+	public void createAffordances(Domain domain, State state) {
+		setupGoalPFAtoms(domain, state);
+		for (Action action : domain.getActions()) {
+			String actionName = action.getName();
+			ArrayList<PFAtom> pfatoms = new ArrayList<PFAtom>();
+			PFAtom goalPF = getGoalPF(actionName);
+			String actionPFName = getActionPF(actionName);
+			setupPFAtom(domain, state, actionPFName, pfatoms);
+			setupDelegate(domain, pfatoms, actionName, goalPF);
+			// we make two delegates for switch action, one preheating, one for actual cooking
+			if (actionName.equals(SwitchAction.className)) {
+				setupDelegate(domain, pfatoms, actionName, finishedPFAtom);
+			}
+			
 		}
-		
-		PropositionalFunction pourPF = domain.getPropFunction(AffordanceCreator.POUR_PF);
-		this.pourPFAtoms = new ArrayList<PFAtom>();
-		List<GroundedProp> pourGroundedProps = pourPF.getAllGroundedPropsForState(state);
-		for (GroundedProp pourGroundedProp : pourGroundedProps) {
-			this.pourPFAtoms.add(new PFAtom(pourGroundedProp));
+		this.affController = new AffordancesController(affDelegates);
+	}
+	
+	public void setupGoalPFAtoms(Domain domain, State state) {
+		// these are the PFs that relate to goals.
+		createGoalPFList();
+		ArrayList<PFAtom> PFAtoms = new ArrayList<PFAtom>();
+		for (String pf : this.goalPFs) {
+			ArrayList<PFAtom> atomList = new ArrayList<PFAtom>();
+			setupPFAtom(domain, state, pf, atomList);
+			PFAtom atom = atomList.get(0);
+			initializePFAtomVariable(atom);
+			PFAtoms.add(atom);
+			
 		}
-		
-		PropositionalFunction greasePF = domain.getPropFunction(AffordanceCreator.GREASE_PF);
-		this.greasePFAtoms = new ArrayList<PFAtom>();
-		List<GroundedProp> greaseGroundedProps = greasePF.getAllGroundedPropsForState(state);
-		for (GroundedProp greaseGroundedProp : greaseGroundedProps) {
-			this.greasePFAtoms.add(new PFAtom(greaseGroundedProp));
+		this.PFAtoms = PFAtoms;
+	}
+	
+	public void setupPFAtom(Domain domain, State state, String pfName, ArrayList<PFAtom> atomList) {
+		PropositionalFunction pf = domain.getPropFunction(pfName);
+		List<GroundedProp> groundedProps = pf.getAllGroundedPropsForState(state);
+		for(GroundedProp gp : groundedProps) {
+			atomList.add(new PFAtom(gp));
 		}
-		
-		PropositionalFunction switchPF = domain.getPropFunction(AffordanceCreator.SWITCH_PF);
-		this.switchPFAtoms = new ArrayList<PFAtom>();
-		List<GroundedProp> switchGroundedProps = switchPF.getAllGroundedPropsForState(state);
-		for (GroundedProp switchGroundedProp : switchGroundedProps) {
-			this.switchPFAtoms.add(new PFAtom(switchGroundedProp));
-		}
-		
-		PropositionalFunction usePF = domain.getPropFunction(AffordanceCreator.USE_PF);
-		this.usePFAtoms = new ArrayList<PFAtom>();
-		List<GroundedProp> useGroundedProps = usePF.getAllGroundedPropsForState(state);
-		for (GroundedProp useGroundedProp : useGroundedProps) {
-			this.usePFAtoms.add(new PFAtom(useGroundedProp));
-		}
-		
-		PropositionalFunction finishedPF = domain.getPropFunction(AffordanceCreator.FINISH_PF);
-		this.finishedPFAtoms = new ArrayList<PFAtom>();
-		List<GroundedProp> finishedGroundedProps = finishedPF.getAllGroundedPropsForState(state);
-		for (GroundedProp finishedGroundedProp : finishedGroundedProps) {
-			this.finishedPFAtoms.add(new PFAtom(finishedGroundedProp));
-		}
-		this.finishedPFAtom = this.finishedPFAtoms.get(0);
-		
-		PropositionalFunction botchedPF = domain.getPropFunction(AffordanceCreator.BOTCHED_PF);
-		this.botchedPFAtoms = new ArrayList<PFAtom>();
-		List<GroundedProp> botchedGroundedProps = botchedPF.getAllGroundedPropsForState(state);
-		for (GroundedProp botchedGroundedProp : botchedGroundedProps) {
-			this.botchedPFAtoms.add(new PFAtom(botchedGroundedProp));
-		}
-		this.botchedPFAtom = this.botchedPFAtoms.get(0);
-		
-		PropositionalFunction spaceOnPF = domain.getPropFunction(AffordanceCreator.SPACEON_PF);
-		this.spaceOnPFAtoms = new ArrayList<PFAtom>();
-		List<GroundedProp> spaceOnGroundedProps = spaceOnPF.getAllGroundedPropsForState(state);
-		for (GroundedProp spaceOnGroundedProp : spaceOnGroundedProps) {
-			this.spaceOnPFAtoms.add(new PFAtom(spaceOnGroundedProp));
-		}
-		this.spaceOnPFAtom = this.spaceOnPFAtoms.get(0);
-		
-		PropositionalFunction containerGreasedPF = domain.getPropFunction(AffordanceCreator.CONTAINERGREASED_PF);
-		this.containerGreasedPFAtoms = new ArrayList<PFAtom>();
-		List<GroundedProp> containerGreasedGroundedProps = containerGreasedPF.getAllGroundedPropsForState(state);
-		for (GroundedProp containerGreasedGroundedProp : containerGreasedGroundedProps) {
-			this.containerGreasedPFAtoms.add(new PFAtom(containerGreasedGroundedProp));
-		}
-		this.containerGreasedPFAtom = this.containerGreasedPFAtoms.get(0);
 	}
 	
 	public void setupDelegate(Domain domain, List<PFAtom> PFAtoms, String actionName, PFAtom goal) {
@@ -152,25 +118,73 @@ public class AffordanceCreator {
 			list.add(act);
 			HardAffordance aff= new HardAffordance(pfAtom, goal, list);
 			AffordanceDelegate affDelegate = new AffordanceDelegate(aff);
+			affDelegate.resampleActionSet();
 			this.affDelegates.add(affDelegate);
 		}
 	}
 	
+	public String getActionPF(String actionName) {
+		switch(actionName) {
+			case MixAction.className:
+				return AffordanceCreator.MIX_PF;
+			case MoveAction.className:
+				return AffordanceCreator.MOVE_PF;
+			case PourAction.className:
+				return AffordanceCreator.POUR_PF;
+			case UseAction.className:
+				return AffordanceCreator.USE_PF;
+			case GreaseAction.className:
+				return AffordanceCreator.GREASE_PF;
+			case SwitchAction.className:
+				return AffordanceCreator.SWITCH_PF;
+			default:
+				System.err.println("Action " + actionName + " has no PF associated with it!");
+				System.exit(0);
+				return null;
+		}
+	}
 	
-	public void setupAffordances(Domain domain, State state) {
-		
-		setupDelegate(domain, mixPFAtoms, MixAction.className, finishedPFAtom);
-		setupDelegate(domain, movePFAtoms, MoveAction.className, finishedPFAtom);
-		setupDelegate(domain, pourPFAtoms, PourAction.className, finishedPFAtom);
-		setupDelegate(domain, usePFAtoms, UseAction.className, finishedPFAtom);
-		setupDelegate(domain, greasePFAtoms, GreaseAction.className, containerGreasedPFAtom);
-		setupDelegate(domain, switchPFAtoms, SwitchAction.className, spaceOnPFAtom);
-		
-		this.affController = new AffordancesController(affDelegates);
+	public PFAtom getGoalPF(String actionName) {
+		switch(actionName) {
+			case GreaseAction.className:
+				return containerGreasedPFAtom;
+			case SwitchAction.className:
+				return spaceOnPFAtom;
+			default:
+				return finishedPFAtom;
+		}
+	}
+	
+	public void initializePFAtomVariable(PFAtom atom) {
+		String atomName = atom.getGroundedProp().pf.getName();
+		switch(atomName) {
+			case AffordanceCreator.FINISH_PF:
+				this.finishedPFAtom = atom;
+				break;
+			case AffordanceCreator.BOTCHED_PF:
+				this.botchedPFAtom = atom;
+				break;
+			case AffordanceCreator.CONTAINERGREASED_PF:
+				this.containerGreasedPFAtom = atom;
+				break;
+			case AffordanceCreator.SPACEON_PF:
+				this.spaceOnPFAtom = atom;
+				break;
+			default:
+				System.err.println("PFAtom " + atomName + " has no variable associated with it.");
+		}
 	}
 	
 	public AffordancesController getAffController() {
 		return this.affController;
 	}
-
+	
+	public PFAtom getPFAtom(String name) {
+		for (PFAtom atom : this.PFAtoms) {
+			if (atom.getGroundedProp().pf.getName().equals(name)) {
+				return atom;
+			}
+		}
+		return null;
+	}
 }
