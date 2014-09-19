@@ -22,6 +22,7 @@ import burlap.behavior.statehashing.NameDependentStateHashFactory;
 import burlap.behavior.statehashing.StateHashFactory;
 import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.Domain;
+import burlap.oomdp.core.LowMemState;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.PropositionalFunction;
@@ -50,7 +51,6 @@ import edu.brown.cs.h2r.baking.Recipes.DeviledEggs;
 import edu.brown.cs.h2r.baking.Recipes.MashedPotatoes;
 import edu.brown.cs.h2r.baking.Recipes.MoltenLavaCake;
 import edu.brown.cs.h2r.baking.Recipes.PeanutButterCookies;
-import edu.brown.cs.h2r.baking.Recipes.PecanPie;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.actions.BakingAction;
 import edu.brown.cs.h2r.baking.actions.GreaseAction;
@@ -95,7 +95,7 @@ public class SubgoalDetermination {
 	}
 	
 	public static State generateInitialState(Domain domain, Recipe recipe) {
-		State state = new State();
+		State state = new LowMemState();
 		
 		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
 		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2", "baking_dish", "melting_pot");
@@ -116,9 +116,7 @@ public class SubgoalDetermination {
 		//knowledgebase.addTools(domain, state, SpaceFactory.SPACE_COUNTER);
 	
 		for (ObjectInstance ingredientInstance : ingredients) {
-			if (state.getObject(ingredientInstance.getName()) == null) {
-				state.addObject(ingredientInstance);
-			}
+			state.addObject(ingredientInstance);
 		}
 		
 		ObjectClass containerClass = domain.getObjectClass(ContainerFactory.ClassName);		
