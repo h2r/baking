@@ -45,7 +45,12 @@ import edu.brown.cs.h2r.baking.ObjectFactories.ToolFactory;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.ContainersCleaned;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
+import edu.brown.cs.h2r.baking.Recipes.BannanaBread;
 import edu.brown.cs.h2r.baking.Recipes.Brownies;
+import edu.brown.cs.h2r.baking.Recipes.CherryBlondies;
+import edu.brown.cs.h2r.baking.Recipes.CherryPie;
+import edu.brown.cs.h2r.baking.Recipes.ChocolateChipCookies;
+import edu.brown.cs.h2r.baking.Recipes.CranberryWalnutCookies;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.Recipes.RecipeActionParameters;
 import edu.brown.cs.h2r.baking.actions.BakingAction;
@@ -638,93 +643,10 @@ public class BaxterKitchen {
 	public static void main(String[] args) throws IOException {
 		
 		BaxterKitchen kitchen = new BaxterKitchen();
-		Recipe brownies = new Brownies();
-		Domain domain = kitchen.generateDomain(brownies);
-		kitchen.testRecipeExecution(domain, brownies);
+		Recipe recipe = new CherryPie();
+		Domain domain = kitchen.generateDomain(recipe);
+		kitchen.testRecipeExecution(domain, recipe);
 		
 		//List<Policy> policies = kitchen.generatePolicies(domain, brownies);
-		
-		/*
-		State state = kitchen.generateInitialState(domain, brownies);
-		
-		
-		String container = "cocoa_bowl";
-		state = kitchen.addObjectInRobotsSpace(domain, state, container);
-		String[] action = kitchen.getRobotAction(domain, state, brownies);
-		System.out.println(Arrays.toString(action));
-		state = kitchen.disposeObject(state, container);
-		
-		System.out.println("");
-		
-		container = "flour_bowl";
-		state = kitchen.addObjectInRobotsSpace(domain, state, container);
-		action = kitchen.getRobotAction(domain, state, brownies);
-		System.out.println(Arrays.toString(action));
-		state = kitchen.disposeObject(state, container);
-		
-		System.out.println("");		
-		
-		state = kitchen.addObjectInRobotsSpace(domain, state, "flour_bowl");
-		state = kitchen.addObjectInRobotsSpace(domain, state, "cocoa_bowl");
-		
-		String[] action = kitchen.getRobotAction(domain, state, brownies);
-		System.out.println(Arrays.toString(action));
-		state = kitchen.disposeObject(state, "spoon");
-		
-		System.out.println("");
-		
-		
-
-		
-		String container = "cocoa_bowl";
-		state = kitchen.addObjectInRobotsSpace(domain, state, container);
-		action = kitchen.getRobotAction(domain, state, brownies);
-		System.out.println(Arrays.toString(action));
-		state = kitchen.disposeObject(state, container);
-		
-		System.out.println("");
-		
-		
-		container = "butter_bowl";
-		state = kitchen.addObjectInRobotsSpace(domain, state, container);
-		action = kitchen.getRobotAction(domain, state, brownies);
-		System.out.println(Arrays.toString(action));
-		state = kitchen.disposeObject(state, container);
-		
-		System.out.println("");
-				
-		container = "white_sugar_bowl";
-		state = kitchen.addObjectInRobotsSpace(domain, state, container);
-		action = kitchen.getRobotAction(domain, state, brownies);
-		System.out.println(Arrays.toString(action));
-		state = kitchen.disposeObject(state, container);
-		
-		System.out.println("");
-		
-		
-		action = kitchen.getRobotAction(domain, state, brownies);
-		System.out.println(Arrays.toString(action));
-		state = kitchen.disposeObject(state, "whisk");
-		
-		System.out.println("");
-		
-		container = "mixing_bowl_1";
-		state = kitchen.addObjectInRobotsSpace(domain, state, container);
-		action = kitchen.getRobotAction(domain, state, brownies);
-		System.out.println(Arrays.toString(action));
-		kitchen.disposeObject(state, container);
-		
-		System.out.println("");
-		
-		
-		container = "mixing_bowl_2";
-		state = kitchen.addObjectInRobotsSpace(domain, state, container);
-		action = kitchen.getRobotAction(domain, state, brownies);
-		System.out.println(Arrays.toString(action));
-		state = kitchen.disposeObject(state, container);
-		
-		System.out.println("");
-		
-		*/
 	}
 }
