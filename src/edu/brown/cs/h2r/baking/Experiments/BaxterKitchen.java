@@ -46,6 +46,7 @@ import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunctio
 import edu.brown.cs.h2r.baking.PropositionalFunctions.ContainersCleaned;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
 import edu.brown.cs.h2r.baking.Recipes.BannanaBread;
+import edu.brown.cs.h2r.baking.Recipes.BlueberryMuffins;
 import edu.brown.cs.h2r.baking.Recipes.Brownies;
 import edu.brown.cs.h2r.baking.Recipes.CherryBlondies;
 import edu.brown.cs.h2r.baking.Recipes.CherryPie;
@@ -641,7 +642,7 @@ public class BaxterKitchen {
 	public static void main(String[] args) throws IOException {
 		
 		BaxterKitchen kitchen = new BaxterKitchen();
-		Recipe recipe = new CherryPie();
+		Recipe recipe = new BlueberryMuffins();
 		Domain domain = kitchen.generateDomain(recipe);
 		kitchen.testRecipeExecution(domain, recipe);
 		

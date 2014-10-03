@@ -51,22 +51,22 @@ public class CherryPie extends Recipe {
 		List<IngredientRecipe> ingredientList7 = new ArrayList<IngredientRecipe>();
 		ingredientList7.add(pieMix);
 		ingredientList7.add(pieCrust);
-		IngredientRecipe cherryPie = new IngredientRecipe("CherryPie", Recipe.BAKED, Recipe.SWAPPED, ingredientList7);
+		IngredientRecipe cherryPie = new IngredientRecipe("cherryPie", Recipe.BAKED, Recipe.SWAPPED, ingredientList7);
 		this.topLevelIngredient = cherryPie;
 		this.subgoalIngredients.put(cherryPie.getName(), cherryPie);
 	}
 	
 	public void setUpSubgoals(Domain domain) {
-		BakingPropositionalFunction pf1 = new SpaceOn(AffordanceCreator.SPACEON_PF, domain, this.topLevelIngredient, SpaceFactory.SPACE_OVEN);
+		/*BakingPropositionalFunction pf1 = new SpaceOn(AffordanceCreator.SPACEON_PF, domain, this.topLevelIngredient, SpaceFactory.SPACE_OVEN);
 		BakingSubgoal sg1 = new BakingSubgoal(pf1, this.topLevelIngredient);
-		this.subgoals.add(sg1);
+		this.subgoals.add(sg1);*/
 		
 		BakingPropositionalFunction pf2 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("dry_crust"));
 		BakingSubgoal sg2 = new BakingSubgoal(pf2, this.subgoalIngredients.get("dry_crust"));
 		BakingPropositionalFunction pf2clean = new ContainersCleaned(AffordanceCreator.CONTAINERS_CLEANED_PF, domain,this.subgoalIngredients.get("dry_crust") );
 		BakingSubgoal sg2clean = new BakingSubgoal(pf2clean, this.subgoalIngredients.get("dry_crust"));
 		this.subgoals.add(sg2clean);
-		sg2.addPrecondition(sg1);
+		//sg2.addPrecondition(sg1);
 		this.subgoals.add(sg2);
 
 		BakingPropositionalFunction pf3 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("flaky_crust"));
