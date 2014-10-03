@@ -632,10 +632,8 @@ public class BaxterKitchen {
 					
 				}
 				//if (checkSubgoal)
-				System.out.println("Subgoal " + ing.getName() + ": " + pf.isTrue(state, ""));
-				
-				
-				
+				String isClean = (pf instanceof ContainersCleaned) ? "_clean" : "";
+				System.out.println("Subgoal " + ing.getName() + isClean + ": " + pf.isTrue(state, ""));				
 			}
 		}
 	}
