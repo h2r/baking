@@ -8,6 +8,7 @@ import edu.brown.cs.h2r.baking.PropositionalFunctions.*;
 import edu.brown.cs.h2r.baking.actions.*;
 import burlap.behavior.affordances.AffordanceDelegate;
 import burlap.behavior.affordances.AffordancesController;
+import burlap.behavior.affordances.Affordance;
 import burlap.behavior.affordances.HardAffordance;
 import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.Domain;
@@ -164,7 +165,7 @@ public class AffordanceCreator {
 			AbstractGroundedAction act = new GroundedAction(domain.getAction(actionName), pfAtom.getGroundedProp().params);
 			List<AbstractGroundedAction> list = new ArrayList<AbstractGroundedAction>();
 			list.add(act);
-			HardAffordance aff= new HardAffordance(pfAtom, goal, list);
+			Affordance aff= new HardAffordance(pfAtom, goal, list);
 			AffordanceDelegate affDelegate = new AffordanceDelegate(aff);
 			this.affDelegates.add(affDelegate);
 		}

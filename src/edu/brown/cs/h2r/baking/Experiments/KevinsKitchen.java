@@ -219,6 +219,7 @@ public class KevinsKitchen implements DomainGenerator {
 		RTDP planner;
 		Policy p;
 		AffordancesController affController = theCreator.getAffController();
+		//affController.setCurrentGoal(isSuccess);
 		if(affordanceMode) {
 			// RTDP planner that also uses affordances to trim action space during the Bellman update
 			planner = new BellmanAffordanceRTDP(domain, rf, recipeTerminalFunction, gamma, hashFactory, vInit, numRollouts, maxDelta, maxDepth, affController);
