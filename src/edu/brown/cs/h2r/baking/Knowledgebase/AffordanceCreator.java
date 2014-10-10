@@ -33,7 +33,7 @@ public class AffordanceCreator {
 	public static final String BOTCHED_PF = "botched";
 	public static final String SPACEON_PF = "spaceOnPF";
 	public static final String CONTAINERGREASED_PF = "containerGreasedPF";
-	public static final String CONTAINERS_CLEANED_PF = "containerGreasedPF";
+	public static final String CONTAINERS_CLEANED_PF = "containerCleanedPF";
 	
 	
 	public static final String INGREDIENT_PF = "ingredientPF";
