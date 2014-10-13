@@ -33,9 +33,9 @@ public class AllowMoving extends BakingPropositionalFunction {
 		
 		
 		if (SpaceFactory.isBaking(space)) {
-			return this.checkMoveToBaking(state, contents);
+			return this.checkMoveToBaking(state, container, contents);
 		} else if (SpaceFactory.isHeating(space)) {
-			return this.checkMoveToHeating(state, contents);
+			return this.checkMoveToHeating(state, container, contents);
 		} else if (SpaceFactory.isCleaning(space)) { 
 			return this.checkMoveToCleaning(state, container);
 		} else {
@@ -43,9 +43,12 @@ public class AllowMoving extends BakingPropositionalFunction {
 		} 
 	}
 	
-	private boolean checkMoveToBaking(State state, Set<String> contents) {
+	private boolean checkMoveToBaking(State state, ObjectInstance container, Set<String> contents) {
 		String ingredientName = topLevelIngredient.getName();
 		boolean recipeIngBaked = this.topLevelIngredient.getBaked();
+		if (!ContainerFactory.isBakingContainer(container)) {
+			return false;
+		}
 		if (recipeIngBaked && contents.contains(ingredientName) ) {
 			boolean objIngBaked = IngredientFactory.isBakedIngredient(state.getObject(ingredientName));
 			if (!objIngBaked) {
@@ -66,10 +69,13 @@ public class AllowMoving extends BakingPropositionalFunction {
 		return false;
 	}
 	
-	private boolean checkMoveToHeating(State state, Set<String> contents) {
+	private boolean checkMoveToHeating(State state, ObjectInstance container, Set<String> contents) {
 		String ingredientName = topLevelIngredient.getName();
 		boolean recipeIngHeated = this.topLevelIngredient.getHeated();
 		ObjectInstance topLevelObj = state.getObject(ingredientName);
+		if (!ContainerFactory.isHeatingContainer(container)) {
+			return false;
+		}
 		if (recipeIngHeated && contents.contains(ingredientName) ) {
 			if (!IngredientFactory.isHeatedIngredient(topLevelObj)) {
 				if (!IngredientFactory.isMeltedAtRoomTemperature(topLevelObj)) {

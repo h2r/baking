@@ -220,7 +220,7 @@ public class Knowledgebase {
 		return new HashSet<String>();
 	}
 	
-	// Determine whether the ingredient in the container can be swapped out (flour + liquid -> flour).
+	// Determine whether the ingredient in the container can be swapped out (flour + liquid -> batter).
 	// If a match is found, return the name of the combination found.
 	public String canCombine(State state, ObjectInstance container) {
 		Set<ObjectInstance> contains = new HashSet<>();
@@ -230,47 +230,17 @@ public class Knowledgebase {
 			contains.add(state.getObject(content));
 		}
 		int contentSize = contents.size();
+		
+		// Check to see if our contents exist in this map and could result in a combination.
+		// Said map links possible combinations of types of ingredients that could be combined
+		// to create a complex ingredient. These are very general possible combinations.
 		for (Entry<String, ArrayList<Set<String>>> entry : this.combinationMap.entrySet()) {
 			String key = entry.getKey();
 			ArrayList<Set<String>> possibleCombinations = entry.getValue();
 			for (Set<String> necessaryTraits : possibleCombinations) {
-				// If there's only one necessary trait, then this combination can be treated like
-				// a "collection" (that is, a collection of dry ingredients, or a collection of wet
-				// ingredients).
-				if (necessaryTraits.size() == 1) {
-					if (contentSize != 1) {
-						continue;
-					}
-					String[] traitArray = new String[1];
-					String trait = necessaryTraits.toArray(traitArray)[0];
-					Boolean match = true;
-					for (ObjectInstance obj : contains) {
-						if (!IngredientFactory.getTraits(obj).contains(trait)) {
-							match = false;
-						}
-					}
-					if (match) {
-						return key;
-					}
-					
-				} else {
-					if (contentSize != 2) {
-						continue;
-					}
-					String[] traitArray = new String[necessaryTraits.size()];
-					necessaryTraits.toArray(traitArray);
-					ObjectInstance[] contentArray = new ObjectInstance[contains.size()];
-					contains.toArray(contentArray);
-					// If the combination has two traits (flour + liquid), then check that either ingredient
-					// 1 has trait 1 and ingredient 2 has trait 2 or vice versa!
-					if ((IngredientFactory.getTraits(contentArray[0]).contains(traitArray[0])) 
-							&& (IngredientFactory.getTraits(contentArray[1]).contains(traitArray[1]))) {
-						return key;
-					}
-					if ((IngredientFactory.getTraits(contentArray[0]).contains(traitArray[1])) 
-							&& (IngredientFactory.getTraits(contentArray[1]).contains(traitArray[0]))) {
-						return key;
-					}
+				String name = this.combinationPossible(contains, key, necessaryTraits);
+				if (name != null) {
+					return name;
 				}
 			}
 		}
@@ -336,5 +306,46 @@ public class Knowledgebase {
 				IngredientFactory.heatIngredient(ing);
 			}
 		}
+	}
+	
+	// For a given combination (whose name is key), then check given the contents of our bowl, those can be mixed
+	// to create a combination. The parameters of said combination are given by necessaryTraits, which states
+	// what kind of ingredients (flours, oils sugars, nuts) our combination needs.
+	public String combinationPossible(Set<ObjectInstance> contains, String key, Set<String> necessaryTraits) {
+		// If there's only one necessary trait, then this combination can be treated like
+		// a "collection" (that is, a collection of dry ingredients, or a collection of wet
+		// ingredients).
+		if (necessaryTraits.size() == 1) {
+			String[] traitArray = new String[1];
+			String trait = necessaryTraits.toArray(traitArray)[0];
+			Boolean match = true;
+			
+			// make sure all objects have the necessary trait
+			for (ObjectInstance obj : contains) {
+				if (!IngredientFactory.getTraits(obj).contains(trait)) {
+					match = false;
+				}
+			}
+			if (match) {
+				return key;
+			}
+			
+		} else {
+			String[] traitArray = new String[necessaryTraits.size()];
+			necessaryTraits.toArray(traitArray);
+			ObjectInstance[] contentArray = new ObjectInstance[contains.size()];
+			contains.toArray(contentArray);
+			// If the combination has two traits (flour + liquid), then check that either ingredient
+			// 1 has trait 1 and ingredient 2 has trait 2 or vice versa!
+			if ((IngredientFactory.getTraits(contentArray[0]).contains(traitArray[0])) 
+					&& (IngredientFactory.getTraits(contentArray[1]).contains(traitArray[1]))) {
+				return key;
+			}
+			if ((IngredientFactory.getTraits(contentArray[0]).contains(traitArray[1])) 
+					&& (IngredientFactory.getTraits(contentArray[1]).contains(traitArray[0]))) {
+				return key;
+			}
+		}
+		return null;
 	}
 }

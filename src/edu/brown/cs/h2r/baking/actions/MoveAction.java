@@ -37,19 +37,9 @@ public class MoveAction extends BakingAction {
 		String containerName = params[1];
 		ObjectInstance container = state.getObject(containerName);
 		
-		String containerSpaceName = ContainerFactory.getSpaceName(container);
-		ObjectInstance containerSpace = state.getObject(containerSpaceName);
-		
+		String containerSpaceName = ContainerFactory.getSpaceName(container);		
 		if (containerSpaceName.equals(spaceName)) {
 			return BakingActionResult.failure(containerName + " is already in " + spaceName);
-		}
-		
-		if (SpaceFactory.isBaking(space) && !ContainerFactory.isBakingContainer(container)) {
-			return BakingActionResult.failure(spaceName + " can only contain baking containers");
-		}
-		
-		if (SpaceFactory.isHeating(space) && !ContainerFactory.isHeatingContainer(container)) {
-			return BakingActionResult.failure(spaceName + " can only contain heating containers");
 		}
 		
 		return BakingActionResult.success();		
@@ -64,7 +54,6 @@ public class MoveAction extends BakingAction {
 	@Override
 	protected State performActionHelper(State state, String[] params) {
 		super.performActionHelper(state, params);
-		//System.out.println("Moving container " + params[1] + " to " + params[2]);
 		ObjectInstance containerInstance = state.getObject(params[1]);
 		ObjectInstance spaceInstance = state.getObject(params[2]);
 		move (state, containerInstance, spaceInstance);
@@ -100,13 +89,6 @@ public class MoveAction extends BakingAction {
 	
 	private static void movingToHeatingSpace(State state, ObjectInstance spaceInstance, ObjectInstance containerInstance) {
 		if (!ContainerFactory.isEmptyContainer(containerInstance) && ContainerFactory.isHeatingContainer(containerInstance)) {
-			/*Set<String> names = ContainerFactory.getContentNames(containerInstance);
-			for (String name : names) {
-				ObjectInstance ing = state.getObject(name);
-				if (!IngredientFactory.isMeltedAtRoomTemperature(ing)) {
-					Knowledgebase.heatIngredient(container, ing);
-				}
-			}*/
 			Knowledgebase.heatContainer(state, containerInstance);
 		}
 	}

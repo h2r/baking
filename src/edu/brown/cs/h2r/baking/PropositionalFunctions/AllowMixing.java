@@ -25,6 +25,10 @@ public class AllowMixing extends BakingPropositionalFunction {
 		int neededAmount =  this.topLevelIngredient.getContents().size() 
 				+ this.topLevelIngredient.getNecessaryTraits().size();
 		
+		if (contentAmount < 2) {
+			return false;
+		}
+		
 		if (contentAmount != neededAmount) {
 			return false;
 		}
