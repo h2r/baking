@@ -125,7 +125,7 @@ public class DualAgentPerfectRobot  implements DomainGenerator {
 		}
 		/* */
 		List<ObjectInstance> containerInstances = 
-				Recipe.getContainers(containerClass, ingredientInstances, shelfSpace.getName());
+				Recipe.getContainersAndIngredients(containerClass, ingredientInstances, shelfSpace.getName());
 		
 		
 		for (ObjectInstance ingredientInstance : ingredientInstances) {

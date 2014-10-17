@@ -1,7 +1,8 @@
 package edu.brown.cs.h2r.baking.Testing;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.HashSet;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
@@ -18,7 +19,9 @@ import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
-import edu.brown.cs.h2r.baking.Recipes.*;
+import edu.brown.cs.h2r.baking.Recipes.CucumberSalad;
+import edu.brown.cs.h2r.baking.Recipes.MashedPotatoes;
+import edu.brown.cs.h2r.baking.Recipes.Recipe;
 
 public class TestRecipeFailure {
 		Knowledgebase knowledgebase;
@@ -31,44 +34,27 @@ public class TestRecipeFailure {
 		public void setUp() {
 			domain = new SADomain();
 			setUpDomain();
-			state = new State();
-			state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
+			List<ObjectInstance> objectsToAdd = new ArrayList<ObjectInstance>();
+			objectsToAdd.add(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
 			List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2");
-			state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter", containers, "human"));
+			objectsToAdd.add(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter", containers, "human"));
 
 			for (String container : containers) { 
-				state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "counter"));
+				objectsToAdd.add(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "counter"));
 			}
+			this.state = new State(objectsToAdd);
 		}
 		
 		public void setUpState() {
 			ObjectClass containerClass = domain.getObjectClass(ContainerFactory.ClassName);		
 			ObjectInstance counterSpace = state.getObject("counter");
-
+			List<ObjectInstance> objectsToAdd = new ArrayList<ObjectInstance>();
+			
 			List<ObjectInstance> ingredientInstances = allIngredients;
-			List<ObjectInstance> containerInstances = Recipe.getContainers(containerClass, ingredientInstances, counterSpace.getName());
-			
-			
-			for (ObjectInstance ingredientInstance : ingredientInstances) {
-				if (state.getObject(ingredientInstance.getName()) == null) {
-					state.addObject(ingredientInstance);
-				}
-			}
-			
-			for (ObjectInstance containerInstance : containerInstances) {
-				if (state.getObject(containerInstance.getName()) == null) {
-					ContainerFactory.changeContainerSpace(containerInstance, counterSpace.getName());
-					state.addObject(containerInstance);
-				}
-			}
-			
-			for (ObjectInstance ingredientInstance : ingredientInstances) {
-				if (IngredientFactory.getUseCount(ingredientInstance) >= 1) {
-					ObjectInstance ing = state.getObject(ingredientInstance.getName());
-					IngredientFactory.changeIngredientContainer(ing, ing.getName()+"_bowl");
-					ContainerFactory.addIngredient(state.getObject(ing.getName()+"_bowl"), ing.getName());
-				}
-			}
+			List<ObjectInstance> ingredientsAndContainers = 
+					Recipe.getContainersAndIngredients(containerClass, ingredientInstances, counterSpace.getName());
+			objectsToAdd.addAll(ingredientsAndContainers);
+			this.state = state.appendAllObjects(objectsToAdd);
 		}
 		
 		private void setUpDomain() {
@@ -95,7 +81,7 @@ public class TestRecipeFailure {
 		public void badAttributesSubgoal() {
 			topLevelIngredient = new MashedPotatoes().topLevelIngredient;
 			knowledgebase = new Knowledgebase();
-			allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
+			allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(domain, topLevelIngredient);
 			setUpState();
 			
 			List<String> contents = Arrays.asList("butter", "potatoes", "salt", "eggs");
@@ -113,7 +99,7 @@ public class TestRecipeFailure {
 		public void extraTraitIngredient() {
 			topLevelIngredient = new MashedPotatoes().topLevelIngredient;
 			knowledgebase = new Knowledgebase();
-			allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
+			allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(domain, topLevelIngredient);
 			setUpState();
 			
 			List<String> contents = Arrays.asList("butter", "potatoes", "salt", "eggs", "sea_salt");
@@ -131,7 +117,7 @@ public class TestRecipeFailure {
 		public void extraIngredientInSubgoal() {
 			topLevelIngredient = new CucumberSalad().topLevelIngredient;
 			knowledgebase = new Knowledgebase();
-			allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
+			allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(domain, topLevelIngredient);
 			setUpState();
 			ObjectClass ob = domain.getObjectClass("complex_ingredient");
 			
@@ -139,13 +125,13 @@ public class TestRecipeFailure {
 			ObjectInstance salad = IngredientFactory.getNewComplexIngredientObjectInstance(
 					ob, "Salad", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, "mixing_bowl_1", null,  
 					null, new HashSet<String>(),new HashSet<String>(), new HashSet<String>(), saladContents);
-			state.addObject(salad);
+			this.state = this.state.appendObject(salad);
 			
 			List<String> dressingContents = Arrays.asList("salt", "pepper", "olive_oil", "lemon_juice", "sea_salt");
 			ObjectInstance dressing = IngredientFactory.getNewComplexIngredientObjectInstance(
 					ob, "dressing", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, "mixing_bowl_2", null, 
 					null, new HashSet<String>(),new HashSet<String>(), new HashSet<String>(), dressingContents);
-			state.addObject(dressing);
+			this.state = this.state.appendObject(dressing);
 			
 			ObjectInstance cucumberSalad = IngredientFactory.getNewComplexIngredientObjectInstance(
 					ob, "CucumberSalad", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, "mixing_bowl_1", null, 
@@ -159,7 +145,7 @@ public class TestRecipeFailure {
 		public void cantCompleteRecipe() {
 			topLevelIngredient = new MashedPotatoes().topLevelIngredient;
 			knowledgebase = new Knowledgebase();
-			allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
+			allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(domain, topLevelIngredient);
 			
 			int index = 0;
 			for (ObjectInstance ing : allIngredients) {
@@ -186,10 +172,11 @@ public class TestRecipeFailure {
 		public void notEnoughIngredient() {
 			topLevelIngredient = new MashedPotatoes().topLevelIngredient;
 			knowledgebase = new Knowledgebase();
-			allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
+			allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(domain, topLevelIngredient);
 			setUpState();
-			IngredientFactory.setUseCount(state.getObject("eggs"), 0);
-			
+			ObjectInstance eggs = state.getObject("eggs");
+			ObjectInstance newEggs = IngredientFactory.changeUseCount(eggs, 0);
+			this.state = this.state.replaceObject(eggs, newEggs);
 			List<String> contents = Arrays.asList("butter", "potatoes", "salt");
 			
 			ObjectInstance mash = IngredientFactory.getNewComplexIngredientObjectInstance(

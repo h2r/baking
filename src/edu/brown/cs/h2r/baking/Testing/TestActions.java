@@ -1,12 +1,14 @@
 package edu.brown.cs.h2r.baking.Testing;
 
-import org.junit.Assert;
-
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
@@ -21,8 +23,14 @@ import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ToolFactory;
-import edu.brown.cs.h2r.baking.Recipes.*;
-import edu.brown.cs.h2r.baking.actions.*;
+import edu.brown.cs.h2r.baking.Recipes.Brownies;
+import edu.brown.cs.h2r.baking.Recipes.MashedPotatoes;
+import edu.brown.cs.h2r.baking.Recipes.Recipe;
+import edu.brown.cs.h2r.baking.actions.MixAction;
+import edu.brown.cs.h2r.baking.actions.MoveAction;
+import edu.brown.cs.h2r.baking.actions.PourAction;
+import edu.brown.cs.h2r.baking.actions.SwitchAction;
+import edu.brown.cs.h2r.baking.actions.UseAction;
 
 public class TestActions {
 
@@ -36,14 +44,18 @@ public class TestActions {
 	public void setUp() {
 		domain = new SADomain();
 		this.setUpDomain();
-		state = new State();
-		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
+		List<ObjectInstance> objects = new ArrayList<ObjectInstance>();
+		ObjectInstance agent = AgentFactory.getNewHumanAgentObjectInstance(domain, "human");
+		objects.add(agent);
 		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2");
-		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter", containers, "human"));
-
+		ObjectInstance counter = SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter", containers, "human");
+		objects.add(counter);
+		
 		for (String container : containers) { 
-			state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "counter"));
+			ObjectInstance containerInstance = ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "counter");
+			objects.add(containerInstance);
 		}
+		this.state = new State(objects);
 	}
 	
 	public void setUpState() {
@@ -51,29 +63,14 @@ public class TestActions {
 		ObjectInstance counterSpace = state.getObject("counter");
 
 		List<ObjectInstance> ingredientInstances = allIngredients;
-		List<ObjectInstance> containerInstances = Recipe.getContainers(containerClass, ingredientInstances, counterSpace.getName());
+		List<ObjectInstance> containerInstances = 
+				Recipe.getContainersAndIngredients(containerClass, ingredientInstances, counterSpace.getName());
 		
+		List<ObjectInstance> objectsToAdd = new ArrayList<ObjectInstance>();
+		objectsToAdd.addAll(ingredientInstances);
+		objectsToAdd.addAll(containerInstances);
 		
-		for (ObjectInstance ingredientInstance : ingredientInstances) {
-			if (state.getObject(ingredientInstance.getName()) == null) {
-				state.addObject(ingredientInstance);
-			}
-		}
-		
-		for (ObjectInstance containerInstance : containerInstances) {
-			if (state.getObject(containerInstance.getName()) == null) {
-				ContainerFactory.changeContainerSpace(containerInstance, counterSpace.getName());
-				state.addObject(containerInstance);
-			}
-		}
-		
-		for (ObjectInstance ingredientInstance : ingredientInstances) {
-			if (IngredientFactory.getUseCount(ingredientInstance) >= 1) {
-				ObjectInstance ing = state.getObject(ingredientInstance.getName());
-				IngredientFactory.changeIngredientContainer(ing, ing.getName()+"_bowl");
-				ContainerFactory.addIngredient(state.getObject(ing.getName()+"_bowl"), ing.getName());
-			}
-		}
+		this.state = this.state.appendAllObjects(objectsToAdd);
 	}
 	
 	private void setUpDomain() {
@@ -100,7 +97,7 @@ public class TestActions {
 	public void testMixAction() {
 		Recipe recipe = new Brownies();
 		knowledgebase = new Knowledgebase();
-		allIngredients = knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
+		allIngredients = knowledgebase.getRecipeObjectInstanceList(domain, recipe);
 		allIngredients.add(IngredientFactory.getNewIngredientInstance(knowledgebase.
 				getIngredient("orange_juice"), "orange_juice", domain.getObjectClass("simple_ingredient")));
 		this.setUpState();
@@ -146,8 +143,8 @@ public class TestActions {
 		
 		ObjectInstance stove = SpaceFactory.getNewHeatingSpaceObjectInstance(domain, "stove", null, "");
 		ObjectInstance meltingPot = ContainerFactory.getNewHeatingContainerObjectInstance(domain, "melting_pot", null, "counter");
-		state.addObject(meltingPot);
-		state.addObject(stove);
+		this.state = this.state.appendObject(meltingPot);
+		this.state = this.state.appendObject(stove);
 		Action switchA = new SwitchAction(domain);
 		Action move = new MoveAction(domain, topLevelIngredient);
 		
@@ -162,7 +159,7 @@ public class TestActions {
 	public void testMixActionOnStove() {
 		Recipe recipe = new Brownies();
 		knowledgebase = new Knowledgebase();
-		allIngredients = knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
+		allIngredients = knowledgebase.getRecipeObjectInstanceList(domain, recipe);
 		this.setUpState();
 		Action mix = new MixAction(domain, topLevelIngredient);
 		((MixAction)mix).changeKnowledgebase(knowledgebase);
@@ -173,8 +170,8 @@ public class TestActions {
 		
 		ObjectInstance stove = SpaceFactory.getNewHeatingSpaceObjectInstance(domain, "stove", null, "");
 		ObjectInstance meltingPot = ContainerFactory.getNewHeatingContainerObjectInstance(domain, "melting_pot", null, "counter");
-		state.addObject(meltingPot);
-		state.addObject(stove);
+		this.state = this.state.appendObject(meltingPot);
+		this.state = this.state.appendObject(stove);
 		
 		state = switchA.performAction(state, new String[] {"human", "stove"});
 		state = move.performAction(state, new String[] {"human", "melting_pot", "stove"});
@@ -191,22 +188,23 @@ public class TestActions {
 	public void testMoveAction() {	
 		Recipe recipe = new Brownies();
 		knowledgebase = new Knowledgebase();
-		allIngredients = knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
+		allIngredients = knowledgebase.getRecipeObjectInstanceList(domain, recipe);
 		this.setUpState();
 		Action move = new MoveAction(domain, topLevelIngredient);
 		
 		ObjectInstance oven = SpaceFactory.getNewBakingSpaceObjectInstance(domain, "oven", null, "");
 		ObjectInstance stove = SpaceFactory.getNewHeatingSpaceObjectInstance(domain, "stove", null, "");
 		ObjectInstance counter = state.getObject("counter");
-		state.addObject(oven);
-		state.addObject(stove);
-
+		this.state = this.state.appendObject(oven);
+		this.state = this.state.appendObject(stove);
+		
 		ObjectInstance meltingPot = ContainerFactory.getNewHeatingContainerObjectInstance(domain, "melting_pot", null, "counter");
 		ObjectInstance bakingPan = ContainerFactory.getNewBakingContainerObjectInstance(domain, "baking_pan", null, "counter");
-		state.addObject(meltingPot);
-		state.addObject(bakingPan);
-		SpaceFactory.addContainer(counter, meltingPot);
-		SpaceFactory.addContainer(counter, bakingPan);
+		this.state = this.state.appendObject(meltingPot);
+		this.state = this.state.appendObject(bakingPan);
+		ObjectInstance newCounter = SpaceFactory.addContainer(counter, meltingPot);
+		newCounter = SpaceFactory.addContainer(counter, bakingPan);
+		this.state = this.state.replaceObject(counter, newCounter);
 		
 		BakingAsserts.assertActionNotApplicable(move, state, new String[] {"human", "baking_pan", "stove"});
 		BakingAsserts.assertActionNotApplicable(move, state, new String[] {"human", "mixing_bowl_1", "stove"});
@@ -238,21 +236,20 @@ public class TestActions {
 	public void testMoveActionBake() {
 		Recipe recipe = new Brownies();
 		knowledgebase = new Knowledgebase();
-		allIngredients = knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
+		allIngredients = knowledgebase.getRecipeObjectInstanceList(domain, recipe);
 		this.setUpState();
 		Action move = new MoveAction(domain, topLevelIngredient);
 		Action switch_a = new SwitchAction(domain);
 		
 		ObjectInstance oven = SpaceFactory.getNewBakingSpaceObjectInstance(domain, "oven", null, "");
-		state.addObject(oven);
-
+		this.state = this.state.appendObject(oven);
 		ObjectInstance bakingPan = ContainerFactory.getNewBakingContainerObjectInstance(domain, "baking_pan", null, "counter");
-		state.addObject(bakingPan);
+		this.state = this.state.appendObject(bakingPan);
 		
 		ObjectInstance brownies = IngredientFactory.getNewIngredientInstance(this.topLevelIngredient, "brownies", domain.getObjectClass(IngredientFactory.ClassNameComplex));
 		//raw brownies
 		brownies.setValue("baked", 0);
-		state.addObject(brownies);
+		this.state = this.state.appendObject(brownies);
 		ContainerFactory.addIngredient(bakingPan, brownies.getName());
 		
 		
@@ -273,16 +270,16 @@ public class TestActions {
 	public void testMoveActionMelt() {
 		Recipe recipe = new Brownies();
 		knowledgebase = new Knowledgebase();
-		allIngredients = knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
+		allIngredients = knowledgebase.getRecipeObjectInstanceList(domain, recipe);
 		this.setUpState();
 		Action move = new MoveAction(domain, topLevelIngredient);
 		Action switchA = new SwitchAction(domain);
 		
 		ObjectInstance stove = SpaceFactory.getNewHeatingSpaceObjectInstance(domain, "stove", null, "");
-		state.addObject(stove);
+		this.state = this.state.appendObject(stove);
 
 		ObjectInstance melting_pot = ContainerFactory.getNewHeatingContainerObjectInstance(domain, "melting_pot", null, "counter");
-		state.addObject(melting_pot);
+		this.state = this.state.appendObject(melting_pot);
 		
 		ContainerFactory.addIngredient(melting_pot, "butter");
 		
@@ -302,7 +299,7 @@ public class TestActions {
 	public void testPourAction() {
 		Recipe recipe = new Brownies();
 		knowledgebase = new Knowledgebase();
-		allIngredients = knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
+		allIngredients = knowledgebase.getRecipeObjectInstanceList(domain, recipe);
 		this.setUpState();
 		Action pour = new PourAction(domain, topLevelIngredient);
 		
@@ -322,8 +319,8 @@ public class TestActions {
 		//pouring into a baking spce
 		ObjectInstance oven = SpaceFactory.getNewBakingSpaceObjectInstance(domain, "oven", null, "");
 		ObjectInstance bakingDish = ContainerFactory.getNewBakingContainerObjectInstance(domain, "baking_dish", null, "counter");
-		state.addObject(bakingDish);
-		state.addObject(oven);
+		this.state = this.state.appendObject(oven);
+		this.state = this.state.appendObject(bakingDish);
 		Action move = new MoveAction(domain, topLevelIngredient);
 		state = move.performAction(state, new String[] {"human", "baking_dish", "oven"});
 	
@@ -334,7 +331,7 @@ public class TestActions {
 	public void testPourToStove() {
 		Recipe recipe = new Brownies();
 		knowledgebase = new Knowledgebase();
-		allIngredients = knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
+		allIngredients = knowledgebase.getRecipeObjectInstanceList(domain, recipe);
 		this.setUpState();
 		Action pour = new PourAction(domain, topLevelIngredient);
 		Action switchA = new SwitchAction(domain);
@@ -342,8 +339,8 @@ public class TestActions {
 		
 		ObjectInstance stove = SpaceFactory.getNewHeatingSpaceObjectInstance(domain, "stove", null, "");
 		ObjectInstance meltingPot = ContainerFactory.getNewHeatingContainerObjectInstance(domain, "melting_pot", null, "counter");
-		state.addObject(meltingPot);
-		state.addObject(stove);
+		this.state = this.state.appendObject(stove);
+		this.state = this.state.appendObject(meltingPot);
 		
 		state = switchA.performAction(state, new String[] {"human", "stove"});
 		state = move.performAction(state, new String[] {"human", "melting_pot", "stove"});
@@ -356,14 +353,14 @@ public class TestActions {
 	public void testSwitchAction() {
 		Recipe recipe = new Brownies();
 		knowledgebase = new Knowledgebase();
-		allIngredients = knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
+		allIngredients = knowledgebase.getRecipeObjectInstanceList(domain, recipe);
 		this.setUpState();
 		Action switchA = new SwitchAction(domain);
 		
 		ObjectInstance oven = SpaceFactory.getNewBakingSpaceObjectInstance(domain, "oven", null, "");
 		ObjectInstance stove = SpaceFactory.getNewHeatingSpaceObjectInstance(domain, "stove", null, "");
-		state.addObject(oven);
-		state.addObject(stove);
+		this.state = this.state.appendObject(stove);
+		this.state = this.state.appendObject(oven);
 		
 		BakingAsserts.assertActionNotApplicable(switchA, state, new String[] {"human", "counter"});
 		
@@ -382,21 +379,21 @@ public class TestActions {
 	public void testSwitchActionBake() {
 		Recipe recipe = new Brownies();
 		knowledgebase = new Knowledgebase();
-		allIngredients = knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
+		allIngredients = knowledgebase.getRecipeObjectInstanceList(domain, recipe);
 		this.setUpState();
 		Action move = new MoveAction(domain, topLevelIngredient);
 		Action switchA = new SwitchAction(domain);
 		
 		ObjectInstance oven = SpaceFactory.getNewBakingSpaceObjectInstance(domain, "oven", null, "");
-		state.addObject(oven);
+		this.state = this.state.appendObject(oven);
 
 		ObjectInstance bakingPan = ContainerFactory.getNewBakingContainerObjectInstance(domain, "baking_pan", null, "counter");
-		state.addObject(bakingPan);
+		this.state = this.state.appendObject(bakingPan);
 		
 		ObjectInstance brownies = IngredientFactory.getNewIngredientInstance(this.topLevelIngredient, "brownies", domain.getObjectClass(IngredientFactory.ClassNameComplex));
 		//raw brownies
 		brownies.setValue("baked", 0);
-		state.addObject(brownies);
+		this.state = this.state.appendObject(brownies);
 		ContainerFactory.addIngredient(bakingPan, brownies.getName());
 		
 		
@@ -414,16 +411,16 @@ public class TestActions {
 	public void testSwitchActionMelt() {
 		Recipe recipe = new Brownies();
 		knowledgebase = new Knowledgebase();
-		allIngredients = knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
+		allIngredients = knowledgebase.getRecipeObjectInstanceList(domain, recipe);
 		this.setUpState();
 		Action move = new MoveAction(domain, topLevelIngredient);
 		Action switchA = new SwitchAction(domain);
 		
 		ObjectInstance stove = SpaceFactory.getNewHeatingSpaceObjectInstance(domain, "stove", null, "");
-		state.addObject(stove);
+		this.state = this.state.appendObject(stove);
 
 		ObjectInstance meltingPot = ContainerFactory.getNewHeatingContainerObjectInstance(domain, "melting_pot", null, "counter");
-		state.addObject(meltingPot);
+		this.state = this.state.appendObject(meltingPot);
 		
 		ContainerFactory.addIngredient(meltingPot, "butter");
 		
@@ -438,14 +435,15 @@ public class TestActions {
 	public void testUseActionSimple() {
 		Recipe recipe = new MashedPotatoes();
 		knowledgebase = new Knowledgebase();
-		allIngredients = knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
+		allIngredients = knowledgebase.getRecipeObjectInstanceList(domain, recipe);
 		this.setUpState();
 		Action use = new UseAction(domain, topLevelIngredient);
 		
 		ObjectInstance peeler = ToolFactory.getNewSimpleToolObjectInstance(domain, "peeler", "peelable", "peeled", "counter");
-		state.addObject(peeler);
-		SpaceFactory.addContainer(state.getObject("counter"), state.getObject("peeler"));
-		
+		this.state = this.state.appendObject(peeler);
+		ObjectInstance counter = state.getObject("counter");
+		ObjectInstance newCounter = SpaceFactory.addContainer(counter, state.getObject("peeler"));
+		this.state = this.state.replaceObject(counter, newCounter);
 		// Can't peel a non-peelabled
 		BakingAsserts.assertActionNotApplicable(use, state, new String[] {"human", "peeler", "butter_bowl"});
 		
@@ -466,13 +464,14 @@ public class TestActions {
 	public void testToolCarryEmpty() {
 		Recipe recipe = new MashedPotatoes();		
 		knowledgebase = new Knowledgebase();
-		knowledgebase.addTools(domain, state, SpaceFactory.SPACE_COUNTER);
-		allIngredients = knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
+		state = knowledgebase.addTools(domain, state, SpaceFactory.SPACE_COUNTER);
+		allIngredients = knowledgebase.getRecipeObjectInstanceList(domain, recipe);
 		this.setUpState();
 		Action use = new UseAction(domain, topLevelIngredient);
 		
 		ObjectInstance potatoes = state.getObject("potatoes");
-		IngredientFactory.addToolTrait(potatoes, "strainable");
+		ObjectInstance strainablePotatoes = IngredientFactory.addToolTrait(potatoes, "strainable");
+		this.state = this.state.replaceObject(potatoes, strainablePotatoes);
 		
 		state = use.performAction(state, new String[] {"human", "strainer", "potatoes_bowl"});
 		ObjectInstance strainer = state.getObject("strainer");
@@ -484,17 +483,18 @@ public class TestActions {
 	public void testToolCarryInclude() {
 		Recipe recipe = new MashedPotatoes();		
 		knowledgebase = new Knowledgebase();
-		knowledgebase.addTools(domain, state, SpaceFactory.SPACE_COUNTER);
-		allIngredients = knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
+		state = knowledgebase.addTools(domain, state, SpaceFactory.SPACE_COUNTER);
+		allIngredients = knowledgebase.getRecipeObjectInstanceList(domain, recipe);
 		this.setUpState();
 		Action use = new UseAction(domain, topLevelIngredient);
 		Action pour = new PourAction(domain, topLevelIngredient);
 		ObjectInstance fakeTool = ToolFactory.getNewCarryingToolObjectInstance(domain, "fakeTool", "fake",
 				"faked", SpaceFactory.SPACE_COUNTER, Arrays.asList("liquid"), new HashSet<String>());
-		state.addObject(fakeTool);
+		this.state = this.state.appendObject(fakeTool);
 		
 		ObjectInstance water = state.getObject("water");
-		IngredientFactory.addToolTrait(water, "fake");
+		ObjectInstance fakeWater = IngredientFactory.addToolTrait(water, "fake");
+		this.state = this.state.replaceObject(water, fakeWater);
 		
 		state = pour.performAction(state, new String[] {"human", "water_bowl", "mixing_bowl_1"});
 		state = pour.performAction(state, new String[] {"human", "potatoes_bowl", "mixing_bowl_1"});
@@ -510,17 +510,18 @@ public class TestActions {
 	public void testToolCarryIncludeNotApplicable() {
 		Recipe recipe = new MashedPotatoes();
 		knowledgebase = new Knowledgebase();
-		knowledgebase.addTools(domain, state, SpaceFactory.SPACE_COUNTER);
-		allIngredients = knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
+		state = knowledgebase.addTools(domain, state, SpaceFactory.SPACE_COUNTER);
+		allIngredients = knowledgebase.getRecipeObjectInstanceList(domain, recipe);
 		this.setUpState();
 		Action use = new UseAction(domain, topLevelIngredient);
 		Action pour = new PourAction(domain, topLevelIngredient);
 		ObjectInstance fakeTool = ToolFactory.getNewCarryingToolObjectInstance(domain, "fakeTool", "fake",
 				"faked", SpaceFactory.SPACE_COUNTER, Arrays.asList("liquid", "salt"), new HashSet<String>());
-		state.addObject(fakeTool);
+		this.state = this.state.appendObject(fakeTool);
 		
 		ObjectInstance water = state.getObject("water");
-		IngredientFactory.addToolTrait(water, "fake");
+		ObjectInstance fakeWater = IngredientFactory.addToolTrait(water, "fake");
+		this.state = this.state.replaceObject(water, fakeWater);
 		
 		state = pour.performAction(state, new String[] {"human", "water_bowl", "mixing_bowl_1"});
 		state = pour.performAction(state, new String[] {"human", "potatoes_bowl", "mixing_bowl_1"});
@@ -535,14 +536,15 @@ public class TestActions {
 	public void testToolCarryExclude() {
 		Recipe recipe = new MashedPotatoes();
 		knowledgebase = new Knowledgebase();
-		knowledgebase.addTools(domain, state, SpaceFactory.SPACE_COUNTER);
-		allIngredients = knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
+		state = knowledgebase.addTools(domain, state, SpaceFactory.SPACE_COUNTER);
+		allIngredients = knowledgebase.getRecipeObjectInstanceList(domain, recipe);
 		this.setUpState();
 		Action use = new UseAction(domain, topLevelIngredient);
 		Action pour = new PourAction(domain, topLevelIngredient);
 		
 		ObjectInstance potatoes = state.getObject("potatoes");
-		IngredientFactory.addToolTrait(potatoes, "strainable");
+		ObjectInstance strainablePotatoes = IngredientFactory.addToolTrait(potatoes, "strainable");
+		this.state = this.state.replaceObject(potatoes, strainablePotatoes);
 		
 		state = pour.performAction(state, new String[] {"human", "water_bowl", "mixing_bowl_1"});
 		state = pour.performAction(state, new String[] {"human", "potatoes_bowl", "mixing_bowl_1"});
@@ -558,14 +560,15 @@ public class TestActions {
 	public void testToolCarryExcludeNotApplicable() {
 		Recipe recipe = new MashedPotatoes();
 		knowledgebase = new Knowledgebase();
-		knowledgebase.addTools(domain, state, SpaceFactory.SPACE_COUNTER);
-		allIngredients = knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
+		state = knowledgebase.addTools(domain, state, SpaceFactory.SPACE_COUNTER);
+		allIngredients = knowledgebase.getRecipeObjectInstanceList(domain, recipe);
 		this.setUpState();
 		Action use = new UseAction(domain, topLevelIngredient);
 		Action pour = new PourAction(domain, topLevelIngredient);
 		
 		ObjectInstance potatoes = state.getObject("potatoes");
-		IngredientFactory.addToolTrait(potatoes, "strainable");
+		ObjectInstance strainablePotatoes = IngredientFactory.addToolTrait(potatoes, "strainable");
+		this.state = this.state.replaceObject(potatoes, strainablePotatoes);
 		
 		state = pour.performAction(state, new String[] {"human", "water_bowl", "mixing_bowl_1"});
 		state = pour.performAction(state, new String[] {"human", "potatoes_bowl", "mixing_bowl_1"});
@@ -584,14 +587,15 @@ public class TestActions {
 		knowledgebase = new Knowledgebase();
 		recipe.setUpSubgoals(domain);
 		recipe.addIngredientSubgoals();
-		allIngredients = knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
-		knowledgebase.addTools(domain, state, SpaceFactory.SPACE_COUNTER);
+		allIngredients = knowledgebase.getRecipeObjectInstanceList(domain, recipe);
+		state = knowledgebase.addTools(domain, state, SpaceFactory.SPACE_COUNTER);
 		this.setUpState();
 		Action use = new UseAction(domain, topLevelIngredient);
 		Action pour = new PourAction(domain, topLevelIngredient);
 		
 		ObjectInstance potatoes = state.getObject("potatoes");
-		IngredientFactory.addToolTrait(potatoes, "strainable");
+		ObjectInstance strainablePotatoes = IngredientFactory.addToolTrait(potatoes, "strainable");
+		this.state = this.state.replaceObject(potatoes, strainablePotatoes);
 		
 		state = pour.performAction(state, new String[] {"human", "water_bowl", "mixing_bowl_1"});
 		state = pour.performAction(state, new String[] {"human", "potatoes_bowl", "mixing_bowl_1"});

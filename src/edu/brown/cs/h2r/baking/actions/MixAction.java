@@ -1,23 +1,26 @@
 package edu.brown.cs.h2r.baking.actions;
+import static java.util.Arrays.asList;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 
-import static java.util.Arrays.asList;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
+import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.Experiments.ExperimentHelper;
 import edu.brown.cs.h2r.baking.Knowledgebase.Knowledgebase;
-import edu.brown.cs.h2r.baking.IngredientRecipe;
-import edu.brown.cs.h2r.baking.actions.BakingAction;
-import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 
 
@@ -38,7 +41,7 @@ public class MixAction extends BakingAction {
 		}
 
 		String agentName = params[0];
-		ObjectInstance agent =  state.getObject(params[0]);
+		ObjectInstance agent =  state.getObject(agentName);
 		
 		if (AgentFactory.isRobot(agent)) {
 			return BakingActionResult.failure("Robot cannot perform this action");
@@ -73,6 +76,22 @@ public class MixAction extends BakingAction {
 	}
 	
 	@Override
+	public String[] getUsedObjects(State state, String[] params) {
+		List<String> usedObjects =  new ArrayList<String>(Arrays.asList(params));
+		ObjectInstance container = state.getObject(params[1]);
+		Set<String> contents = ContainerFactory.getContentNames(container);
+		
+		for (String ingredient : contents) {
+			ObjectInstance obj = state.getObject(ingredient);
+			usedObjects.addAll(IngredientFactory.getRecursiveContentsAndSwapped(state, obj));
+		}
+		
+		usedObjects.addAll(contents);
+		String[] usedObjectsArray = new String[usedObjects.size()];
+		return usedObjects.toArray(usedObjectsArray);
+	}
+	
+	@Override
 	public boolean applicableInState(State state, String[] params) {
 		return this.checkActionIsApplicableInState(state, params).getIsSuccess();
 	}
@@ -81,19 +100,16 @@ public class MixAction extends BakingAction {
 	protected State performActionHelper(State state, String[] params) {
 		super.performActionHelper(state, params);
 		ObjectInstance containerInstance = state.getObject(params[1]);
-		this.mix(state, containerInstance);
-		return state;
+		return this.mix(state, containerInstance);
 	}
-	private void mix(State state, String container) {
-		mix(state, state.getObject(container));
-	}
-	private void mix(State state, ObjectInstance container)
+	
+	private State mix(State state, ObjectInstance container)
 	{	
 		ObjectClass complexIngredientClass = this.domain.getObjectClass(IngredientFactory.ClassNameComplex);
 		Random rando = new Random();
 		Set<String> contents = ContainerFactory.getContentNames(container);
-		String res;
-		if (!(res  = knowledgebase.canCombine(state, container)).equals("")) {
+		String res = knowledgebase.canCombine(state, container);
+		if (!res.equals("")) {
 			this.combineIngredients(state, domain, ingredient, container, res);
 		} else {
 			Set<ObjectInstance> hidden_copies = new HashSet<ObjectInstance>();
@@ -121,65 +137,74 @@ public class MixAction extends BakingAction {
 					IngredientFactory.getNewComplexIngredientObjectInstance(complexIngredientClass, 
 							Integer.toString(rando.nextInt()), Recipe.NO_ATTRIBUTES, false, container.getName(),
 							null, null, traits, new TreeSet<String>(), new TreeSet<String>(), contents);
-			state.addObject(newIngredient);
-			ContainerFactory.removeContents(container);
-			for (ObjectInstance ob : hidden_copies) {
+			ObjectInstance newContainer = ContainerFactory.removeContents(container);
+			state = state.replaceObject(container, newContainer);
+			/*for (ObjectInstance ob : hidden_copies) {
 				state.removeObject(state.getObject(ob.getName()));
 				state.addObject(ob);
-			}
+			}*/
 			
 			ContainerFactory.addIngredient(container, newIngredient.getName());
-			IngredientFactory.changeIngredientContainer(newIngredient, container.getName());
+			newIngredient = IngredientFactory.changeIngredientContainer(newIngredient, container.getName());
 			
 			ObjectInstance receivingSpace = state.getObject(ContainerFactory.getSpaceName(container));
 			if (SpaceFactory.isBaking(receivingSpace) && SpaceFactory.getOnOff(receivingSpace)) {
-				IngredientFactory.bakeIngredient(newIngredient);
+				newIngredient = IngredientFactory.bakeIngredient(newIngredient);
 			} else if (SpaceFactory.isHeating(receivingSpace) && SpaceFactory.getOnOff(receivingSpace)) {
-				IngredientFactory.heatIngredient(newIngredient);
+				newIngredient = IngredientFactory.heatIngredient(newIngredient);
 			}
 			
-			this.makeSwappedIngredient(state, newIngredient);
+			state = state.appendObject(newIngredient);
+			
+			
+			state = this.makeSwappedIngredient(state, newIngredient);
 		}
+		return state;
 	}
 	
 	public void changeKnowledgebase(Knowledgebase kb) {
 		this.knowledgebase = kb;
 	}
 	
-	public void combineIngredients(State state, Domain domain, IngredientRecipe recipe, ObjectInstance container, String toswap) {
+	public State combineIngredients(State state, Domain domain, IngredientRecipe recipe, ObjectInstance container, String toswap) {
 		Set<String> traits = new HashSet<String>(knowledgebase.getTraits(recipe.getName()));
 		//get the actual traits from the trait thing
 		Set<String> ings = ContainerFactory.getContentNames(container);
 		ObjectInstance newIng = IngredientFactory.getNewComplexIngredientObjectInstance(
 				domain.getObjectClass(IngredientFactory.ClassNameComplex), toswap, Recipe.NO_ATTRIBUTES, true, "", null, null, traits, new HashSet<String>(), new HashSet<String>(), ings);
 		// Make the hidden Copies
+		List<ObjectInstance> objectsToRemove = new ArrayList<ObjectInstance>(ings.size());
 		Set<ObjectInstance> hiddenCopies = new HashSet<ObjectInstance>();
 		for (String name : ings) {
 			ObjectInstance ob = state.getObject(name);
+			objectsToRemove.add(ob);
 			hiddenCopies.add(IngredientFactory.makeHiddenObjectCopy(state, domain, ob));
 		}
-		ContainerFactory.removeContents(container);
-		for (String name : ings) {
-			state.removeObject(state.getObject(name));
-		}
-		for (ObjectInstance ob : hiddenCopies) {
-			state.addObject(ob);
-		}
+		ObjectInstance newContainer = ContainerFactory.removeContents(container);
+		state = state.replaceObject(container, newContainer);
+		state = state.removeAll(objectsToRemove);
+		state = state.appendAllObjects(hiddenCopies);
+		
 		ContainerFactory.addIngredient(container, toswap);
-		IngredientFactory.changeIngredientContainer(newIng, container.getName());
+		newIng = IngredientFactory.changeIngredientContainer(newIng, container.getName());
 		
 		ObjectInstance receivingSpace = state.getObject(ContainerFactory.getSpaceName(container));
 		
-		state.addObject(newIng);
 		if (SpaceFactory.isBaking(receivingSpace) && SpaceFactory.getOnOff(receivingSpace)) {
-			IngredientFactory.bakeIngredient(newIng);
+			newIng = IngredientFactory.bakeIngredient(newIng);
 		} else if (SpaceFactory.isHeating(receivingSpace) && SpaceFactory.getOnOff(receivingSpace)) {
 			//IngredientFactory.heatIngredient(newIng);
 			Knowledgebase.heatContainer(state, container);
 		}
+		
+		state = state.appendObject(newIng);
+		
+		
+		return state;
 	}
 	
-	public String makeSwappedIngredient(State state, ObjectInstance newIngredient) {
+	@Deprecated
+	public State makeSwappedIngredient(State state, ObjectInstance newIngredient) {
 		// Call to makeFakeAttributeCopy here is to ensure we can make a swapped ingredient even
 		// if in reality, said swapped ingredient has to eventually be baked/heated/peeled...
 		if (Recipe.isSuccess(state, ingredient.makeFakeAttributeCopy(newIngredient), newIngredient)) {
@@ -198,6 +223,6 @@ public class MixAction extends BakingAction {
 				}
 			}
 		}
-		return null;
+		return state;
 	}
 }

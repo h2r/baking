@@ -95,7 +95,9 @@ public class Knowledgebase {
 		}
 	}
 	
-	public void addTools(Domain domain, State state, String space) {
+	public State addTools(Domain domain, State state, String space) {
+		
+		List<ObjectInstance> toolsToAdd = new ArrayList<ObjectInstance>();
 		for (Entry<String, BakingInformation> entry : this.toolMap.entrySet()) {
 			String name = entry.getKey();
 			BakingInformation info = entry.getValue();
@@ -118,13 +120,18 @@ public class Knowledgebase {
 				e.printStackTrace();
 			}
 			
+			ObjectInstance tool;
 			if (transportable) {
-				state.addObject(ToolFactory.getNewCarryingToolObjectInstance(domain, name, toolTrait, toolAttribute,
-						space,includes, excludes));
+				
+				tool = ToolFactory.getNewCarryingToolObjectInstance(domain, name, toolTrait, toolAttribute,
+						space,includes, excludes);
 			} else {
-				state.addObject(ToolFactory.getNewSimpleToolObjectInstance(domain, name, toolTrait, toolAttribute, space));
+				tool = ToolFactory.getNewSimpleToolObjectInstance(domain, name, toolTrait, toolAttribute, space);
 			}
+			toolsToAdd.add(tool);
 		}
+		
+		return state.appendAllObjects(toolsToAdd);
 	}
 	
 	public List<IngredientRecipe> getIngredientList() {
@@ -148,29 +155,29 @@ public class Knowledgebase {
 		return ingredientObjects;
 	}
 	
-	public List<ObjectInstance> getRecipeObjectInstanceList(State state, Domain domain, Recipe recipe) {
+	public List<ObjectInstance> getRecipeObjectInstanceList(Domain domain, Recipe recipe) {
 		List<ObjectInstance> objs = new ArrayList<ObjectInstance>();
 		for (BakingSubgoal sg : recipe.getIngredientSubgoals()) {
 			IngredientRecipe ing = sg.getIngredient();
-			objs.addAll(this.getPotentialIngredientObjectInstanceList(state, domain, ing));
+			objs.addAll(this.getPotentialIngredientObjectInstanceList(domain, ing));
 		}
 		return objs;
 	}
-	public List<ObjectInstance> getPotentialIngredientObjectInstanceList(State state, Domain domain, IngredientRecipe tlIngredient) {
+	public List<ObjectInstance> getPotentialIngredientObjectInstanceList(Domain domain, IngredientRecipe tlIngredient) {
 		List<ObjectInstance> ingredientObjects = new ArrayList<ObjectInstance>();
-		List<IngredientRecipe> ingredients = this.getPotentialIngredientList(state, domain, tlIngredient);
+		List<IngredientRecipe> ingredients = this.getPotentialIngredientList(domain, tlIngredient);
 		for (IngredientRecipe ing : ingredients) {
 			ObjectClass oc = ing.isSimple() ? domain.getObjectClass(IngredientFactory.ClassNameSimple) : domain.getObjectClass(IngredientFactory.ClassNameComplex);
 			ObjectInstance obj = IngredientFactory.getNewIngredientInstance(ing, ing.getName(), oc);
-			IngredientFactory.clearBooleanAttributes(obj);
-			IngredientFactory.clearToolAttributes(obj);
+			obj = IngredientFactory.clearBooleanAttributes(obj);
+			obj = IngredientFactory.clearToolAttributes(obj);
 			ingredientObjects.add(obj);
 		}
 		return ingredientObjects;
 	}
 	
 	
-	public List<IngredientRecipe> getPotentialIngredientList(State state, Domain domain, IngredientRecipe tlIngredient) {
+	public List<IngredientRecipe> getPotentialIngredientList(Domain domain, IngredientRecipe tlIngredient) {
 		List<IngredientRecipe> ingredients = new ArrayList<IngredientRecipe>();
 		Collection<IngredientRecipe> allIngredients = this.allIngredients.values();
 		Set<String> necessaryTraits = tlIngredient.getNecessaryTraits().keySet();
@@ -196,7 +203,7 @@ public class Knowledgebase {
 					ingredients.add(ingredient);
 				}
 			} else {
-				List<IngredientRecipe> toAdd = getPotentialIngredientList(state, domain, ingredient);
+				List<IngredientRecipe> toAdd = getPotentialIngredientList(domain, ingredient);
 				for (IngredientRecipe i : toAdd) {
 					if (ingredients.contains(i)) {
 						IngredientRecipe ing = ingredients.get(ingredients.indexOf(i));
@@ -282,7 +289,7 @@ public class Knowledgebase {
 	// it will get a tool attribute added that shows what effect heating the object had. For example,
 	// heating liquids will (or heating with a loquid) will give the boiled attribute, or a meltable 
 	// will be melted (if not heated with other liquids).
-	public static void heatIngredient(State state, ObjectInstance container, ObjectInstance ing) {
+	public static State heatIngredient(State state, ObjectInstance container, ObjectInstance ing) {
 		boolean containsLiquid = false;
 		Set<ObjectInstance> contents = new HashSet<ObjectInstance>();
 		for (String name : ContainerFactory.getContentNames(container)) {
@@ -293,25 +300,32 @@ public class Knowledgebase {
 				break;
 			}
 		}
+		
+		ObjectInstance newIngredient = ing.copy();
 		if (containsLiquid) {
-			IngredientFactory.setHeatedState(ing, "boiled");
+			newIngredient = IngredientFactory.changeHeatedState(newIngredient, "boiled");
 		} else {
-			if (IngredientFactory.getTraits(ing).contains("liquid")) {
-				IngredientFactory.setHeatedState(ing, "boiled");
+			if (IngredientFactory.getTraits(newIngredient).contains("liquid")) {
+				newIngredient = IngredientFactory.changeHeatedState(newIngredient, "boiled");
+				
+				ObjectInstance newContentsIng;
 				for (ObjectInstance obj : contents) {
-					IngredientFactory.setHeatedState(obj, "boiled");
+					newContentsIng = IngredientFactory.changeHeatedState(obj, "boiled");
+					state = state.replaceObject(obj, newContentsIng);
 				}
 			} else {
-				String heatingInfo = IngredientFactory.getHeatingInfo(ing);
+				String heatingInfo = IngredientFactory.getHeatingInfo(newIngredient);
 				if (heatingInfo != null) {
-					IngredientFactory.setHeatedState(ing, heatingInfo);
+					newIngredient = IngredientFactory.changeHeatedState(newIngredient, heatingInfo);
 				}
 			}
 		}
-		IngredientFactory.heatIngredient(ing);
+		newIngredient = IngredientFactory.heatIngredient(newIngredient);
+		state = state.replaceObject(ing, newIngredient);
+		return state;
 	}
 	
-	public static void heatContainer(State state, ObjectInstance container) {
+	public static State heatContainer(State state, ObjectInstance container) {
 		boolean containsLiquid = false;
 		Set<ObjectInstance> contents = new HashSet<ObjectInstance>();
 		
@@ -324,17 +338,21 @@ public class Knowledgebase {
 		}
 		if (containsLiquid) {
 			for (ObjectInstance ing : contents) {
-				IngredientFactory.setHeatedState(ing, "boiled");
-				IngredientFactory.heatIngredient(ing);
+				ObjectInstance newIng = IngredientFactory.changeHeatedState(ing, "boiled");
+				newIng = IngredientFactory.heatIngredient(newIng);
+				state = state.replaceObject(ing, newIng);
 			}
 		} else {
 			for (ObjectInstance ing : contents) {
 				String heatingInfo = IngredientFactory.getHeatingInfo(ing);
+				ObjectInstance newIng;
 				if (heatingInfo != null) {
-					IngredientFactory.setHeatedState(ing, heatingInfo);
+					newIng = IngredientFactory.changeHeatedState(ing, heatingInfo);
 				}
-				IngredientFactory.heatIngredient(ing);
+				newIng = IngredientFactory.heatIngredient(ing);
+				state = state.replaceObject(ing, newIng);
 			}
 		}
+		return state;
 	}
 }

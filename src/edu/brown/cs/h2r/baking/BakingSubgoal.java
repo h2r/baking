@@ -31,6 +31,11 @@ public class BakingSubgoal {
 		this.preconditions.add(sg);
 	}
 	
+	
+	@Override
+	public String toString() {
+		return this.getIngredient().getName();
+	}
 	public Boolean goalCompleted(State state) {
 		this.goal.changeTopLevelIngredient(this.ingredient);
 		Boolean completed = false;

@@ -6,7 +6,6 @@ import java.net.URL;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.yaml.snakeyaml.Yaml;
 

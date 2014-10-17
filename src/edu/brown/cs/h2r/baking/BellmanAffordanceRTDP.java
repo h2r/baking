@@ -37,7 +37,7 @@ public class BellmanAffordanceRTDP extends AffordanceRTDP {
 	// Runs a BellmanUpdate, but also uses affordances to trim the action space, which will allow
 	// the planner to plan optimally!
 	protected double performBellmanUpdateOn(StateHashTuple sh) {
-		if(this.tf.isTerminal(sh.s)){
+		if(this.tf.isTerminal(sh.getState())){
 			//terminal states always have a state value of 0
 			valueFunction.put(sh, 0.);
 			return 0;
@@ -49,13 +49,13 @@ public class BellmanAffordanceRTDP extends AffordanceRTDP {
 		Map<String,String> matching = null;
 		StateHashTuple indexSH = mapToStateIndex.get(sh);
 		if(this.containsParameterizedActions && !this.domain.isObjectIdentifierDependent()){
-			matching = sh.s.getObjectMatchingTo(indexSH.s, false);
+			matching = sh.getState().getObjectMatchingTo(indexSH.getState(), false);
 		}
 		
 		// get all actions and Q values
 		List <QValue> allQValues = new ArrayList<QValue>();
 		for(Action a : actions){
-			List<GroundedAction> applications = a.getAllApplicableGroundedActions(sh.s);
+			List<GroundedAction> applications = a.getAllApplicableGroundedActions(sh.getState());
 			for(GroundedAction ga : applications){
 				allQValues.add(this.getQ(sh, ga, matching));
 			}
@@ -69,7 +69,7 @@ public class BellmanAffordanceRTDP extends AffordanceRTDP {
 			qActions.add(q.a);
 		}
 		
-		qActions = this.affController.filterIrrelevantActionsInState(qActions, sh.s);
+		qActions = this.affController.filterIrrelevantActionsInState(qActions, sh.getState());
 		
 		for(QValue q : allQValues){
 			if(qActions.contains(q.a)){

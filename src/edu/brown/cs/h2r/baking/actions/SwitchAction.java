@@ -1,5 +1,7 @@
 package edu.brown.cs.h2r.baking.actions;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import burlap.oomdp.core.Domain;
@@ -25,7 +27,7 @@ public class SwitchAction extends BakingAction {
 			return superResult;
 		}
 		
-		ObjectInstance agent =  state.getObject(params[0]);
+		//ObjectInstance agent =  state.getObject(params[0]);
 		
 		String spaceName = params[1];
 		ObjectInstance spaceInstance = state.getObject(spaceName);
@@ -45,44 +47,53 @@ public class SwitchAction extends BakingAction {
 	protected State performActionHelper(State state, String[] params) {
 		super.performActionHelper(state, params);
 		ObjectInstance spaceInstance = state.getObject(params[1]);
-		this.switchOnOff(state, spaceInstance);
-		return state;
+		return this.switchOnOff(state, spaceInstance);
 	}
 	
-	private void switchOnOff(State state, ObjectInstance space) {
+	private State switchOnOff(State state, ObjectInstance space) {
 		boolean isOn = SpaceFactory.getOnOff(space);
-		SpaceFactory.setOnOff(space, !isOn);
-		
+		ObjectInstance newSpace = SpaceFactory.setOnOff(space, !isOn);
+		state = state.replaceObject(space, newSpace);
 		// Space wasn't turned out before
 		if (!isOn) {
 			if (SpaceFactory.isBaking(space)) {
-				this.switchBakingSpace(state, space);
+				state = this.switchBakingSpace(state, space);
 			} else if (SpaceFactory.isHeating(space)) {
-				this.switchHeatingSpace(state, space);
+				state = this.switchHeatingSpace(state, space);
 			}
 		}
+		return state;
 	}
 	
-	private void switchBakingSpace(State state, ObjectInstance space) {
+	private State switchBakingSpace(State state, ObjectInstance space) {
 		Set<String> contentNames = SpaceFactory.getContents(space);
+		
+		List<ObjectInstance> oldIngredients = new ArrayList<ObjectInstance>();
+		List<ObjectInstance> newIngredients = new ArrayList<ObjectInstance>();
+		
 		for (String name : contentNames) {
 			ObjectInstance container = state.getObject(name);
 			if (!ContainerFactory.isEmptyContainer(container) &&
 					ContainerFactory.isBakingContainer(container)) {
 				for (String ing : ContainerFactory.getContentNames(container)) {
-					IngredientFactory.bakeIngredient(state.getObject(ing));
+					ObjectInstance ingredient = state.getObject(ing);
+					ObjectInstance newIng = IngredientFactory.bakeIngredient(state.getObject(ing));
+					oldIngredients.add(ingredient);
+					newIngredients.add(newIng);
 				}
 			}
 		}
+		
+		return state.replaceAllObjects(oldIngredients, newIngredients);
 	}
 	
-	private void switchHeatingSpace(State state, ObjectInstance space) {
+	private State switchHeatingSpace(State state, ObjectInstance space) {
 		Set<String> contentNames = SpaceFactory.getContents(space);
 		for (String name : contentNames) {
 			ObjectInstance container = state.getObject(name);
 			if (!ContainerFactory.isEmptyContainer(container) &&
 					ContainerFactory.isHeatingContainer(container)) {
-				Knowledgebase.heatContainer(state, container);
+				state = Knowledgebase.heatContainer(state, container);
 
 				/*for (String ing : ContainerFactory.getContentNames(container)) {
 					if (!IngredientFactory.isMeltedAtRoomTemperature(state.getObject(ing))) {
@@ -91,5 +102,6 @@ public class SwitchAction extends BakingAction {
 				}*/
 			}
 		}
+		return state;
 	}
 }

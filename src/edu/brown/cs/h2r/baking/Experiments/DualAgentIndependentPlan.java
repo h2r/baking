@@ -107,7 +107,7 @@ public class DualAgentIndependentPlan  implements DomainGenerator {
 		
 		List<ObjectInstance> ingredientInstances = 
 				IngredientFactory.getSimpleIngredients(simpleIngredientClass, ingredient);
-		List<ObjectInstance> containerInstances = Recipe.getContainers(containerClass, ingredientInstances, shelfSpace.getName());
+		List<ObjectInstance> containerInstances = Recipe.getContainersAndIngredients(containerClass, ingredientInstances, shelfSpace.getName());
 		
 		
 		for (ObjectInstance ingredientInstance : ingredientInstances) {

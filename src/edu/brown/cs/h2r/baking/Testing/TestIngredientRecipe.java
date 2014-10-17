@@ -36,48 +36,30 @@ public class TestIngredientRecipe {
 	public void setUp() {
 		domain = new SADomain();
 		setUpDomain();
-		state = new State();
-		setUpState();
+		state = this.setUpState();
 	}
 	
-	private void setUpState() {
-		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
+	private State setUpState() {
+		List<ObjectInstance> objectsToAdd = new ArrayList<ObjectInstance>();
+		objectsToAdd.add(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
 		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2");
-		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter", containers, "human"));
+		objectsToAdd.add(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter", containers, "human"));
 
 		for (String container : containers) { 
-			state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "counter"));
+			objectsToAdd.add(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "counter"));
 		}
 		
 		knowledgebase = new Knowledgebase();
-		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
+		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(domain, topLevelIngredient);
 		ObjectClass containerClass = domain.getObjectClass(ContainerFactory.ClassName);		
 		ObjectInstance counterSpace = state.getObject("counter");
 
 		List<ObjectInstance> ingredientInstances = allIngredients;
-		List<ObjectInstance> containerInstances = Recipe.getContainers(containerClass, ingredientInstances, counterSpace.getName());
+		List<ObjectInstance> ingredientsAndContainers = Recipe.getContainersAndIngredients(containerClass, ingredientInstances, counterSpace.getName());
 		
-		
-		for (ObjectInstance ingredientInstance : ingredientInstances) {
-			if (state.getObject(ingredientInstance.getName()) == null) {
-				state.addObject(ingredientInstance);
-			}
-		}
-		
-		for (ObjectInstance containerInstance : containerInstances) {
-			if (state.getObject(containerInstance.getName()) == null) {
-				ContainerFactory.changeContainerSpace(containerInstance, counterSpace.getName());
-				state.addObject(containerInstance);
-			}
-		}
-		
-		for (ObjectInstance ingredientInstance : ingredientInstances) {
-			if (IngredientFactory.getUseCount(ingredientInstance) >= 1) {
-				ObjectInstance ing = state.getObject(ingredientInstance.getName());
-				IngredientFactory.changeIngredientContainer(ing, ing.getName()+"_bowl");
-				ContainerFactory.addIngredient(state.getObject(ing.getName()+"_bowl"), ing.getName());
-			}
-		}
+		objectsToAdd.addAll(ingredientsAndContainers);
+
+		return new State(objectsToAdd);
 	}
 	
 	private void setUpDomain() {

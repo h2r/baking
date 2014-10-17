@@ -1,4 +1,6 @@
 package edu.brown.cs.h2r.baking.ObjectFactories;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -67,20 +69,14 @@ public class SpaceFactory {
 	public static ObjectInstance getNewObjectInstance(ObjectClass spaceClass, String name, 
 			int attributes, List<String> containers, String agent) {
 		ObjectInstance newInstance = new ObjectInstance(spaceClass, name);
-		setAttributes(newInstance, attributes);
-		newInstance.setValue(SpaceFactory.attributeOnOff, 0);
+		newInstance = changeAttributes(newInstance, attributes);
+		newInstance = newInstance.changeValue(SpaceFactory.attributeOnOff, 0);
 		if (agent == null) {
 			agent = "";
 		}
-		newInstance.addRelationalTarget(SpaceFactory.attributeAgent, agent);
-
-		if (containers != null)
-		{
-			for (String container : containers)
-			{
-				newInstance.addRelationalTarget(SpaceFactory.attributeContains, container);
-			}
-		}
+		newInstance = newInstance.appendRelationalTarget(SpaceFactory.attributeAgent, agent);
+		containers = (containers == null) ? new ArrayList<String>() : containers;
+		newInstance = newInstance.appendAllRelationTargets(SpaceFactory.attributeContains, containers);
 		return newInstance;
 	}
 	
@@ -126,12 +122,20 @@ public class SpaceFactory {
 				containers, agent);
 	}
 	
-	public static void addContainer(ObjectInstance space, ObjectInstance container) {
-		space.addRelationalTarget(SpaceFactory.attributeContains, container.getName());
+	public static ObjectInstance addContainer(ObjectInstance space, ObjectInstance container) {
+		return space.appendRelationalTarget(SpaceFactory.attributeContains, container.getName());
 	}
 	
-	public static void removeContainer(ObjectInstance space, ObjectInstance container) {
-		space.removeRelationalTarget(SpaceFactory.attributeContains, container.getName());
+	public static ObjectInstance addAllContainers(ObjectInstance space, Collection<ObjectInstance> containers) {
+		List<String> containerNames = new ArrayList<String>(containers.size());
+		for (ObjectInstance container : containers) {
+			containerNames.add(container.getName());
+		}
+		return space.appendAllRelationTargets(SpaceFactory.attributeContains, containerNames);
+	}
+	
+	public static ObjectInstance removeContainer(ObjectInstance space, ObjectInstance container) {
+		return space.replaceRelationalTarget(SpaceFactory.attributeContains, container.getName());
 	}
 
 	public static Boolean isBaking(ObjectInstance objectInstance) {
@@ -162,15 +166,16 @@ public class SpaceFactory {
 		return (objectInstance.getDiscValForAttribute(SpaceFactory.attributeOnOff) == 1);
 	}
 	
-	public static void setOnOff(ObjectInstance objectInstance, boolean isOn) {
-		objectInstance.setValue(SpaceFactory.attributeOnOff, isOn ? 1 : 0);
+	public static ObjectInstance setOnOff(ObjectInstance objectInstance, boolean isOn) {
+		return objectInstance.changeValue(SpaceFactory.attributeOnOff, isOn ? 1 : 0);
 	}
 	
-	public static void setAttributes(ObjectInstance object, int attributes) {
-		object.setValue(SpaceFactory.attributeBaking, ((attributes & SpaceFactory.BAKING) == SpaceFactory.BAKING) ? 1: 0);
-		object.setValue(SpaceFactory.attributeHeating, ((attributes & SpaceFactory.HEATING) == SpaceFactory.HEATING) ? 1: 0);
-		object.setValue(SpaceFactory.attributeWorking, ((attributes & SpaceFactory.WORKING) == SpaceFactory.WORKING) ? 1: 0);
-		object.setValue(SpaceFactory.attributeSwitchable, ((attributes & SpaceFactory.SWITCHABLE) == SpaceFactory.SWITCHABLE) ? 1: 0);
+	public static ObjectInstance changeAttributes(ObjectInstance object, int attributes) {
+		object = object.changeValue(SpaceFactory.attributeBaking, ((attributes & SpaceFactory.BAKING) == SpaceFactory.BAKING) ? 1: 0);
+		object = object.changeValue(SpaceFactory.attributeHeating, ((attributes & SpaceFactory.HEATING) == SpaceFactory.HEATING) ? 1: 0);
+		object = object.changeValue(SpaceFactory.attributeWorking, ((attributes & SpaceFactory.WORKING) == SpaceFactory.WORKING) ? 1: 0);
+		object = object.changeValue(SpaceFactory.attributeSwitchable, ((attributes & SpaceFactory.SWITCHABLE) == SpaceFactory.SWITCHABLE) ? 1: 0);
+		return object;
 	}
 	
 	public static int generateAttributeNumber(Boolean baking, Boolean heating, Boolean working, Boolean switchable) {

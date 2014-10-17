@@ -49,7 +49,7 @@ public class AllowMoving extends BakingPropositionalFunction {
 			for (IngredientRecipe ing : ingredientContents) {
 				String name = ing.getName();
 				ObjectInstance obj = state.getObject(name);
-				if (ing.getBaked() && contents.contains(name)) {
+				if (obj != null && ing.getBaked() && contents.contains(name)) {
 					if (!IngredientFactory.isBakedIngredient(obj)) {
 						return true;
 					}

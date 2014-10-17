@@ -1,5 +1,6 @@
 package edu.brown.cs.h2r.baking.ObjectFactories;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
@@ -120,28 +121,28 @@ public class IngredientFactory {
 			int attributes, int useCount, String heatingInfo, String heatedState, Set<String> traits, Set<String> toolTraits,
 			Set<String> toolAttributes, String ingredientContainer) {
 		ObjectInstance newInstance = new ObjectInstance(simpleIngredientClass, name);
-		IngredientFactory.setAttributes(newInstance, attributes, toolAttributes);
-		newInstance.setValue(IngredientFactory.attributeUseCount, useCount);
+		newInstance = IngredientFactory.changeAttributes(newInstance, attributes, toolAttributes);
+		newInstance = newInstance.changeValue(IngredientFactory.attributeUseCount, useCount);
 		if (heatingInfo != null) {
-			newInstance.addRelationalTarget(IngredientFactory.attributeHeatingInfo, heatingInfo);
+			newInstance = newInstance.appendRelationalTarget(IngredientFactory.attributeHeatingInfo, heatingInfo);
 		}
 		if (heatedState != null) {
-			newInstance.addRelationalTarget(IngredientFactory.attributeHeatedState, heatedState);
+			newInstance = newInstance.appendRelationalTarget(IngredientFactory.attributeHeatedState, heatedState);
 		}
 		for (String trait : traits) {
-			newInstance.addRelationalTarget(IngredientFactory.attributeTraits, trait);
+			newInstance = newInstance.appendRelationalTarget(IngredientFactory.attributeTraits, trait);
 		}
 		
 		for (String toolTrait : toolTraits) {
-			newInstance.addRelationalTarget(IngredientFactory.attributeToolTraits, toolTrait);
+			newInstance = newInstance.appendRelationalTarget(IngredientFactory.attributeToolTraits, toolTrait);
 		}
 		
 		for (String toolAttribute : toolAttributes) {
-			newInstance.addRelationalTarget(IngredientFactory.attributeToolAttributes, toolAttribute);
+			newInstance = newInstance.appendRelationalTarget(IngredientFactory.attributeToolAttributes, toolAttribute);
 		}
 		if (ingredientContainer != null || ingredientContainer != "")
 		{
-			newInstance.addRelationalTarget(IngredientFactory.attributeContainer, ingredientContainer);
+			newInstance = newInstance.appendRelationalTarget(IngredientFactory.attributeContainer, ingredientContainer);
 		}
 		return newInstance;		
 	}
@@ -150,33 +151,33 @@ public class IngredientFactory {
 			int attributes, boolean swapped, String ingredientContainer, String heatingInfo, String heatedState, Set<String> traits, 
 			Set<String> toolTraits, Set<String> toolAttributes, Iterable<String> contents) {
 		ObjectInstance newInstance = new ObjectInstance(complexIngredientClass, name);
-		IngredientFactory.setAttributes(newInstance, attributes, toolAttributes);
-		newInstance.setValue(IngredientFactory.attributeUseCount, 1);
-		newInstance.setValue(IngredientFactory.attributeSwapped, swapped ? 1 : 0);
+		newInstance = IngredientFactory.changeAttributes(newInstance, attributes, toolAttributes);
+		newInstance = newInstance.changeValue(IngredientFactory.attributeUseCount, 1);
+		newInstance = newInstance.changeValue(IngredientFactory.attributeSwapped, swapped ? 1 : 0);
 		
 		if (ingredientContainer != null || ingredientContainer != "") {
-			newInstance.addRelationalTarget(IngredientFactory.attributeContainer, ingredientContainer);
+			newInstance = newInstance.appendRelationalTarget(IngredientFactory.attributeContainer, ingredientContainer);
 		}
 		if (heatingInfo != null) {
-			newInstance.addRelationalTarget(IngredientFactory.attributeHeatingInfo, heatingInfo);
+			newInstance = newInstance.appendRelationalTarget(IngredientFactory.attributeHeatingInfo, heatingInfo);
 		}
 		if (heatedState != null) {
-			newInstance.addRelationalTarget(IngredientFactory.attributeHeatedState, heatedState);
+			newInstance = newInstance.appendRelationalTarget(IngredientFactory.attributeHeatedState, heatedState);
 		}
 		for (String trait : traits) {
-			newInstance.addRelationalTarget("traits", trait);
+			newInstance = newInstance.appendRelationalTarget("traits", trait);
 		}
 		for (String toolTrait : toolTraits) {
-			newInstance.addRelationalTarget(IngredientFactory.attributeToolTraits, toolTrait);
+			newInstance = newInstance.appendRelationalTarget(IngredientFactory.attributeToolTraits, toolTrait);
 		}
 		
 		for (String toolAttribute : toolAttributes) {
-			newInstance.addRelationalTarget(IngredientFactory.attributeToolAttributes, toolAttribute);
+			newInstance = newInstance.appendRelationalTarget(IngredientFactory.attributeToolAttributes, toolAttribute);
 		}
 		
 		if (contents != null) {
 			for (String ingredient : contents) {
-				newInstance.addRelationalTarget(IngredientFactory.attributeContains, ingredient);
+				newInstance = newInstance.appendRelationalTarget(IngredientFactory.attributeContains, ingredient);
 			}
 		}
 		
@@ -184,7 +185,8 @@ public class IngredientFactory {
 	}
 	
 	public static ObjectInstance getNewIngredientInstance(ObjectInstance objectInstance, String name) {
-		Boolean baked = IngredientFactory.isBakedIngredient(objectInstance);
+		return new ObjectInstance(name, objectInstance);
+		/*Boolean baked = IngredientFactory.isBakedIngredient(objectInstance);
 		Boolean mixed = IngredientFactory.isMixedIngredient(objectInstance);
 		Boolean heated = IngredientFactory.isHeatedIngredient(objectInstance);
 		
@@ -206,7 +208,7 @@ public class IngredientFactory {
 		Boolean swapped = IngredientFactory.isSwapped(objectInstance);
 		Set<String> contents = IngredientFactory.getIngredientContents(objectInstance);
 		return IngredientFactory.getNewComplexIngredientObjectInstance(oc, name, attributes, swapped, 
-				container, heatingInfo, heatedState, traits, toolTraits, toolAttributes, contents);
+				container, heatingInfo, heatedState, traits, toolTraits, toolAttributes, contents);*/
 	}
 	
 	public static ObjectInstance getNewIngredientInstance(IngredientRecipe ingredient, String name, ObjectClass oc) {
@@ -272,24 +274,26 @@ public class IngredientFactory {
 	}
 		
 
-	public static void addIngredient(ObjectInstance complexIngredient, ObjectInstance ingredient) {
-		complexIngredient.addRelationalTarget(IngredientFactory.attributeContains, ingredient.getName());
+	public static ObjectInstance addIngredient(ObjectInstance complexIngredient, ObjectInstance ingredient) {
+		return complexIngredient.appendRelationalTarget(IngredientFactory.attributeContains, ingredient.getName());
 	}
 	
-	public static void addIngredientList(ObjectInstance complexIngredient, Iterable<ObjectInstance> ingredientList) {
+	public static ObjectInstance addIngredientList(ObjectInstance complexIngredient, Collection<ObjectInstance> ingredientList) {
+		List<String> targets = new ArrayList<String>();
+		
 		for (ObjectInstance ingredient : ingredientList) {
-			IngredientFactory.addIngredient(complexIngredient, ingredient);
+			targets.add(ingredient.getName());
 		}
+		
+		return complexIngredient.appendAllRelationTargets(IngredientFactory.attributeContains, targets);
 	}
 	
 	public static Set<String> getIngredientContents(ObjectInstance complexIngredient) {
 		return complexIngredient.getAllRelationalTargets(IngredientFactory.attributeContains);
 	}
 	
-	public static void changeIngredientContainer(ObjectInstance ingredient, String ingredientContainer) {
-		if (ingredientContainer != null) {
-			ingredient.addRelationalTarget(IngredientFactory.attributeContainer, ingredientContainer);
-		}
+	public static ObjectInstance changeIngredientContainer(ObjectInstance ingredient, String ingredientContainer) {
+		return ingredient.appendRelationalTarget(IngredientFactory.attributeContainer, ingredientContainer);
 	}
 	
 	public static String getContainer(ObjectInstance ingredient) {
@@ -327,20 +331,20 @@ public class IngredientFactory {
 				ocName.equals(IngredientFactory.ClassNameComplexHidden));
 	}
 	
-	public static void mixIngredient(ObjectInstance ingredient) {
-		ingredient.setValue(IngredientFactory.attributeMixed, 1);
+	public static ObjectInstance mixIngredient(ObjectInstance ingredient) {
+		return ingredient.changeValue(IngredientFactory.attributeMixed, 1);
 	}
 	
-	public static void bakeIngredient(ObjectInstance ingredient) {
-		ingredient.setValue(IngredientFactory.attributeBaked, 1);
+	public static ObjectInstance bakeIngredient(ObjectInstance ingredient) {
+		return ingredient.changeValue(IngredientFactory.attributeBaked, 1);
 	}
 	
-	public static void heatIngredient(ObjectInstance ingredient) {
-		ingredient.setValue(IngredientFactory.attributeHeated, 1);
+	public static ObjectInstance heatIngredient(ObjectInstance ingredient) {
+		return ingredient.changeValue(IngredientFactory.attributeHeated, 1);
 	}
 	
-	public static void setUseCount(ObjectInstance ingredient, int count) {
-		ingredient.setValue(IngredientFactory.attributeUseCount, count);
+	public static ObjectInstance changeUseCount(ObjectInstance ingredient, int count) {
+		return ingredient.changeValue(IngredientFactory.attributeUseCount, count);
 	}
 
 	public static Boolean isSimple(ObjectInstance ingredient) {
@@ -359,20 +363,16 @@ public class IngredientFactory {
 		return new HashSet<String>(ingredient.getAllRelationalTargets(IngredientFactory.attributeContains));
 	}
 
-	public static void setSwapped(ObjectInstance ingredient) {
-		if (!isSimple(ingredient)) {
-			ingredient.setValue(IngredientFactory.attributeSwapped, 1);
-		}
+	public static ObjectInstance changeSwapped(ObjectInstance ingredient) {
+		return ingredient.changeValue(IngredientFactory.attributeSwapped, 1);
 	}
 	
-	public static void addToolTrait(ObjectInstance object, String trait) {
-		object.addRelationalTarget(IngredientFactory.attributeToolTraits, trait);
+	public static ObjectInstance addToolTrait(ObjectInstance object, String trait) {
+		return object.appendRelationalTarget(IngredientFactory.attributeToolTraits, trait);
 	}
 	
-	public static void addToolTraits(ObjectInstance object,Set<String> traits) {
-		for (String trait : traits) {
-			object.addRelationalTarget(IngredientFactory.attributeToolTraits, trait);
-		}
+	public static ObjectInstance addToolTraits(ObjectInstance object,Set<String> traits) {
+		return object.appendAllRelationTargets(IngredientFactory.attributeToolTraits, traits);
 	}
 	
 	public static Set<String> getToolTraits(ObjectInstance object) {
@@ -387,16 +387,12 @@ public class IngredientFactory {
 		return IngredientFactory.getToolAttributes(object).contains(attribute);
 	}
 	
-	public static void addToolAttribute(ObjectInstance object, String attribute) {
-		if (attribute != null) {
-			object.addRelationalTarget(IngredientFactory.attributeToolAttributes, attribute);
-		}
+	public static ObjectInstance addToolAttribute(ObjectInstance object, String attribute) {
+		return object.appendRelationalTarget(IngredientFactory.attributeToolAttributes, attribute);
 	}
 	
-	public static void addToolAttribute(ObjectInstance object, Set<String> attributes) {
-		for (String attribute : attributes) {
-			object.addRelationalTarget(IngredientFactory.attributeToolAttributes, attribute);
-		}
+	public static ObjectInstance addToolAttribute(ObjectInstance object, Set<String> attributes) {
+		return object.appendAllRelationTargets(IngredientFactory.attributeToolAttributes, attributes);
 	}
 	
 	public static boolean hasToolTrait(ObjectInstance object, String trait) {
@@ -458,16 +454,16 @@ public class IngredientFactory {
 			if (attributeType.equals(multi) || attributeType.equals(relational)) {
 				Set<String> targets = object.getAllRelationalTargets(name);
 				for (String val : targets) {
-					hidden.addRelationalTarget(name, val);
+					hidden = hidden.appendRelationalTarget(name, val);
 				}
 			} else {
-				hidden.setValue(name, object.getValueForAttribute(name).getStringVal());
+				hidden = hidden.changeValue(name, object.getValueForAttribute(name).getStringVal());
 			}
 		}
 		return hidden;
 	}
 	
-	public static void hideUnecessaryIngredients(State state, Domain domain, IngredientRecipe goal, List<ObjectInstance>allIngredients) {
+	public static State hideUnecessaryIngredients(State state, Domain domain, IngredientRecipe goal, List<ObjectInstance>allIngredients) {
 		Boolean match;
 		for (ObjectInstance obj : allIngredients) {
 			match = false;
@@ -475,7 +471,7 @@ public class IngredientFactory {
 			contents.add(goal);
 			for (IngredientRecipe ing : contents) {
 				if (ing.getName().equals(obj.getName())) {
-					IngredientFactory.setAttributes(obj, ing.generateAttributeNumber(), ing.getToolAttributes());
+					obj = IngredientFactory.changeAttributes(obj, ing.generateAttributeNumber(), ing.getToolAttributes());
 					match = true;
 					break;
 				}
@@ -484,7 +480,7 @@ public class IngredientFactory {
 				for (Entry<String, IngredientRecipe> entry : goal.getNecessaryTraits().entrySet()) {
 					if (IngredientFactory.getTraits(obj).contains(entry.getKey())) {
 						IngredientRecipe ing = entry.getValue();
-						IngredientFactory.setAttributes(obj, ing.generateAttributeNumber(), ing.getToolAttributes());
+						obj = IngredientFactory.changeAttributes(obj, ing.generateAttributeNumber(), ing.getToolAttributes());
 						match = true;
 						break;
 					}
@@ -498,33 +494,38 @@ public class IngredientFactory {
 					if (IngredientFactory.getUseCount(obj) <= 1) {
 						ObjectInstance hidden = makeHiddenObjectCopy(state, domain, obj);
 						ObjectInstance container = state.getObject(IngredientFactory.getContainer(hidden));
-						ContainerFactory.removeIngredient(container, hidden.getName());
+						ObjectInstance newContainer = ContainerFactory.removeIngredient(container, hidden.getName());
+						state = state.replaceObject(container, newContainer);
 						if (!IngredientFactory.isHiddenIngredient(state.getObject(obj.getName()))) {
-							state.removeObject(obj);
+							state = state.remove(obj);
 						}
-						state.addObject(hidden);
+						state = state.appendObject(hidden);
 					}
 				}
 				if (IngredientFactory.getUseCount(obj) > 0) {
-					IngredientFactory.setUseCount(obj, IngredientFactory.getUseCount(obj) -1);
+					ObjectInstance newObj = IngredientFactory.changeUseCount(obj, IngredientFactory.getUseCount(obj) -1);
+					state = state.replaceObject(obj, newObj);
 				}
 			}
 		}
 		
+		return state;
 	}
 	
 	/* Rids the object instance of any attrbiutes, such that I can make a recipe require
 	 * a certain attribute for an ingredient but when the object instance is created for planning,
 	 * this attribute is already fulfilled.
 	 */
-	public static void clearBooleanAttributes(ObjectInstance obj) {
+	public static ObjectInstance clearBooleanAttributes(ObjectInstance obj) {
+		ObjectInstance newObject = obj.copy();
 		for (String attName : IngredientFactory.booleanAttributes) {
-			obj.setValue(attName, 0);
+			newObject = newObject.changeValue(attName, 0);
 		}		
+		return newObject;
 	}
 	
-	public static void clearToolAttributes(ObjectInstance obj) {
-		obj.clearRelationalTargets(IngredientFactory.attributeToolAttributes);
+	public static ObjectInstance clearToolAttributes(ObjectInstance obj) {
+		return obj.removeAllRelationalTarget(IngredientFactory.attributeToolAttributes);
 	}
 
 	public static boolean isMeltedAtRoomTemperature(ObjectInstance ingredient) {
@@ -535,13 +536,14 @@ public class IngredientFactory {
 		return IngredientFactory.getTraits(ingredient).contains(Knowledgebase.LUBRICANT);
 	}
 	
-	public static void setAttributes(ObjectInstance ingredient, int attributes, Set<String> toolAttributes) {
-		ingredient.setValue(IngredientFactory.attributeBaked, ((attributes & Recipe.BAKED) == Recipe.BAKED) ? 1 : 0);
-		ingredient.setValue(IngredientFactory.attributeHeated, ((attributes & Recipe.HEATED) == Recipe.HEATED) ? 1 : 0);
-		ingredient.setValue(IngredientFactory.attributeMixed, ((attributes & Recipe.MIXED) == Recipe.MIXED) ? 1 : 0);
+	public static ObjectInstance changeAttributes(ObjectInstance ingredient, int attributes, Set<String> toolAttributes) {
+		ingredient = ingredient.changeValue(IngredientFactory.attributeBaked, ((attributes & Recipe.BAKED) == Recipe.BAKED) ? 1 : 0);
+		ingredient = ingredient.changeValue(IngredientFactory.attributeHeated, ((attributes & Recipe.HEATED) == Recipe.HEATED) ? 1 : 0);
+		ingredient = ingredient.changeValue(IngredientFactory.attributeMixed, ((attributes & Recipe.MIXED) == Recipe.MIXED) ? 1 : 0);
 		for (String attribute : toolAttributes) {
-			IngredientFactory.addToolAttribute(ingredient, attribute);
+			ingredient = IngredientFactory.addToolAttribute(ingredient, attribute);
 		}
+		return ingredient;
 	}
 	
 	public static String getHeatingInfo(ObjectInstance obj) {
@@ -552,7 +554,7 @@ public class IngredientFactory {
 		return obj.getStringValForAttribute(IngredientFactory.attributeHeatedState);
 	}
 	
-	public static void setHeatedState(ObjectInstance obj, String heatedState) {
-		obj.addRelationalTarget(IngredientFactory.attributeHeatedState, heatedState);
+	public static ObjectInstance changeHeatedState(ObjectInstance obj, String heatedState) {
+		return obj.appendRelationalTarget(IngredientFactory.attributeHeatedState, heatedState);
 	}
 }

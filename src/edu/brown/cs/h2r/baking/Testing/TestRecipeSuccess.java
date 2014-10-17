@@ -1,10 +1,12 @@
 package edu.brown.cs.h2r.baking.Testing;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.HashSet;
+import java.util.List;
 
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import burlap.oomdp.core.Domain;
@@ -18,7 +20,9 @@ import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
-import edu.brown.cs.h2r.baking.Recipes.*;
+import edu.brown.cs.h2r.baking.Recipes.DeviledEggs;
+import edu.brown.cs.h2r.baking.Recipes.PecanPie;
+import edu.brown.cs.h2r.baking.Recipes.Recipe;
 
 public class TestRecipeSuccess {
 
@@ -32,44 +36,27 @@ public class TestRecipeSuccess {
 	public void setUp() {
 		domain = new SADomain();
 		setUpDomain();
-		state = new State();
-		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
+		List<ObjectInstance> objectsToAdd = new ArrayList<ObjectInstance>();
+		objectsToAdd.add(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
 		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2");
-		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter", containers, "human"));
+		objectsToAdd.add(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter", containers, "human"));
 
 		for (String container : containers) { 
-			state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "counter"));
+			objectsToAdd.add(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "counter"));
 		}
+		this.state = new State(objectsToAdd);
 	}
 	
 	public void setUpState() {
 		ObjectClass containerClass = domain.getObjectClass(ContainerFactory.ClassName);		
 		ObjectInstance counterSpace = state.getObject("counter");
 
+		List<ObjectInstance> objectsToAdd = new ArrayList<ObjectInstance>();
 		List<ObjectInstance> ingredientInstances = allIngredients;
-		List<ObjectInstance> containerInstances = Recipe.getContainers(containerClass, ingredientInstances, counterSpace.getName());
+		List<ObjectInstance> ingredientsAndContainers = Recipe.getContainersAndIngredients(containerClass, ingredientInstances, counterSpace.getName());
 		
-		
-		for (ObjectInstance ingredientInstance : ingredientInstances) {
-			if (state.getObject(ingredientInstance.getName()) == null) {
-				state.addObject(ingredientInstance);
-			}
-		}
-		
-		for (ObjectInstance containerInstance : containerInstances) {
-			if (state.getObject(containerInstance.getName()) == null) {
-				ContainerFactory.changeContainerSpace(containerInstance, counterSpace.getName());
-				state.addObject(containerInstance);
-			}
-		}
-		
-		for (ObjectInstance ingredientInstance : ingredientInstances) {
-			if (IngredientFactory.getUseCount(ingredientInstance) >= 1) {
-				ObjectInstance ing = state.getObject(ingredientInstance.getName());
-				IngredientFactory.changeIngredientContainer(ing, ing.getName()+"_bowl");
-				ContainerFactory.addIngredient(state.getObject(ing.getName()+"_bowl"), ing.getName());
-			}
-		}
+		objectsToAdd.addAll(ingredientsAndContainers);
+		this.state = this.state.appendAllObjects(objectsToAdd);
 	}
 	
 	private void setUpDomain() {
@@ -95,7 +82,7 @@ public class TestRecipeSuccess {
 	public void testSwappedIngredientsSuccess() {
 		topLevelIngredient = new PecanPie().topLevelIngredient;
 		knowledgebase = new Knowledgebase();
-		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
+		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(domain, topLevelIngredient);
 		setUpState();
 		ObjectClass complexClass = domain.getObjectClass("complex_ingredient");
 		
@@ -112,14 +99,14 @@ public class TestRecipeSuccess {
 				complexClass, "pie_crust", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, "mixing_bowl_1",
 				null, null, new HashSet<String>(), new HashSet<String>(), new HashSet<String>(), crustContents);
 		
-		state.addObject(finishedFilling);
-		state.addObject(crust);
+		this.state = this.state.appendAllObjects(Arrays.asList(finishedFilling, crust));
+		
 		// Make the object we're testing!
 		ObjectInstance pie = IngredientFactory.getNewComplexIngredientObjectInstance(
 				complexClass, "PecanPie", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, "mixing_bowl_1", 
 				null, null, new HashSet<String>(), new HashSet<String>(), new HashSet<String>(), Arrays.asList("finished_filling", "pie_crust"));
 		
-		IngredientFactory.bakeIngredient(pie);
+		pie = IngredientFactory.bakeIngredient(pie);
 		BakingAsserts.assertSuccess(state, topLevelIngredient, pie);
 	}
 	
@@ -128,15 +115,14 @@ public class TestRecipeSuccess {
 	public void testSwappedCombinationSuccess() {
 		topLevelIngredient = new DeviledEggs().topLevelIngredient;
 		knowledgebase = new Knowledgebase();
-		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(state, domain, topLevelIngredient);
+		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(domain, topLevelIngredient);
 		setUpState();
 		
 		ObjectInstance finishedMix = IngredientFactory.getNewComplexIngredientObjectInstance(
 				domain.getObjectClass("complex_ingredient"), "finished_mix", Recipe.NO_ATTRIBUTES,
 				Recipe.SWAPPED, "mixing_bowl_2", null, null, new HashSet<String>(), new HashSet<String>(), new HashSet<String>(), Arrays.asList("egg_yolks", 
 						"salt", "pepper", "dijon_mustard", "sweet_gherkins", "chopped_tarragon", "shallots"));
-		
-		state.addObject(finishedMix);
+		this.state = this.state.appendObject(finishedMix);
 		
 		ObjectInstance deviledEggs = IngredientFactory.getNewComplexIngredientObjectInstance(
 				domain.getObjectClass("complex_ingredient"), "DeviledEggs", Recipe.NO_ATTRIBUTES, 

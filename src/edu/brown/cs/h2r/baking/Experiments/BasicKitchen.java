@@ -17,9 +17,6 @@ import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.SADomain;
 import edu.brown.cs.h2r.baking.BakingSubgoal;
-import edu.brown.cs.h2r.baking.IngredientRecipe;
-import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
-import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
 import edu.brown.cs.h2r.baking.Knowledgebase.Knowledgebase;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
@@ -27,9 +24,11 @@ import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.MakeSpanFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
-import edu.brown.cs.h2r.baking.actions.BakingActionResult;
 import edu.brown.cs.h2r.baking.actions.BakingAction;
+import edu.brown.cs.h2r.baking.actions.BakingActionResult;
 import edu.brown.cs.h2r.baking.actions.MixAction;
 import edu.brown.cs.h2r.baking.actions.MoveAction;
 import edu.brown.cs.h2r.baking.actions.PeelAction;
@@ -45,7 +44,6 @@ public class BasicKitchen implements DomainGenerator {
 	PropositionalFunction isSuccess;
 	PropositionalFunction isFailure;
 	StateHashFactory stateHashFactory;
-	List<ObjectInstance> ingredientContainers;
 	List<BakingSubgoal> recipeSubgoals;
 	boolean[] completedSubgoals;
 	
@@ -121,10 +119,10 @@ public class BasicKitchen implements DomainGenerator {
 		ObjectInstance shelfSpace = state.getObject(SpaceFactory.SPACE_COUNTER);
 		
 		List<ObjectInstance> ingredientInstances = 
-				knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
+				knowledgebase.getRecipeObjectInstanceList(domain, recipe);
 		
-		this.ingredientContainers = 
-				Recipe.getContainers(containerClass, ingredientInstances, shelfSpace.getName());
+		List<ObjectInstance> ingredientsAndContainers = 
+				Recipe.getContainersAndIngredients(containerClass, ingredientInstances, shelfSpace.getName());
 		
 		for (ObjectInstance ingredientInstance : ingredientInstances) {
 			if (state.getObject(ingredientInstance.getName()) == null) {
@@ -132,7 +130,7 @@ public class BasicKitchen implements DomainGenerator {
 			}
 		}
 		
-		for (ObjectInstance containerInstance : this.ingredientContainers) {
+		for (ObjectInstance containerInstance : ingredientsAndContainers) {
 			if (state.getObject(containerInstance.getName()) == null) {
 				ContainerFactory.changeContainerSpace(containerInstance, shelfSpace.getName());
 				state.addObject(containerInstance);
@@ -212,15 +210,11 @@ public class BasicKitchen implements DomainGenerator {
 	}
 	
 	protected void removeEmptyIngredientContainers(State state) {
-		List<ObjectInstance> containers = new ArrayList<ObjectInstance>(this.ingredientContainers);
-		this.ingredientContainers = new ArrayList<ObjectInstance>();
+		List<ObjectInstance> containers = new ArrayList<ObjectInstance>(state.getObjectsOfTrueClass(ContainerFactory.ClassName));
 		for (ObjectInstance container : containers) {
 			ObjectInstance currentContainer = state.getObject(container.getName());
 			if (ContainerFactory.getContentNames(currentContainer).size() == 0) {
 				state.removeObject(currentContainer);
-			}
-			else {
-				this.ingredientContainers.add(currentContainer);
 			}
 		}
 	}

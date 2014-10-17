@@ -133,22 +133,24 @@ public class UseAction extends BakingAction {
 		ObjectInstance tool = state.getObject(params[1]);
 		ObjectInstance container = state.getObject(params[2]);
 		if (ToolFactory.toolCanCarry(tool)) {
-			this.useTransportableTool(state, tool, container, agent);
+			state = this.useTransportableTool(state, tool, container, agent);
 		} else {
-			this.useSimpleTool(state, tool, container);
+			state = this.useSimpleTool(state, tool, container);
 		}
 		return state;
 	}
 	
-	public void useSimpleTool(State state, ObjectInstance tool, ObjectInstance container) {
+	public State useSimpleTool(State state, ObjectInstance tool, ObjectInstance container) {
 		Set<String> contentNames = ContainerFactory.getContentNames(container);
 		for (String name : contentNames) {				
 			ObjectInstance ingredient = state.getObject(name);
-			IngredientFactory.addToolAttribute(ingredient, ToolFactory.getToolAttribute(tool));
+			ObjectInstance newIngredient = IngredientFactory.addToolAttribute(ingredient, ToolFactory.getToolAttribute(tool));
+			state = state.replaceObject(ingredient, newIngredient);
 		}
+		return state;
 	}
 	
-	public void useTransportableTool(State state, ObjectInstance tool, ObjectInstance container, String agent) {
+	public State useTransportableTool(State state, ObjectInstance tool, ObjectInstance container, String agent) {
 		if (ToolFactory.isEmpty(tool)) {
 			Set<String> contentNames = ContainerFactory.getContentNames(container);
 			Set<String> includes = ToolFactory.getIncludes(tool);
@@ -182,7 +184,8 @@ public class UseAction extends BakingAction {
 				}	
 			}
 		} else {
-			ToolFactory.pourIngredients(domain, state, tool, container, agent);
+			state = ToolFactory.pourIngredients(domain, state, tool, container, agent);
 		}
+		return state;
 	}
 }

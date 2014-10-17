@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import burlap.behavior.affordances.AffordancesController;
@@ -14,11 +13,11 @@ import burlap.behavior.singleagent.Policy;
 import burlap.behavior.singleagent.planning.QComputablePlanner;
 import burlap.behavior.singleagent.planning.commonpolicies.AffordanceGreedyQPolicy;
 import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
-import edu.brown.cs.h2r.baking.BellmanAffordanceRTDP;
 import burlap.behavior.singleagent.planning.stochastic.rtdp.RTDP;
 import burlap.behavior.statehashing.NameDependentStateHashFactory;
 import burlap.behavior.statehashing.StateHashFactory;
 import burlap.oomdp.auxiliary.DomainGenerator;
+import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.PropositionalFunction;
@@ -28,18 +27,34 @@ import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.SADomain;
-import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
-import edu.brown.cs.h2r.baking.Knowledgebase.Knowledgebase;
-import burlap.oomdp.core.Domain;
 import edu.brown.cs.h2r.baking.BakingSubgoal;
+import edu.brown.cs.h2r.baking.BellmanAffordanceRTDP;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.RecipeTerminalFunction;
-import edu.brown.cs.h2r.baking.ObjectFactories.*;
-import edu.brown.cs.h2r.baking.PropositionalFunctions.AllowUsingTool;
+import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
+import edu.brown.cs.h2r.baking.Knowledgebase.Knowledgebase;
+import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.ToolFactory;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
-import edu.brown.cs.h2r.baking.Recipes.*;
-import edu.brown.cs.h2r.baking.actions.*;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
+import edu.brown.cs.h2r.baking.Recipes.Brownies;
+import edu.brown.cs.h2r.baking.Recipes.CucumberSalad;
+import edu.brown.cs.h2r.baking.Recipes.DeviledEggs;
+import edu.brown.cs.h2r.baking.Recipes.MashedPotatoes;
+import edu.brown.cs.h2r.baking.Recipes.MoltenLavaCake;
+import edu.brown.cs.h2r.baking.Recipes.PeanutButterCookies;
+import edu.brown.cs.h2r.baking.Recipes.PecanPie;
+import edu.brown.cs.h2r.baking.Recipes.Recipe;
+import edu.brown.cs.h2r.baking.actions.BakingAction;
+import edu.brown.cs.h2r.baking.actions.GreaseAction;
+import edu.brown.cs.h2r.baking.actions.MixAction;
+import edu.brown.cs.h2r.baking.actions.MoveAction;
+import edu.brown.cs.h2r.baking.actions.PourAction;
+import edu.brown.cs.h2r.baking.actions.SwitchAction;
+import edu.brown.cs.h2r.baking.actions.UseAction;
 
 public class KevinsKitchen implements DomainGenerator {
 	List<ObjectInstance> allIngredients;
@@ -100,8 +115,8 @@ public class KevinsKitchen implements DomainGenerator {
 		
 		// Out of all the ingredients in our kitchen, plan over only those that might be useful!
 		Knowledgebase knowledgebase = new Knowledgebase();
-		this.allIngredients = knowledgebase.getRecipeObjectInstanceList(state, domain, recipe);
-		knowledgebase.addTools(domain, state, SpaceFactory.SPACE_COUNTER);
+		this.allIngredients = knowledgebase.getRecipeObjectInstanceList(domain, recipe);
+		state = knowledgebase.addTools(domain, state, SpaceFactory.SPACE_COUNTER);
 	
 		System.out.println("\n\nPlanner will now plan the "+recipe.topLevelIngredient.getName()+" recipe!");
 		
@@ -143,7 +158,7 @@ public class KevinsKitchen implements DomainGenerator {
 		ObjectInstance counterSpace = currentState.getObject(SpaceFactory.SPACE_COUNTER);
 
 		List<ObjectInstance> ingredientInstances = this.allIngredients;
-		List<ObjectInstance> containerInstances = Recipe.getContainers(containerClass, ingredientInstances, counterSpace.getName());
+		List<ObjectInstance> containerInstances = Recipe.getContainersAndIngredients(containerClass, ingredientInstances, counterSpace.getName());
 		
 		
 		for (ObjectInstance ingredientInstance : ingredientInstances) {
@@ -159,16 +174,25 @@ public class KevinsKitchen implements DomainGenerator {
 			}
 		}
 
+		ObjectInstance counter = currentState.getObject(SpaceFactory.SPACE_COUNTER);
+		List<ObjectInstance> containers = new ArrayList<ObjectInstance>();
 		for (ObjectInstance ingredientInstance : ingredientInstances) {
 			if (!IngredientFactory.isHiddenIngredient(ingredientInstance)) {
 				if (IngredientFactory.getUseCount(ingredientInstance) >= 1) {
 					ObjectInstance ing = currentState.getObject(ingredientInstance.getName());
-					IngredientFactory.changeIngredientContainer(ing, ing.getName()+"_bowl");
-					ContainerFactory.addIngredient(currentState.getObject(ing.getName()+"_bowl"), ing.getName());
-					SpaceFactory.addContainer(currentState.getObject(SpaceFactory.SPACE_COUNTER), currentState.getObject(ing.getName()+"_bowl"));
+					ObjectInstance newIng = IngredientFactory.changeIngredientContainer(ing, ing.getName()+"_bowl");
+					currentState = currentState.replaceObject(ing, newIng);
+					ObjectInstance container = currentState.getObject(ing.getName()+"_bowl");
+					ObjectInstance newContainer = ContainerFactory.addIngredient(container, ing.getName());
+					currentState = currentState.replaceObject(container, newContainer);
+					containers.add(newContainer);
+					
 				}
 			}
 		}
+		
+		ObjectInstance newCounter = SpaceFactory.addAllContainers(counter, containers);
+		currentState = currentState.replaceObject(counter, newCounter);
 		
 		List<Action> actions = domain.getActions();
 		for (Action action : actions) {
@@ -248,7 +272,7 @@ public class KevinsKitchen implements DomainGenerator {
 		ExperimentHelper.printResults(episodeAnalysis.actionSequence, episodeAnalysis.rewardSequence);
 		
 		if (subgoal.getGoal().getClassName().equals(AffordanceCreator.FINISH_PF)) {
-			IngredientFactory.hideUnecessaryIngredients(endState, domain, ingredient, this.allIngredients);
+			endState = IngredientFactory.hideUnecessaryIngredients(endState, domain, ingredient, this.allIngredients);
 		}
 		
 		return endState;

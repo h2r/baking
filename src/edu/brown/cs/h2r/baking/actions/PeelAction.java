@@ -25,8 +25,8 @@ public class PeelAction extends BakingAction {
 			return superResult;
 		}
 		
-		String agentName = params[0];
-		ObjectInstance agent =  state.getObject(agentName);
+		//String agentName = params[0];
+		//ObjectInstance agent =  state.getObject(agentName);
 		
 		String containerName = params[1];
 		ObjectInstance container = state.getObject(containerName);
@@ -62,13 +62,14 @@ public class PeelAction extends BakingAction {
 		Set<String> contents = ContainerFactory.getContentNames(container);
 		for (String ingredient : contents) {
 			ObjectInstance ingredientObject = state.getObject(ingredient);
-			this.peel(ingredientObject);
+			ObjectInstance newIngredient = this.peel(ingredientObject);
+			state.replaceObject(ingredientObject, newIngredient);
 		}
 		
 		return state;
 	}
 	
-	private void peel(ObjectInstance objectInstance) {
-		IngredientFactory.addToolAttribute(objectInstance, PeelAction.PEELED);
+	private ObjectInstance peel(ObjectInstance objectInstance) {
+		return IngredientFactory.addToolAttribute(objectInstance, PeelAction.PEELED);
 	}
 }

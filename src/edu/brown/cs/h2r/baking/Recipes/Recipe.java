@@ -1,4 +1,5 @@
 package edu.brown.cs.h2r.baking.Recipes;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -9,21 +10,18 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
-import edu.brown.cs.h2r.baking.Knowledgebase.Knowledgebase;
+import burlap.oomdp.core.Domain;
+import burlap.oomdp.core.ObjectClass;
+import burlap.oomdp.core.ObjectInstance;
+import burlap.oomdp.core.State;
 import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
+import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
+import edu.brown.cs.h2r.baking.Knowledgebase.Knowledgebase;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
-import burlap.oomdp.core.ObjectClass;
-import burlap.oomdp.core.ObjectInstance;
-import burlap.oomdp.core.PropositionalFunction;
-import burlap.oomdp.core.State;
-import burlap.oomdp.core.Domain;
-
-import java.util.AbstractMap;
 
 
 public abstract class Recipe {
@@ -98,18 +96,19 @@ public abstract class Recipe {
 		return IngredientFactory.getIngredientInstancesList(simpleIngredientClass, this.topLevelIngredient);
 	}
 	
-	public static List<ObjectInstance> getContainers(ObjectClass containerClass, List<ObjectInstance> ingredients, String containerSpace)
+	public static List<ObjectInstance> getContainersAndIngredients(ObjectClass containerClass, List<ObjectInstance> ingredients, String containerSpace)
 	{
-		List<ObjectInstance> containers = new ArrayList<ObjectInstance>();
+		List<ObjectInstance> containersAndIngredients = new ArrayList<ObjectInstance>();
 		for (ObjectInstance ingredient : ingredients)
 		{
 			ObjectInstance container = 
 					ContainerFactory.getNewIngredientContainerObjectInstance(
 							containerClass, ingredient.getName() + "_bowl", ingredient.getName(), containerSpace);
-			containers.add(container);
-			IngredientFactory.changeIngredientContainer(ingredient, container.getName());
+			ObjectInstance newIngredient = IngredientFactory.changeIngredientContainer(ingredient, container.getName());
+			containersAndIngredients.add(container);
+			containersAndIngredients.add(newIngredient);
 		}
-		return containers;
+		return containersAndIngredients;
 	}
 	
 	public Boolean isSuccess(State state, ObjectInstance topLevelObject)
@@ -221,7 +220,7 @@ public abstract class Recipe {
 			}
 			
 		}
-
+		
 		// We don't have enough/have too many ingredients.
 		if ((recipeContents.size() + compulsoryTraits.size()) != contents.size())
 		{

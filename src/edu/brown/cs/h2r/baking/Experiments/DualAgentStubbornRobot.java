@@ -110,7 +110,7 @@ public class DualAgentStubbornRobot  implements DomainGenerator {
 		List<ObjectInstance> ingredientInstances = 
 				IngredientFactory.getSimpleIngredients(simpleIngredientClass, ingredient);
 		List<ObjectInstance> containerInstances = 
-				Recipe.getContainers(containerClass, ingredientInstances, shelfSpace.getName());
+				Recipe.getContainersAndIngredients(containerClass, ingredientInstances, shelfSpace.getName());
 		
 		
 		for (ObjectInstance ingredientInstance : ingredientInstances) {

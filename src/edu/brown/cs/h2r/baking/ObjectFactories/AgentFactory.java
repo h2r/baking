@@ -25,8 +25,7 @@ public class AgentFactory {
 	
 	public static ObjectInstance getNewObjectInstance(ObjectClass agentClass, String name, Boolean robot) {
 		ObjectInstance newInstance = new ObjectInstance(agentClass, name);
-		newInstance.setValue(AgentFactory.attributeRobot, robot ? 1 : 0);
-		return newInstance;
+		return newInstance.changeValue(AgentFactory.attributeRobot, robot ? 1 : 0);
 	}
 	
 	public static ObjectInstance getNewObjectInstance(Domain domain, String name, Boolean robot) {

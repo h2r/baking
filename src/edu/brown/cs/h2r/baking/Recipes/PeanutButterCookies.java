@@ -1,5 +1,4 @@
 package edu.brown.cs.h2r.baking.Recipes;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -21,7 +20,7 @@ public class PeanutButterCookies extends Recipe {
 		ingredientList.add(knowledgebase.getIngredient("butter"));
 		ingredientList.add(knowledgebase.getIngredient("peanut_butter"));
 		IngredientRecipe creamed = new IngredientRecipe("creamed_ingredients", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList);
-		creamed.addNecessaryTrait("sugar", Recipe.NO_ATTRIBUTES);
+		//creamed.addNecessaryTrait("sugar", Recipe.NO_ATTRIBUTES);
 		this.subgoalIngredients.put(creamed.getName(), creamed);
 		
 		List<IngredientRecipe> ingredientList2 = new ArrayList<IngredientRecipe>();
@@ -34,8 +33,8 @@ public class PeanutButterCookies extends Recipe {
 		ingredientList3.add(knowledgebase.getIngredient("baking_soda"));
 		ingredientList3.add(knowledgebase.getIngredient("baking_powder"));
 		IngredientRecipe dryIngredients = new IngredientRecipe("dry_ingredients", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList3);
-		dryIngredients.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
-		dryIngredients.addNecessaryTrait("flour", Recipe.NO_ATTRIBUTES);
+		//dryIngredients.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
+		//dryIngredients.addNecessaryTrait("flour", Recipe.NO_ATTRIBUTES);
 		this.subgoalIngredients.put(dryIngredients.getName(), dryIngredients);
 		
 		List<IngredientRecipe> ingredientList4 = new ArrayList<IngredientRecipe>();

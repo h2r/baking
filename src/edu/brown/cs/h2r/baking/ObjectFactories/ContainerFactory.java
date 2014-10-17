@@ -1,9 +1,9 @@
 package edu.brown.cs.h2r.baking.ObjectFactories;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.HashSet;
 
 import burlap.oomdp.core.Attribute;
 import burlap.oomdp.core.Domain;
@@ -65,18 +65,15 @@ public class ContainerFactory {
 	public static ObjectInstance getNewObjectInstance(ObjectClass containerClass, String name, 
 			int attributes, Collection<String> contents, String containerSpace) {
 		ObjectInstance newInstance = new ObjectInstance(containerClass, name);
-		setAttributes(newInstance, attributes);
-		newInstance.setValue(ContainerFactory.attributeGreased, 0);
+		newInstance = ContainerFactory.changeAttributes(newInstance, attributes);
+		newInstance = newInstance.changeValue(ContainerFactory.attributeGreased, 0);
 		if (contents != null)
 		{
-			for (String ingredient : contents)
-			{
-				newInstance.addRelationalTarget(ContainerFactory.attributeContains, ingredient);
-			}
+			newInstance = newInstance.appendAllRelationTargets(ContainerFactory.attributeContains, contents);
 		}
 		if (containerSpace != null || containerSpace != "")
 		{
-			newInstance.addRelationalTarget(ContainerFactory.attributeSpace, containerSpace);
+			newInstance = newInstance.appendRelationalTarget(ContainerFactory.attributeSpace, containerSpace);
 		}
 		return newInstance;
 	}
@@ -150,26 +147,20 @@ public class ContainerFactory {
 				name, ContainerFactory.NO_ATTRIBUTES, contents, containerSpace);
 	}
 
-	public static void addIngredient(ObjectInstance container, String ingredient) {
-		container.addRelationalTarget(ContainerFactory.attributeContains, ingredient);
+	public static ObjectInstance addIngredient(ObjectInstance container, String ingredient) {
+		return container.appendRelationalTarget(ContainerFactory.attributeContains, ingredient);
 	}
 	
-	public static void addIngredients(ObjectInstance container, Iterable<String> ingredients) {
-		if (ingredients != null) {
-			for (String ingredient : ingredients) {
-				ContainerFactory.addIngredient(container, ingredient);
-			}
-		}
+	public static ObjectInstance addIngredients(ObjectInstance container, Collection<String> ingredients) {
+		return container.appendAllRelationTargets(ContainerFactory.attributeContains, ingredients);
 	}
 	
-	public static void removeContents(ObjectInstance container) {
-		container.clearRelationalTargets(ContainerFactory.attributeContains);
+	public static ObjectInstance removeContents(ObjectInstance container) {
+		return container.removeAllRelationalTarget(ContainerFactory.attributeContains);
 	}
 	
-	public static void changeContainerSpace(ObjectInstance container, String containerSpace) {
-		if (containerSpace != null) {
-			container.addRelationalTarget(ContainerFactory.attributeSpace, containerSpace);
-		}
+	public static ObjectInstance changeContainerSpace(ObjectInstance container, String containerSpace) {
+		return container.appendRelationalTarget(ContainerFactory.attributeSpace, containerSpace);
 	}
 	
 	public static Boolean isMixingContainer(ObjectInstance container) {
@@ -194,8 +185,8 @@ public class ContainerFactory {
 		return (container.getDiscValForAttribute(ContainerFactory.attributeGreased) == 1);
 	}
 	
-	public static void greaseContainer(ObjectInstance container) {
-		container.setValue(ContainerFactory.attributeGreased, 1);
+	public static ObjectInstance greaseContainer(ObjectInstance container) {
+		return container.changeValue(ContainerFactory.attributeGreased, 1);
 	}
 
 	public static Set<String> getContentNames(ObjectInstance container) {
@@ -243,15 +234,16 @@ public class ContainerFactory {
 		return ingredients;
 	}
 	
-	public static void removeIngredient(ObjectInstance container, String name) {
-		container.removeRelationalTarget(ContainerFactory.attributeContains, name);
+	public static ObjectInstance removeIngredient(ObjectInstance container, String name) {
+		return container.replaceRelationalTarget(ContainerFactory.attributeContains, name);
 	}
 	
-	public static void setAttributes(ObjectInstance object, int attributes) {
-		object.setValue(ContainerFactory.attributeBaking, ((attributes & ContainerFactory.BAKING) == ContainerFactory.BAKING) ? 1: 0);
-		object.setValue(ContainerFactory.attributeMixing, ((attributes & ContainerFactory.MIXING) == ContainerFactory.MIXING) ? 1: 0);
-		object.setValue(ContainerFactory.attributeHeating, ((attributes & ContainerFactory.HEATING) == ContainerFactory.HEATING) ? 1: 0);
-		object.setValue(ContainerFactory.attributeReceiving, ((attributes & ContainerFactory.RECEIVING) == ContainerFactory.RECEIVING) ? 1: 0);
+	public static ObjectInstance changeAttributes(ObjectInstance object, int attributes) {
+		object = object.changeValue(ContainerFactory.attributeBaking, ((attributes & ContainerFactory.BAKING) == ContainerFactory.BAKING) ? 1: 0);
+		object = object.changeValue(ContainerFactory.attributeMixing, ((attributes & ContainerFactory.MIXING) == ContainerFactory.MIXING) ? 1: 0);
+		object = object.changeValue(ContainerFactory.attributeHeating, ((attributes & ContainerFactory.HEATING) == ContainerFactory.HEATING) ? 1: 0);
+		object = object.changeValue(ContainerFactory.attributeReceiving, ((attributes & ContainerFactory.RECEIVING) == ContainerFactory.RECEIVING) ? 1: 0);
+		return object;
 	}
 	
 	public static int generateAttributeNumber(Boolean baking, Boolean mixing, Boolean heating, Boolean receiving) {

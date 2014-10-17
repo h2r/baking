@@ -11,7 +11,6 @@ import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ToolFactory;
-import edu.brown.cs.h2r.baking.Recipes.Recipe;
 
 public class AllowUsingTool extends BakingPropositionalFunction {
 
@@ -44,10 +43,10 @@ public class AllowUsingTool extends BakingPropositionalFunction {
 		} else {
 			ObjectInstance fakeContainer = ContainerFactory.getNewFakeToolContainerObjectInstance(domain, attribute, 
 					ToolFactory.getContents(tool), ContainerFactory.getSpaceName(container));
-			state.addObject(fakeContainer);
+			state = state.appendObject(fakeContainer);
 			AllowPouring allowPouring = ((AllowPouring)domain.getPropFunction(AffordanceCreator.POUR_PF));
 			boolean allow = allowPouring.isTrue(state, new String[] {params[0], fakeContainer.getName(), params[2]});
-			state.removeObject(fakeContainer.getName());
+			state = state.remove(fakeContainer);
 			return allow;	
 		}
 	}

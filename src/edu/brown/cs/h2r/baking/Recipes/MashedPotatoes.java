@@ -1,16 +1,12 @@
 package edu.brown.cs.h2r.baking.Recipes;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import burlap.oomdp.core.Domain;
-import burlap.oomdp.core.ObjectInstance;
 import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
-import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
-import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
 

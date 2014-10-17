@@ -1,5 +1,8 @@
 package edu.brown.cs.h2r.baking.actions;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 import burlap.oomdp.core.Domain;
@@ -58,52 +61,71 @@ public class MoveAction extends BakingAction {
 	}
 	
 	@Override
+	public String[] getUsedObjects(State state, String[] params) {
+		ObjectInstance containerInstance = state.getObject(params[1]);
+		String oldSpace = ContainerFactory.getSpaceName(containerInstance);
+		List<String> usedObjects =  new ArrayList<String>(Arrays.asList(params));
+		usedObjects.add(oldSpace);
+		String[] usedObjectsArray = new String[usedObjects.size()];
+		return usedObjects.toArray(usedObjectsArray);
+	}
+	
+	@Override
 	protected State performActionHelper(State state, String[] params) {
 		super.performActionHelper(state, params);
 		//System.out.println("Moving container " + params[1] + " to " + params[2]);
 		ObjectInstance containerInstance = state.getObject(params[1]);
 		ObjectInstance spaceInstance = state.getObject(params[2]);
-		move (state, containerInstance, spaceInstance);
+		state = move (state, containerInstance, spaceInstance);
 		return state;
 	}
 	
-	private static void move(State state, ObjectInstance containerInstance, ObjectInstance spaceInstance) {
+	private static State move(State state, ObjectInstance containerInstance, ObjectInstance spaceInstance) {
 		String oldSpace = ContainerFactory.getSpaceName(containerInstance);
 		ObjectInstance oldSpaceObject = state.getObject(oldSpace);
-		ContainerFactory.changeContainerSpace(containerInstance, spaceInstance.getName());
-		SpaceFactory.addContainer(spaceInstance, containerInstance);
-		SpaceFactory.removeContainer(oldSpaceObject, containerInstance);
+		
+		ObjectInstance newContainer = ContainerFactory.changeContainerSpace(containerInstance, spaceInstance.getName());
+		ObjectInstance newSpace = SpaceFactory.addContainer(spaceInstance, containerInstance);
+		ObjectInstance newOldSpace = SpaceFactory.removeContainer(oldSpaceObject, containerInstance);
+		
+		state = state.replaceAllObjects(
+				Arrays.asList(containerInstance, spaceInstance, oldSpaceObject),
+				Arrays.asList(newContainer, newSpace, newOldSpace));
 		
 		if (SpaceFactory.getOnOff(spaceInstance)) {
 			if (SpaceFactory.isBaking(spaceInstance)) {
-				MoveAction.movingToBakingSpace(state, spaceInstance, containerInstance);
+				state = MoveAction.movingToBakingSpace(state, spaceInstance, containerInstance);
 			}
 			if (SpaceFactory.isHeating(spaceInstance)) {
-				MoveAction.movingToHeatingSpace(state, spaceInstance, containerInstance);
+				state = MoveAction.movingToHeatingSpace(state, spaceInstance, containerInstance);
 			}
 		}
+		return state;
 	}
 	
-	private static void movingToBakingSpace(State state, ObjectInstance spaceInstance, ObjectInstance containerInstance) {
+	private static State movingToBakingSpace(State state, ObjectInstance spaceInstance, ObjectInstance containerInstance) {
 		if (!ContainerFactory.isEmptyContainer(containerInstance) && ContainerFactory.isBakingContainer(containerInstance)) {
 			Set<String> names = ContainerFactory.getContentNames(containerInstance);
+			List<ObjectInstance> newObjects = new ArrayList<ObjectInstance>();
+			List<ObjectInstance> oldObjects = new ArrayList<ObjectInstance>();
+			
 			for (String name : names) {
 				ObjectInstance ing = state.getObject(name);
-				IngredientFactory.bakeIngredient(ing);
+				oldObjects.add(ing);
+				
+				ObjectInstance newIng = IngredientFactory.bakeIngredient(ing);
+				newObjects.add(newIng);
 			}
+			
+			state = state.replaceAllObjects(oldObjects, newObjects);
 		}
+		return state;
 	}
 	
-	private static void movingToHeatingSpace(State state, ObjectInstance spaceInstance, ObjectInstance containerInstance) {
+	private static State movingToHeatingSpace(State state, ObjectInstance spaceInstance, ObjectInstance containerInstance) {
 		if (!ContainerFactory.isEmptyContainer(containerInstance) && ContainerFactory.isHeatingContainer(containerInstance)) {
-			/*Set<String> names = ContainerFactory.getContentNames(containerInstance);
-			for (String name : names) {
-				ObjectInstance ing = state.getObject(name);
-				if (!IngredientFactory.isMeltedAtRoomTemperature(ing)) {
-					Knowledgebase.heatIngredient(container, ing);
-				}
-			}*/
-			Knowledgebase.heatContainer(state, containerInstance);
+			state = Knowledgebase.heatContainer(state, containerInstance);
 		}
+		return state;
 	}
 }

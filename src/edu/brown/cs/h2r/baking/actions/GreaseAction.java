@@ -56,14 +56,14 @@ public class GreaseAction extends BakingAction {
 		super.performActionHelper(state, params);
 		ObjectInstance container = state.getObject(params[1]);
 		ObjectInstance grease = state.getObject(params[2]);
-		this.grease(state, container, grease);
-		return state;
+		return this.grease(state, container, grease);
 	}
 	
 	//TODO: Add use counts with this!
-	private void grease(State state, ObjectInstance container, ObjectInstance grease)
+	private State grease(State state, ObjectInstance container, ObjectInstance grease)
 	{
 		//TODO: Change the ingredient use count!
-		ContainerFactory.greaseContainer(container);
+		ObjectInstance greasedContainer = ContainerFactory.greaseContainer(container);
+		return state.replaceObject(container, greasedContainer);
 	}
 }

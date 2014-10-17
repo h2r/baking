@@ -67,14 +67,14 @@ public class ToolFactory {
 	private static ObjectInstance getNewObjectInstance(ObjectClass toolClass, String name, 
 			String trait, String attribute, String containerSpace) {
 		ObjectInstance newInstance = new ObjectInstance(toolClass, name);
-		newInstance.addRelationalTarget(ToolFactory.attributeToolTrait, trait);
-		newInstance.addRelationalTarget(ToolFactory.attributeToolAttribute, attribute);
+		newInstance = newInstance.appendRelationalTarget(ToolFactory.attributeToolTrait, trait);
+		newInstance = newInstance.appendRelationalTarget(ToolFactory.attributeToolAttribute, attribute);
 		//newInstance.addRelationalTarget(ToolFactory.attributeContains, null);
-		newInstance.setValue(ToolFactory.attributeCanCarry, false);
+		newInstance = newInstance.changeValue(ToolFactory.attributeCanCarry, false);
 		
 		if (containerSpace != null || containerSpace != "")
 		{
-			newInstance.addRelationalTarget(ToolFactory.attributeSpace, containerSpace);
+			newInstance = newInstance.appendRelationalTarget(ToolFactory.attributeSpace, containerSpace);
 		}
 		return newInstance;
 	}
@@ -84,31 +84,14 @@ public class ToolFactory {
 		return getNewObjectInstance(domain, name, trait, attribute, containerSpace);
 	}
 	
-	private static ObjectInstance getNewSimpleToolObjectInstance(ObjectClass toolClass, String name, 
-			String trait, String attribute, String containerSpace) {
-		return getNewObjectInstance(toolClass, name, trait, attribute, containerSpace);
-	}
-	
 	public static ObjectInstance getNewCarryingToolObjectInstance(Domain domain, String name, 
 			String trait, String attribute, String containerSpace, Collection<String> include,
 			Collection<String> exclude) {
 		ObjectInstance tool = getNewObjectInstance(domain, name, trait, attribute, containerSpace);
-		tool.setValue(ToolFactory.attributeCanCarry, true);
-		for (String in : include) {
-			tool.addRelationalTarget(ToolFactory.attributeInclude, in);
-		}
-		for (String ex : exclude) {
-			tool.addRelationalTarget(ToolFactory.attributeExclude, ex);
-		}
+		tool = tool.changeValue(ToolFactory.attributeCanCarry, true);
+		tool = tool.appendAllRelationTargets(ToolFactory.attributeInclude, include);
+		tool = tool.appendAllRelationTargets(ToolFactory.attributeExclude, exclude);
 		return tool;
-	}
-	
-	private static ObjectInstance getNewCarryingToolObjectInstance(ObjectClass toolClass, String name, 
-			String trait, String attribute, String containerSpace) {
-		ObjectInstance tool = getNewObjectInstance(toolClass, name, trait, attribute, containerSpace);
-		tool.setValue(ToolFactory.attributeCanCarry, true);
-		return tool;
-		
 	}
 	
 	public static String getToolTrait(ObjectInstance tool) {
@@ -155,16 +138,16 @@ public class ToolFactory {
 		return tool.getAllRelationalTargets(ToolFactory.attributeContains);
 	}
 	
-	public static void removeContents(ObjectInstance tool) {
-		tool.clearRelationalTargets(ToolFactory.attributeContains);
+	public static ObjectInstance removeContents(ObjectInstance tool) {
+		return tool.removeAllRelationalTarget(ToolFactory.attributeContains);
 	}
 	
-	public static void removeIngredient(ObjectInstance tool, ObjectInstance ingredient) {
-		tool.removeRelationalTarget(ToolFactory.attributeContains, ingredient.getName());
+	public static ObjectInstance removeIngredient(ObjectInstance tool, ObjectInstance ingredient) {
+		return tool.replaceRelationalTarget(ToolFactory.attributeContains, ingredient.getName());
 	}
 	
-	public static void removeIngredient(ObjectInstance tool, IngredientRecipe ingredient) {
-		tool.removeRelationalTarget(ToolFactory.attributeContains, ingredient.getName());
+	public static ObjectInstance removeIngredient(ObjectInstance tool, IngredientRecipe ingredient) {
+		return tool.replaceRelationalTarget(ToolFactory.attributeContains, ingredient.getName());
 	}
 	
 	public static boolean toolCanCarry(ObjectInstance tool) {
@@ -192,24 +175,20 @@ public class ToolFactory {
 		return ToolFactory.getContents(tool).isEmpty();
 	}
 	
-	public static void addInclude(ObjectInstance tool, Collection<String> includes) {
-		for (String include : includes) {
-			tool.addRelationalTarget(ToolFactory.attributeInclude, include);
-		}
+	public static ObjectInstance addInclude(ObjectInstance tool, Collection<String> includes) {
+		return tool.appendAllRelationTargets(ToolFactory.attributeInclude, includes);
 	}
 	
-	public static void addInclude(ObjectInstance tool, String include) {
-		tool.addRelationalTarget(ToolFactory.attributeInclude, include);
+	public static ObjectInstance addInclude(ObjectInstance tool, String include) {
+		return tool.appendRelationalTarget(ToolFactory.attributeInclude, include);
 	}
 	
-	public static void addExclude(ObjectInstance tool, String exclude) {
-		tool.addRelationalTarget(ToolFactory.attributeExclude, exclude);
+	public static ObjectInstance addExclude(ObjectInstance tool, String exclude) {
+		return tool.appendRelationalTarget(ToolFactory.attributeExclude, exclude);
 	}
 	
-	public static void addExclude(ObjectInstance tool, Collection<String> excludes) {
-		for (String exclude : excludes) {
-			tool.addRelationalTarget(ToolFactory.attributeExclude, exclude);
-		}
+	public static ObjectInstance addExclude(ObjectInstance tool, Collection<String> excludes) {
+		return tool.appendAllRelationTargets(ToolFactory.attributeExclude, excludes);
 	}
 	
 	public static Set<String> getIncludes(ObjectInstance tool) {
@@ -228,31 +207,40 @@ public class ToolFactory {
 		return new HashSet<String>();
 	}
 	
-	public static void addIngredientToTool(State state, ObjectInstance tool, ObjectInstance ingredient) {
+	public static State addIngredientToTool(State state, ObjectInstance tool, ObjectInstance ingredient) {
 		ObjectInstance ingredientContainer = state.getObject(IngredientFactory.getContainer(ingredient));
-		tool.addRelationalTarget(ToolFactory.attributeContains, ingredient.getName());
-		IngredientFactory.changeIngredientContainer(ingredient, tool.getName());
-		ContainerFactory.removeIngredient(ingredientContainer, ingredient.getName());	
+		
+		ObjectInstance newTool = tool.appendRelationalTarget(ToolFactory.attributeContains, ingredient.getName());
+		state = state.replaceObject(tool, newTool);
+		
+		ObjectInstance newIngredient = IngredientFactory.changeIngredientContainer(ingredient, tool.getName());
+		state = state.replaceObject(ingredient, newIngredient);
+		
+		ObjectInstance newContainer = ContainerFactory.removeIngredient(ingredientContainer, ingredient.getName());	
+		state = state.replaceObject(ingredientContainer,  newContainer);
+		
+		return state;
 	}
 	
 	
-	public static void pourIngredients(Domain domain, State state, ObjectInstance tool, 
+	public static State pourIngredients(Domain domain, State state, ObjectInstance tool, 
 			ObjectInstance container, String agent) {
 		Set<String> contents = ToolFactory.getContents(tool);
 		String spaceName = ToolFactory.getSpaceName(tool);
 		ObjectInstance fakeContainer = ContainerFactory.getNewFakeToolContainerObjectInstance(domain, 
 				ToolFactory.fakeContainerName, contents, spaceName);
-		state.addObject(fakeContainer);
+		state = state.appendObject(fakeContainer);
 		PourAction pour = (PourAction)domain.getAction(PourAction.className);
 		
 		State newState = pour.performAction(state, new String[] {agent, ToolFactory.fakeContainerName, container.getName()});
-		state.removeObject(container);
-		state.addObject(newState.getObject(container.getName()));
+		state = state.remove(container);
+		state = state.appendObject(newState.getObject(container.getName()));
 		for (String name : ToolFactory.getContents(tool)) {
-			state.removeObject(name);
-			state.addObject(newState.getObject(name));
+			state = state.remove(name);
+			state = state.appendObject(newState.getObject(name));
 		}
-		state.removeObject(fakeContainer);
-		ToolFactory.removeContents(tool);
+		state = state.remove(fakeContainer);
+		ObjectInstance newTool = ToolFactory.removeContents(tool);
+		return state.replaceObject(tool, newTool);
 	}
 }
