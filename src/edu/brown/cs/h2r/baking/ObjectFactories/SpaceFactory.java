@@ -20,15 +20,20 @@ public class SpaceFactory {
 	private static final String attributeWorking = "working";
 	private static final String attributeContains = "contains";
 	private static final String attributeAgent = "agent";
+	private static final String attributeCleaning = "cleaning";
 	
 	public static final String SPACE_OVEN = "oven";
 	public static final String SPACE_STOVE = "stove";
 	public static final String SPACE_COUNTER = "counter";
+	public static final String SPACE_ROBOT = "robot_counter";
+	public static final String SPACE_SINK = "sink";
 	public static final int NO_ATTRIBUTES= 0 ;
 	public static final int BAKING = 1;
 	public static final int HEATING = 2;
 	public static final int WORKING = 4;
 	public static final int SWITCHABLE = 8;
+	public static final int CLEANING = 8;
+	
 	
 	public static ObjectClass createObjectClass(Domain domain)
 	{
@@ -54,6 +59,10 @@ public class SpaceFactory {
 			Attribute onoffAttribute =
 					new Attribute(domain, SpaceFactory.attributeOnOff, Attribute.AttributeType.BOOLEAN);
 			objectClass.addAttribute(onoffAttribute);
+			
+			Attribute cleaningAttribute =
+					new Attribute(domain, SpaceFactory.attributeCleaning, Attribute.AttributeType.BOOLEAN);
+			objectClass.addAttribute(cleaningAttribute);
 			
 			objectClass.addAttribute(
 					new Attribute(domain, SpaceFactory.attributeContains, 
@@ -133,6 +142,19 @@ public class SpaceFactory {
 		}
 		return space.appendAllRelationTargets(SpaceFactory.attributeContains, containerNames);
 	}
+
+	public static ObjectInstance getNewCleaningSpaceObjectInstance(ObjectClass spaceClass, 
+			String name, List<String> containers, String agent) {
+		return SpaceFactory.getNewObjectInstance(spaceClass, name, SpaceFactory.CLEANING|SpaceFactory.SWITCHABLE, 
+				containers, agent);
+	}
+
+	public static ObjectInstance getNewCleaningSpaceObjectInstance(Domain domain, 
+			String name, List<String> containers, String agent) {
+		return SpaceFactory.getNewObjectInstance(
+				domain.getObjectClass(SpaceFactory.ClassName), name, SpaceFactory.CLEANING|SpaceFactory.SWITCHABLE, 
+				containers, agent);
+	}
 	
 	public static ObjectInstance removeContainer(ObjectInstance space, ObjectInstance container) {
 		return space.replaceRelationalTarget(SpaceFactory.attributeContains, container.getName());
@@ -152,6 +174,10 @@ public class SpaceFactory {
 	
 	public static Boolean isSwitchable(ObjectInstance objectInstance) {
 		return (objectInstance.getDiscValForAttribute(SpaceFactory.attributeSwitchable) == 1);
+	}
+	
+	public static Boolean isCleaning(ObjectInstance objectInstance) {
+		return (objectInstance.getDiscValForAttribute(SpaceFactory.attributeCleaning) == 1);
 	}
 	
 	public static Set<String> getContents(ObjectInstance objectInstance) {
@@ -175,15 +201,17 @@ public class SpaceFactory {
 		object = object.changeValue(SpaceFactory.attributeHeating, ((attributes & SpaceFactory.HEATING) == SpaceFactory.HEATING) ? 1: 0);
 		object = object.changeValue(SpaceFactory.attributeWorking, ((attributes & SpaceFactory.WORKING) == SpaceFactory.WORKING) ? 1: 0);
 		object = object.changeValue(SpaceFactory.attributeSwitchable, ((attributes & SpaceFactory.SWITCHABLE) == SpaceFactory.SWITCHABLE) ? 1: 0);
+		object = object.changeValue(SpaceFactory.attributeCleaning, ((attributes & SpaceFactory.CLEANING) == SpaceFactory.CLEANING) ? 1: 0);
 		return object;
 	}
 	
-	public static int generateAttributeNumber(Boolean baking, Boolean heating, Boolean working, Boolean switchable) {
+	public static int generateAttributeNumber(Boolean baking, Boolean heating, Boolean working, Boolean switchable, Boolean cleaning) {
 		int bakingInt = baking ? SpaceFactory.BAKING : 0;
 		int heatingInt = heating ? SpaceFactory.HEATING : 0;
 		int workingInt = working ? SpaceFactory.WORKING : 0;
 		int switchableInt = switchable ? SpaceFactory.SWITCHABLE : 0;
-		return bakingInt|heatingInt|workingInt|switchableInt;
+		int cleaningInt = cleaning ? SpaceFactory.CLEANING : 0;
+		return bakingInt|heatingInt|workingInt|switchableInt|cleaningInt;
 	}
 	
 	public static boolean spaceWillHeat(ObjectInstance space) {

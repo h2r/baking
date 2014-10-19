@@ -29,7 +29,7 @@ public class BellmanAffordanceRTDP extends AffordanceRTDP {
 	public BellmanAffordanceRTDP(Domain domain, RewardFunction rf, TerminalFunction tf, 
 			double gamma, StateHashFactory hashingFactory, double vInit, int numRollouts, 
 			double maxDelta, int maxDepth, AffordancesController affController) {
-		super(domain, rf, tf, gamma, hashingFactory, vInit, numRollouts, maxDelta, maxDepth, affController);
+		super(domain, rf, tf, gamma, hashingFactory, vInit, numRollouts, maxDelta, maxDepth, affController, 0);
 		this.affController = affController;
 	}
 	
@@ -68,8 +68,7 @@ public class BellmanAffordanceRTDP extends AffordanceRTDP {
 		for(QValue q : allQValues){
 			qActions.add(q.a);
 		}
-		
-		qActions = this.affController.filterIrrelevantActionsInState(qActions, sh.getState());
+		qActions = this.affController.getPrunedActionsForState(sh.getState());
 		
 		for(QValue q : allQValues){
 			if(qActions.contains(q.a)){

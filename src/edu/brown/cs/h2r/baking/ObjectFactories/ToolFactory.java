@@ -22,6 +22,7 @@ public class ToolFactory {
 	private static final String attributeCanCarry = "canCarry";
 	private static final String attributeInclude = "incldue";
 	private static final String attributeExclude = "exclude";
+	private static final String attributeUsed = "used";
 	
 	public static final String fakeContainerName = "fakeContainer";
 	
@@ -43,6 +44,9 @@ public class ToolFactory {
 		objectClass.addAttribute(
 				new Attribute(domain, ToolFactory.attributeContains,
 						Attribute.AttributeType.MULTITARGETRELATIONAL));
+		
+		objectClass.addAttribute(
+				new Attribute(domain, ToolFactory.attributeUsed, Attribute.AttributeType.BOOLEAN));
 		
 		Attribute transportableAttribute = 
 				new Attribute(domain, ToolFactory.attributeCanCarry, Attribute.AttributeType.BOOLEAN);
@@ -69,8 +73,8 @@ public class ToolFactory {
 		ObjectInstance newInstance = new ObjectInstance(toolClass, name);
 		newInstance = newInstance.appendRelationalTarget(ToolFactory.attributeToolTrait, trait);
 		newInstance = newInstance.appendRelationalTarget(ToolFactory.attributeToolAttribute, attribute);
-		//newInstance.addRelationalTarget(ToolFactory.attributeContains, null);
-		newInstance = newInstance.changeValue(ToolFactory.attributeCanCarry, false);
+		newInstance = newInstance.changeValue(ToolFactory.attributeCanCarry, false);	
+		newInstance = newInstance.changeValue(ToolFactory.attributeUsed, false);
 		
 		if (containerSpace != null || containerSpace != "")
 		{
@@ -179,6 +183,14 @@ public class ToolFactory {
 		return tool.appendAllRelationTargets(ToolFactory.attributeInclude, includes);
 	}
 	
+	public static ObjectInstance changeUsed(ObjectInstance tool) {
+		return tool.changeValue(ToolFactory.attributeUsed, true);
+	}
+	
+	public static boolean isUsed(ObjectInstance tool) {
+		return tool.getBooleanValue(ToolFactory.attributeUsed);
+	}
+		
 	public static ObjectInstance addInclude(ObjectInstance tool, String include) {
 		return tool.appendRelationalTarget(ToolFactory.attributeInclude, include);
 	}
@@ -242,5 +254,11 @@ public class ToolFactory {
 		state = state.remove(fakeContainer);
 		ObjectInstance newTool = ToolFactory.removeContents(tool);
 		return state.replaceObject(tool, newTool);
+	}
+
+	public static void changeToolSpace(ObjectInstance tool, String toolSpace) {
+		if (toolSpace != null) {
+			tool.addRelationalTarget(ToolFactory.attributeSpace, toolSpace);
+		}
 	}
 }

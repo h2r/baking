@@ -41,12 +41,6 @@ import edu.brown.cs.h2r.baking.ObjectFactories.ToolFactory;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
 import edu.brown.cs.h2r.baking.Recipes.Brownies;
-import edu.brown.cs.h2r.baking.Recipes.CucumberSalad;
-import edu.brown.cs.h2r.baking.Recipes.DeviledEggs;
-import edu.brown.cs.h2r.baking.Recipes.MashedPotatoes;
-import edu.brown.cs.h2r.baking.Recipes.MoltenLavaCake;
-import edu.brown.cs.h2r.baking.Recipes.PeanutButterCookies;
-import edu.brown.cs.h2r.baking.Recipes.PecanPie;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.actions.BakingAction;
 import edu.brown.cs.h2r.baking.actions.GreaseAction;
@@ -87,8 +81,7 @@ public class KevinsKitchen implements DomainGenerator {
 		Action grease = new GreaseAction(domain);
 		Action aSwitch = new SwitchAction(domain);
 		Action use = new UseAction(domain, recipe.topLevelIngredient);
-		State state = new State();
-		
+		List<ObjectInstance> objects = new ArrayList<ObjectInstance>();
 		// Get the "highest" subgoal in our recipe.
 		if (this.topLevelIngredient == null) {
 			this.topLevelIngredient = recipe.topLevelIngredient;
@@ -100,24 +93,34 @@ public class KevinsKitchen implements DomainGenerator {
 		recipe.addRequiredRecipeAttributes();
 		recipe.setUpRecipeToolAttributes();
 		
-		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
+		objects.add(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
 		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2", "baking_dish", "melting_pot");
-		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, SpaceFactory.SPACE_COUNTER, containers, "human"));
+		objects.add(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, SpaceFactory.SPACE_COUNTER, containers, "human"));
 
-		state.addObject(ContainerFactory.getNewBakingContainerObjectInstance(domain, "baking_dish", null, SpaceFactory.SPACE_COUNTER));
-		state.addObject(ContainerFactory.getNewHeatingContainerObjectInstance(domain, "melting_pot", null, SpaceFactory.SPACE_COUNTER));
-		state.addObject(SpaceFactory.getNewBakingSpaceObjectInstance(domain, SpaceFactory.SPACE_OVEN, null, ""));
-		state.addObject(SpaceFactory.getNewHeatingSpaceObjectInstance(domain, SpaceFactory.SPACE_STOVE, null, ""));
+		objects.add(ContainerFactory.getNewBakingContainerObjectInstance(domain, "baking_dish", null, SpaceFactory.SPACE_COUNTER));
+		objects.add(ContainerFactory.getNewHeatingContainerObjectInstance(domain, "melting_pot", null, SpaceFactory.SPACE_COUNTER));
+		objects.add(SpaceFactory.getNewBakingSpaceObjectInstance(domain, SpaceFactory.SPACE_OVEN, null, ""));
+		objects.add(SpaceFactory.getNewHeatingSpaceObjectInstance(domain, SpaceFactory.SPACE_STOVE, null, ""));
 		
 		for (String container : containers) { 
-			state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, SpaceFactory.SPACE_COUNTER));
+			objects.add(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, SpaceFactory.SPACE_COUNTER));
 		}
 		
 		// Out of all the ingredients in our kitchen, plan over only those that might be useful!
 		Knowledgebase knowledgebase = new Knowledgebase();
 		this.allIngredients = knowledgebase.getRecipeObjectInstanceList(domain, recipe);
+		
+		
+		
+		ObjectClass containerClass = domain.getObjectClass(ContainerFactory.ClassName);		
+
+		List<ObjectInstance> ingredientsAndContainers = 
+				Recipe.getContainersAndIngredients(containerClass, this.allIngredients, SpaceFactory.SPACE_COUNTER);
+		
+		objects.addAll(ingredientsAndContainers);
+		State state = new State(objects);
 		state = knowledgebase.addTools(domain, state, SpaceFactory.SPACE_COUNTER);
-	
+		
 		System.out.println("\n\nPlanner will now plan the "+recipe.topLevelIngredient.getName()+" recipe!");
 		
 		// High level planner that plans through the recipe's subgoals
@@ -152,53 +155,13 @@ public class KevinsKitchen implements DomainGenerator {
 	public State PlanIngredient(Domain domain, State startingState, IngredientRecipe ingredient, BakingSubgoal subgoal)
 	{
 		System.out.println(ingredient.getName());
-		State currentState = new State(startingState);
 		
-		ObjectClass containerClass = domain.getObjectClass(ContainerFactory.ClassName);		
-		ObjectInstance counterSpace = currentState.getObject(SpaceFactory.SPACE_COUNTER);
-
-		List<ObjectInstance> ingredientInstances = this.allIngredients;
-		List<ObjectInstance> containerInstances = Recipe.getContainersAndIngredients(containerClass, ingredientInstances, counterSpace.getName());
-		
-		
-		for (ObjectInstance ingredientInstance : ingredientInstances) {
-			if (currentState.getObject(ingredientInstance.getName()) == null) {
-				currentState.addObject(ingredientInstance);
-			}
-		}
-		
-		for (ObjectInstance containerInstance : containerInstances) {
-			if (currentState.getObject(containerInstance.getName()) == null) {
-				ContainerFactory.changeContainerSpace(containerInstance, counterSpace.getName());
-				currentState.addObject(containerInstance);
-			}
-		}
-
-		ObjectInstance counter = currentState.getObject(SpaceFactory.SPACE_COUNTER);
-		List<ObjectInstance> containers = new ArrayList<ObjectInstance>();
-		for (ObjectInstance ingredientInstance : ingredientInstances) {
-			if (!IngredientFactory.isHiddenIngredient(ingredientInstance)) {
-				if (IngredientFactory.getUseCount(ingredientInstance) >= 1) {
-					ObjectInstance ing = currentState.getObject(ingredientInstance.getName());
-					ObjectInstance newIng = IngredientFactory.changeIngredientContainer(ing, ing.getName()+"_bowl");
-					currentState = currentState.replaceObject(ing, newIng);
-					ObjectInstance container = currentState.getObject(ing.getName()+"_bowl");
-					ObjectInstance newContainer = ContainerFactory.addIngredient(container, ing.getName());
-					currentState = currentState.replaceObject(container, newContainer);
-					containers.add(newContainer);
-					
-				}
-			}
-		}
-		
-		ObjectInstance newCounter = SpaceFactory.addAllContainers(counter, containers);
-		currentState = currentState.replaceObject(counter, newCounter);
-		
+		// TODO you should have startingState be set before this method.
 		List<Action> actions = domain.getActions();
 		for (Action action : actions) {
 			((BakingAction)action).changePlanningIngredient(ingredient);
 		}
-		AffordanceCreator theCreator = new AffordanceCreator(domain, currentState, ingredient);
+		AffordanceCreator theCreator = new AffordanceCreator(domain, startingState, ingredient);
 		// Add the current top level ingredient so we can properly trim the action space
 		List<PropositionalFunction> propFunctions = domain.getPropFunctions();
 		for (PropositionalFunction pf : propFunctions) {
@@ -239,25 +202,27 @@ public class KevinsKitchen implements DomainGenerator {
 		RTDP planner;
 		Policy p;
 		AffordancesController affController = theCreator.getAffController();
+		//affController.setCurrentGoal(isSuccess);
+		affController.setCurrentGoal(theCreator.getPFAtom(subgoal.getGoal().getName()));
 		if(affordanceMode) {
 			// RTDP planner that also uses affordances to trim action space during the Bellman update
 			planner = new BellmanAffordanceRTDP(domain, rf, recipeTerminalFunction, gamma, hashFactory, vInit, numRollouts, maxDelta, maxDepth, affController);
-			planner.toggleDebugPrinting(false);
-			planner.planFromState(currentState);
+			//planner.toggleDebugPrinting(false);
+			planner.planFromState(startingState);
 			
 			// Create a Q-greedy policy from the planner
 			p = new AffordanceGreedyQPolicy(affController, (QComputablePlanner)planner);
 
 		} else {
 			planner = new RTDP(domain, rf, recipeTerminalFunction, gamma, hashFactory, vInit, numRollouts, maxDelta, maxDepth);
-			planner.planFromState(currentState);
+			planner.planFromState(startingState);
 			
 			// Create a Q-greedy policy from the planner
 			p = new GreedyQPolicy((QComputablePlanner)planner);
 		}
 		
 		// Print out the planning results
-		EpisodeAnalysis episodeAnalysis = p.evaluateBehavior(currentState, rf, recipeTerminalFunction,100);
+		EpisodeAnalysis episodeAnalysis = p.evaluateBehavior(startingState, rf, recipeTerminalFunction,100);
 
 		State endState = episodeAnalysis.getState(episodeAnalysis.stateSequence.size() - 1);
 
@@ -282,12 +247,6 @@ public class KevinsKitchen implements DomainGenerator {
 		
 		KevinsKitchen kitchen = new KevinsKitchen();
 		Domain domain = kitchen.generateDomain();
-		kitchen.PlanRecipeOneAgent(domain, new MashedPotatoes());
 		kitchen.PlanRecipeOneAgent(domain, new Brownies());
-		kitchen.PlanRecipeOneAgent(domain, new DeviledEggs());
-		kitchen.PlanRecipeOneAgent(domain, new CucumberSalad());
-		kitchen.PlanRecipeOneAgent(domain, new MoltenLavaCake());
-		kitchen.PlanRecipeOneAgent(domain, new PeanutButterCookies());
-		kitchen.PlanRecipeOneAgent(domain, new PecanPie());
 	}
 }

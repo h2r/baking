@@ -1,6 +1,5 @@
 package edu.brown.cs.h2r.baking.actions;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import burlap.oomdp.core.Domain;
@@ -10,7 +9,6 @@ import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
-import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ToolFactory;
 
 public class UseAction extends BakingAction {
@@ -21,11 +19,14 @@ public class UseAction extends BakingAction {
 	
 	@Override
 	public BakingActionResult checkActionIsApplicableInState(State state, String[] params) {
+		return BakingActionResult.failure("Don't use this action"); /*
 		BakingActionResult superResult = super.checkActionIsApplicableInState(state, params);
 		
 		if (!superResult.getIsSuccess()) {
 			return superResult;
 		}
+		
+	
 		
 		ObjectInstance tool = state.getObject(params[1]);
 		ObjectInstance container = state.getObject(params[2]);
@@ -118,7 +119,7 @@ public class UseAction extends BakingAction {
 			}
 		}
 		
-		return BakingActionResult.success();
+		return BakingActionResult.success(); */
 	}
 	
 	@Override

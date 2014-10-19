@@ -3,14 +3,14 @@ package edu.brown.cs.h2r.baking.PropositionalFunctions;
 import java.util.List;
 import java.util.Set;
 
+import burlap.oomdp.core.Domain;
+import burlap.oomdp.core.ObjectInstance;
+import burlap.oomdp.core.State;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
-import burlap.oomdp.core.Domain;
-import burlap.oomdp.core.ObjectInstance;
-import burlap.oomdp.core.State;
 
 public class AllowMoving extends BakingPropositionalFunction {
 
@@ -23,22 +23,31 @@ public class AllowMoving extends BakingPropositionalFunction {
 		ObjectInstance container = state.getObject(params[1]);		
 		Set<String> contents = ContainerFactory.getContentNames(container);
 		
+		String containerSpaceName = ContainerFactory.getSpaceName(container);
+		ObjectInstance containerSpace = state.getObject(containerSpaceName);
 		
-		if (!ContainerFactory.isEmptyContainer(container)) {
-			if (SpaceFactory.isBaking(space)) {
-				return this.checkMoveToBaking(state, contents);
-			} else if (SpaceFactory.isHeating(space)) {
-				return this.checkMoveToHeating(state, contents);
-			} else {
-				return true;
-			}
+		if (SpaceFactory.isCleaning(containerSpace)) {
+			return false;
 		}
-		return false;
+		
+		
+		if (SpaceFactory.isBaking(space)) {
+			return this.checkMoveToBaking(state, container, contents);
+		} else if (SpaceFactory.isHeating(space)) {
+			return this.checkMoveToHeating(state, container, contents);
+		} else if (SpaceFactory.isCleaning(space)) { 
+			return this.checkMoveToCleaning(state, container);
+		} else {
+			return !(ContainerFactory.isEmptyContainer(container));
+		} 
 	}
 	
-	private boolean checkMoveToBaking(State state, Set<String> contents) {
+	private boolean checkMoveToBaking(State state, ObjectInstance container, Set<String> contents) {
 		String ingredientName = topLevelIngredient.getName();
 		boolean recipeIngBaked = this.topLevelIngredient.getBaked();
+		if (!ContainerFactory.isBakingContainer(container)) {
+			return false;
+		}
 		if (recipeIngBaked && contents.contains(ingredientName) ) {
 			boolean objIngBaked = IngredientFactory.isBakedIngredient(state.getObject(ingredientName));
 			if (!objIngBaked) {
@@ -59,10 +68,13 @@ public class AllowMoving extends BakingPropositionalFunction {
 		return false;
 	}
 	
-	private boolean checkMoveToHeating(State state, Set<String> contents) {
+	private boolean checkMoveToHeating(State state, ObjectInstance container, Set<String> contents) {
 		String ingredientName = topLevelIngredient.getName();
 		boolean recipeIngHeated = this.topLevelIngredient.getHeated();
 		ObjectInstance topLevelObj = state.getObject(ingredientName);
+		if (!ContainerFactory.isHeatingContainer(container)) {
+			return false;
+		}
 		if (recipeIngHeated && contents.contains(ingredientName) ) {
 			if (!IngredientFactory.isHeatedIngredient(topLevelObj)) {
 				if (!IngredientFactory.isMeltedAtRoomTemperature(topLevelObj)) {
@@ -84,6 +96,10 @@ public class AllowMoving extends BakingPropositionalFunction {
 			}
 		}
 		return false;
+	}
+	
+	private boolean checkMoveToCleaning(State state, ObjectInstance container) {
+		return ContainerFactory.getUsed(container) && ContainerFactory.isEmptyContainer(container);
 	}
 
 }

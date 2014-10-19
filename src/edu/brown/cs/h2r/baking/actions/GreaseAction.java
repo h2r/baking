@@ -16,6 +16,7 @@ public class GreaseAction extends BakingAction {
 	
 	@Override
 	public BakingActionResult checkActionIsApplicableInState(State state, String[] params) {
+		return BakingActionResult.failure("Do not use this action"); /*
 		BakingActionResult superResult = super.checkActionIsApplicableInState(state, params);
 		
 		if (!superResult.getIsSuccess()) {
@@ -43,7 +44,7 @@ public class GreaseAction extends BakingAction {
 			return BakingActionResult.failure(ingredientName + " is not a suitable grease");
 		}
 		
-		return BakingActionResult.success();
+		return BakingActionResult.success();*/
 	}
 	
 	@Override

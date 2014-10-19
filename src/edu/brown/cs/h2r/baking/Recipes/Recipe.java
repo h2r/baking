@@ -39,6 +39,8 @@ public abstract class Recipe {
 	public static final Boolean SWAPPED = true;
 	public static final Boolean NOT_SWAPPED = false;
 	
+	protected String recipeName;
+	
 	public Recipe()
 	{
 		this.knowledgebase = new Knowledgebase();
@@ -159,66 +161,9 @@ public abstract class Recipe {
 		}
 		// If the recipe actually has swapped ingredients, then...
 		if (!swappedRecipeIngredients.isEmpty()) {
-			// Find any swapped ingredients in our object
-			List<ObjectInstance> swappedObjectIngredients = new ArrayList<ObjectInstance>();
-			for (String name : objContents) {
-				ObjectInstance obj = state.getObject(name);
-				if (IngredientFactory.isSwapped(obj)) {
-					swappedObjectIngredients.add(obj);
-				}
-			}
-			// If we don't have equal amounts of swapped ingredients, then we've done something wrong
-			/*if (swappedRecipeIngredients.size() != swappedObjectIngredients.size()) {
+			if (!Recipe.swappedIngredientsSuccess(state, swappedRecipeIngredients, recipeContents, contents, objContents, compulsoryTraits, compulsoryTraitMap)) {
 				return false;
-			}*/
-			IngredientRecipe match;
-			for (ObjectInstance swappedObj : swappedObjectIngredients) {
-				match = null;
-				for (IngredientRecipe swappedIng : swappedRecipeIngredients) {
-					if (swappedIng.getName().equals(swappedObj.getName())) {
-						int ingSize = swappedIng.getConstituentIngredients().size() + swappedIng.getConstituentNecessaryTraits().size();
-						int objSize = IngredientFactory.getRecursiveContentsForIngredient(state,swappedObj).size();
-						if (ingSize == objSize) {
-							match = swappedIng;
-							break;
-						}
-					}
-				}
-				// couldn't find a matched ingredient, we failed!
-				if (match == null) {
-					return false;
-				// we've matched swapped ingredients
-				} else {
-					swappedRecipeIngredients.remove(match);
-					recipeContents.remove(match);
-					// Remove the contents of the swapped ingredients from objectContents, such that
-					// we're not "double counting" those ingredients!
-					for (String name : IngredientFactory.getRecursiveContentsForIngredient(state, swappedObj)) {
-						contents.remove(name);
-						for (String trait : compulsoryTraits) {
-							if (IngredientFactory.getTraits(state.getObject(name)).contains(trait)) {
-								compulsoryTraits.remove(trait);
-								break;
-							}
-						}
-					}
-				}
 			}
-			// any unmatched swapped recipe ingredients, add their contents to recipe content
-			for (IngredientRecipe swappedIng : swappedRecipeIngredients) {
-				if (swappedIng.isSimple()) {
-					recipeContents.add(swappedIng);
-				} else {
-					recipeContents.addAll(swappedIng.getContents());
-				}
-				AbstractMap<String, IngredientRecipe> swappedTraits = swappedIng.getNecessaryTraits();
-				for (Entry<String, IngredientRecipe> entry : swappedTraits.entrySet()) {
-					compulsoryTraits.add(entry.getKey());
-					compulsoryTraitMap.put(entry.getKey(), entry.getValue());
-				}
-				recipeContents.remove(swappedIng);
-			}
-			
 		}
 		
 		// We don't have enough/have too many ingredients.
@@ -248,70 +193,8 @@ public abstract class Recipe {
 			}
 
 		}
-		/*
-		 * Now, we want to remove each ingredient that is a compulsory ingredient from
-		 * trait ingredients. To do so, we check if our object has all of the compulsory
-		 * ingredients, and recursively checks if these recipes are successes. If it doesn't find
-		 * a compulsory ingredient, it will return false. When it does find the right
-		 * ingredient, it will remove it form traitIngredients, since it was "used up".
-		 */
-		for (IngredientRecipe ingredient : recipeContents) {
-			String ingredientName = ingredient.getName();
-			ObjectInstance ingredientObj = null;
-			Boolean match = false;
-			for (ObjectInstance obj : traitIngredients) {
-				if (obj.getName().equals(ingredientName)) {
-					ingredientObj = obj;
-					match = true;
-					break;
-				}
-			}
-			if (!match) {
-				return false;
-			}
-			if (ingredient.isSimple()) {
-				if (!Recipe.isSuccess(state, ingredient, ingredientObj)) {
-					return false;
-				}
-				traitIngredients.remove(ingredientObj);
-			} else {
-				Boolean exists = false;
-				Collection<IngredientRecipe> complexIngredientRecipeValues = complexIngredientRecipes.values();
-				for (IngredientRecipe complexSubIngredient : complexIngredientRecipeValues)
-				{
-					if (Recipe.isSuccess(state, complexSubIngredient, ingredientObj))
-					{
-						exists = true;
-						break;
-					}
-				}
-				if (!exists)
-				{
-					return false;
-				}
-			}
-		}
-		
-		/* At this point, traitIngredients only has the ingredients that could be used
-		 * for Traits, not as compulsory ingredients.
-		 */
-		for (String trait : compulsoryTraits) {
-			Boolean match = false;
-			for (ObjectInstance obj : traitIngredients) {
-				if (IngredientFactory.getTraits(obj).contains(trait)) {
-					// Ensure traitIngredient has the correct Attributes (heated, baked...)
-					// I.E. The fat we are using is in fact heated.
-					match = compulsoryTraitMap.get(trait).AttributesMatch(obj);
-					break;
-				}
-			}
-			if (!match) {
-				return false;
-			}
-		}
-		// All of our ingredients in our recipe are accounted for in our object, and vice versa.
-		// Every ingredient has the right attribute, so we must be done!
-		return true;
+		// all ingredients in our recipe have been fulfilled
+		return Recipe.allIngredientsFulfilled(state, recipeContents, compulsoryTraits, traitIngredients, compulsoryTraitMap, simpleIngredientRecipes, complexIngredientRecipes);
 	}
 	
 	public Boolean isFailure(State state, ObjectInstance object)
@@ -321,15 +204,13 @@ public abstract class Recipe {
 	
 	public static Boolean isFailure(State state, IngredientRecipe ingredientRecipe, ObjectInstance object)
 	{
-		if (Recipe.isSuccess(state, ingredientRecipe, object))
-		{
-			// If the recipe is complete, then we didn't fail. Go logic
-			return false;
-		}
 		// Object has been heated/baked, when it wasn't supposed to!
 		if (ingredientRecipe.objectHasExtraAttribute(object)) {
 			return true;
 		}
+		
+		// We either have the correct ingredient but haven't done the correct
+		// things to it (haven't baked it, haven't melted it).
 		if (IngredientFactory.isSwapped(object)) {
 			if (ingredientRecipe.getName().equals(object.getName())) {
 				if (ingredientRecipe.AttributesMatch(object)) {
@@ -340,52 +221,14 @@ public abstract class Recipe {
 		
 		if (ingredientRecipe.isSimple())
 		{
-			String ocName = object.getObjectClass().name;
-			if (!(ocName.equals(IngredientFactory.ClassNameSimple) || ocName.equals(IngredientFactory.ClassNameSimpleHidden)))
-			{
-				// Object is not a simple ingredient, but the ingredient we are checking against is. FAIL!
-				return true;
-			}
-			if (!ingredientRecipe.getName().equals(object.getName()))
-			{
-				// They aren't even the same name. FAIL!
-				return true;
-			}
-			// they don't have the right attributes (heated, peeled, etc).
-			if (!ingredientRecipe.AttributesMatch(object)) {
-				return true;
-			}
-			return false;
+			return Recipe.simpleIngredientFail(object, ingredientRecipe);
 		}
 		
-		// Call isFailure recursively
-		for (String name : IngredientFactory.getContentsForIngredient(object)) {
-			IngredientRecipe matchTo = null;
-			ObjectInstance content = state.getObject(name);
-			if (!IngredientFactory.isSimple(content)) {
-				for (IngredientRecipe ing : ingredientRecipe.getContents()) {
-					if (ing.getName().equals(name)) {
-						matchTo = ing;
-						break;
-					}
-				}
-				for (IngredientRecipe ing : ingredientRecipe.getConstituentIngredients()) {
-					if (ing.getName().equals(name)) {
-						matchTo = ing;
-						break;
-					}
-				}
-					
-				if (matchTo != null) {
-					if (isFailure(state, matchTo, content)) {
-						return true;
-					}
-				} else {
-					// we've clearly made a mistake if we can't find the matching ingredient
-					return true;
-				}
-			}
-		}
+		// Does our container only have pertinent/necessary ingredients?
+		/*if (!Recipe.onlyNecessaryIngredients(state, object, ingredientRecipe)) {
+			return true;
+		}*/
+		
 		
 		// Make copies so we can edit them as we go!
 		List<IngredientRecipe> recipeContents = new ArrayList<IngredientRecipe>(ingredientRecipe.getContents());
@@ -393,142 +236,22 @@ public abstract class Recipe {
 		AbstractMap<String, IngredientRecipe> compulsoryTraitMap = ingredientRecipe.getNecessaryTraits();
 		Set<String> contents = new HashSet<String>(IngredientFactory.getRecursiveContentsAndSwapped(state, object));
 		
-		// If we've found a match in our ingredients
-		Boolean foundAGoodIngredient = false;
-		
-		// For all of our contents...
-		for (String contentName : contents) {
-			
-			Boolean goodIngredient = false;
-			// Check that the object is a required ingredient
-			for (IngredientRecipe ing : recipeContents) {
-				if (ing.getName().equals(contentName)) {
-					goodIngredient = true;
-					foundAGoodIngredient = true;
-				}
-			}
-			// or check that it fulfills a required trait
-			for (String trait : IngredientFactory.getTraits(state.getObject(contentName))) {
-				if (recipeTraits.contains(trait)) {
-					goodIngredient = true;
-					foundAGoodIngredient = true;
-				}
-			}
-			// Current Ingredient isn't a necessary ingredient NOR does it fulfill any
-			// of the required traits
-			if (!goodIngredient) {
-				// In our ingredients, we have added at least one "good" ingredient...
-				if (foundAGoodIngredient) {
-					// but have also ruined our recipe by adding a bad ingredient -- we failed! 
-					return true;
-				}
-			}
-		}
-		
-		
-		// See which necessary/trait ingredients we've fulfilled thus far
-		for (String name : contents) {
-			IngredientRecipe match = null;
-			for (IngredientRecipe recipeContent : recipeContents) {
-				if (recipeContent.getName().equals(name)) {
-					if (!isFailure(state, recipeContent, state.getObject(name))) {
-						match = recipeContent;
-						break;
-					}
-				}
-			}
-			if (match != null) {
-				recipeContents.remove(match);
-			} else {
-				ObjectInstance ing = state.getObject(name);
-				String traitMatch = null;
-				for (String trait : IngredientFactory.getTraits(ing)) {
-					if (recipeTraits.contains(trait)) {
-						IngredientRecipe ingredient = compulsoryTraitMap.get(trait);
-						if (!isFailure(state, ingredient.getCopyWithNewName(ing.getName()), ing)) {
-							traitMatch = trait;
-						}
-						break;
-					}
-				}
-				if (traitMatch != null) {
-					recipeTraits.remove(traitMatch);
-				} else {
-					// this ingredient had no match!
-					return true;
-				}
-			}
-		}
-		
-		// ensure that our there are still enough ingredients in our state to fulfill
-		// all the necessary ingredients and traits!
-		List<ObjectInstance> simpleObjs = state.getObjectsOfTrueClass("simple_ingredient");
-		for (ObjectInstance ing : simpleObjs) {
-			IngredientRecipe match = null;
-			String name = ing.getName();
-			for (IngredientRecipe recipeContent : recipeContents) {
-				if (recipeContent.getName().equals(name) && IngredientFactory.getUseCount(ing) > 0) {
-					match = recipeContent;
-					break;
-				}
-			}
-			if (match != null) {
-				recipeContents.remove(match);
-			} else {
-				String traitMatch = null;
-				for (String trait : IngredientFactory.getTraits(ing)) {
-					if (recipeTraits.contains(trait) && IngredientFactory.getUseCount(ing) > 0) {
-						traitMatch = trait;
-						break;
-					}
-				}
-				if (traitMatch != null) {
-					recipeTraits.remove(traitMatch);
-				}
-			}
-		}
-		List<ObjectInstance> complexObjs = state.getObjectsOfTrueClass("complex_ingredient");
-		for (ObjectInstance complexObj : complexObjs) {
-			Set<String> contentNames = IngredientFactory.getIngredientContents(complexObj);
-			for (String name : contentNames) {
-				IngredientRecipe match = null;
-				ObjectInstance ing = state.getObject(name);
-				for (IngredientRecipe recipeContent : recipeContents) {
-					if (recipeContent.getName().equals(name)) {
-						match = recipeContent;
-						break;
-					}
-				}
-				if (match != null) {
-					recipeContents.remove(match);
-				} else {
-					String traitMatch = null;
-					for (String trait : IngredientFactory.getTraits(ing)) {
-						if (recipeTraits.contains(trait)) {
-							traitMatch = trait;
-							break;
-						}
-					}
-					if (traitMatch != null) {
-						recipeTraits.remove(traitMatch);
-					}
-				}
-			}
-		}
-		int simpleRecipeContents = 0;
-		for (IngredientRecipe ing : recipeContents) {
-			if (ing.isSimple()) {
-				simpleRecipeContents++;
-			}
-		}
-		
-		
-		// Check if there are any ingredients or traits we haven't fulfilled yet.
-		if (simpleRecipeContents != 0 || recipeTraits.size() != 0) {
+		// none of our ingredient fulfill the same trait (we have two sugars, only need one)
+		if (Recipe.hasExtraIngredients(state, recipeContents, contents, recipeTraits)) {
 			return true;
 		}
 		
-		// No failures were explicitly found, therefore we haven't yet failed.
+		// there is some ingredient that doesn't belong here.
+		if (Recipe.containsUnmatchedIngredients(state, recipeContents, contents, recipeTraits, compulsoryTraitMap)) {
+			return true;
+		}
+		
+		// given what we still need to add to our recipe, can we find that in our current state, such that we could
+		// potentially complete our recipe?
+		if (!Recipe.canStillCompleteRecipe(state, recipeContents, contents, recipeTraits)) {
+			return true;
+		}
+		
 		return false;
 	}
 	
@@ -650,5 +373,336 @@ public abstract class Recipe {
 			Set<String> subgoalToolAttributes = Recipe.getSubgoalToolAttributes(ing);
 			ing.addRecipeToolAttributes(subgoalToolAttributes);
 		}
+	}
+	
+	public String getRecipeName() {
+		return this.recipeName;
+	}
+	
+	public static boolean simpleIngredientFail(ObjectInstance object, IngredientRecipe ingredientRecipe) {
+		String ocName = object.getObjectClass().name;
+		if (!(ocName.equals(IngredientFactory.ClassNameSimple) || ocName.equals(IngredientFactory.ClassNameSimpleHidden)))
+		{
+			// Object is not a simple ingredient, but the ingredient we are checking against is. FAIL!
+			return true;
+		}
+		if (!ingredientRecipe.getName().equals(object.getName()))
+		{
+			// They aren't even the same name. FAIL!
+			return true;
+		}
+		// they don't have the right attributes (heated, peeled, etc).
+		if (!ingredientRecipe.AttributesMatch(object)) {
+			return true;
+		}
+		return false;
+	}
+	
+	/*public static boolean onlyNecessaryIngredients(State state, ObjectInstance object, IngredientRecipe ingredientRecipe) {
+		for (String name : IngredientFactory.getContentsForIngredient(object)) {
+			// First of all, see if all of our contents match to some ingredient that is
+			// required in whatever we are making.
+			IngredientRecipe matchTo = null;
+			ObjectInstance content = state.getObject(name);
+			if (!IngredientFactory.isSimple(content)) {
+				for (IngredientRecipe ing : ingredientRecipe.getContents()) {
+					if (ing.getName().equals(name)) {
+						matchTo = ing;
+						break;
+					}
+				}
+				for (IngredientRecipe ing : ingredientRecipe.getConstituentIngredients()) {
+					if (ing.getName().equals(name)) {
+						matchTo = ing;
+						break;
+					}
+				}
+					
+				if (matchTo != null) {
+					if (isFailure(state, matchTo, content)) {
+						return false;
+					}
+				} else {
+					// we've clearly made a mistake if we can't find the matching ingredient
+					return false;
+				}
+			}
+		}
+		return true;
+	}*/
+	
+	public static boolean hasExtraIngredients(State state, List<IngredientRecipe> recipeContents, Set<String> contents, Set<String> recipeTraits) {
+		// If we've found a match in our ingredients
+		Boolean foundAGoodIngredient = false;
+		
+		// For all of our contents...
+		for (String contentName : contents) {
+			
+			Boolean goodIngredient = false;
+			// Check that the object is a required ingredient
+			for (IngredientRecipe ing : recipeContents) {
+				if (ing.getName().equals(contentName)) {
+					goodIngredient = true;
+					foundAGoodIngredient = true;
+				}
+			}
+			// or check that it fulfills a required trait
+			for (String trait : IngredientFactory.getTraits(state.getObject(contentName))) {
+				if (recipeTraits.contains(trait)) {
+					goodIngredient = true;
+					foundAGoodIngredient = true;
+				}
+			}
+			// Current Ingredient isn't a necessary ingredient NOR does it fulfill any
+			// of the required traits
+			if (!goodIngredient) {
+				// In our ingredients, we have added at least one "good" ingredient...
+				if (foundAGoodIngredient) {
+					// but have also ruined our recipe by adding a bad ingredient -- we failed! 
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	public static boolean containsUnmatchedIngredients(State state, List<IngredientRecipe> recipeContents, Set<String> contents, 
+			Set<String> recipeTraits, AbstractMap<String, IngredientRecipe> compulsoryTraitMap) {
+		// See which necessary/trait ingredients we've fulfilled thus far
+		for (String name : contents) {
+			IngredientRecipe match = null;
+			for (IngredientRecipe recipeContent : recipeContents) {
+				if (recipeContent.getName().equals(name)) {
+					if (!isFailure(state, recipeContent, state.getObject(name))) {
+						match = recipeContent;
+						break;
+					}
+				}
+			}
+			if (match != null) {
+				recipeContents.remove(match);
+			} else {
+				ObjectInstance ing = state.getObject(name);
+				String traitMatch = null;
+				for (String trait : IngredientFactory.getTraits(ing)) {
+					if (recipeTraits.contains(trait)) {
+						IngredientRecipe ingredient = compulsoryTraitMap.get(trait);
+						if (!isFailure(state, ingredient.getCopyWithNewName(ing.getName()), ing)) {
+							traitMatch = trait;
+						}
+						break;
+					}
+				}
+				if (traitMatch != null) {
+					recipeTraits.remove(traitMatch);
+				} else {
+					// this ingredient had no match!
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	public static boolean canStillCompleteRecipe(State state, List<IngredientRecipe> recipeContents, Set<String> contents,
+		Set<String> recipeTraits) {
+		// ensure that our there are still enough ingredients in our state to fulfill
+		// all the necessary ingredients and traits!
+		List<ObjectInstance> simpleObjs = state.getObjectsOfTrueClass("simple_ingredient");
+		for (ObjectInstance ing : simpleObjs) {
+			IngredientRecipe match = null;
+			String name = ing.getName();
+			// do we have any named ingredients we still need in our state?
+			for (IngredientRecipe recipeContent : recipeContents) {
+				if (recipeContent.getName().equals(name) && IngredientFactory.getUseCount(ing) > 0) {
+					match = recipeContent;
+					break;
+				}
+			}
+			if (match != null) {
+				recipeContents.remove(match);
+			} else {
+				// Do we have an ingredient to fill out a necessary trait in the state.
+				String traitMatch = null;
+				for (String trait : IngredientFactory.getTraits(ing)) {
+					if (recipeTraits.contains(trait) && IngredientFactory.getUseCount(ing) > 0) {
+						traitMatch = trait;
+						break;
+					}
+				}
+				if (traitMatch != null) {
+					recipeTraits.remove(traitMatch);
+				}
+			}
+		}
+		// same idea as with simple ingredients, seeing if we can use them
+		List<ObjectInstance> complexObjs = state.getObjectsOfTrueClass("complex_ingredient");
+		for (ObjectInstance complexObj : complexObjs) {
+			Set<String> contentNames = IngredientFactory.getIngredientContents(complexObj);
+			for (String name : contentNames) {
+				IngredientRecipe match = null;
+				ObjectInstance ing = state.getObject(name);
+				for (IngredientRecipe recipeContent : recipeContents) {
+					if (recipeContent.getName().equals(name)) {
+						match = recipeContent;
+						break;
+					}
+				}
+				if (match != null) {
+					recipeContents.remove(match);
+				} else {
+					String traitMatch = null;
+					for (String trait : IngredientFactory.getTraits(ing)) {
+						if (recipeTraits.contains(trait)) {
+							traitMatch = trait;
+							break;
+						}
+					}
+					if (traitMatch != null) {
+						recipeTraits.remove(traitMatch);
+					}
+				}
+			}
+		}
+		int simpleRecipeContents = 0;
+		for (IngredientRecipe ing : recipeContents) {
+			if (ing.isSimple()) {
+				simpleRecipeContents++;
+			}
+		}
+		
+		// Check if there are any ingredients or traits we haven't fulfilled yet,
+		// of have the potential to fulfill since these ingredients are in the state
+		if (simpleRecipeContents != 0 || recipeTraits.size() != 0) {
+			return false;
+		}
+		return true;
+	}
+	public static boolean swappedIngredientsSuccess(State state, List<IngredientRecipe> swappedRecipeIngredients, 
+			List<IngredientRecipe> recipeContents, Set<String> contents, Set<String> objContents, Set<String> compulsoryTraits,
+			AbstractMap<String, IngredientRecipe> compulsoryTraitMap) {
+		// Find any swapped ingredients in our object
+		List<ObjectInstance> swappedObjectIngredients = new ArrayList<ObjectInstance>();
+		for (String name : objContents) {
+			ObjectInstance obj = state.getObject(name);
+			if (IngredientFactory.isSwapped(obj)) {
+				swappedObjectIngredients.add(obj);
+			}
+		}
+		IngredientRecipe match;
+		for (ObjectInstance swappedObj : swappedObjectIngredients) {
+			match = null;
+			for (IngredientRecipe swappedIng : swappedRecipeIngredients) {
+				if (swappedIng.getName().equals(swappedObj.getName())) {
+					int ingSize = swappedIng.getConstituentIngredients().size() + swappedIng.getConstituentNecessaryTraits().size();
+					int objSize = IngredientFactory.getRecursiveContentsForIngredient(state,swappedObj).size();
+					if (ingSize == objSize) {
+						match = swappedIng;
+						break;
+					}
+				}
+			}
+			// couldn't find a matched ingredient, we failed!
+			if (match == null) {
+				return false;
+			// we've matched swapped ingredients
+			} else {
+				swappedRecipeIngredients.remove(match);
+				recipeContents.remove(match);
+				// Remove the contents of the swapped ingredients from objectContents, such that
+				// we're not "double counting" those ingredients!
+				for (String name : IngredientFactory.getRecursiveContentsForIngredient(state, swappedObj)) {
+					contents.remove(name);
+					for (String trait : compulsoryTraits) {
+						if (IngredientFactory.getTraits(state.getObject(name)).contains(trait)) {
+							compulsoryTraits.remove(trait);
+							break;
+						}
+					}
+				}
+			}
+		}
+		// any unmatched swapped recipe ingredients, add their contents to recipe content
+		for (IngredientRecipe swappedIng : swappedRecipeIngredients) {
+			if (swappedIng.isSimple()) {
+				recipeContents.add(swappedIng);
+			} else {
+				recipeContents.addAll(swappedIng.getContents());
+			}
+			AbstractMap<String, IngredientRecipe> swappedTraits = swappedIng.getNecessaryTraits();
+			for (Entry<String, IngredientRecipe> entry : swappedTraits.entrySet()) {
+				compulsoryTraits.add(entry.getKey());
+				compulsoryTraitMap.put(entry.getKey(), entry.getValue());
+			}
+			recipeContents.remove(swappedIng);
+		}
+		return true;
+	}
+	
+	public static boolean allIngredientsFulfilled(State state, List<IngredientRecipe> recipeContents, Set<String> compulsoryTraits,
+			List<ObjectInstance> traitIngredients, AbstractMap<String, IngredientRecipe> compulsoryTraitMap, 
+			Map<String, IngredientRecipe> simpleIngredientRecipes, Map<String, IngredientRecipe> complexIngredientRecipes) {
+		/*
+		 * Now, we want to remove each ingredient that is a compulsory ingredient from
+		 * trait ingredients. To do so, we check if our object has all of the compulsory
+		 * ingredients, and recursively checks if these recipes are successes. If it doesn't find
+		 * a compulsory ingredient, it will return false. When it does find the right
+		 * ingredient, it will remove it form traitIngredients, since it was "used up".
+		 */
+		for (IngredientRecipe ingredient : recipeContents) {
+			String ingredientName = ingredient.getName();
+			ObjectInstance ingredientObj = null;
+			Boolean match = false;
+			for (ObjectInstance obj : traitIngredients) {
+				if (obj.getName().equals(ingredientName)) {
+					ingredientObj = obj;
+					match = true;
+					break;
+				}
+			}
+			if (!match) {
+				return false;
+			}
+			if (ingredient.isSimple()) {
+				if (!Recipe.isSuccess(state, ingredient, ingredientObj)) {
+					return false;
+				}
+				traitIngredients.remove(ingredientObj);
+			} else {
+				Boolean exists = false;
+				Collection<IngredientRecipe> complexIngredientRecipeValues = complexIngredientRecipes.values();
+				for (IngredientRecipe complexSubIngredient : complexIngredientRecipeValues)
+				{
+					if (Recipe.isSuccess(state, complexSubIngredient, ingredientObj))
+					{
+						exists = true;
+						break;
+					}
+				}
+				if (!exists)
+				{
+					return false;
+				}
+			}
+		}
+		
+		/* At this point, traitIngredients only has the ingredients that could be used
+		 * for Traits, not as compulsory ingredients.
+		 */
+		for (String trait : compulsoryTraits) {
+			Boolean match = false;
+			for (ObjectInstance obj : traitIngredients) {
+				if (IngredientFactory.getTraits(obj).contains(trait)) {
+					// Ensure traitIngredient has the correct Attributes (heated, baked...)
+					// I.E. The fat we are using is in fact heated.
+					match = compulsoryTraitMap.get(trait).AttributesMatch(obj);
+					break;
+				}
+			}
+			if (!match) {
+				return false;
+			}
+		}
+		return true;
 	}
 }

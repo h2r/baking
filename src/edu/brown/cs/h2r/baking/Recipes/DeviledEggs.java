@@ -12,9 +12,9 @@ import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunctio
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
 
 public class DeviledEggs extends Recipe {
-
 	public DeviledEggs() {
 		super();
+		this.recipeName = "deviled eggs";
 		List<IngredientRecipe> ingredientList = new ArrayList<IngredientRecipe>();
 		ingredientList.add(knowledgebase.getIngredient("egg_yolks"));
 		ingredientList.add(knowledgebase.getIngredient("pepper"));

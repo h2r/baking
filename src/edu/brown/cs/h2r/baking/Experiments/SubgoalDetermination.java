@@ -134,8 +134,7 @@ public class SubgoalDetermination {
 		List<ObjectInstance> containersAndIngredients = Recipe.getContainersAndIngredients(containerClass, ingredients, counterSpace.getName());
 		objects.addAll(containersAndIngredients);
 		
-		List<ObjectInstance> hiddenObjects = new ArrayList<ObjectInstance>();
-		return new State(objects, hiddenObjects);
+		return new State(objects);
 	}
 	
 	public static List<KitchenSubdomain> generatePolicies(Recipe recipe, Domain domain, State state) {

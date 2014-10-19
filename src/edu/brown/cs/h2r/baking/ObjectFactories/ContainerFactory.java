@@ -22,6 +22,7 @@ public class ContainerFactory {
 	private static final String attributeContains = "contains";
 	private static final String attributeGreased = "greased";
 	private static final String attributeSpace = "space";
+	private static final String attributeUsed = "used";
 	
 	public static final int NO_ATTRIBUTES = 0;
 	public static final int BAKING = 1;
@@ -51,6 +52,10 @@ public class ContainerFactory {
 		Attribute greasedAttribute = 
 				new Attribute(domain, ContainerFactory.attributeGreased, Attribute.AttributeType.BOOLEAN);
 		objectClass.addAttribute(greasedAttribute);
+		
+		Attribute usedAttribute =
+				new Attribute(domain, ContainerFactory.attributeUsed, Attribute.AttributeType.BOOLEAN);
+		objectClass.addAttribute(usedAttribute);
 		
 		objectClass.addAttribute(
 				new Attribute(domain, ContainerFactory.attributeContains, 
@@ -148,6 +153,7 @@ public class ContainerFactory {
 	}
 
 	public static ObjectInstance addIngredient(ObjectInstance container, String ingredient) {
+		container = container.changeValue(ContainerFactory.attributeUsed, true);
 		return container.appendRelationalTarget(ContainerFactory.attributeContains, ingredient);
 	}
 	
@@ -243,6 +249,7 @@ public class ContainerFactory {
 		object = object.changeValue(ContainerFactory.attributeMixing, ((attributes & ContainerFactory.MIXING) == ContainerFactory.MIXING) ? 1: 0);
 		object = object.changeValue(ContainerFactory.attributeHeating, ((attributes & ContainerFactory.HEATING) == ContainerFactory.HEATING) ? 1: 0);
 		object = object.changeValue(ContainerFactory.attributeReceiving, ((attributes & ContainerFactory.RECEIVING) == ContainerFactory.RECEIVING) ? 1: 0);
+		object = object.changeValue(ContainerFactory.attributeUsed, false);
 		return object;
 	}
 	
@@ -272,6 +279,10 @@ public class ContainerFactory {
 			}
 		}
 		return false;
+	}
+	
+	public static boolean getUsed(ObjectInstance container) {
+		return container.getBooleanValue(ContainerFactory.attributeUsed);
 	}
 	
 }
