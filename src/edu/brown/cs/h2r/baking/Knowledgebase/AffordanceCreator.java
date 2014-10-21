@@ -90,7 +90,8 @@ public class AffordanceCreator {
 				setupDelegate(domain, pfatoms, actionName, finishedPFAtom);
 			}
 		}
-		this.affController = new AffordancesController(affDelegates);
+		this.affController = new AffordancesController(affDelegates, true, true);
+		this.affController.setExpertPFs(domain.getPropFunctions());
 	}
 	
 	public void setupGoalPFAtoms(Domain domain, State state) {
@@ -122,9 +123,11 @@ public class AffordanceCreator {
 			List<AbstractGroundedAction> list = new ArrayList<AbstractGroundedAction>();
 			list.add(act);
 			Affordance aff= new Affordance(pfAtom, goal, list);
+			aff.incrementActionOptimalAffActive(act);
+			aff.incrementTotalActionOptimal(act);
 			AffordanceDelegate affDelegate = new AffordanceDelegate(aff);
 			//TODO NOT USED affDelegate.resampleActionSet();
-			this.affDelegates.add(affDelegate);
+				this.affDelegates.add(affDelegate);
 		}
 	}
 	

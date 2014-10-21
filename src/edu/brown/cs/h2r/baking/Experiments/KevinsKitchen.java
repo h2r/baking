@@ -118,8 +118,10 @@ public class KevinsKitchen implements DomainGenerator {
 				Recipe.getContainersAndIngredients(containerClass, this.allIngredients, SpaceFactory.SPACE_COUNTER);
 		
 		objects.addAll(ingredientsAndContainers);
+		objects.addAll(knowledgebase.getTools(domain, SpaceFactory.SPACE_COUNTER));
+		
 		State state = new State(objects);
-		state = knowledgebase.addTools(domain, state, SpaceFactory.SPACE_COUNTER);
+		
 		
 		System.out.println("\n\nPlanner will now plan the "+recipe.topLevelIngredient.getName()+" recipe!");
 		

@@ -464,7 +464,7 @@ public class TestActions {
 	public void testToolCarryEmpty() {
 		Recipe recipe = new MashedPotatoes();		
 		knowledgebase = new Knowledgebase();
-		state = knowledgebase.addTools(domain, state, SpaceFactory.SPACE_COUNTER);
+		state = state.appendAllObjects(knowledgebase.getTools(domain, SpaceFactory.SPACE_COUNTER));
 		allIngredients = knowledgebase.getRecipeObjectInstanceList(domain, recipe);
 		this.setUpState();
 		Action use = new UseAction(domain, topLevelIngredient);
@@ -483,7 +483,7 @@ public class TestActions {
 	public void testToolCarryInclude() {
 		Recipe recipe = new MashedPotatoes();		
 		knowledgebase = new Knowledgebase();
-		state = knowledgebase.addTools(domain, state, SpaceFactory.SPACE_COUNTER);
+		state = state.appendAllObjects(knowledgebase.getTools(domain, SpaceFactory.SPACE_COUNTER));
 		allIngredients = knowledgebase.getRecipeObjectInstanceList(domain, recipe);
 		this.setUpState();
 		Action use = new UseAction(domain, topLevelIngredient);
@@ -510,7 +510,7 @@ public class TestActions {
 	public void testToolCarryIncludeNotApplicable() {
 		Recipe recipe = new MashedPotatoes();
 		knowledgebase = new Knowledgebase();
-		state = knowledgebase.addTools(domain, state, SpaceFactory.SPACE_COUNTER);
+		state = state.appendAllObjects(knowledgebase.getTools(domain, SpaceFactory.SPACE_COUNTER));
 		allIngredients = knowledgebase.getRecipeObjectInstanceList(domain, recipe);
 		this.setUpState();
 		Action use = new UseAction(domain, topLevelIngredient);
@@ -536,7 +536,7 @@ public class TestActions {
 	public void testToolCarryExclude() {
 		Recipe recipe = new MashedPotatoes();
 		knowledgebase = new Knowledgebase();
-		state = knowledgebase.addTools(domain, state, SpaceFactory.SPACE_COUNTER);
+		state = state.appendAllObjects(knowledgebase.getTools(domain, SpaceFactory.SPACE_COUNTER));
 		allIngredients = knowledgebase.getRecipeObjectInstanceList(domain, recipe);
 		this.setUpState();
 		Action use = new UseAction(domain, topLevelIngredient);
@@ -560,7 +560,7 @@ public class TestActions {
 	public void testToolCarryExcludeNotApplicable() {
 		Recipe recipe = new MashedPotatoes();
 		knowledgebase = new Knowledgebase();
-		state = knowledgebase.addTools(domain, state, SpaceFactory.SPACE_COUNTER);
+		state = state.appendAllObjects(knowledgebase.getTools(domain, SpaceFactory.SPACE_COUNTER));
 		allIngredients = knowledgebase.getRecipeObjectInstanceList(domain, recipe);
 		this.setUpState();
 		Action use = new UseAction(domain, topLevelIngredient);
@@ -588,7 +588,7 @@ public class TestActions {
 		recipe.setUpSubgoals(domain);
 		recipe.addIngredientSubgoals();
 		allIngredients = knowledgebase.getRecipeObjectInstanceList(domain, recipe);
-		state = knowledgebase.addTools(domain, state, SpaceFactory.SPACE_COUNTER);
+		state = state.appendAllObjects(knowledgebase.getTools(domain, SpaceFactory.SPACE_COUNTER));
 		this.setUpState();
 		Action use = new UseAction(domain, topLevelIngredient);
 		Action pour = new PourAction(domain, topLevelIngredient);

@@ -6,6 +6,7 @@ import java.util.Set;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
+import burlap.oomdp.core.TransitionProbability;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.ActionObserver;
 import burlap.oomdp.singleagent.GroundedAction;
@@ -75,7 +76,10 @@ public abstract class BakingAction extends Action {
 		return params.clone();
 	}
 	
-	
+	@Override
+	public List<TransitionProbability> getTransitions(State state, String[] params){
+		return this.deterministicTransition(state, params);
+	}
 
 	@Override
 	public State performAction(State s, String [] params){

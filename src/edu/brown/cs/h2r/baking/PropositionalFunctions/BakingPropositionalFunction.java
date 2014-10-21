@@ -14,6 +14,7 @@ public class BakingPropositionalFunction extends PropositionalFunction {
 		super(name, domain, params);
 		this.topLevelIngredient = ingredient;
 	}
+	
 	@Override
 	public boolean isTrue(State state, String[] params) {
 		return false;

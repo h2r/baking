@@ -122,18 +122,20 @@ public class SubgoalDetermination {
 		Knowledgebase knowledgebase = new Knowledgebase();
 		
 		List<ObjectInstance> ingredients = new ArrayList<ObjectInstance>();
+		List<ObjectInstance> tools = new ArrayList<ObjectInstance>();
 		for (int i = 0;i < recipes.size(); i++) {
 			Recipe recipe = recipes.get(i);
 			Domain domain = recipeDomains.get(i);
 			ingredients.addAll(knowledgebase.getRecipeObjectInstanceList(domain, recipe));
+			tools.addAll(knowledgebase.getTools(domain, SpaceFactory.SPACE_COUNTER));
 		}
-		//knowledgebase.addTools(domain, state, SpaceFactory.SPACE_COUNTER);
+		
 	
 		ObjectClass containerClass = generalDomain.getObjectClass(ContainerFactory.ClassName);		
 		
 		List<ObjectInstance> containersAndIngredients = Recipe.getContainersAndIngredients(containerClass, ingredients, counterSpace.getName());
 		objects.addAll(containersAndIngredients);
-		
+		objects.addAll(tools);
 		return new State(objects);
 	}
 	
@@ -206,13 +208,7 @@ public class SubgoalDetermination {
 		}
 		AffordanceCreator theCreator = new AffordanceCreator(domain, currentState, ingredient);
 		// Add the current top level ingredient so we can properly trim the action space
-		List<PropositionalFunction> propFunctions = domain.getPropFunctions();
-		for (PropositionalFunction pf : propFunctions) {
-			((BakingPropositionalFunction)pf).changeTopLevelIngredient(ingredient);
-			((BakingPropositionalFunction)pf).setSubgoal(subgoal);
-		}
-		
-		subgoal.getGoal().changeTopLevelIngredient(ingredient);
+		SubgoalDetermination.setSubgoal(domain, subgoal, ingredient);
 		final PropositionalFunction isSuccess = subgoal.getGoal();
 		
 		final PropositionalFunction isFailure = domain.getPropFunction(AffordanceCreator.BOTCHED_PF);
@@ -256,6 +252,30 @@ public class SubgoalDetermination {
 		return KitchenSubdomain.makeSubdomain(domain, recipe, subgoal, startingState, p);
 	}
 
+	public static void setSubgoal(KitchenSubdomain subdomain) {
+		Domain domain = subdomain.getDomain();
+		BakingSubgoal subgoal = subdomain.getSubgoal();
+		IngredientRecipe ingredient = subgoal.getIngredient();
+		
+		List<PropositionalFunction> propFunctions = domain.getPropFunctions();
+		for (PropositionalFunction pf : propFunctions) {
+			((BakingPropositionalFunction)pf).changeTopLevelIngredient(ingredient);
+			((BakingPropositionalFunction)pf).setSubgoal(subgoal);
+		}
+		
+		subgoal.getGoal().changeTopLevelIngredient(ingredient);
+	}
+	
+	public static void setSubgoal(Domain domain, BakingSubgoal subgoal, IngredientRecipe ingredient) {
+		List<PropositionalFunction> propFunctions = domain.getPropFunctions();
+		for (PropositionalFunction pf : propFunctions) {
+			((BakingPropositionalFunction)pf).changeTopLevelIngredient(ingredient);
+			((BakingPropositionalFunction)pf).setSubgoal(subgoal);
+		}
+		
+		subgoal.getGoal().changeTopLevelIngredient(ingredient);
+	}
+
 	public static List<KitchenSubdomain> generateAllPolicies() {
 		List<KitchenSubdomain> policyDomains = new ArrayList<KitchenSubdomain>();
 		List<Recipe> recipes = Arrays.asList(
@@ -285,8 +305,14 @@ public class SubgoalDetermination {
 	public static State generateRandomStateFromPolicy(KitchenSubdomain subdomain, int maxDepth) {
 		Policy policy = subdomain.getPolicy();
 		State state = subdomain.getStartState();
+		BakingSubgoal subgoal = subdomain.getSubgoal();
+		
 		System.out.println("Taking actions");
+		SubgoalDetermination.setSubgoal(subdomain);
 		for (int i = 0; i < maxDepth; i++) {
+			if (subgoal.goalCompleted(state)) {
+				return null;
+			}
 			AbstractGroundedAction action = policy.getAction(state);
 			System.out.println("\t" + action.actionName() + " " + Arrays.toString(action.params) );
 			state = action.executeIn(state);
@@ -336,22 +362,30 @@ public class SubgoalDetermination {
 	
 	public static void main(String[] argv) {
 		List<KitchenSubdomain> policyDomains = SubgoalDetermination.generateAllPolicies();
-		
+		List<KitchenSubdomain> testDomains = new ArrayList<KitchenSubdomain>(policyDomains);
 		StateHashFactory hashingFactory = new NameDependentStateHashFactory();
 		PolicyPrediction prediction = new PolicyPrediction(policyDomains, hashingFactory );
 		Random rando = new Random();
-		int alpha = 1;
+		int alpha = 3;
 		int numTries = 10;
 		int numSuccess = 0;
 		int numRandomGuesses = 0;
 		
 		for (int i = 0; i < numTries; i++) {
-			KitchenSubdomain policyDomain = policyDomains.get(rando.nextInt(policyDomains.size()));
+			int randomIndex = rando.nextInt(testDomains.size());
+			KitchenSubdomain policyDomain = testDomains.get(randomIndex);
 			State state = SubgoalDetermination.generateRandomStateFromPolicy(policyDomain, alpha);
+			
+			while (state == null) {
+				testDomains.remove(randomIndex);
+				randomIndex = rando.nextInt(testDomains.size());
+				policyDomain = testDomains.get(randomIndex);
+				state = SubgoalDetermination.generateRandomStateFromPolicy(policyDomain, alpha);
+			}
 			String actualName = SubgoalDetermination.buildName(policyDomain);
 			System.out.println("Actual: " + actualName);
 			List<PolicyProbability> policyDistribution = 
-					prediction.getPolicyDistributionFromStatePair(policyDomain.getStartState(), state, 10);
+					prediction.getPolicyDistributionFromStatePair(policyDomain.getStartState(), state, 10, policyDomain);
 			
 			double maxProb = 0.0;
 			List<String> bestPolicies = new ArrayList<String>();

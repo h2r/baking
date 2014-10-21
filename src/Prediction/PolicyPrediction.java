@@ -18,6 +18,7 @@ import burlap.oomdp.core.TransitionProbability;
 import burlap.oomdp.singleagent.GroundedAction;
 import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.Experiments.KitchenSubdomain;
+import edu.brown.cs.h2r.baking.Experiments.SubgoalDetermination;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 
@@ -130,11 +131,11 @@ public class PolicyPrediction {
 		return totalFlow;
 	}
 	
-	public List<PolicyProbability> getPolicyDistributionFromStatePair(State fromState, State endState) {
+	/*public List<PolicyProbability> getPolicyDistributionFromStatePair(State fromState, State endState) {
 		return this.getPolicyDistributionFromStatePair(fromState, endState, DEFAULT_MAX_DEPTH);
-	}
+	}*/
 	
-	public List<PolicyProbability> getPolicyDistributionFromStatePair(State fromState, State endState, int maxDepth) {
+	public List<PolicyProbability> getPolicyDistributionFromStatePair(State fromState, State endState, int maxDepth, KitchenSubdomain actual) {
 		final State goalState = endState.copy();
 		StateConditionTest goalCondition = new StateConditionTest() {
 			@Override
@@ -143,20 +144,26 @@ public class PolicyPrediction {
 			}
 		};
 		
-		return this.getPolicyDistributionFromStateGoalCondition(fromState, goalCondition, maxDepth);
+		return this.getPolicyDistributionFromStateGoalCondition(fromState, goalCondition, maxDepth, actual);
 	}
 	
-	public List<PolicyProbability> getPolicyDistributionFromStateGoalCondition(State fromState, StateConditionTest goalCondition) {
+	/*public List<PolicyProbability> getPolicyDistributionFromStateGoalCondition(State fromState, StateConditionTest goalCondition) {
 		return this.getPolicyDistributionFromStateGoalCondition(fromState, goalCondition, DEFAULT_MAX_DEPTH);
-	}
+	}*/
 	
-	public List<PolicyProbability> getPolicyDistributionFromStateGoalCondition(State fromState, StateConditionTest goalCondition, int maxDepth) {
+	public List<PolicyProbability> getPolicyDistributionFromStateGoalCondition(State fromState, StateConditionTest goalCondition, int maxDepth, KitchenSubdomain actual) {
 		List<PolicyProbability> distribution = new ArrayList<PolicyProbability>();
-		
+		String actualName = SubgoalDetermination.buildName(actual);
 		double sumProbability = 0.0;
 		double probability = 0;
 		for (int i = 0; i < this.policies.size(); i++) {
 			KitchenSubdomain subdomain = this.policies.get(i);
+			String name = SubgoalDetermination.buildName(subdomain);
+			if (actualName.equals(name)) {
+				int cc =1 ;
+			}
+			
+			
 			Policy policy = subdomain.getPolicy();
 			int currentDepth = 0;
 			double currentProbability = 0.0, previousProbability = 1.0;
@@ -164,14 +171,14 @@ public class PolicyPrediction {
 			StateHashTuple tuple = this.hashingFactory.hashState(fromState);
 			flowMap.put(tuple, 1.0);
 			while (currentDepth++ < maxDepth && Math.abs(currentProbability - previousProbability) > 0.001) {
-				System.out.println("Depth: " + currentDepth);
+				//System.out.println("Depth: " + currentDepth);
 				previousProbability = currentProbability;
-				
+				SubgoalDetermination.setSubgoal(subdomain);
 				this.computeFlowToAllStates(policy, fromState, goalCondition, flowMap);
 				currentProbability += this.flowT(policy, goalCondition, flowMap); // should actually have a p(T) here
 				
 				sumProbability += currentProbability;
-				System.out.println("Current Probability: " + currentProbability);
+				//System.out.println("Current Probability: " + currentProbability);
 				
 			}
 			PolicyProbability policyProbability = PolicyProbability.newPolicyProbability(subdomain.getPolicy(), currentProbability);

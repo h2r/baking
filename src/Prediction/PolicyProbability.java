@@ -24,9 +24,7 @@ public class PolicyProbability {
 		if (policy == null) {
 			return null;
 		}
-		if (probability < 0 || probability > 1.0) {
-			return null;
-		}
+
 		return new PolicyProbability(policy, probability);
 		
 	}

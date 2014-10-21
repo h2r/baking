@@ -55,10 +55,6 @@ public class MixAction extends BakingAction {
 		String containerName = params[1];
 		ObjectInstance containerInstance = state.getObject(containerName);
 		
-		if (ContainerFactory.getContentNames(containerInstance).isEmpty()) {
-			return BakingActionResult.failure(containerName + " is empty");
-		}
-		
 		String containerSpaceName = ContainerFactory.getSpaceName(containerInstance);
 		if (containerSpaceName == null) {
 			return BakingActionResult.failure(containerName + " is not in any space");
@@ -78,7 +74,7 @@ public class MixAction extends BakingAction {
 		
 		String toolName = params[2];
 		
-		if (toolName.equals("whisk")) {
+		/*if (toolName.equals("whisk")) {
 			toolSpecificIngredients = wets;
 		} else if (toolName.equals("spoon")) {
 			toolSpecificIngredients = dries;
@@ -90,7 +86,7 @@ public class MixAction extends BakingAction {
 			if (!toolSpecificIngredients.contains(ingredient) && simples.contains(ingredient)) {
 				return BakingActionResult.failure(toolName + " cannot touch the ingredient " + ingredient);
 			}
-		}
+		}*/
 		
 		ObjectInstance tool = state.getObject(toolName);
 		if (!ToolFactory.getSpaceName(tool).equals(SpaceFactory.SPACE_COUNTER)) {
@@ -136,6 +132,9 @@ public class MixAction extends BakingAction {
 		ObjectClass complexIngredientClass = this.domain.getObjectClass(IngredientFactory.ClassNameComplex);
 		Random rando = new Random();
 		Set<String> contents = ContainerFactory.getContentNames(container);
+		if (contents.size() < 2) {
+			return state;
+		}
 		String res  = knowledgebase.canCombine(state, container);
 		
 		// can we make a premade combination (liquid + flour = dough?)

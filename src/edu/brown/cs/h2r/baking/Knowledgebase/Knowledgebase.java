@@ -95,7 +95,7 @@ public class Knowledgebase {
 		}
 	}
 	
-	public State addTools(Domain domain, State state, String space) {
+	public List<ObjectInstance> getTools(Domain domain, String space) {
 		
 		List<ObjectInstance> toolsToAdd = new ArrayList<ObjectInstance>();
 		for (Entry<String, BakingInformation> entry : this.toolMap.entrySet()) {
@@ -131,7 +131,7 @@ public class Knowledgebase {
 			toolsToAdd.add(tool);
 		}
 		
-		return state.appendAllObjects(toolsToAdd);
+		return toolsToAdd;
 	}
 	
 	public List<IngredientRecipe> getIngredientList() {
@@ -233,6 +233,9 @@ public class Knowledgebase {
 		Set<ObjectInstance> contains = new HashSet<>();
 		// get contents
 		Set<String> contents = ContainerFactory.getContentNames(container);
+		if (contents.size() == 0) {
+			return "";
+		}
 		for (String content : contents) {
 			contains.add(state.getObject(content));
 		}

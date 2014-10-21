@@ -8,6 +8,7 @@ import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ToolFactory;
+import edu.brown.cs.h2r.baking.actions.BakingActionResult;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
@@ -22,6 +23,10 @@ public class AllowMixing extends BakingPropositionalFunction {
 		
 		ObjectInstance containerInstance = state.getObject(params[1]);
 		int contentAmount = ContainerFactory.getContentNames(containerInstance).size();
+		if (ContainerFactory.getContentNames(containerInstance).isEmpty()) {
+			return false;
+		}
+		
 		int neededAmount =  this.topLevelIngredient.getContents().size() 
 				+ this.topLevelIngredient.getNecessaryTraits().size();
 		
