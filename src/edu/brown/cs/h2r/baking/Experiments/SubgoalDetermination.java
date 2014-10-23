@@ -433,7 +433,7 @@ public class SubgoalDetermination {
 		}
 		
 		System.out.println("Depth, Depth Type, Successes, Estimate Successes, Informed Guesses, Total Trials");
-		System.out.println("" + depth + depthType + numSuccess + ", " + numEstimateSuccesses + ", " + numRandomGuesses + ", " +  numTries);
+		System.out.println("" + depth + ", " + depthType + ", " + numSuccess + ", " + numEstimateSuccesses + ", " + numRandomGuesses + ", " +  numTries);
 		
 		/*successRate.add((double)numSuccess / numTries);
 		System.out.println("Success: " + numSuccess + "/" + numTries);
