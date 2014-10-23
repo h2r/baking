@@ -12,6 +12,11 @@ public class PolicyProbability {
 		this.policy = policy;
 	}
 
+	public PolicyProbability() {
+		this.policy = null;
+		this.probability = 0.0;
+	}
+
 	public double getProbability() {
 		return this.probability;
 	}
