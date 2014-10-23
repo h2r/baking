@@ -134,14 +134,14 @@ public class PolicyPrediction {
 			double flow = this.getFlowToStateCondition(subdomain, newState, goalCondition, maxDepth - 1, map);
 			if (flow > 0) {
 				totalFlow += probability * flow;
-				//System.out.println("Probability: " + probability + " flow: " + flow + " total: " + totalFlow);
+				////System.out.println("Probability: " + probability + " flow: " + flow + " total: " + totalFlow);
 			}
 		}
 		if (Math.abs(1.0 - totalProb) > 0.01) {
 			System.err.println("Action discribution does not sum to 1.0");
 		}
 		if (totalFlow > 0.0) {
-			//System.out.println("Depth : " + maxDepth);
+			////System.out.println("Depth : " + maxDepth);
 			//System.out.println("Current probability: " + totalFlow);
 		}
 		return totalFlow;
@@ -193,7 +193,7 @@ public class PolicyPrediction {
 			 });
 			 futures.add(future);
 		}
-		System.out.println("Threads created: " + numberThreadsCreated);
+		//System.out.println("Threads created: " + numberThreadsCreated);
 		
 		double sumProbability = 0.0;
 		try {
@@ -254,7 +254,7 @@ public class PolicyPrediction {
 		Map<StateHashTuple, Double> flowMap = new HashMap<StateHashTuple, Double>();
 		
 		if (actualName.equals(name)) {
-			System.out.println("");
+			//System.out.println("");
 		}
 		double depthProbability = getDepthProbability(1, maxDepth, depthType);
 		

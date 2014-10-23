@@ -35,6 +35,9 @@
         <jar destfile="${ant.project.name}.jar" basedir="${classes.dir}">
             <zipfileset src="${classes.dir}/external-libs.jar"/>
             <fileset dir="resources"/>
+            <manifest>
+                <attribute name="Main-Class" value="edu.brown.cs.h2r.baking.Experiments.SubgoalDetermination"/>
+            </manifest>
         </jar>
     </target>
 </project>
