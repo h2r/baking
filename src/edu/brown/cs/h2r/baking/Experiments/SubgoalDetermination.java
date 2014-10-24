@@ -306,14 +306,14 @@ public class SubgoalDetermination {
 		State state = subdomain.getStartState();
 		BakingSubgoal subgoal = subdomain.getSubgoal();
 		
-		//System.out.println("Taking actions");
+		System.out.println("Taking actions");
 		SubgoalDetermination.setSubgoal(subdomain);
 		for (int i = 0; i < maxDepth; i++) {
 			if (subgoal.goalCompleted(state)) {
 				return null;
 			}
 			AbstractGroundedAction action = policy.getAction(state);
-			//System.out.println("\t" + action.actionName() + " " + Arrays.toString(action.params) );
+			System.out.println("\t" + action.actionName() + " " + Arrays.toString(action.params) );
 			state = action.executeIn(state);
 		}
 		return state;
@@ -363,13 +363,13 @@ public class SubgoalDetermination {
 		int maxAlpha = 3;
 		int numTries = 100;
 		int depthType = 0;
-		int depth = 0;
+		int depth = 2;
 		
 		if (argv.length == 1) {
 			int Id = Integer.parseInt(argv[0]);
 			int experimentModel = Id % 12;
 			depthType = experimentModel % 3;
-			depth = experimentModel / 4 + 1;
+			depth = experimentModel / 3 + 1;
 		}
 		
 		List<KitchenSubdomain> policyDomains = SubgoalDetermination.generateAllPolicies();
@@ -394,7 +394,7 @@ public class SubgoalDetermination {
 				state = SubgoalDetermination.generateRandomStateFromPolicy(policyDomain, depth);
 			}
 			String actualName = SubgoalDetermination.buildName(policyDomain);
-			//System.out.println("Actual: " + actualName);
+			System.out.println("Actual: " + actualName);
 			List<PolicyProbability> policyDistribution = 
 					prediction.getPolicyDistributionFromStatePair(policyDomain.getStartState(), state, maxAlpha+1, policyDomain, SubgoalDetermination.hashingFactory, depthType);
 			
@@ -416,14 +416,14 @@ public class SubgoalDetermination {
 				} else if (prob == maxProb) {
 					bestPolicies.add(name);
 				}
-				//System.out.println(name + ": " + prob);
+				System.out.println(name + ": " + prob);
 			}
 			Collections.shuffle(bestPolicies, rando);
 			if (bestPolicies.size() > 1) {
 				numRandomGuesses++;
 			}
 			String choice = bestPolicies.get(0);
-			//System.out.println("Best choice: " + choice);
+			System.out.println("Best choice: " + choice);
 			if (choice.equals(actualName)) {
 				numSuccess++;
 				if (bestPolicies.size() == 1) {
