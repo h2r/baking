@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import Prediction.PolicyPrediction;
 import burlap.behavior.singleagent.Policy;
 import burlap.behavior.statehashing.NameDependentStateHashFactory;
 import burlap.behavior.statehashing.StateHashFactory;
@@ -108,6 +109,7 @@ public class Human implements Agent {
 		if (this.currentSubgoal.getSubgoal().goalCompleted(state)) {
 			this.kitchenSubdomains.remove(this.currentSubgoal);
 			this.chooseNewSubgoal(state);
+			System.out.println("Human switches to task: " + this.currentSubgoal.toString());
 		}
 		if (this.currentSubgoal == null) {
 			return null;
@@ -115,6 +117,7 @@ public class Human implements Agent {
 		if (this.isFinished(state)) {
 			return null;
 		}
+		PolicyPrediction.setSubgoal(this.currentSubgoal);
 		Policy policy = this.currentSubgoal.getPolicy();
 		AbstractGroundedAction action = policy.getAction(state);
 		return action;

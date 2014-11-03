@@ -355,11 +355,13 @@ public class SubgoalDetermination {
 		int depthType = 0;
 		int depth = 2;
 		
-		if (argv.length == 1) {
+		if (argv.length == 2) {
 			int Id = Integer.parseInt(argv[0]);
 			int experimentModel = Id % 12;
 			depthType = experimentModel % 3;
 			depth = experimentModel / 3 + 1;
+			
+			numTries = Integer.parseInt(argv[1]);
 		}
 		
 		List<KitchenSubdomain> policyDomains = SubgoalDetermination.generateAllPolicies();

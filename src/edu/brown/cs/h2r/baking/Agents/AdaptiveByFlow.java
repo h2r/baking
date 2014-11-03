@@ -70,6 +70,7 @@ public class AdaptiveByFlow extends AdaptiveAgent implements Agent {
 		//	return null;
 		//}
 		
+		
 		AbstractGroundedAction chosenAction = 
 				this.getAgentsActionFromPolicy(bestPolicy.getPolicyDomain().getPolicy(), state, terminalFunction);
 		return chosenAction;
