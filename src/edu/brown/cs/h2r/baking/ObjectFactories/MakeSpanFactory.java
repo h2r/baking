@@ -42,8 +42,7 @@ public class MakeSpanFactory {
 	
 	public static ObjectInstance getNewObjectInstance(ObjectClass agentClass, String name, int agentCount) {
 		ObjectInstance newInstance = new ObjectInstance(agentClass, name);
-		newInstance.setValue(MakeSpanFactory.attributeAgentCount, agentCount);
-		return newInstance;
+		return newInstance.changeValue(MakeSpanFactory.attributeAgentCount, agentCount);
 	}
 	
 	public static Set<String> getOccupiedAgentNames(ObjectInstance makeSpanObject) {
@@ -54,8 +53,8 @@ public class MakeSpanFactory {
 		return makeSpanObject.getValueForAttribute(MakeSpanFactory.attributePrimaryAgent).getStringVal();
 	}
 	
-	public static void setPrimaryAgent(ObjectInstance makeSpanObject, String primaryAgent) {
-		makeSpanObject.setValue(MakeSpanFactory.attributePrimaryAgent, primaryAgent);
+	public static ObjectInstance setPrimaryAgent(ObjectInstance makeSpanObject, String primaryAgent) {
+		return makeSpanObject.changeValue(MakeSpanFactory.attributePrimaryAgent, primaryAgent);
 	}
 	
 	public static int getAgentCount(ObjectInstance makeSpanObject) {
@@ -67,10 +66,10 @@ public class MakeSpanFactory {
 		return (!occupiedAgentNames.contains(agentName));
 	}
 	
-	public static void occupyAgent(ObjectInstance makeSpanObject, String agentName) {
+	public static ObjectInstance occupyAgent(ObjectInstance makeSpanObject, String agentName) {
 		if (!MakeSpanFactory.isAgentIsFree(makeSpanObject, agentName)) {
-			makeSpanObject.clearRelationalTargets(MakeSpanFactory.attributeAgentList);
+			makeSpanObject = makeSpanObject.removeAllRelationalTarget(MakeSpanFactory.attributeAgentList);
 		}
-		makeSpanObject.addRelationalTarget(MakeSpanFactory.attributeAgentList, agentName);
+		return makeSpanObject.replaceRelationalTarget(MakeSpanFactory.attributeAgentList, agentName);
 	}
 }

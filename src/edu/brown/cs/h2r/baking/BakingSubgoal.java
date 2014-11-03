@@ -3,9 +3,13 @@ package edu.brown.cs.h2r.baking;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
+import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.GroundedProp;
+import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
+import burlap.oomdp.core.TerminalFunction;
+import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
 
 public class BakingSubgoal {
 
@@ -68,5 +72,11 @@ public class BakingSubgoal {
 	
 	public IngredientRecipe getIngredient() {
 		return this.ingredient;
+	}
+	
+	public TerminalFunction getTerminalFunction(Domain domain) {
+		final PropositionalFunction isSuccess = this.getGoal();
+		final PropositionalFunction isFailure = domain.getPropFunction(AffordanceCreator.BOTCHED_PF);
+		return new RecipeTerminalFunction(isSuccess, isFailure);
 	}
 }

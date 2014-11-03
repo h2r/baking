@@ -45,6 +45,7 @@ import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ToolFactory;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.ContainersCleaned;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
 import edu.brown.cs.h2r.baking.Recipes.Brownies;
 import edu.brown.cs.h2r.baking.Recipes.PeanutButterCookies;
@@ -198,7 +199,7 @@ public class SubgoalDetermination {
 	public static KitchenSubdomain generatePolicy(Domain domain, State startingState, Recipe recipe, BakingSubgoal subgoal)
 	{
 		IngredientRecipe ingredient = subgoal.getIngredient();
-		//String goalType = (subgoal.getGoal().getClass().isAssignableFrom(ContainersCleaned.class)) ? "_clean" : "";
+		String goalType = (subgoal.getGoal().getClass().isAssignableFrom(ContainersCleaned.class)) ? "_clean" : "";
 		//System.out.println(ingredient.getName() + goalType);
 		State currentState = new State(startingState);
 		
@@ -251,19 +252,7 @@ public class SubgoalDetermination {
 		return KitchenSubdomain.makeSubdomain(domain, recipe, subgoal, startingState, p);
 	}
 
-	public static void setSubgoal(KitchenSubdomain subdomain) {
-		Domain domain = subdomain.getDomain();
-		BakingSubgoal subgoal = subdomain.getSubgoal();
-		IngredientRecipe ingredient = subgoal.getIngredient();
-		
-		List<PropositionalFunction> propFunctions = domain.getPropFunctions();
-		for (PropositionalFunction pf : propFunctions) {
-			((BakingPropositionalFunction)pf).changeTopLevelIngredient(ingredient);
-			((BakingPropositionalFunction)pf).setSubgoal(subgoal);
-		}
-		
-		subgoal.getGoal().changeTopLevelIngredient(ingredient);
-	}
+	
 	
 	public static void setSubgoal(Domain domain, BakingSubgoal subgoal, IngredientRecipe ingredient) {
 		List<PropositionalFunction> propFunctions = domain.getPropFunctions();
@@ -302,12 +291,13 @@ public class SubgoalDetermination {
 	}
 	
 	public static State generateRandomStateFromPolicy(KitchenSubdomain subdomain, int maxDepth) {
+		PolicyPrediction.setSubgoal(subdomain);
+		
 		Policy policy = subdomain.getPolicy();
 		State state = subdomain.getStartState();
 		BakingSubgoal subgoal = subdomain.getSubgoal();
 		
 		//System.out.println("Taking actions");
-		SubgoalDetermination.setSubgoal(subdomain);
 		for (int i = 0; i < maxDepth; i++) {
 			if (subgoal.goalCompleted(state)) {
 				return null;
@@ -393,7 +383,7 @@ public class SubgoalDetermination {
 				policyDomain = testDomains.get(randomIndex);
 				state = SubgoalDetermination.generateRandomStateFromPolicy(policyDomain, depth);
 			}
-			String actualName = SubgoalDetermination.buildName(policyDomain);
+			String actualName = policyDomain.toString();
 			//System.out.println("Actual: " + actualName);
 			List<PolicyProbability> policyDistribution = 
 					prediction.getPolicyDistributionFromStatePair(policyDomain.getStartState(), state, maxAlpha+1, policyDomain, SubgoalDetermination.hashingFactory, depthType);
@@ -404,9 +394,9 @@ public class SubgoalDetermination {
 			double maxProb = 0.0;
 			List<String> bestPolicies = new ArrayList<String>();
 			for (int j = 0; j < policyDistribution.size(); j++) {
-				String name = policyDomains.get(j).getRecipe().topLevelIngredient.getName() + " - " + policyDomains.get(j).getSubgoal().getIngredient().getName();
 				PolicyProbability policyProbability = policyDistribution.get(j);
-				
+				String name = policyProbability.getPolicyDomain().toString();
+						
 				
 				double prob = (policyProbability == null) ? 0.0 : policyProbability.getProbability();
 				if (prob > maxProb) {

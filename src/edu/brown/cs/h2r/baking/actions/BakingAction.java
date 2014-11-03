@@ -140,8 +140,7 @@ public abstract class BakingAction extends Action {
 	}
 	@Override
 	protected State performActionHelper(State state, String[] params) {
-		this.addAgentToOccupiedList(state, params[0]);
-		return state;	
+		return this.addAgentToOccupiedList(state, params[0]);
 	}
 	
 	protected boolean canAgentGo(State state, String[] params) {
@@ -178,11 +177,13 @@ public abstract class BakingAction extends Action {
 		return true;
 	}
 	
-	protected void addAgentToOccupiedList(State state, String agentName) {
+	protected State addAgentToOccupiedList(State state, String agentName) {
 		List<ObjectInstance> makeSpanObjects = state.getObjectsOfTrueClass(MakeSpanFactory.ClassName);
 		if (!makeSpanObjects.isEmpty()) {
-			MakeSpanFactory.occupyAgent(makeSpanObjects.get(0), agentName);
+			ObjectInstance newMakeSpan = MakeSpanFactory.occupyAgent(makeSpanObjects.get(0), agentName);
+			state = state.replaceObject(makeSpanObjects.get(0), newMakeSpan);
 		}		
+		return state;
 	}
 	
 	public void changePlanningIngredient(IngredientRecipe newIngredient) {

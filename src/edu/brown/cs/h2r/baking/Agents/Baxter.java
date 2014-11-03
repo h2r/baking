@@ -11,17 +11,13 @@ import burlap.behavior.singleagent.planning.QComputablePlanner;
 import burlap.behavior.singleagent.planning.commonpolicies.AffordanceGreedyQPolicy;
 import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
 import burlap.behavior.singleagent.planning.stochastic.rtdp.RTDP;
-import burlap.behavior.statehashing.NameDependentStateHashFactory;
 import burlap.behavior.statehashing.StateHashFactory;
 import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.Domain;
-import burlap.oomdp.core.GroundedProp;
-import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
-import burlap.oomdp.logicalexpressions.PFAtom;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
@@ -32,15 +28,15 @@ import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.RecipeTerminalFunction;
 import edu.brown.cs.h2r.baking.Experiments.ExperimentHelper;
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
-import edu.brown.cs.h2r.baking.Knowledgebase.IngredientKnowledgebase;
+import edu.brown.cs.h2r.baking.Knowledgebase.Knowledgebase;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
-import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.actions.BakingAction;
 
+// TODO this hasn't been updated with new changes
 public class Baxter implements Agent {
 	
 	private static int numRollouts = 300; // RTDP
@@ -54,7 +50,7 @@ public class Baxter implements Agent {
 	private StateHashFactory hashFactory;
 	
 	private static String agentClass = "robot";
-	private static IngredientKnowledgebase knowledgebase = new IngredientKnowledgebase();
+	private static Knowledgebase knowledgebase = new Knowledgebase();
 	private Recipe recipe;
 	private Domain domain;
 	private List<Action> domainActions;
@@ -87,8 +83,7 @@ public class Baxter implements Agent {
 	{
 		State beginningState = new State(state);
 		List<ObjectInstance> ingredients = 
-				Baxter.knowledgebase.getPotentialIngredientObjectInstanceList(
-						state, this.domain, this.recipe.topLevelIngredient);
+				Baxter.knowledgebase.getPotentialIngredientObjectInstanceList(this.domain, this.recipe.topLevelIngredient);
 	
 		// Find actionable subgoals
 		List<BakingSubgoal> activeSubgoals = this.getActiveSubgoalsInState(beginningState, recipe.getSubgoals());
@@ -211,6 +206,30 @@ public class Baxter implements Agent {
 			((BakingPropositionalFunction)pf).setSubgoal(subgoal);
 		}
 		subgoal.getGoal().changeTopLevelIngredient(ingredient);
+	}
+
+	@Override
+	public void addObservation(State state, GroundedAction action) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public String getAgentName() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ObjectInstance getAgentObject() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setInitialState(State state) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

@@ -37,15 +37,15 @@ public class AllowSwitching extends BakingPropositionalFunction {
 			// ingredient has to be heated. If so, then the next checkSwitchHeating determines if the
 			// ingredient(s) that had to be heated has already been heated. The same applies for baking.
 			if (SpaceFactory.isHeating(space) && this.topLevelIngredient.getRecipeHeated()) {
-				return this.checkSwitchHeating(state);
+				return this.checkSwitchHeating(state, space);
 			} else if (SpaceFactory.isBaking(space) && this.topLevelIngredient.getRecipeBaked()) {
-				return this.checkSwitchBaking(state);
+				return this.checkSwitchBaking(state, space);
 			}
 		}
 		return false;
 	}
 	
-	private boolean checkSwitchHeating(State state) {
+	private boolean checkSwitchHeating(State state, ObjectInstance space) {
 		if (this.topLevelIngredient.getHeated()) {
 			ObjectInstance obj =  state.getObject(this.topLevelIngredient.getName());
 			if (obj != null) {
@@ -68,27 +68,32 @@ public class AllowSwitching extends BakingPropositionalFunction {
 		return false;
 	}
 	
-	private boolean checkSwitchBaking(State state) {
+	// Why doesn't it switch on if no complex ingredients exist?
+	private boolean checkSwitchBaking(State state, ObjectInstance space) {
 		if (this.topLevelIngredient.getBaked()) {
-			ObjectInstance obj =  state.getObject(this.topLevelIngredient.getName());
-			if (obj != null) {
-				if (!IngredientFactory.isBakedIngredient(obj)) {
-					return true;
-				}
-			}
+			return !SpaceFactory.getOnOff(space);
+			//ObjectInstance obj =  state.getObject(this.topLevelIngredient.getName());
+			//if (obj != null) {
+			//	if (!IngredientFactory.isBakedIngredient(obj)) {
+			//		return true;
+			//	}
+			//}
 		}
 		
 		List<IngredientRecipe> contents = this.topLevelIngredient.getContents();
 		for (IngredientRecipe ing : contents) {
 			if (ing.getBaked()) {
-				ObjectInstance obj = state.getObject(ing.getName());
-				if (obj != null) {
-					if (!IngredientFactory.isBakedIngredient(obj)) {
-						return true;
-					}
-				}
+				return !SpaceFactory.getOnOff(space);
+				//ObjectInstance obj = state.getObject(ing.getName());
+				//if (obj != null) {
+				//	if (!IngredientFactory.isBakedIngredient(obj)) {
+				//		return true;
+				//	}
+				//}
 			}
 		}
 		return false;
 	}
+	
+	
 }

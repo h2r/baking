@@ -66,10 +66,10 @@ public class PourAction extends BakingAction {
 		ObjectInstance pouringContainerSpaceObject = state.getObject(pouringContainerSpaceName);
 		
 		String agentOfSpace = SpaceFactory.getAgent(pouringContainerSpaceObject).iterator().next();
-		if (!agentOfSpace.equalsIgnoreCase(agentName))
-		{		
-			return BakingActionResult.failure(agentName + " cannot work in " + pouringContainerSpaceName);
-		}
+		//if (!agentOfSpace.equalsIgnoreCase(agentName))
+		//{		
+		//	return BakingActionResult.failure(agentName + " cannot work in " + pouringContainerSpaceName);
+		//}
 		if (!SpaceFactory.isWorking(pouringContainerSpaceObject)) {
 			return BakingActionResult.failure("Pouring cannot be performed in the " + pouringContainerSpaceObject);
 		}

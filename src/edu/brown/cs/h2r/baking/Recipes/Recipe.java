@@ -704,5 +704,12 @@ public abstract class Recipe {
 			}
 		}
 		return true;
+		
+		
+	}
+	
+	@Override
+	public String toString() {
+		return this.recipeName;
 	}
 }

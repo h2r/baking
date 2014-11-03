@@ -1,14 +1,13 @@
 package edu.brown.cs.h2r.baking.Knowledgebase;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import edu.brown.cs.h2r.baking.IngredientRecipe;
-import edu.brown.cs.h2r.baking.PropositionalFunctions.*;
-import edu.brown.cs.h2r.baking.actions.*;
+import burlap.behavior.affordances.Affordance;
 import burlap.behavior.affordances.AffordanceDelegate;
 import burlap.behavior.affordances.AffordancesController;
-import burlap.behavior.affordances.Affordance;
 import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.GroundedProp;
@@ -17,6 +16,24 @@ import burlap.oomdp.core.State;
 import burlap.oomdp.logicalexpressions.PFAtom;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
+import edu.brown.cs.h2r.baking.IngredientRecipe;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.AllowGreasing;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.AllowHanding;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.AllowMixing;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.AllowMoving;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.AllowPouring;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.AllowSwitching;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.AllowUsingTool;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.ContainerGreased;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.SpaceOn;
+import edu.brown.cs.h2r.baking.actions.GreaseAction;
+import edu.brown.cs.h2r.baking.actions.MixAction;
+import edu.brown.cs.h2r.baking.actions.MoveAction;
+import edu.brown.cs.h2r.baking.actions.PourAction;
+import edu.brown.cs.h2r.baking.actions.SwitchAction;
+import edu.brown.cs.h2r.baking.actions.UseAction;
 
 public class AffordanceCreator {
 	public static final String HEAT_PF = "heatPF";
@@ -78,11 +95,18 @@ public class AffordanceCreator {
 	
 	public void createAffordances(Domain domain, State state) {
 		setupGoalPFAtoms(domain, state);
+		Map<PropositionalFunction, Action> pfActionMap = new HashMap<PropositionalFunction, Action>();
+		
+		
 		for (Action action : domain.getActions()) {
 			String actionName = action.getName();
 			ArrayList<PFAtom> pfatoms = new ArrayList<PFAtom>();
 			PFAtom goalPF = getGoalPF(actionName);
 			String actionPFName = getActionPF(actionName);
+			PropositionalFunction actionPf = domain.getPropFunction(actionPFName);
+			pfActionMap.put(actionPf, action);
+			
+			
 			setupPFAtom(domain, state, actionPFName, pfatoms);
 			setupDelegate(domain, pfatoms, actionName, goalPF);
 			// we make two delegates for switch action, one preheating, one for actual cooking
@@ -91,7 +115,8 @@ public class AffordanceCreator {
 			}
 		}
 		this.affController = new AffordancesController(affDelegates, true, true);
-		this.affController.setExpertPFs(domain.getPropFunctions());
+		
+		this.affController.setExpertPFs(pfActionMap);
 	}
 	
 	public void setupGoalPFAtoms(Domain domain, State state) {

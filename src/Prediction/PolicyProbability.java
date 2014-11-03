@@ -1,36 +1,48 @@
 package Prediction;
 
 import burlap.behavior.singleagent.Policy;
+import burlap.oomdp.core.TerminalFunction;
+import edu.brown.cs.h2r.baking.BakingSubgoal;
+import edu.brown.cs.h2r.baking.Experiments.KitchenSubdomain;
 
-public class PolicyProbability {
+public final class PolicyProbability {
 
-	private double probability;
-	private Policy policy;
+	private final double probability;
+	private final KitchenSubdomain policyDomain;
 	
-	private PolicyProbability(Policy policy, double probability) {
+	private PolicyProbability(KitchenSubdomain policyDomain, double probability) {
 		this.probability = probability;
-		this.policy = policy;
+		this.policyDomain = policyDomain;
 	}
 
 	public PolicyProbability() {
-		this.policy = null;
 		this.probability = 0.0;
+		this.policyDomain = null;
 	}
 
 	public double getProbability() {
 		return this.probability;
 	}
 	
-	public Policy getPolicy() {
-		return this.policy;
+	public KitchenSubdomain getPolicyDomain() {
+		return this.policyDomain;
 	}
 	
-	public static PolicyProbability newPolicyProbability(Policy policy, double probability) {
-		if (policy == null) {
+	public static PolicyProbability newPolicyProbability(KitchenSubdomain policyDomain, double probability) {
+		if (policyDomain == null) {
 			return null;
 		}
 
-		return new PolicyProbability(policy, probability);
-		
+		return new PolicyProbability(policyDomain, probability);	
+	}
+	
+	public static PolicyProbability updatePolicyProbability(PolicyProbability prior, double newProbability) {
+		return (prior == null) ? null :
+			new PolicyProbability(prior.policyDomain, newProbability);
+	}
+	
+	@Override
+	public String toString() {
+		return this.policyDomain.toString() + ": " + this.probability;
 	}
 }
