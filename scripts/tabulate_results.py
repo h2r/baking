@@ -1,18 +1,22 @@
 from sys import argv
 from glob import glob
-from csv import reader
+from csv import reader, Error
 
 if len(argv) > 1:
 	directory = argv[1]
 	files = glob(directory + "/*.csv")
 	data = dict()
 	for filename in files:
+		print("Processing file " + filename)
 		file = open(filename, 'rb')
+		
 		csvreader = reader(file, delimiter=",")
-
-		labels = csvreader.next()
-		data_line = csvreader.next()
-
+                try:
+		    labels = csvreader.next()
+		    data_line = csvreader.next()
+                except:
+		    print("error on file")
+		    continue
 		depth = data_line[0]
 		depth_type = data_line[1]
 
