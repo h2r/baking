@@ -1,6 +1,7 @@
 package edu.brown.cs.h2r.baking;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import burlap.oomdp.core.Domain;
@@ -13,14 +14,32 @@ import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunctio
 
 public class BakingSubgoal {
 
-	private BakingPropositionalFunction goal;
-	private List<BakingSubgoal> preconditions;
-	private IngredientRecipe ingredient;
+	private final BakingPropositionalFunction goal;
+	private final List<BakingSubgoal> preconditions;
+	private final IngredientRecipe ingredient;
 	
 	public BakingSubgoal(BakingPropositionalFunction pf, IngredientRecipe ingredient) {
 		this.goal = pf;
-		this.preconditions = new ArrayList<BakingSubgoal>();
+		this.preconditions = Collections.unmodifiableList(new ArrayList<BakingSubgoal>());
 		this.ingredient = ingredient;
+	}
+	
+	public BakingSubgoal(BakingPropositionalFunction pf, IngredientRecipe ingredient, List<BakingSubgoal> preconditions) {
+		this.goal = pf;
+		this.preconditions = Collections.unmodifiableList(preconditions);
+		this.ingredient = ingredient;
+	}
+	
+	public BakingSubgoal(BakingSubgoal subgoal) {
+		this.goal = subgoal.goal;
+		this.preconditions = Collections.unmodifiableList(subgoal.preconditions);
+		this.ingredient = subgoal.ingredient;
+	}
+	
+	public BakingSubgoal(BakingSubgoal subgoal, List<BakingSubgoal> preconditions) {
+		this.goal = subgoal.goal;
+		this.preconditions = Collections.unmodifiableList(preconditions);
+		this.ingredient = subgoal.ingredient;
 	}
 	
 	public BakingPropositionalFunction getGoal() {
@@ -28,11 +47,13 @@ public class BakingSubgoal {
 	}
 	
 	public List<BakingSubgoal> getPreconditions() {
-		return this.preconditions;
+		return Collections.unmodifiableList(this.preconditions);
 	}
 	
-	public void addPrecondition(BakingSubgoal sg) {
-		this.preconditions.add(sg);
+	public BakingSubgoal addPrecondition(BakingSubgoal sg) {
+		List<BakingSubgoal> preconditions = new ArrayList<BakingSubgoal>(this.preconditions);
+		preconditions.add(sg);
+		return new BakingSubgoal(this, preconditions);
 	}
 	
 	
@@ -41,7 +62,6 @@ public class BakingSubgoal {
 		return this.getIngredient().getName();
 	}
 	public Boolean goalCompleted(State state) {
-		this.goal.changeTopLevelIngredient(this.ingredient);
 		Boolean completed = false;
 		for (GroundedProp gp : this.goal.getAllGroundedPropsForState(state)) {
 			if (gp.isTrue(state)) {
@@ -55,7 +75,6 @@ public class BakingSubgoal {
 	public Boolean allPreconditionsCompleted(State state) {
 		for (BakingSubgoal sg : this.preconditions) {
 			BakingPropositionalFunction pf = sg.getGoal();
-			pf.changeTopLevelIngredient(sg.getIngredient());
 			Boolean completed = false;
 			for (GroundedProp gp : pf.getAllGroundedPropsForState(state)) {
 				if (gp.isTrue(state)) {

@@ -2,6 +2,7 @@ package edu.brown.cs.h2r.baking.PropositionalFunctions;
 
 import java.util.List;
 
+import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
@@ -14,8 +15,12 @@ import burlap.oomdp.core.State;
 public class AllowSwitching extends BakingPropositionalFunction {
 	public AllowSwitching(String name, Domain domain, IngredientRecipe ingredient) {
 		super(name, domain, new String[] {AgentFactory.ClassName, SpaceFactory.ClassName}, ingredient);
-		this.subgoal = null;
 	}
+	
+	public BakingPropositionalFunction updatePF(Domain newDomain, IngredientRecipe ingredient, BakingSubgoal subgoal) {
+		return new AllowSwitching(this.name, newDomain, ingredient);
+	}
+	
 	
 	public boolean isTrue(State state, String[] params) {
 		

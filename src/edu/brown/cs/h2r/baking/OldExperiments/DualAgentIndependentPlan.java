@@ -70,20 +70,20 @@ public class DualAgentIndependentPlan  implements DomainGenerator {
 	{
 		System.out.println("Creating two-agent initial start state");
 		State state = new State();
-		Action mix = new MixAction(domain, recipe.topLevelIngredient);
+		Action mix = new MixAction(domain);
 		//Action bake = new BakeAction(domain);
-		Action pour = new PourAction(domain, recipe.topLevelIngredient);
-		Action move = new MoveAction(domain, recipe.topLevelIngredient);
-		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
-		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "robot"));
-		state.addObject(MakeSpanFactory.getNewObjectInstance(domain, "makeSpan", 2));
+		Action pour = new PourAction(domain);
+		Action move = new MoveAction(domain);
+		//state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
+		//state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "robot"));
+		//state.addObject(MakeSpanFactory.getNewObjectInstance(domain, "makeSpan", 2));
 		List<String> containers = Arrays.asList("mixing_bowl_1");
-		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "shelf", null, null));
-		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter_human", containers, "human"));
-		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter_robot", containers, "robot"));
+		//state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "shelf", null, null));
+		//state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter_human", containers, "human"));
+		//state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter_robot", containers, "robot"));
 	
 		for (String container : containers) { 
-			state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "shelf"));
+			//state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "shelf"));
 		}
 		
 		this.PlanIngredient(domain, state, recipe.topLevelIngredient);
@@ -106,7 +106,7 @@ public class DualAgentIndependentPlan  implements DomainGenerator {
 		ObjectInstance shelfSpace = currentState.getObject("shelf");
 		
 		List<ObjectInstance> ingredientInstances = 
-				IngredientFactory.getSimpleIngredients(simpleIngredientClass, ingredient);
+				IngredientFactory.getSimpleIngredients(simpleIngredientClass, ingredient, null);
 		List<ObjectInstance> containerInstances = Recipe.getContainersAndIngredients(containerClass, ingredientInstances, shelfSpace.getName());
 		
 		
@@ -200,7 +200,7 @@ public class DualAgentIndependentPlan  implements DomainGenerator {
 			ObjectInstance namedIngredient = null;
 			for (ObjectInstance obj : finalObjects)
 			{
-				if (Recipe.isSuccess(endState, ingredient, obj))
+				if (ingredient.isMatching(obj, endState))
 				{
 					namedIngredient = DualAgentIndependentPlan.getNewNamedComplexIngredient(obj, ingredient.getName());
 					String container = IngredientFactory.getContainer(obj);
@@ -249,6 +249,6 @@ public class DualAgentIndependentPlan  implements DomainGenerator {
 		DualAgentIndependentPlan kitchen = new DualAgentIndependentPlan();
 		System.out.println("Generating Domain");
 		Domain domain = kitchen.generateDomain();
-		kitchen.PlanRecipeTwoAgents(domain, new Brownies());
+		kitchen.PlanRecipeTwoAgents(domain, Brownies.getRecipe(domain));
 	}
 }

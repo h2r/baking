@@ -4,8 +4,10 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.regex.Pattern;
 import java.util.Set;
 
+import burlap.behavior.statehashing.ObjectHashFactory;
 import burlap.oomdp.core.Attribute;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
@@ -119,8 +121,8 @@ public class IngredientFactory {
 		
 	public static ObjectInstance getNewSimpleIngredientObjectInstance(ObjectClass simpleIngredientClass, String name, 
 			int attributes, int useCount, String heatingInfo, String heatedState, Set<String> traits, Set<String> toolTraits,
-			Set<String> toolAttributes, String ingredientContainer) {
-		ObjectInstance newInstance = new ObjectInstance(simpleIngredientClass, name);
+			Set<String> toolAttributes, String ingredientContainer, ObjectHashFactory hashingFactory) {
+		ObjectInstance newInstance = new ObjectInstance(simpleIngredientClass, name, hashingFactory);
 		newInstance = IngredientFactory.changeAttributes(newInstance, attributes, toolAttributes);
 		newInstance = newInstance.changeValue(IngredientFactory.attributeUseCount, useCount);
 		if (heatingInfo != null) {
@@ -147,10 +149,28 @@ public class IngredientFactory {
 		return newInstance;		
 	}
 	
+	public static ObjectInstance getNewComplexIngredientObjectInstance(Domain domain, IngredientRecipe ingredientRecipe, 
+			boolean isSwapped, String container, ObjectHashFactory hashingFactory) {
+		
+		return IngredientFactory.getNewComplexIngredientObjectInstance(
+				domain.getObjectClass(ClassNameComplex), 
+				ingredientRecipe.getName(), 
+				ingredientRecipe.getAttributeNumber(), 
+				isSwapped, 
+				container, 
+				ingredientRecipe.getHeatingInfo(), 
+				ingredientRecipe.getHeatedState(), 
+				ingredientRecipe.getTraits(), 
+				ingredientRecipe.getToolTraits(), 
+				ingredientRecipe.getToolAttributes(), 
+				ingredientRecipe.getContentNames(),
+				hashingFactory);
+	}
+	
 	public static ObjectInstance getNewComplexIngredientObjectInstance(ObjectClass complexIngredientClass, String name, 
 			int attributes, boolean swapped, String ingredientContainer, String heatingInfo, String heatedState, Set<String> traits, 
-			Set<String> toolTraits, Set<String> toolAttributes, Iterable<String> contents) {
-		ObjectInstance newInstance = new ObjectInstance(complexIngredientClass, name);
+			Set<String> toolTraits, Set<String> toolAttributes, Iterable<String> contents, ObjectHashFactory hashingFactory) {
+		ObjectInstance newInstance = new ObjectInstance(complexIngredientClass, name, hashingFactory);
 		newInstance = IngredientFactory.changeAttributes(newInstance, attributes, toolAttributes);
 		newInstance = newInstance.changeValue(IngredientFactory.attributeUseCount, 1);
 		newInstance = newInstance.changeValue(IngredientFactory.attributeSwapped, swapped ? 1 : 0);
@@ -211,7 +231,7 @@ public class IngredientFactory {
 				container, heatingInfo, heatedState, traits, toolTraits, toolAttributes, contents);*/
 	}
 	
-	public static ObjectInstance getNewIngredientInstance(IngredientRecipe ingredient, String name, ObjectClass oc) {
+	public static ObjectInstance getNewIngredientInstance(IngredientRecipe ingredient, String name, ObjectClass oc, ObjectHashFactory hashingFactory) {
 		int attributes = IngredientRecipe.generateAttributeNumber(ingredient.getBaked(), ingredient.getMixed(), 
 				ingredient.getHeated());
 		Boolean swapped = ingredient.getSwapped();
@@ -223,51 +243,51 @@ public class IngredientFactory {
 		Set<String> toolTraits = ingredient.getToolTraits();
 		Set<String> toolAttributes= ingredient.getToolAttributes();
 		if (ingredient.isSimple()) {
-			return IngredientFactory.getNewSimpleIngredientObjectInstance(oc, name, attributes, useCount, heatingInfo, heatedState, traits, toolTraits, toolAttributes, container);
+			return IngredientFactory.getNewSimpleIngredientObjectInstance(oc, name, attributes, useCount, heatingInfo, heatedState, traits, toolTraits, toolAttributes, container, hashingFactory);
 		}
 		Set<String> contents = new HashSet<String>();
 		List<IngredientRecipe> ingContents = ingredient.getContents();
 		for (IngredientRecipe ing : ingContents) {
 			contents.add(ing.getName());
 		}
-		return IngredientFactory.getNewComplexIngredientObjectInstance(oc, name, attributes, swapped, container, heatingInfo, heatedState, traits, toolTraits, toolAttributes, contents);
+		return IngredientFactory.getNewComplexIngredientObjectInstance(oc, name, attributes, swapped, container, heatingInfo, heatedState, traits, toolTraits, toolAttributes, contents, hashingFactory);
 	}
 	
 	public static List<ObjectInstance> getIngredientInstancesList(ObjectClass simpleIngredientClass,
-			IngredientRecipe ingredientRecipe) {
+			IngredientRecipe ingredientRecipe, ObjectHashFactory hashingFactory) {
 		List<ObjectInstance> newInstances = new ArrayList<ObjectInstance>();
 		if (ingredientRecipe.isSimple()) {
-			newInstances.add(IngredientFactory.getNewIngredientInstance(ingredientRecipe, ingredientRecipe.getName(), simpleIngredientClass));
+			newInstances.add(IngredientFactory.getNewIngredientInstance(ingredientRecipe, ingredientRecipe.getName(), simpleIngredientClass, hashingFactory));
 		}
 		else {
 			List<IngredientRecipe> subIngredients = ingredientRecipe.getContents();
 			for (IngredientRecipe subIngredient : subIngredients) {
-				newInstances.addAll(IngredientFactory.getIngredientInstancesList(simpleIngredientClass, subIngredient));
+				newInstances.addAll(IngredientFactory.getIngredientInstancesList(simpleIngredientClass, subIngredient, hashingFactory));
 			}
 		}
 		return newInstances;
 	}
 	
 	public static List<ObjectInstance> getSimpleIngredients(ObjectClass simpleIngredientClass,
-			IngredientRecipe ingredientRecipe) {
+			IngredientRecipe ingredientRecipe, ObjectHashFactory hashingFactory) {
 		List<ObjectInstance> newInstances = new ArrayList<ObjectInstance>();
 		
 		List<IngredientRecipe> subIngredients = ingredientRecipe.getContents();
 		for (IngredientRecipe subIngredient : subIngredients) {
 			if (subIngredient.isSimple()) {
-				newInstances.add(IngredientFactory.getNewIngredientInstance(subIngredient, subIngredient.getName(), simpleIngredientClass));
+				newInstances.add(IngredientFactory.getNewIngredientInstance(subIngredient, subIngredient.getName(), simpleIngredientClass, hashingFactory));
 			}
 		}
 		return newInstances;
 	}
 	
-	public static List<ObjectInstance> getComplexIngredients(ObjectClass complexIngredientClass,IngredientRecipe ingredientRecipe) {
+	public static List<ObjectInstance> getComplexIngredients(ObjectClass complexIngredientClass,IngredientRecipe ingredientRecipe, ObjectHashFactory hashingFactory) {
 		List<ObjectInstance> newInstances = new ArrayList<ObjectInstance>();
 		
 		List<IngredientRecipe> subIngredients = ingredientRecipe.getContents();
 		for (IngredientRecipe subIngredient : subIngredients) {
 				if (!subIngredient.isSimple()) {
-				newInstances.add(IngredientFactory.getNewIngredientInstance(subIngredient, subIngredient.getName(), complexIngredientClass));
+				newInstances.add(IngredientFactory.getNewIngredientInstance(subIngredient, subIngredient.getName(), complexIngredientClass, hashingFactory));
 			}
 		}
 		return newInstances;
@@ -287,6 +307,19 @@ public class IngredientFactory {
 		
 		return complexIngredient.appendAllRelationTargets(IngredientFactory.attributeContains, targets);
 	}
+	
+	/*
+	public static ObjectInstance getNewCopyObject(ObjectInstance object, State state) {
+		Pattern charactersOnly = Pattern.compile("[a-z]");
+		String objectName = object.getName();
+		String baseName = objectName.replaceAll("\\d+.*", "");
+		int index = 0;
+		String currentName = baseName + index;
+		while (state.getObject(currentName) != null) {
+			index++;
+		}
+		return new ObjectInstance(currentName, object);
+	}*/
 	
 	public static Set<String> getIngredientContents(ObjectInstance complexIngredient) {
 		return complexIngredient.getAllRelationalTargets(IngredientFactory.attributeContains);
@@ -441,9 +474,9 @@ public class IngredientFactory {
 		} else {
 			oc = domain.getObjectClass(ClassNameComplexHidden);
 		}
-		hidden = new ObjectInstance(oc, object.getName());
+		hidden = new ObjectInstance(oc, object.getName(), object.getHashTuple().getHashingFactory());
 		
-		hidden.initializeValueObjects();
+		hidden.initializeValueObjects(object.getHashTuple().getHashingFactory().getValueHashFactory());
 		String multi = Attribute.AttributeType.MULTITARGETRELATIONAL.name();
 		String relational = Attribute.AttributeType.RELATIONAL.name();
 		
@@ -471,7 +504,7 @@ public class IngredientFactory {
 			contents.add(goal);
 			for (IngredientRecipe ing : contents) {
 				if (ing.getName().equals(obj.getName())) {
-					obj = IngredientFactory.changeAttributes(obj, ing.generateAttributeNumber(), ing.getToolAttributes());
+					obj = IngredientFactory.changeAttributes(obj, ing.getAttributeNumber(), ing.getToolAttributes());
 					match = true;
 					break;
 				}
@@ -480,7 +513,7 @@ public class IngredientFactory {
 				for (Entry<String, IngredientRecipe> entry : goal.getNecessaryTraits().entrySet()) {
 					if (IngredientFactory.getTraits(obj).contains(entry.getKey())) {
 						IngredientRecipe ing = entry.getValue();
-						obj = IngredientFactory.changeAttributes(obj, ing.generateAttributeNumber(), ing.getToolAttributes());
+						obj = IngredientFactory.changeAttributes(obj, ing.getAttributeNumber(), ing.getToolAttributes());
 						match = true;
 						break;
 					}
@@ -546,6 +579,12 @@ public class IngredientFactory {
 		return ingredient;
 	}
 	
+	public static int getAttributeNumber(ObjectInstance object) {
+		int mixedInt = object.getBooleanValue(IngredientFactory.attributeBaked) ? Recipe.BAKED : 0;
+		int heatedInt = object.getBooleanValue(IngredientFactory.attributeHeated) ? Recipe.HEATED : 0;
+		int bakedInt = object.getBooleanValue(IngredientFactory.attributeMixed) ? Recipe.MIXED : 0;
+		return mixedInt|heatedInt|bakedInt;	
+	}
 	public static String getHeatingInfo(ObjectInstance obj) {
 		return obj.getStringValForAttribute(IngredientFactory.attributeHeatingInfo);
 	}

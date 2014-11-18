@@ -17,8 +17,8 @@ import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 
 public class PourAction extends BakingAction {
 	public static final String className = "pour";
-	public PourAction(Domain domain, IngredientRecipe ingredient) {
-		super(PourAction.className, domain, ingredient, new String[] {AgentFactory.ClassName, ContainerFactory.ClassName, ContainerFactory.ClassName});
+	public PourAction(Domain domain) {
+		super(PourAction.className, domain, new String[] {AgentFactory.ClassName, ContainerFactory.ClassName, ContainerFactory.ClassName});
 		this.domain = domain;
 	}
 	
@@ -39,7 +39,9 @@ public class PourAction extends BakingAction {
 		
 		String pouringContainerName = params[1];
 		ObjectInstance pouringContainer = state.getObject(params[1]);
-		
+		if (!ContainerFactory.isPouringContainer(pouringContainer)) {
+			return BakingActionResult.failure(pouringContainerName + " is not pourable");
+		}
 		String receivingContainerName = params[2];
 		ObjectInstance receivingContainer = state.getObject(params[2]);
 
@@ -107,12 +109,19 @@ public class PourAction extends BakingAction {
 	
 	private State pour(State state, ObjectInstance pouringContainer, ObjectInstance receivingContainer)
 	{
+		State newState = state;
 		ObjectInstance receivingSpace = state.getObject(ContainerFactory.getSpaceName(receivingContainer));
+		
 		if (SpaceFactory.isHeating(receivingSpace)) {
-			return PourAction.pourIntoHeating(state, pouringContainer, receivingContainer, receivingSpace);
+			newState = PourAction.pourIntoHeating(state, pouringContainer, receivingContainer, receivingSpace);
 		} else {
-			return PourAction.pourIntoWorking(state, pouringContainer, receivingContainer);
+			newState = PourAction.pourIntoWorking(state, pouringContainer, receivingContainer);
 		}
+		
+		//if (ContainerFactory.isPouringContainer(pouringContainer) && !ContainerFactory.isReceivingContainer(pouringContainer)) {
+		//	newState = PourAction.pourIngredientContainer(state, pouringContainer, receivingContainer);
+		//}
+		return newState;
 	}
 	
 	// If an ingredient is poured into a heating space that is turned on, then it will get the
@@ -120,8 +129,7 @@ public class PourAction extends BakingAction {
 	private static State pourIntoHeating(State state, ObjectInstance pouringContainer, 
 			ObjectInstance receivingContainer, ObjectInstance receivingSpace) {
 		Set<String> ingredients = ContainerFactory.getContentNames(pouringContainer);
-		ObjectInstance newReceivingContainer = ContainerFactory.addIngredients(receivingContainer, ingredients);
-		state.replaceObject(receivingContainer, newReceivingContainer);
+		
 		
 		ObjectInstance newPouringContainer = ContainerFactory.removeContents(pouringContainer);
 		state.replaceObject(pouringContainer, newPouringContainer);
@@ -132,8 +140,12 @@ public class PourAction extends BakingAction {
 			if (on) {
 				state = Knowledgebase.heatIngredient(state, receivingContainer, ingredientInstance);
 			}
+			//ObjectInstance copyInstance = IngredientFactory.getNewCopyObject(ingredientInstance, state);
 			ObjectInstance newInstance = IngredientFactory.changeIngredientContainer(ingredientInstance, receivingContainer.getName());
 			state = state.replaceObject(ingredientInstance, newInstance);
+			
+			ObjectInstance newReceivingContainer = ContainerFactory.addIngredient(receivingContainer, newInstance.getName());
+			state.replaceObject(receivingContainer, newReceivingContainer);
 		}
 		return state;
 	}
@@ -148,9 +160,8 @@ public class PourAction extends BakingAction {
 		
 		for (String ingredient : ingredients) {
 			ObjectInstance ingredientInstance = state.getObject(ingredient);
-			ObjectInstance newInstance = 
-					IngredientFactory.changeIngredientContainer(ingredientInstance, receivingContainer.getName());
-			state.replaceObject(ingredientInstance, newInstance);
+			ObjectInstance newInstance = IngredientFactory.changeIngredientContainer(ingredientInstance, receivingContainer.getName());
+			state = state.replaceObject(ingredientInstance, newInstance);
 		}
 		
 		return state;

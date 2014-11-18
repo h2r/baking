@@ -13,8 +13,8 @@ import edu.brown.cs.h2r.baking.ObjectFactories.ToolFactory;
 
 public class UseAction extends BakingAction {
 	public static final String className = "use";
-	public UseAction(Domain domain, IngredientRecipe ingredient) {
-		super(UseAction.className, domain, ingredient, new String[] {AgentFactory.ClassName, ToolFactory.ClassName, ContainerFactory.ClassName});
+	public UseAction(Domain domain) {
+		super(UseAction.className, domain, new String[] {AgentFactory.ClassName, ToolFactory.ClassName, ContainerFactory.ClassName});
 	}
 	
 	@Override

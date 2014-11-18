@@ -1,5 +1,7 @@
 package edu.brown.cs.h2r.baking.actions;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -10,28 +12,42 @@ import burlap.oomdp.core.TransitionProbability;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.ActionObserver;
 import burlap.oomdp.singleagent.GroundedAction;
-import edu.brown.cs.h2r.baking.IngredientRecipe;
+import edu.brown.cs.h2r.baking.Knowledgebase.Knowledgebase;
 import edu.brown.cs.h2r.baking.ObjectFactories.MakeSpanFactory;
+import edu.brown.cs.h2r.baking.Recipes.Recipe;
 
 
 public abstract class BakingAction extends Action {
-	IngredientRecipe ingredient;
+	protected final List<Recipe> recipes;
+	protected final Knowledgebase knowledgebase;
+	//IngredientRecipe ingredient;
 	public BakingAction() {
+		this.recipes = Collections.unmodifiableList(new ArrayList<Recipe>());
+		this.knowledgebase = null;
+		
 	}
 
 	public BakingAction(String name, Domain domain, String parameterClasses) {
 		super(name, domain, parameterClasses);
+		this.recipes = Collections.unmodifiableList(new ArrayList<Recipe>());
+		this.knowledgebase = Knowledgebase.getKnowledgebase(domain);
+		
 	}
 
 	public BakingAction(String name, Domain domain, String[] parameterClasses) {
 		super(name, domain, parameterClasses);
+		this.recipes = Collections.unmodifiableList(new ArrayList<Recipe>());
+		this.knowledgebase = Knowledgebase.getKnowledgebase(domain);
 	}
 
 	public BakingAction(String name, Domain domain, String[] parameterClasses,
 			String[] parameterOrderGroups) {
 		super(name, domain, parameterClasses, parameterOrderGroups);
+		this.recipes = Collections.unmodifiableList(new ArrayList<Recipe>());
+		this.knowledgebase = Knowledgebase.getKnowledgebase(domain);
 	}
 	
+	/*
 	public BakingAction(String name, Domain domain, IngredientRecipe ingredient, String parameterClasses) {
 		super(name, domain, parameterClasses);
 		this.ingredient = ingredient;
@@ -46,7 +62,7 @@ public abstract class BakingAction extends Action {
 			String[] parameterOrderGroups) {
 		super(name, domain, parameterClasses, parameterOrderGroups);
 		this.ingredient = ingredient;
-	}
+	}*/
 	
 	public BakingActionResult checkActionIsApplicableInState(State state, String[] params) {
 		for (int i = 0, len = params.length; i < len; i++) {
@@ -186,7 +202,4 @@ public abstract class BakingAction extends Action {
 		return state;
 	}
 	
-	public void changePlanningIngredient(IngredientRecipe newIngredient) {
-		this.ingredient = newIngredient;
-	}
 }

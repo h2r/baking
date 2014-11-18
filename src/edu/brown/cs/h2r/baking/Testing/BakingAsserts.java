@@ -194,12 +194,12 @@ public class BakingAsserts {
 	}
 	
 	public static void assertSuccess(State state, IngredientRecipe ingredient, ObjectInstance success) {
-		Assert.assertTrue(Recipe.isSuccess(state, ingredient, success));
+		Assert.assertTrue(ingredient.isMatching(success, state));
 		Assert.assertFalse(Recipe.isFailure(state, ingredient, success));
 	}
 	
 	public static void assertFailure(State state, IngredientRecipe ingredient, ObjectInstance failure) {
-		Assert.assertFalse(Recipe.isSuccess(state, ingredient, failure));
+		Assert.assertFalse(ingredient.isMatching(failure, state));
 		Assert.assertTrue(Recipe.isFailure(state, ingredient, failure));
 	}
 	

@@ -34,6 +34,7 @@ import edu.brown.cs.h2r.baking.BellmanAffordanceRTDP;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.RecipeAgentSpecificMakeSpanRewardFunction;
 import edu.brown.cs.h2r.baking.RecipeTerminalFunction;
+import edu.brown.cs.h2r.baking.Agents.AgentHelper;
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
 import edu.brown.cs.h2r.baking.Knowledgebase.Knowledgebase;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
@@ -46,6 +47,7 @@ import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunctio
 import edu.brown.cs.h2r.baking.PropositionalFunctions.ContainersCleaned;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
 import edu.brown.cs.h2r.baking.Recipes.BlueberryMuffins;
+import edu.brown.cs.h2r.baking.Recipes.Brownies;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.Recipes.RecipeActionParameters;
 import edu.brown.cs.h2r.baking.actions.BakingAction;
@@ -54,6 +56,7 @@ import edu.brown.cs.h2r.baking.actions.GreaseAction;
 import edu.brown.cs.h2r.baking.actions.HandAction;
 import edu.brown.cs.h2r.baking.actions.MixAction;
 import edu.brown.cs.h2r.baking.actions.MoveAction;
+import edu.brown.cs.h2r.baking.actions.PeelAction;
 import edu.brown.cs.h2r.baking.actions.PourAction;
 import edu.brown.cs.h2r.baking.actions.SwitchAction;
 import edu.brown.cs.h2r.baking.actions.UseAction;
@@ -64,10 +67,11 @@ public class BaxterKitchen {
 	RecipeActionParameters recipeParams;
 	private IngredientRecipe topLevelIngredient;
 	public BaxterKitchen() {
-		recipeParams = new RecipeActionParameters();
+		Domain domain = this.generateDomain();
+		recipeParams = new RecipeActionParameters(domain);
 	}
 	
-	public Domain generateDomain(Recipe recipe) {
+	public Domain generateDomain() {
 		Domain domain = new SADomain();
 		domain.addObjectClass(ContainerFactory.createObjectClass(domain));
 		domain.addObjectClass(IngredientFactory.createSimpleIngredientObjectClass(domain));
@@ -79,25 +83,20 @@ public class BaxterKitchen {
 		domain.addObjectClass(ToolFactory.createObjectClass(domain));
 		domain.setObjectIdentiferDependence(true);
 		
-		Action mix = new MixAction(domain, recipe.topLevelIngredient);
-		Action pour = new PourAction(domain, recipe.topLevelIngredient);
-		Action move = new MoveAction(domain, recipe.topLevelIngredient);
-		Action grease = new GreaseAction(domain);
-		Action aSwitch = new SwitchAction(domain);
-		Action use = new UseAction(domain, recipe.topLevelIngredient);
-		Action hand = new HandAction(domain, recipe.topLevelIngredient);
+		Action mix = new MixAction(domain);
+		Action pour = new PourAction(domain);
+		Action move = new MoveAction(domain);
+		Action peel = new PeelAction(domain);
+		Action turnOnOff = new SwitchAction(domain);
+		Action use = new UseAction(domain);
 		//Action waitAction = new WaitAction(domain);
 
-		recipe.init(domain);
 		
 		// To the failed propFunction, add in all subgoals for a recipe that are based on an ingredient.
 		RecipeBotched failed = ((RecipeBotched)domain.getPropFunction(AffordanceCreator.BOTCHED_PF));
 		if (failed != null) {
 			failed.clearSubgoals();
 		}
-		
-		this.ingSubgoals = recipe.getIngredientSubgoals();
-
 		
 		return domain;
 	}
@@ -109,31 +108,31 @@ public class BaxterKitchen {
 			this.topLevelIngredient = recipe.topLevelIngredient;
 		}
 		
-		objects.add(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
-		objects.add(AgentFactory.getNewRobotAgentObjectInstance(domain, "baxter"));
+		objects.add(AgentFactory.getNewHumanAgentObjectInstance(domain, "human", null));
+		objects.add(AgentFactory.getNewRobotAgentObjectInstance(domain, "baxter", null));
 		
-		objects.add(MakeSpanFactory.getNewObjectInstance(domain, "make_span", 2));
+		//objects.add(MakeSpanFactory.getNewObjectInstance(domain, "make_span", 2));
 		
 		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2", "baking_dish"/*, "melting_pot"*/);
-		ObjectInstance counterSpace = SpaceFactory.getNewWorkingSpaceObjectInstance(domain, SpaceFactory.SPACE_COUNTER, containers, "human");
-		objects.add(counterSpace);
-		objects.add(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, SpaceFactory.SPACE_ROBOT, containers, "baxter"));
+		ObjectInstance counterSpace = SpaceFactory.getNewWorkingSpaceObjectInstance(domain, SpaceFactory.SPACE_COUNTER, containers, "human", null);
+		//objects.add(counterSpace);
+		//objects.add(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, SpaceFactory.SPACE_ROBOT, containers, "baxter"));
 
-		objects.add(ContainerFactory.getNewBakingContainerObjectInstance(domain, "baking_dish", null, SpaceFactory.SPACE_COUNTER));
+		objects.add(ContainerFactory.getNewBakingContainerObjectInstance(domain, "baking_dish", null, SpaceFactory.SPACE_COUNTER, null));
 		//state.addObject(ContainerFactory.getNewHeatingContainerObjectInstance(domain, "melting_pot", null, SpaceFactory.SPACE_COUNTER));
-		objects.add(SpaceFactory.getNewBakingSpaceObjectInstance(domain, SpaceFactory.SPACE_OVEN, null, ""));
-		objects.add(SpaceFactory.getNewCleaningSpaceObjectInstance(domain, SpaceFactory.SPACE_SINK, null, "baxter"));
+		//objects.add(SpaceFactory.getNewBakingSpaceObjectInstance(domain, SpaceFactory.SPACE_OVEN, null, ""));
+		//objects.add(SpaceFactory.getNewCleaningSpaceObjectInstance(domain, SpaceFactory.SPACE_SINK, null, "baxter"));
 		
-		objects.add(ToolFactory.getNewSimpleToolObjectInstance(domain, "whisk", "", "", SpaceFactory.SPACE_ROBOT));
-		objects.add(ToolFactory.getNewSimpleToolObjectInstance(domain, "spoon","", "", SpaceFactory.SPACE_ROBOT));
+		//objects.add(ToolFactory.getNewSimpleToolObjectInstance(domain, "whisk", "", "", SpaceFactory.SPACE_ROBOT));
+		//objects.add(ToolFactory.getNewSimpleToolObjectInstance(domain, "spoon","", "", SpaceFactory.SPACE_ROBOT));
 		
 		for (String container : containers) { 
-			objects.add(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, SpaceFactory.SPACE_COUNTER));
+			objects.add(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, SpaceFactory.SPACE_COUNTER, null));
 		}
 		
 		// Out of all the ingredients in our kitchen, plan over only those that might be useful!
-		Knowledgebase knowledgebase = new Knowledgebase();
-		this.allIngredients = knowledgebase.getRecipeObjectInstanceList(domain, recipe);
+		Knowledgebase knowledgebase = Knowledgebase.getKnowledgebase(domain);
+		this.allIngredients = knowledgebase.getRecipeObjectInstanceList(domain, null, recipe);
 		//knowledgebase.addTools(domain, state, SpaceFactory.SPACE_COUNTER);
 	
 		ObjectClass containerClass = domain.getObjectClass(ContainerFactory.ClassName);		
@@ -147,6 +146,7 @@ public class BaxterKitchen {
 	}
 	
 	public List<Policy> generatePolicies(Domain domain, Recipe recipe) {
+		this.ingSubgoals = recipe.createIngredientSubgoals();
 		// Add our actions to the domain.
 		List<Policy> policies = new ArrayList<Policy>();
 		State state = this.generateInitialState(domain, recipe);
@@ -183,18 +183,10 @@ public class BaxterKitchen {
 		State currentState = new State(startingState);
 		
 		List<Action> actions = domain.getActions();
-		for (Action action : actions) {
-			((BakingAction)action).changePlanningIngredient(ingredient);
-		}
 		AffordanceCreator theCreator = new AffordanceCreator(domain, currentState, ingredient);
 		// Add the current top level ingredient so we can properly trim the action space
-		List<PropositionalFunction> propFunctions = domain.getPropFunctions();
-		for (PropositionalFunction pf : propFunctions) {
-			((BakingPropositionalFunction)pf).changeTopLevelIngredient(ingredient);
-			((BakingPropositionalFunction)pf).setSubgoal(subgoal);
-		}
-		
-		subgoal.getGoal().changeTopLevelIngredient(ingredient);
+		domain = AgentHelper.setSubgoal(domain, subgoal);
+
 		final PropositionalFunction isSuccess = subgoal.getGoal();
 		final PropositionalFunction isFailure = domain.getPropFunction(AffordanceCreator.BOTCHED_PF);
 		
@@ -253,18 +245,9 @@ public class BaxterKitchen {
 		State currentState = new State(startingState);
 		
 		List<Action> actions = domain.getActions();
-		for (Action action : actions) {
-			((BakingAction)action).changePlanningIngredient(ingredient);
-		}
 		AffordanceCreator theCreator = new AffordanceCreator(domain, currentState, ingredient);
 		// Add the current top level ingredient so we can properly trim the action space
-		List<PropositionalFunction> propFunctions = domain.getPropFunctions();
-		for (PropositionalFunction pf : propFunctions) {
-			((BakingPropositionalFunction)pf).changeTopLevelIngredient(ingredient);
-			((BakingPropositionalFunction)pf).setSubgoal(subgoal);
-		}
-		
-		subgoal.getGoal().changeTopLevelIngredient(ingredient);
+		domain = AgentHelper.setSubgoal(domain, subgoal);
 		final PropositionalFunction isSuccess = subgoal.getGoal();
 		final PropositionalFunction isFailure = domain.getPropFunction(AffordanceCreator.BOTCHED_PF);
 		
@@ -436,7 +419,7 @@ public class BaxterKitchen {
 	}
 	
 	public List<String> getContainersForSubgoal(Domain domain, State state, BakingSubgoal subgoal) {
-		Knowledgebase knowledgebase = new Knowledgebase();
+		Knowledgebase knowledgebase = Knowledgebase.getKnowledgebase(domain);
 		List<IngredientRecipe> ingredients = knowledgebase.getPotentialIngredientList(domain, subgoal.getIngredient());
 		List<String> containers = new ArrayList<String>();
 		
@@ -591,9 +574,9 @@ public class BaxterKitchen {
 				
 				IngredientRecipe ing = subgoal.getIngredient();
 				
+				domain = AgentHelper.setSubgoal(domain, subgoal);
+				
 				BakingPropositionalFunction pf = subgoal.getGoal();
-				pf.changeTopLevelIngredient(ing);
-				pf.setSubgoal(subgoal);
 				
 				List<BakingSubgoal> preconditions = subgoal.getPreconditions();
 				//boolean checkSubgoal = true;
@@ -614,9 +597,10 @@ public class BaxterKitchen {
 	public static void main(String[] args) throws IOException {
 		
 		BaxterKitchen kitchen = new BaxterKitchen();
-		Recipe recipe = new BlueberryMuffins();
-		Domain domain = kitchen.generateDomain(recipe);
-		kitchen.testRecipeExecution(domain, recipe);
+		Domain domain = TestManyAgents.generateGeneralDomain();
+		
+		//Recipe recipe = new BlueberryMuffins(domain);
+		kitchen.testRecipeExecution(domain, Brownies.getRecipe(domain));
 		
 		//List<Policy> policies = kitchen.generatePolicies(domain, brownies);
 	}

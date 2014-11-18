@@ -6,9 +6,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-import org.junit.*;
+import org.junit.After;
 import org.junit.Test;
 
+import burlap.behavior.statehashing.NameDependentStateHashFactory;
+import burlap.behavior.statehashing.ObjectHashFactory;
+import burlap.behavior.statehashing.StateHashFactory;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
@@ -20,13 +23,21 @@ import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
-import edu.brown.cs.h2r.baking.Recipes.*;
+import edu.brown.cs.h2r.baking.Recipes.Brownies;
+import edu.brown.cs.h2r.baking.Recipes.CucumberSalad;
+import edu.brown.cs.h2r.baking.Recipes.DeviledEggs;
+import edu.brown.cs.h2r.baking.Recipes.MashedPotatoes;
+import edu.brown.cs.h2r.baking.Recipes.MoltenLavaCake;
+import edu.brown.cs.h2r.baking.Recipes.PecanPie;
+import edu.brown.cs.h2r.baking.Recipes.Recipe;
 
 
 public class TestIngredientRecipe {
 	Knowledgebase knowledgebase;
 	State state;
 	Domain domain;
+	static StateHashFactory hashingFactory = new NameDependentStateHashFactory();
+	static ObjectHashFactory objectHashingFactory = hashingFactory.getObjectHashFactory();
 	List<String> constituentNecessaryTraits, constituentIngredientList, swappedIngredientList;
 	List<IngredientRecipe> constituentIngredients;
 	List<ObjectInstance> allIngredients;
@@ -36,21 +47,22 @@ public class TestIngredientRecipe {
 	public void setUp() {
 		domain = new SADomain();
 		setUpDomain();
+		knowledgebase = Knowledgebase.getKnowledgebase(domain);
+		
 		state = this.setUpState();
 	}
 	
 	private State setUpState() {
 		List<ObjectInstance> objectsToAdd = new ArrayList<ObjectInstance>();
-		objectsToAdd.add(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
+		objectsToAdd.add(AgentFactory.getNewHumanAgentObjectInstance(domain, "human", objectHashingFactory));
 		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2");
-		objectsToAdd.add(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter", containers, "human"));
+		objectsToAdd.add(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter", containers, "human", objectHashingFactory));
 
 		for (String container : containers) { 
-			objectsToAdd.add(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "counter"));
+			objectsToAdd.add(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "counter", objectHashingFactory));
 		}
 		
-		knowledgebase = new Knowledgebase();
-		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(domain, topLevelIngredient);
+		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(domain, topLevelIngredient, objectHashingFactory);
 		ObjectClass containerClass = domain.getObjectClass(ContainerFactory.ClassName);		
 		ObjectInstance counterSpace = state.getObject("counter");
 
@@ -95,7 +107,7 @@ public class TestIngredientRecipe {
 		
 	@Test
 	public void testPecanPie() {
-		topLevelIngredient = new PecanPie().topLevelIngredient;
+		topLevelIngredient = new PecanPie(domain).topLevelIngredient;
 		this.setUp();
 		swappedIngredientList = Arrays.asList("dry_crust", "flaky_crust", "pie_crust", "pie_mix", "filling", "finished_filling", "PecanPie");
 		constituentNecessaryTraits = Arrays.asList("salt", "sugar");
@@ -125,7 +137,7 @@ public class TestIngredientRecipe {
 	
 	@Test
 	public void testBrownies() {
-		topLevelIngredient = new Brownies().topLevelIngredient;
+		topLevelIngredient = Brownies.getRecipe(domain).topLevelIngredient;
 		this.setUp();
 		swappedIngredientList = Arrays.asList("butter", "dry_ingredients", "wet_ingredients", "brownie_batter");
 		constituentNecessaryTraits = Arrays.asList("salt", "sugar", "flour");
@@ -155,7 +167,7 @@ public class TestIngredientRecipe {
 	
 	@Test
 	public void testCucumberSalad() {
-		topLevelIngredient = new CucumberSalad().topLevelIngredient;
+		topLevelIngredient = new CucumberSalad(domain).topLevelIngredient;
 		this.setUp();
 		swappedIngredientList = Arrays.asList("Salad", "dressing", "CucumberSalad");
 		constituentNecessaryTraits = Arrays.asList("lemon", "salt");
@@ -181,7 +193,7 @@ public class TestIngredientRecipe {
 	
 	@Test
 	public void testDeviledEggs() {
-		topLevelIngredient = new DeviledEggs().topLevelIngredient;
+		topLevelIngredient = new DeviledEggs(domain).topLevelIngredient;
 		this.setUp();
 		swappedIngredientList = Arrays.asList("yolk_mix", "finished_mix", "DeviledEggs");
 		constituentNecessaryTraits = Arrays.asList("salt", "mustard") ;
@@ -209,7 +221,7 @@ public class TestIngredientRecipe {
 	
 	@Test
 	public void testMashedPotatoes() {
-		topLevelIngredient = new MashedPotatoes().topLevelIngredient;
+		topLevelIngredient = new MashedPotatoes(domain).topLevelIngredient;
 		this.setUp();
 		swappedIngredientList = Arrays.asList("Mashed_potatoes", "salted_water", "potatoes_in_water");
 		constituentNecessaryTraits = Arrays.asList("salt");
@@ -233,7 +245,7 @@ public class TestIngredientRecipe {
 	
 	@Test
 	public void testMoltenLavaCake() {
-		topLevelIngredient = new MoltenLavaCake().topLevelIngredient;
+		topLevelIngredient = new MoltenLavaCake(domain).topLevelIngredient;
 		this.setUp();
 		swappedIngredientList = Arrays.asList("melted_stuff", "batter", "unflavored_batter", "molten_lava_cake");
 		constituentNecessaryTraits = Arrays.asList("flour", "sugar");
@@ -262,7 +274,7 @@ public class TestIngredientRecipe {
 	
 	@Test
 	public void testPeanutButterCookies() {
-		topLevelIngredient = new PeanutButterCookies().topLevelIngredient;
+		topLevelIngredient = Brownies.getRecipe(domain).topLevelIngredient;
 		this.setUp();
 		swappedIngredientList = Arrays.asList("creamed_ingredients", "wet_ingredients", "peanutButterCookies", "dry_ingredients");
 		constituentNecessaryTraits = Arrays.asList("salt", "sugar", "flour");

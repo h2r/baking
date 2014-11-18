@@ -13,9 +13,12 @@ import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
 
 
 public class BannanaBread extends Recipe { 
-	public BannanaBread() {
-		super();
+	public BannanaBread(Domain domain) {
+		super(domain);
 		this.recipeName = "bannana bread";
+	}
+	
+	protected IngredientRecipe createTopLevelIngredient() {
 		/**
 		 *  Preheat oven to 350 degrees F (175 degrees C).
 		 *  Mix bannanas and butter
@@ -30,13 +33,13 @@ public class BannanaBread extends Recipe {
 		//butter.setHeatedState("melted");
 		ingredientList.add(butter);
 		ingredientList.add(knowledgebase.getIngredient("bannanas"));
-		IngredientRecipe mashedIngredients = new IngredientRecipe("mashed_ingredients", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList);
+		IngredientRecipe mashedIngredients = new IngredientRecipe("mashed_ingredients", Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, ingredientList);
 		this.subgoalIngredients.put(mashedIngredients.getName(), mashedIngredients);
 		
 		List<IngredientRecipe> ingredientList2 = new ArrayList<IngredientRecipe>();
 		ingredientList2.add(knowledgebase.getIngredient("baking_soda"));
 		ingredientList2.add(mashedIngredients);
-		IngredientRecipe dryIngs = new IngredientRecipe ("dry_ingredients", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList2);
+		IngredientRecipe dryIngs = new IngredientRecipe ("dry_ingredients", Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, ingredientList2);
 		dryIngs.addNecessaryTrait("flour", Recipe.NO_ATTRIBUTES);
 		dryIngs.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
 		this.subgoalIngredients.put(dryIngs.getName(), dryIngs);
@@ -45,39 +48,41 @@ public class BannanaBread extends Recipe {
 		ingredientList3.add(knowledgebase.getIngredient("vanilla"));
 		ingredientList3.add(knowledgebase.getIngredient("eggs"));
 		ingredientList3.add(dryIngs);
-		IngredientRecipe bannanaBread = new IngredientRecipe("bannana_bread", Recipe.BAKED, Recipe.SWAPPED, ingredientList3);
+		IngredientRecipe bannanaBread = new IngredientRecipe("bannana_bread", Recipe.BAKED, this, Recipe.SWAPPED, ingredientList3);
 		bannanaBread.addNecessaryTrait("sugar", Recipe.NO_ATTRIBUTES);
 		this.subgoalIngredients.put(bannanaBread.getName(), bannanaBread);
-		this.topLevelIngredient = bannanaBread;
 		
+		return bannanaBread;
 	}
 	
-	
-	public void setUpSubgoals(Domain domain) {		
-		
+	@Override
+	public List<BakingSubgoal> getSubgoals(Domain domain) {		
+		List<BakingSubgoal> subgoals = new ArrayList<BakingSubgoal>();
 		BakingPropositionalFunction pf2 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("mashed_ingredients"));
 		BakingSubgoal sg2 = new BakingSubgoal(pf2, this.subgoalIngredients.get("mashed_ingredients"));
 		
 		BakingPropositionalFunction pf2clean = new ContainersCleaned(AffordanceCreator.CONTAINERS_CLEANED_PF, domain,this.subgoalIngredients.get("mashed_ingredients") );
 		BakingSubgoal sg2clean = new BakingSubgoal(pf2clean, this.subgoalIngredients.get("mashed_ingredients"));
-		this.subgoals.add(sg2);
-		this.subgoals.add(sg2clean);
+		subgoals.add(sg2);
+		subgoals.add(sg2clean);
 		
 		BakingPropositionalFunction pf3 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("dry_ingredients"));
 		BakingSubgoal sg3 = new BakingSubgoal(pf3, this.subgoalIngredients.get("dry_ingredients"));
-		sg3.addPrecondition(sg2);
+		sg3 = sg3.addPrecondition(sg2);
 		
 		BakingPropositionalFunction pf3clean = new ContainersCleaned(AffordanceCreator.CONTAINERS_CLEANED_PF, domain,this.subgoalIngredients.get("dry_ingredients") );
 		BakingSubgoal sg3clean = new BakingSubgoal(pf3clean, this.subgoalIngredients.get("dry_ingredients"));
-		sg3.addPrecondition(sg2);
-		this.subgoals.add(sg3);
-		this.subgoals.add(sg3clean);
+		sg3 = sg3.addPrecondition(sg2);
+		subgoals.add(sg3);
+		subgoals.add(sg3clean);
 		
 		
 		BakingPropositionalFunction pf4 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("bannana_bread"));
 		BakingSubgoal sg4 = new BakingSubgoal(pf4, this.subgoalIngredients.get("bannana_bread"));
-		sg4.addPrecondition(sg3);
-		this.subgoals.add(sg4);
+		sg4 = sg4.addPrecondition(sg3);
+		subgoals.add(sg4);
+		
+		return subgoals;
 	}
 	
 	@Override

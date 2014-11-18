@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
@@ -22,6 +23,11 @@ public class AllowPouring extends BakingPropositionalFunction {
 	public AllowPouring(String name, Domain domain, IngredientRecipe ingredient) {
 		super(name, domain, new String[]{AgentFactory.ClassName, ContainerFactory.ClassName, ContainerFactory.ClassName}, ingredient);
 	}
+	
+	public BakingPropositionalFunction updatePF(Domain newDomain, IngredientRecipe ingredient, BakingSubgoal subgoal) {
+		return new AllowPouring(this.name, newDomain, ingredient);
+	}
+	
 	@Override
 	public boolean isTrue(State state, String[] params) {
 		ObjectInstance pouringContainer = state.getObject(params[1]);
@@ -42,10 +48,10 @@ public class AllowPouring extends BakingPropositionalFunction {
 		}
 		
 		// Avoid useless pouring back and forth!
-		if (ContainerFactory.isReceivingContainer(pouringContainer) && 
-				ContainerFactory.isMixingContainer(receivingContainer) && ContainerFactory.isEmptyContainer(receivingContainer)) {
-			return false;
-		}
+		//if (ContainerFactory.isReceivingContainer(pouringContainer) && 
+		//		ContainerFactory.isMixingContainer(receivingContainer) && ContainerFactory.isEmptyContainer(receivingContainer)) {
+		//	return false;
+		//}
 		
 		boolean simpleIngredientSubgoal = false;
 		// Get what our subgoal is looking for and make copies
@@ -248,7 +254,7 @@ public class AllowPouring extends BakingPropositionalFunction {
 		}
 		//Do all our ingredients fulfill a necessaryIngredient or traitIngredient?
 		for (ObjectInstance ingObject : pourContents) {
-			if(!this.fulfillsRequiredIngredient(necessaryIngs, receivingContainer, ingObject)) {
+			if(!this.fulfillsRequiredIngredient(necessaryIngs, receivingContainer, ingObject, state)) {
 				if (!this.fulfillsTraitIngredient(state, necessaryTraits, pouringContainer,receivingContainer, ingObject)) {
 					return false;
 				}
@@ -258,14 +264,25 @@ public class AllowPouring extends BakingPropositionalFunction {
 	}
 	
 	private boolean fulfillsRequiredIngredient(List<IngredientRecipe> necessaryIngs, 
-			ObjectInstance receivingContainer, ObjectInstance ingObject) {
+			ObjectInstance receivingContainer, ObjectInstance ingObject, State state) {
+		if (this.topLevelIngredient.isMatching(ingObject, state)) {
+			return true;
+		}/*
 		if (this.topLevelIngredient.getName().equals(ingObject.getName())) {
 			if (ContainerFactory.isMixingContainer(receivingContainer)) {
+				return this.topLevelIngredient.isMatching(object, state)
 				return this.topLevelIngredient.AttributesMatch(ingObject);
 			}
 			return this.topLevelIngredient.toolAttributesMatch(ingObject);
-		}
+		}*/
 		for (IngredientRecipe ing : necessaryIngs) {
+			if (ing.getName().equals(ingObject.getName())) {
+				return true;
+			}
+			//if (ing.isMatching(ingObject, state)) {
+			//	return true;
+			//}
+			/*
 			if (ing.getName().equals(ingObject.getName())) {
 				if (ContainerFactory.isMixingContainer(receivingContainer)) {
 					if (ing.AttributesMatch(ingObject)) {
@@ -276,7 +293,7 @@ public class AllowPouring extends BakingPropositionalFunction {
 						return true;
 					}
 				}
-			}
+			}*/
 		}
 		return false;
 	}
@@ -317,7 +334,7 @@ public class AllowPouring extends BakingPropositionalFunction {
 					// want the correct tool attributes, but not necessarily the correct regular attributes
 					// since the ingredient might be about to be baked or heated.
 					if (ContainerFactory.isMixingContainer(receivingContainer)) {
-						return necessaryTraits.get(trait).AttributesMatch(ingObject);
+						return necessaryTraits.get(trait).attributesMatch(ingObject);
 					} else {
 						return necessaryTraits.get(trait).toolAttributesMatch(ingObject);
 					}

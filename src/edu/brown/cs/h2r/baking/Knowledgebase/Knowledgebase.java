@@ -2,13 +2,17 @@ package edu.brown.cs.h2r.baking.Knowledgebase;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import burlap.behavior.statehashing.ObjectHashFactory;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
@@ -23,6 +27,8 @@ import edu.brown.cs.h2r.baking.Recipes.Recipe;
 
 public class Knowledgebase {
 	
+	private static Knowledgebase singleton = null;
+	private final Domain domain;
 	public static final String NONMELTABLE = "unsaturated";
 	public static final String LUBRICANT = "lubricant";
 	
@@ -30,8 +36,11 @@ public class Knowledgebase {
 	private AbstractMap<String, IngredientRecipe> allIngredients;
 	private AbstractMap<String, Set<String>> traitMap, toolTraitMap, combinationTraitMap;
 	private AbstractMap<String, BakingInformation> toolMap;
+	private List<Recipe> recipes;
+	
+	private Map<Set<IngredientRecipe>, IngredientRecipe> recipeCombinationLookup;
 	private BakingParser parser;
-	public Knowledgebase() {
+	private Knowledgebase(Domain domain) {
 		this.parser = new BakingParser();
 		this.traitMap = new HashMap<String, Set<String>>();
 		this.toolTraitMap = new HashMap<String, Set<String>>();
@@ -39,14 +48,52 @@ public class Knowledgebase {
 		this.generateAllIngredients();
 		this.combinationTraitMap = new HashMap<String, Set<String>>();
 		this.combinationMap = new HashMap<String, ArrayList<Set<String>>>();
+		this.recipeCombinationLookup = new HashMap<Set<IngredientRecipe>, IngredientRecipe>();
 		this.generateCombinations();
 		this.toolMap = parser.getToolMap();
+		this.domain = domain;
+	}
+	
+	public void initKnowledgebase(List<Recipe> recipes) {
+		this.recipes = Collections.unmodifiableList(recipes);
+		
+		for (Recipe recipe : recipes) {
+			this.addEntriesToMap(recipe.topLevelIngredient);
+		}	
+	}
+	
+	private void addEntriesToMap(IngredientRecipe ingredient) {
+		
+		Set<List<IngredientRecipe>> subIngredients = this.getPotentialFirstLevelIngredients(domain, ingredient);
+		List<Set<IngredientRecipe>> combinations = this.generateAllCombinations(subIngredients);
+		
+		for (Set<IngredientRecipe> combination : combinations) {
+			this.recipeCombinationLookup.put(combination, ingredient);
+		}
+		
+		for (List<IngredientRecipe> list : subIngredients) {
+			for (IngredientRecipe subIngredient : list) {
+				if (!subIngredient.isSimple()) {
+					this.addEntriesToMap(subIngredient);
+				}
+			}
+		}
+	}
+	
+	public static Knowledgebase getKnowledgebase(Domain domain) {
+		if (Knowledgebase.singleton == null) {
+			Knowledgebase.singleton = new Knowledgebase(domain);
+		}
+		return Knowledgebase.singleton;
 	}
 	
 	private void generateAllIngredients() {
 		for (Entry<String, BakingInformation> entry : this.parser.getIngredientMap().entrySet()) {
 			String name = entry.getKey();
-			IngredientRecipe ing = new IngredientRecipe(name, Recipe.NO_ATTRIBUTES);
+			if (name.equals("butter")) {
+				System.out.println("");
+			}
+			IngredientRecipe ing = new IngredientRecipe(name, Recipe.NO_ATTRIBUTES, null);
 			BakingInformation info = entry.getValue();
 			List<String> traits = null;
 			List<String> toolTraits = null;
@@ -67,6 +114,7 @@ public class Knowledgebase {
 			if (heatingInfo != null) {
 				ing.addHeatingInformation(heatingInfo);
 			}
+			
 			this.allIngredients.put(name, ing);
 			this.traitMap.put(name, new HashSet<String>(traits));
 			this.toolTraitMap.put(name, new HashSet<String>(toolTraits));
@@ -95,7 +143,7 @@ public class Knowledgebase {
 		}
 	}
 	
-	public List<ObjectInstance> getTools(Domain domain, String space) {
+	public List<ObjectInstance> getTools(Domain domain, String space, ObjectHashFactory hashingFactory) {
 		
 		List<ObjectInstance> toolsToAdd = new ArrayList<ObjectInstance>();
 		for (Entry<String, BakingInformation> entry : this.toolMap.entrySet()) {
@@ -124,9 +172,9 @@ public class Knowledgebase {
 			if (transportable) {
 				
 				tool = ToolFactory.getNewCarryingToolObjectInstance(domain, name, toolTrait, toolAttribute,
-						space,includes, excludes);
+						space,includes, excludes, hashingFactory);
 			} else {
-				tool = ToolFactory.getNewSimpleToolObjectInstance(domain, name, toolTrait, toolAttribute, space);
+				tool = ToolFactory.getNewSimpleToolObjectInstance(domain, name, toolTrait, toolAttribute, space, hashingFactory);
 			}
 			toolsToAdd.add(tool);
 		}
@@ -144,31 +192,33 @@ public class Knowledgebase {
 		return this.allIngredients.get(name);
 	}
 	
-	public List<ObjectInstance> getAllIngredientObjectInstanceList(Domain domain) {
+	public List<ObjectInstance> getAllIngredientObjectInstanceList(Domain domain, ObjectHashFactory hashingFactory) {
 		List<ObjectInstance> ingredientObjects = new ArrayList<ObjectInstance>();
 		List<IngredientRecipe> ingredients = this.getIngredientList();
 		for (IngredientRecipe ing : ingredients) {
-			ObjectClass oc = ing.isSimple() ? domain.getObjectClass(IngredientFactory.ClassNameSimple) : domain.getObjectClass(IngredientFactory.ClassNameComplex);
-			ObjectInstance obj = IngredientFactory.getNewIngredientInstance(ing, ing.getName(), oc);
+			ObjectClass oc = ing.isSimple() ? 
+					domain.getObjectClass(IngredientFactory.ClassNameSimple) : 
+						domain.getObjectClass(IngredientFactory.ClassNameComplex);
+			ObjectInstance obj = IngredientFactory.getNewIngredientInstance(ing, ing.getName(), oc, hashingFactory);
 			ingredientObjects.add(obj);
 		}
 		return ingredientObjects;
 	}
 	
-	public List<ObjectInstance> getRecipeObjectInstanceList(Domain domain, Recipe recipe) {
+	public List<ObjectInstance> getRecipeObjectInstanceList(Domain domain, ObjectHashFactory hashingFactory, Recipe recipe) {
 		List<ObjectInstance> objs = new ArrayList<ObjectInstance>();
 		for (BakingSubgoal sg : recipe.getSubgoals()) {
 			IngredientRecipe ing = sg.getIngredient();
-			objs.addAll(this.getPotentialIngredientObjectInstanceList(domain, ing));
+			objs.addAll(this.getPotentialIngredientObjectInstanceList(domain, ing, hashingFactory));
 		}
 		return objs;
 	}
-	public List<ObjectInstance> getPotentialIngredientObjectInstanceList(Domain domain, IngredientRecipe tlIngredient) {
+	public List<ObjectInstance> getPotentialIngredientObjectInstanceList(Domain domain, IngredientRecipe tlIngredient, ObjectHashFactory hashingFactory) {
 		List<ObjectInstance> ingredientObjects = new ArrayList<ObjectInstance>();
 		List<IngredientRecipe> ingredients = this.getPotentialIngredientList(domain, tlIngredient);
 		for (IngredientRecipe ing : ingredients) {
 			ObjectClass oc = ing.isSimple() ? domain.getObjectClass(IngredientFactory.ClassNameSimple) : domain.getObjectClass(IngredientFactory.ClassNameComplex);
-			ObjectInstance obj = IngredientFactory.getNewIngredientInstance(ing, ing.getName(), oc);
+			ObjectInstance obj = IngredientFactory.getNewIngredientInstance(ing, ing.getName(), oc, hashingFactory);
 			obj = IngredientFactory.clearBooleanAttributes(obj);
 			obj = IngredientFactory.clearToolAttributes(obj);
 			ingredientObjects.add(obj);
@@ -176,41 +226,68 @@ public class Knowledgebase {
 		return ingredientObjects;
 	}
 	
-	
 	public List<IngredientRecipe> getPotentialIngredientList(Domain domain, IngredientRecipe tlIngredient) {
-		List<IngredientRecipe> ingredients = new ArrayList<IngredientRecipe>();
-		Collection<IngredientRecipe> allIngredients = this.allIngredients.values();
-		Set<String> necessaryTraits = tlIngredient.getNecessaryTraits().keySet();
-		for (String trait : necessaryTraits) {
-			for (IngredientRecipe ing : allIngredients) {
-				if (ing.getTraits().contains(trait)) {
-					if (ingredients.contains(ing)) {
-						IngredientRecipe i = ingredients.get(ingredients.indexOf(ing));
-						i.setUseCount(i.getUseCount()+1);
-					} else {
-						ingredients.add(ing);
-					}
-				}
+		Map<String, IngredientRecipe> ingredients = new HashMap<String, IngredientRecipe>();
+		
+		this.addPotentialIngredientList(domain, tlIngredient, ingredients);
+		
+		return new ArrayList<IngredientRecipe>(ingredients.values());
+	}
+	
+	public Set<List<IngredientRecipe>> getPotentialFirstLevelIngredients(Domain domain, IngredientRecipe ingredient) {
+		Set<List<IngredientRecipe>> matchedIngredients = this.findIngredientsMatchingIngredientTraits(ingredient);
+		List<IngredientRecipe> contents = ingredient.getContents();
+		for (IngredientRecipe subIngredient : contents) {
+			matchedIngredients.add(Arrays.asList(subIngredient));
+		}
+		return matchedIngredients;
+	}
+	
+	public void addPotentialIngredientList(Domain domain, IngredientRecipe tlIngredient,
+			Map<String, IngredientRecipe> ingredients) {
+		Set<List<IngredientRecipe>> matchedIngredients = this.findIngredientsMatchingIngredientTraits(tlIngredient);
+		for (List<IngredientRecipe> list : matchedIngredients) {
+			for (IngredientRecipe ingredient : list) {
+				ingredients.put(ingredient.getName(), ingredient);
 			}
 		}
+		
 		List<IngredientRecipe> contents = tlIngredient.getContents();
 		for (IngredientRecipe ingredient : contents) {
 			if (ingredient.isSimple()) {
-				if (ingredients.contains(ingredient)) {
-					IngredientRecipe ing = ingredients.get(ingredients.indexOf(ingredient));
-					ing.setUseCount(ing.getUseCount()+1);
+				IngredientRecipe foundIngredient = ingredients.get(ingredient.getName());
+				if (foundIngredient != null) {
+					foundIngredient.incrementUseCount();
 				} else {
-					ingredients.add(ingredient);
+					ingredients.put(ingredient.getName(), ingredient);
 				}
 			} else {
-				List<IngredientRecipe> toAdd = getPotentialIngredientList(domain, ingredient);
-				for (IngredientRecipe i : toAdd) {
-					if (ingredients.contains(i)) {
-						IngredientRecipe ing = ingredients.get(ingredients.indexOf(i));
-						ing.setUseCount(ing.getUseCount()+i.getUseCount());
-					} else {
-						ingredients.add(i);
-					}
+				this.addPotentialIngredientList(domain, ingredient, ingredients);
+			}
+		}
+		
+	}
+	
+	public Set<List<IngredientRecipe>> findIngredientsMatchingIngredientTraits(IngredientRecipe ingredient) {
+		Set<List<IngredientRecipe>> ingredientMatches = new HashSet<List<IngredientRecipe>>();
+		Set<String> necessaryTraits = ingredient.getNecessaryTraits().keySet();
+		for (String trait : necessaryTraits) {
+			List<IngredientRecipe> traitMatches = this.findIngredientWithTraits(trait);
+			ingredientMatches.add(traitMatches);
+		}
+		return ingredientMatches;
+	}
+
+	private List<IngredientRecipe> findIngredientWithTraits(String trait) {
+		
+		List<IngredientRecipe> ingredients = new ArrayList<IngredientRecipe>();
+		for (IngredientRecipe ing : this.allIngredients.values()) {
+			if (ing.getTraits().contains(trait)) {
+				if (ingredients.contains(ing)) {
+					IngredientRecipe i = ingredients.get(ingredients.indexOf(ing));
+					i.setUseCount(i.getUseCount()+1);
+				} else {
+					ingredients.add(ing);
 				}
 			}
 		}
@@ -318,11 +395,11 @@ public class Knowledgebase {
 		} else {
 			for (ObjectInstance ing : contents) {
 				String heatingInfo = IngredientFactory.getHeatingInfo(ing);
-				ObjectInstance newIng;
+				ObjectInstance newIng = ing;
 				if (heatingInfo != null) {
 					newIng = IngredientFactory.changeHeatedState(ing, heatingInfo);
 				}
-				newIng = IngredientFactory.heatIngredient(ing);
+				newIng = IngredientFactory.heatIngredient(newIng);
 				state = state.replaceObject(ing, newIng);
 			}
 		}
@@ -369,4 +446,107 @@ public class Knowledgebase {
 		}
 		return null;
 	}
+	
+	public List<IngredientRecipe> checkCombination(Collection<ObjectInstance> objects, State state) {
+		
+		// Set of possible ingredient matches
+		Set<List<IngredientRecipe>> ingredientPossibilities = new HashSet<List<IngredientRecipe>>();
+		
+		// Iterate through all objects and find the list of possible matches each object can be
+		for (ObjectInstance object : objects) {
+			List<IngredientRecipe> possibleIngredients = this.getMatchingIngredientRecipes(object, state);
+			ingredientPossibilities.add(possibleIngredients);
+		}
+		
+		// List of all combinations of ingredient matches
+		List<Set<IngredientRecipe>> allCombinations = this.generateAllCombinations(ingredientPossibilities);
+		
+		// List of possible generated combinations
+		List<IngredientRecipe> generatedCombinations = new ArrayList<IngredientRecipe>();
+		
+		// Iterate through all combinations, and check if those combinations generate anything
+		for (Set<IngredientRecipe> combination : allCombinations) {
+			IngredientRecipe generatedCombo = this.recipeCombinationLookup.get(combination);
+			if (generatedCombo != null) {
+				generatedCombinations.add(generatedCombo);
+			}
+		}
+		
+		// Return the list of generated items. Ideally this should be only one item, but if it makes
+		// more than one, then the logic calling this method should handle that.
+		return generatedCombinations;
+	}
+	
+	// Finds all possible matches for this ObjectInstance, whether it is a named object or a arbitrary object
+	private List<IngredientRecipe> getMatchingIngredientRecipes(ObjectInstance object, State state) {
+		Set<IngredientRecipe> ingredientMatches = new HashSet<IngredientRecipe>();
+		
+		for (IngredientRecipe ingredient : this.allIngredients.values()) {
+			if (ingredient.isMatching(object, state)) {
+				ingredientMatches.add(ingredient);
+			}
+		}
+		
+		for (Recipe recipe : this.recipes) { 
+			this.getMatchingIngredientRecipes(object, state, recipe.topLevelIngredient, ingredientMatches);
+		}
+		
+		return new ArrayList<IngredientRecipe>(ingredientMatches);
+	}
+	
+	// Finds possible matches, recursive edition
+	private void getMatchingIngredientRecipes(ObjectInstance object, State state, IngredientRecipe ingredient, Set<IngredientRecipe> matching) {
+		if (ingredient.isMatching(object, state)) {
+			matching.add(ingredient);
+		} else if (ingredient.isSimple()){
+			return;
+		} else {
+			List<IngredientRecipe> contents = ingredient.getContents();
+			
+			for (IngredientRecipe subIngredient : ingredient.getContents()) {
+				this.getMatchingIngredientRecipes(object, state, subIngredient, matching);
+			}
+		}
+	}
+	
+	// This generates all possible combinations given the different possibilities of each ingredient recipe
+	private List<Set<IngredientRecipe>> generateAllCombinations(Set<List<IngredientRecipe>> possibleCombinations) {
+		// The list of generatedCombinations
+		List<Set<IngredientRecipe>> generatedCombinations = new ArrayList<Set<IngredientRecipe>>();
+		Set<IngredientRecipe> initialSet = new HashSet<IngredientRecipe>();
+		generatedCombinations.add(initialSet);
+		
+		// A list of lists, that are copied for each new ingredient list with each successive ingredient
+		List<List<Set<IngredientRecipe>>> copiedCombinations = new ArrayList<List<Set<IngredientRecipe>>>();
+		
+		// For each list in the possible combinations, we need to tack on all their possible combos
+		for (List<IngredientRecipe> list : possibleCombinations) {
+			copiedCombinations.clear();
+			
+			// Clear previous list, and fill this one with n copies of the current generatedCombinations
+			for (int i = 0; i < list.size(); i++) {
+				copiedCombinations.add(new ArrayList<Set<IngredientRecipe>>(generatedCombinations));
+			}
+			
+			// For each item in this ingredient list, add it to one of the combinations that we just copied
+			for (int i = 0; i < list.size(); i++) {
+				IngredientRecipe ingredient = list.get(i);
+				List<Set<IngredientRecipe>> copiedCombination = copiedCombinations.get(i);
+				for (Set<IngredientRecipe> combination : copiedCombination) {
+					combination.add(ingredient);
+				}
+			}
+			
+			// Clear the current generated combinations
+			generatedCombinations.clear();
+			
+			// Flatten the copiedCombinations into the generatedCombinations
+			for (List<Set<IngredientRecipe>> combination : copiedCombinations) {
+				generatedCombinations.addAll(combination);
+			}
+		}
+		
+		return generatedCombinations;
+	}
+	
 }

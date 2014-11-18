@@ -17,7 +17,7 @@ public class RecipeAgentSpecificMakeSpanRewardFunction implements RewardFunction
 	public RecipeAgentSpecificMakeSpanRewardFunction(String agent) {
 		this.agent = agent;
 		this.costMe = -2;
-		this.costYou = -4;
+		this.costYou = -1;
 	}
 	
 	public RecipeAgentSpecificMakeSpanRewardFunction(String agent, double costMe, double costYou) {
@@ -38,7 +38,7 @@ public class RecipeAgentSpecificMakeSpanRewardFunction implements RewardFunction
 			else if (!(a.action instanceof WaitAction)){
 				return -0.5;
 			} else {
-				return 0;
+				return -0.5;
 			}
 		}
 		else {

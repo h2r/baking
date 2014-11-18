@@ -2,6 +2,7 @@ package edu.brown.cs.h2r.baking.PropositionalFunctions;
 
 import java.util.Map.Entry;
 
+import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
@@ -17,6 +18,10 @@ public class AllowMixing extends BakingPropositionalFunction {
 
 	public AllowMixing(String name, Domain domain, IngredientRecipe ingredient) {
 		super(name, domain, new String[]{AgentFactory.ClassName, ContainerFactory.ClassName, ToolFactory.ClassName}, ingredient) ;
+	}
+	
+	public BakingPropositionalFunction updatePF(Domain newDomain, IngredientRecipe ingredient, BakingSubgoal subgoal) {
+		return new AllowMixing(this.name, newDomain, ingredient);
 	}
 	@Override
 	public boolean isTrue(State state, String[] params) {
@@ -59,7 +64,7 @@ public class AllowMixing extends BakingPropositionalFunction {
 					return false;
 				}
 			}
-			if (!ingredient.AttributesMatch(ingObj)) {
+			if (!ingredient.getName().equals(ingObj.getName())) {
 				return false;
 			}
 		}

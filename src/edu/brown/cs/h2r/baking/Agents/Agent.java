@@ -7,7 +7,7 @@ import burlap.oomdp.singleagent.GroundedAction;
 
 public interface Agent {
 	
-	void addObservation(State state, GroundedAction action);
+	void addObservation(State state);
 	String getAgentName();
 	ObjectInstance getAgentObject();
 	void setInitialState(State state);

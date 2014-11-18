@@ -4,6 +4,7 @@ import java.util.List;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
+import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
@@ -14,6 +15,13 @@ public class RecipeFinished extends BakingPropositionalFunction {
 	
 	public RecipeFinished(String name, Domain domain, IngredientRecipe ingredient) {
 		super(name, domain, new String[] {AgentFactory.ClassName}, ingredient);
+	}
+	
+	public BakingPropositionalFunction updatePF(Domain newDomain, IngredientRecipe ingredient, BakingSubgoal subgoal) {
+		if (newDomain == null || ingredient == null || subgoal == null) {
+			return null;
+		}
+		return new RecipeFinished(this.name, newDomain, ingredient);
 	}
 
 	@Override
@@ -27,7 +35,7 @@ public class RecipeFinished extends BakingPropositionalFunction {
 		List<ObjectInstance> ingredients = state.getObjectsOfTrueClass(IngredientFactory.ClassNameComplex);
 		ingredients.addAll(state.getObjectsOfTrueClass(IngredientFactory.ClassNameSimple));
 		for (ObjectInstance ingredient: ingredients) {
-			if (Recipe.isSuccess(state, this.topLevelIngredient, ingredient)) {
+			if (this.topLevelIngredient.isMatching(ingredient, state)) {
 				return true;
 			}
 		}

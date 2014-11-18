@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import burlap.behavior.statehashing.ObjectHashFactory;
 import burlap.oomdp.core.Attribute;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
@@ -19,6 +20,7 @@ public class ContainerFactory {
 	private static final String attributeMixing = "mixing";
 	private static final String attributeHeating = "heating";
 	private static final String attributeReceiving = "receiving";
+	private static final String attributePouring = "pouring";
 	private static final String attributeContains = "contains";
 	private static final String attributeGreased = "greased";
 	private static final String attributeSpace = "space";
@@ -29,6 +31,7 @@ public class ContainerFactory {
 	public static final int MIXING = 2;
 	public static final int HEATING = 4;
 	public static final int RECEIVING = 8;
+	public static final int POURING = 16;
 	
 	public static ObjectClass createObjectClass(Domain domain)
 	{
@@ -49,6 +52,10 @@ public class ContainerFactory {
 				new Attribute(domain, ContainerFactory.attributeReceiving, Attribute.AttributeType.BOOLEAN);
 		objectClass.addAttribute(receivingAttribute);
 		
+		Attribute pouringAttribute = 
+				new Attribute(domain, ContainerFactory.attributePouring, Attribute.AttributeType.BOOLEAN);
+		objectClass.addAttribute(pouringAttribute);
+		
 		Attribute greasedAttribute = 
 				new Attribute(domain, ContainerFactory.attributeGreased, Attribute.AttributeType.BOOLEAN);
 		objectClass.addAttribute(greasedAttribute);
@@ -68,8 +75,8 @@ public class ContainerFactory {
 	}
 	
 	public static ObjectInstance getNewObjectInstance(ObjectClass containerClass, String name, 
-			int attributes, Collection<String> contents, String containerSpace) {
-		ObjectInstance newInstance = new ObjectInstance(containerClass, name);
+			int attributes, Collection<String> contents, String containerSpace, ObjectHashFactory hashingFactory) {
+		ObjectInstance newInstance = new ObjectInstance(containerClass, name, hashingFactory);
 		newInstance = ContainerFactory.changeAttributes(newInstance, attributes);
 		newInstance = newInstance.changeValue(ContainerFactory.attributeGreased, 0);
 		if (contents != null)
@@ -84,72 +91,78 @@ public class ContainerFactory {
 	}
 	
 	public static ObjectInstance getNewObjectInstance(Domain domain, String name, Boolean mixing, Boolean heating, Boolean baking,
-			Boolean receiving, List<String> contents, String containerSpace) {
+			Boolean receiving, Boolean pouring, List<String> contents, String containerSpace, ObjectHashFactory hashingFactory) {
 		return ContainerFactory.getNewObjectInstance(
 				domain.getObjectClass(ContainerFactory.ClassName), name, generateAttributeNumber(baking, heating, mixing, 
-						receiving), contents, containerSpace);
+						receiving, pouring), contents, containerSpace, hashingFactory);
 	}
 	
 	public static ObjectInstance getNewMixingContainerObjectInstance(ObjectClass containerClass, 
-			String name, List<String> contents, String containerSpace) {
+			String name, List<String> contents, String containerSpace, ObjectHashFactory hashingFactory) {
 		return ContainerFactory.getNewObjectInstance(containerClass, name, ContainerFactory.MIXING|
-				ContainerFactory.RECEIVING, contents, containerSpace);
+				ContainerFactory.RECEIVING|ContainerFactory.POURING, contents, containerSpace, hashingFactory);
 	}
 	
 	public static ObjectInstance getNewMixingContainerObjectInstance(Domain domain, 
-			String name, List<String> contents, String containerSpace) {
+			String name, List<String> contents, String containerSpace, ObjectHashFactory hashingFactory) {
 		return ContainerFactory.getNewObjectInstance(
 				domain.getObjectClass(ContainerFactory.ClassName), name, ContainerFactory.MIXING|
-				ContainerFactory.RECEIVING, contents, containerSpace);
+				ContainerFactory.RECEIVING|ContainerFactory.POURING, contents, containerSpace, hashingFactory);
 	}
 	
 	public static ObjectInstance getNewHeatingContainerObjectInstance(ObjectClass containerClass, 
-			String name, List<String> contents, String containerSpace) {
+			String name, List<String> contents, String containerSpace, ObjectHashFactory hashingFactory) {
 		return ContainerFactory.getNewObjectInstance(containerClass, name,
-				ContainerFactory.HEATING|ContainerFactory.RECEIVING, contents, containerSpace);
+				ContainerFactory.HEATING|ContainerFactory.RECEIVING|ContainerFactory.POURING, contents, containerSpace, hashingFactory);
 	}
 	
 	public static ObjectInstance getNewHeatingContainerObjectInstance(Domain domain, 
-			String name, List<String> contents, String containerSpace) {
+			String name, List<String> contents, String containerSpace, ObjectHashFactory hashingFactory) {
 		return ContainerFactory.getNewObjectInstance(domain.getObjectClass(ContainerFactory.ClassName), 
-				name, ContainerFactory.HEATING|ContainerFactory.RECEIVING, 
-				contents, containerSpace);
+				name, ContainerFactory.HEATING|ContainerFactory.RECEIVING|ContainerFactory.POURING, 
+				contents, containerSpace, hashingFactory);
 	}
 	
 	public static ObjectInstance getNewBakingContainerObjectInstance(ObjectClass containerClass, 
-			String name, List<String> contents, String containerSpace) {
+			String name, List<String> contents, String containerSpace, ObjectHashFactory hashingFactory) {
 		return ContainerFactory.getNewObjectInstance(containerClass, name,
-				ContainerFactory.BAKING|ContainerFactory.RECEIVING, contents, containerSpace);
+				ContainerFactory.BAKING|ContainerFactory.RECEIVING|ContainerFactory.POURING, contents, containerSpace, hashingFactory);
 	}
 	
 	public static ObjectInstance getNewBakingContainerObjectInstance(Domain domain, 
-			String name, List<String> contents, String containerSpace) {
+			String name, List<String> contents, String containerSpace, ObjectHashFactory hashingFactory) {
 		return ContainerFactory.getNewObjectInstance(domain.getObjectClass(ContainerFactory.ClassName), 
-				name, ContainerFactory.BAKING|ContainerFactory.RECEIVING, 
-				contents, containerSpace);
+				name, ContainerFactory.BAKING|ContainerFactory.RECEIVING|ContainerFactory.POURING, 
+				contents, containerSpace, hashingFactory);
 	}
 	
 	public static ObjectInstance getNewIngredientContainerObjectInstance(ObjectClass containerClass, 
-			String name, String ingredient, String containerSpace) {
-		return ContainerFactory.getNewObjectInstance(containerClass, name, ContainerFactory.NO_ATTRIBUTES, Arrays.asList(ingredient), containerSpace);
+			String name, String ingredient, String containerSpace, ObjectHashFactory hashingFactory) {
+		return ContainerFactory.getNewObjectInstance(containerClass, name, ContainerFactory.POURING, Arrays.asList(ingredient), containerSpace, hashingFactory);
 	}
 	
 	public static ObjectInstance getNewIngredientContainerObjectInstance(Domain domain, 
-			String name, String ingredient, String containerSpace) {
+			String name, String ingredient, String containerSpace, ObjectHashFactory hashingFactory) {
 		return ContainerFactory.getNewObjectInstance(domain.getObjectClass(ContainerFactory.ClassName), 
-				name, ContainerFactory.NO_ATTRIBUTES, Arrays.asList(ingredient), containerSpace);
+				name, ContainerFactory.POURING, Arrays.asList(ingredient), containerSpace, hashingFactory);
+	}
+	
+	public static ObjectInstance getNewTrashContainerObjectInstance(Domain domain,
+			String name, String containerSpace, ObjectHashFactory hashingFactory) {
+		return ContainerFactory.getNewObjectInstance(domain.getObjectClass(ContainerFactory.ClassName), 
+				name, ContainerFactory.RECEIVING, null, containerSpace, hashingFactory);
 	}
 	
 	public static ObjectInstance getNewFakeToolContainerObjectInstance(ObjectClass containerClass, 
-			String name, Collection<String> contents, String containerSpace) {
+			String name, Collection<String> contents, String containerSpace, ObjectHashFactory hashingFactory) {
 		return ContainerFactory.getNewObjectInstance(containerClass, name,
-				ContainerFactory.NO_ATTRIBUTES, contents, containerSpace);
+				ContainerFactory.NO_ATTRIBUTES, contents, containerSpace, hashingFactory);
 	}
 	
 	public static ObjectInstance getNewFakeToolContainerObjectInstance(Domain domain, String name,
-			Collection<String> contents, String containerSpace) {
+			Collection<String> contents, String containerSpace, ObjectHashFactory hashingFactory) {
 		return ContainerFactory.getNewObjectInstance(domain.getObjectClass(ContainerFactory.ClassName), 
-				name, ContainerFactory.NO_ATTRIBUTES, contents, containerSpace);
+				name, ContainerFactory.NO_ATTRIBUTES, contents, containerSpace, hashingFactory);
 	}
 
 	public static ObjectInstance addIngredient(ObjectInstance container, String ingredient) {
@@ -182,9 +195,11 @@ public class ContainerFactory {
 	}
 	
 	public static Boolean isReceivingContainer(ObjectInstance container) {
-		int rec = container.getDiscValForAttribute(ContainerFactory.attributeReceiving);
-		Boolean isReceiving = (rec == 1);
-		return isReceiving;
+		return container.getBooleanValue(ContainerFactory.attributeReceiving);
+	}
+	
+	public static Boolean isPouringContainer(ObjectInstance container) {
+		return container.getBooleanValue(ContainerFactory.attributePouring);
 	}
 	
 	public static Boolean isGreasedContainer(ObjectInstance container) {
@@ -245,20 +260,22 @@ public class ContainerFactory {
 	}
 	
 	public static ObjectInstance changeAttributes(ObjectInstance object, int attributes) {
-		object = object.changeValue(ContainerFactory.attributeBaking, ((attributes & ContainerFactory.BAKING) == ContainerFactory.BAKING) ? 1: 0);
-		object = object.changeValue(ContainerFactory.attributeMixing, ((attributes & ContainerFactory.MIXING) == ContainerFactory.MIXING) ? 1: 0);
-		object = object.changeValue(ContainerFactory.attributeHeating, ((attributes & ContainerFactory.HEATING) == ContainerFactory.HEATING) ? 1: 0);
-		object = object.changeValue(ContainerFactory.attributeReceiving, ((attributes & ContainerFactory.RECEIVING) == ContainerFactory.RECEIVING) ? 1: 0);
+		object = object.changeValue(ContainerFactory.attributeBaking, (attributes & ContainerFactory.BAKING) != 0);
+		object = object.changeValue(ContainerFactory.attributeMixing, (attributes & ContainerFactory.MIXING) != 0);
+		object = object.changeValue(ContainerFactory.attributeHeating, (attributes & ContainerFactory.HEATING) != 0);
+		object = object.changeValue(ContainerFactory.attributeReceiving, (attributes & ContainerFactory.RECEIVING) != 0);
+		object = object.changeValue(ContainerFactory.attributePouring, (attributes & ContainerFactory.POURING) != 0);
 		object = object.changeValue(ContainerFactory.attributeUsed, false);
 		return object;
 	}
 	
-	public static int generateAttributeNumber(Boolean baking, Boolean mixing, Boolean heating, Boolean receiving) {
+	public static int generateAttributeNumber(Boolean baking, Boolean mixing, Boolean heating, Boolean receiving, Boolean pouring) {
 		int baking_int = baking ? ContainerFactory.BAKING : 0;
 		int mixing_int = mixing ? ContainerFactory.MIXING : 0;
 		int heating_int = heating ? ContainerFactory.HEATING : 0;
 		int receiving_int = receiving ? ContainerFactory.RECEIVING: 0;
-		return baking_int|mixing_int|heating_int|receiving_int;
+		int pouring_int = pouring ? ContainerFactory.POURING: 0;
+		return baking_int|mixing_int|heating_int|receiving_int|pouring_int;
 	}
 	
 	public static boolean hasABakedContent(State state, ObjectInstance container) {

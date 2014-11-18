@@ -4,6 +4,7 @@ package edu.brown.cs.h2r.baking.PropositionalFunctions;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
+import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
@@ -14,6 +15,11 @@ public class ContainersCleaned extends BakingPropositionalFunction {
 	public ContainersCleaned(String name, Domain domain, IngredientRecipe ingredient) {
 		super(name, domain, new String[]{}, ingredient) ;
 	}
+	
+	public BakingPropositionalFunction updatePF(Domain newDomain, IngredientRecipe ingredient, BakingSubgoal subgoal) {
+		return new ContainersCleaned(this.name, newDomain, ingredient);
+	}
+	
 	@Override
 	public boolean isTrue(State state, String[] params) {
 		for (ObjectInstance container : state.getObjectsOfTrueClass(ContainerFactory.ClassName)) {

@@ -33,10 +33,11 @@ public class AdaptiveByFlow extends AdaptiveAgent implements Agent {
 	@Override
 	protected final List<PolicyProbability> getPolicyDistribution(State currentState) {
 		State lastObservedState = this.stateHistory.get(this.stateHistory.size() - 1);
-		
 		List<PolicyProbability> policyDistribution = 
-				prediction.getPolicyDistributionFromStatePair(currentState, lastObservedState, 
-						MAX_ALPHA, null, AdaptiveByFlow.hashingFactory, 0);
+				prediction.getPolicyDistributionFromStatePair(lastObservedState, currentState, 
+						MAX_ALPHA, null, null, AdaptiveByFlow.hashingFactory, 0);
+		this.stateHistory.add(currentState);
+		
 		return policyDistribution;
 	}
 
@@ -64,7 +65,6 @@ public class AdaptiveByFlow extends AdaptiveAgent implements Agent {
 		Collections.shuffle(bestPolicies);
 		PolicyProbability bestPolicy = bestPolicies.get(0);
 		System.out.println("Inferred subgoal " + bestPolicy.toString());
-		AgentHelper.setSubgoal(bestPolicy.getPolicyDomain());
 		TerminalFunction terminalFunction = bestPolicy.getPolicyDomain().getTerminalFunction();
 		//if (terminalFunction.isTerminal(state)) {
 		//	return null;
@@ -84,6 +84,9 @@ public class AdaptiveByFlow extends AdaptiveAgent implements Agent {
 		AbstractGroundedAction action = policy.getAction(state);
 		while (!isValidAction) {
 			if (Thread.interrupted()) {
+				return null;
+			}
+			if (action == null){
 				return null;
 			}
 			state = action.executeIn(state);

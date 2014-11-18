@@ -49,39 +49,39 @@ public class TwoPlayerKitchen implements DomainGenerator {
 	
 	private State getInitialState() {
 		State state = new State();
-		Action mix = new MixAction(domain, recipe.topLevelIngredient);
+		Action mix = new MixAction(domain);
 		//Action bake = new BakeAction(domain);
-		Action pour = new PourAction(domain, recipe.topLevelIngredient);
-		Action move = new MoveAction(domain, recipe.topLevelIngredient);
-		state.addObject(SpaceFactory.getNewBakingSpaceObjectInstance(this.domain, "Oven", null, ""));
-		state.addObject(SpaceFactory.getNewHeatingSpaceObjectInstance(this.domain, "Stove Top", null, ""));
+		Action pour = new PourAction(domain);
+		Action move = new MoveAction(domain);
+		//state.addObject(SpaceFactory.getNewBakingSpaceObjectInstance(this.domain, "Oven", null, ""));
+		//state.addObject(SpaceFactory.getNewHeatingSpaceObjectInstance(this.domain, "Stove Top", null, ""));
 		
 		
 		List<String> mixingContainers = Arrays.asList("Large Bowl");
 		for (String container : mixingContainers) { 
-			state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "counter"));
+			//state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "counter"));
 		}
 		
 		List<String> heatingContainers = Arrays.asList("Large Pot", "Large Saucepan");
 		for (String container : heatingContainers) { 
-			state.addObject(ContainerFactory.getNewHeatingContainerObjectInstance(domain, container, null, "counter"));
+			//state.addObject(ContainerFactory.getNewHeatingContainerObjectInstance(domain, container, null, "counter"));
 		}
 		
 		List<String> bakingContainers = Arrays.asList("Baking Dish");
 		for (String container : bakingContainers) { 
-			state.addObject(ContainerFactory.getNewHeatingContainerObjectInstance(domain, container, null, "counter"));
+			//state.addObject(ContainerFactory.getNewHeatingContainerObjectInstance(domain, container, null, "counter"));
 		}
 		
 		List<String> containers = new ArrayList<String>();
 		containers.addAll(mixingContainers);
 		containers.addAll(heatingContainers);
 		containers.addAll(bakingContainers);
-		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter", containers, "human"));
+		//state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter", containers, "human"));
 		
 		
 		
-		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
-		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "shelf", null, null));
+		//state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
+		//state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "shelf", null, null));
 		
 		
 		return state;

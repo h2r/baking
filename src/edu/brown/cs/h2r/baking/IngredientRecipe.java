@@ -2,18 +2,20 @@ package edu.brown.cs.h2r.baking;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.HashMap;
 import java.util.Set;
 
 import burlap.oomdp.core.ObjectInstance;
+import burlap.oomdp.core.State;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 
 
 public class IngredientRecipe {
 	
+	private final Recipe recipe;
 	private Boolean mixed;
 	private Boolean heated;
 	private Boolean baked;
@@ -31,7 +33,7 @@ public class IngredientRecipe {
 	private int useCount;
 	private AbstractMap<String, IngredientRecipe> necessaryTraits;
 	
-	public IngredientRecipe(String name, int attributes) {
+	public IngredientRecipe(String name, int attributes, Recipe recipe) {
 		this.name = name;
 		this.setAttributes(attributes);
 		this.recipeBaked = false;
@@ -41,24 +43,33 @@ public class IngredientRecipe {
 		this.traits = new HashSet<String>();
 		this.toolTraits = new HashSet<String>();
 		this.toolAttributes = new HashSet<String>();
+		this.recipe = recipe;
 	}
 	
-	public IngredientRecipe(String name, int attributes, Boolean swapped, List<IngredientRecipe> contents) {
+	public IngredientRecipe(String name, int attributes, Recipe recipe, Boolean swapped, List<IngredientRecipe> contents) {
 		this.name = name;
 		this.setAttributes(attributes);
 		this.recipeBaked = false;
 		this.recipeHeated = false;
 		this.contents = contents;
+		
+		for (IngredientRecipe ingredient : contents) {
+			if (ingredient == null) {
+				System.err.println("Ingredient is null");
+			}
+		}
+		
 		this.swapped = swapped;
 		this.useCount = 1;
 		this.traits = new HashSet<String>();
 		this.necessaryTraits = new HashMap<String, IngredientRecipe>();
 		this.toolTraits = new HashSet<String>();
 		this.toolAttributes = new HashSet<String>();
+		this.recipe = recipe;
 	}
 	
 	//Copy Constructor
-	public IngredientRecipe(String name, int attributes, boolean recipeBaked, boolean recipeHeated, List<IngredientRecipe> contents,
+	public IngredientRecipe(String name, int attributes, Recipe recipe, boolean recipeBaked, boolean recipeHeated, List<IngredientRecipe> contents,
 			boolean swapped, int useCount, String heatingInfo, String heatedState, Set<String> traits, AbstractMap<String, 
 			IngredientRecipe> necessaryTraits, Set<String> toolTraits, Set<String> toolAttributes) {
 		this.name = name;
@@ -66,6 +77,14 @@ public class IngredientRecipe {
 		this.recipeBaked = recipeBaked;
 		this.recipeHeated = recipeHeated;
 		this.contents = new ArrayList<IngredientRecipe>(contents);
+		
+		for (IngredientRecipe ingredient : contents) {
+			if (ingredient == null) {
+				System.err.println("Ingredient is null");
+			}
+		}
+		
+		
 		this.swapped = swapped;
 		this.useCount = useCount;
 		this.heatingInformation = heatingInfo;
@@ -74,8 +93,13 @@ public class IngredientRecipe {
 		this.necessaryTraits = new HashMap<String, IngredientRecipe>(necessaryTraits);
 		this.toolTraits = new HashSet<String>(toolTraits);
 		this.toolAttributes = new HashSet<String>(toolAttributes);
+		this.recipe = recipe;
 	}
 	
+	@Override 
+	public String toString() {
+		return this.name;
+	}
 	public Boolean isSimple() {
 		if (this.necessaryTraits == null || this.necessaryTraits.size() == 0) {
 			return this.contents == null || this.contents.size() == 0;
@@ -129,6 +153,10 @@ public class IngredientRecipe {
 	
 	public void setUseCount(int count) {
 		this.useCount = count;
+	}
+	
+	public void incrementUseCount() {
+		this.useCount++;
 	}
 	
 	public void addToolTraits(Collection<String> traits) {
@@ -234,12 +262,12 @@ public class IngredientRecipe {
 	}
 	
 	public void addNecessaryTrait(String trait, int attributes) {
-		IngredientRecipe ing = new IngredientRecipe(trait, attributes);
+		IngredientRecipe ing = new IngredientRecipe(trait, attributes, this.recipe);
 		this.necessaryTraits.put(trait, ing);
 	}
 	
 	public void addNecessaryTrait(String trait, int attributes, String heatedState) {
-		IngredientRecipe ing = new IngredientRecipe(trait, attributes);
+		IngredientRecipe ing = new IngredientRecipe(trait, attributes, this.recipe);
 		ing.setHeatedState(heatedState);
 		this.necessaryTraits.put(trait, ing);
 	}
@@ -275,6 +303,14 @@ public class IngredientRecipe {
 		return traits;
 	}
 	
+	public boolean attributesMatch(ObjectInstance object) {
+		int thisAttributes = this.getAttributeNumber();
+		int objectAttributes = IngredientFactory.getAttributeNumber(object);
+		return (thisAttributes == objectAttributes);
+		
+	}
+	
+	/*
 	public boolean AttributesMatch(ObjectInstance object) {
 		if (IngredientFactory.isBakedIngredient(object) != this.getBaked()) {
 			return false;
@@ -302,7 +338,7 @@ public class IngredientRecipe {
 			return false;
 		}
 		return this.toolAttributesMatch(object);
-	}
+	}*/
 	
 	public boolean toolAttributesMatch(ObjectInstance object) {
 		Set<String> ingToolAttributes = this.getToolAttributes();
@@ -326,7 +362,7 @@ public class IngredientRecipe {
 		if (!this.isSimple()) {
 			contents.addAll(this.getContents());
 		}
-		IngredientRecipe newIng = new IngredientRecipe(this.getName(), attributes, this.getSwapped(),
+		IngredientRecipe newIng = new IngredientRecipe(this.getName(), attributes, this.recipe, this.getSwapped(),
 				contents);
 		newIng.addNecessaryTraits(this.getNecessaryTraits());
 		return newIng;
@@ -345,7 +381,7 @@ public class IngredientRecipe {
 		if (!this.isSimple()) {
 			contents.addAll(this.getContents());
 		}
-		IngredientRecipe newIng = new IngredientRecipe(this.getName(), attributes, this.getSwapped(),
+		IngredientRecipe newIng = new IngredientRecipe(this.getName(), attributes, this.recipe, this.getSwapped(),
 				contents);
 		newIng.addNecessaryTraits(this.getNecessaryTraits());
 		return newIng;
@@ -364,7 +400,7 @@ public class IngredientRecipe {
 		return mixedInt|heatedInt|bakedInt;
 	}
 	
-	public int generateAttributeNumber() {
+	public int getAttributeNumber() {
 		int mixedInt = this.getMixed() ? Recipe.MIXED : 0;
 		int heatedInt = this.getHeated() ? Recipe.HEATED : 0;
 		int bakedInt = this.getBaked() ? Recipe.BAKED : 0;
@@ -429,7 +465,7 @@ public class IngredientRecipe {
 	}
 	
 	public IngredientRecipe getCopyWithNewName(String newName) {
-		int attributes = this.generateAttributeNumber();
+		int attributes = this.getAttributeNumber();
 		boolean recipeBaked = this.getRecipeBaked();
 		boolean recipeHeated = this.getRecipeHeated();
 		List<IngredientRecipe> contents = this.getContents();
@@ -441,7 +477,8 @@ public class IngredientRecipe {
 		AbstractMap<String, IngredientRecipe> necessaryTraits = this.getNecessaryTraits();
 		Set<String> toolTraits = this.getToolTraits();
 		Set<String> toolAttributes = this.getToolAttributes();
-		return new IngredientRecipe(newName, attributes, recipeBaked, recipeHeated, contents,
+		
+		return new IngredientRecipe(newName, attributes, this.recipe, recipeBaked, recipeHeated, contents,
 				swapped, useCount, heatingInfo, heatedState, traits, necessaryTraits, toolTraits, toolAttributes);
 	}
 	
@@ -484,5 +521,76 @@ public class IngredientRecipe {
 	
 	public void setHeatedState(String heatedState) {
 		this.heatedState = heatedState;
+	}
+	
+	// Check if this object in state matches this ingredient recipe
+	public boolean isMatching(ObjectInstance object, State state) {
+		return this.isSameItem(object, state);
+		
+		// If the name doesn't match, have to compare the attributes and contents
+		//if (object.getName() != this.name) {
+			
+		//}
+		
+		// Otherwise, just check that the attributes match
+		//return this.getAttributeNumber() == IngredientFactory.getAttributeNumber(object);
+	}
+	
+	// Checks if these objects are the same, even if they have a different name
+	public boolean isSameItem(ObjectInstance object, State state) {
+
+		if (object.getName().equals(this.name)) {
+			System.out.print("");
+		}
+		// If the attributes don't match, then not there yet
+		if (!this.attributesMatch(object)) {
+			return false;
+		}
+		
+		// If this is a simple ingredient, then the names must match. Yes this is called twice if going through
+		// isMatching, astute observer
+		if (IngredientFactory.isSimple(object)) {
+			return this.isSimple() && (object.getName().equals(this.name));
+		}
+		
+		// Now we check the subIngredients
+		Set<String> contentNames = IngredientFactory.getContentsForIngredient(object);
+		List<IngredientRecipe> subIngredients = new ArrayList<IngredientRecipe>(this.getContents());
+		
+		// For each item contained within the object
+		for (String subIngredientName : contentNames) {
+			
+			// Retrieve object
+			ObjectInstance subIngredient = state.getObject(subIngredientName);
+			int indexToRemove = -1;
+			
+			// Find this object in the recipe
+			for (int i = 0; i < subIngredients.size(); i++) {
+				
+				// Check if it matches
+				if (subIngredients.get(i).isMatching(subIngredient, state)) {
+					indexToRemove = i;
+					break;
+				}
+			}
+			
+			// If it wasn't found, then we can stop
+			if (indexToRemove == -1) {
+				return false;
+			} else {
+				// Remove it from the list, and continue on
+				subIngredients.remove(indexToRemove);
+			}
+		}
+		
+		// If we didn't find a one-to-one match, then they are not the same
+		if (subIngredients.size() != 0) {
+			return false;
+		}
+		
+		
+		return true;
+		
+		
 	}
 }

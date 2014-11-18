@@ -51,8 +51,9 @@ public class BasicKitchen implements DomainGenerator {
 	
 	public BasicKitchen(Recipe recipe) {
 		this.recipe = recipe;
-		knowledgebase = new Knowledgebase();
 		this.stateHashFactory = new NameDependentStateHashFactory();
+		knowledgebase = Knowledgebase.getKnowledgebase(domain);
+		
 	}
 	
 	public State getCurrentState() {
@@ -79,47 +80,47 @@ public class BasicKitchen implements DomainGenerator {
 		domain.addObjectClass(AgentFactory.getObjectClass(domain));
 		domain.addObjectClass(MakeSpanFactory.getObjectClass(domain));
 		
-		Action mix = new MixAction(domain, recipe.topLevelIngredient);
-		Action pour = new PourAction(domain, recipe.topLevelIngredient);
-		Action move = new MoveAction(domain, recipe.topLevelIngredient);
-		Action peel = new PeelAction(domain, recipe.topLevelIngredient);
+		Action mix = new MixAction(domain);
+		Action pour = new PourAction(domain);
+		Action move = new MoveAction(domain);
+		Action peel = new PeelAction(domain);
 		Action turnOnOff = new SwitchAction(domain);
-		Action use = new UseAction(domain, recipe.topLevelIngredient);
+		Action use = new UseAction(domain);
 		return domain;
 	}
 	
 	private State getInitialState() {
 		State state = new State();
-		state.addObject(SpaceFactory.getNewBakingSpaceObjectInstance(this.domain, SpaceFactory.SPACE_OVEN, null, ""));
-		state.addObject(SpaceFactory.getNewHeatingSpaceObjectInstance(this.domain, SpaceFactory.SPACE_STOVE, null, ""));
+		//state.addObject(SpaceFactory.getNewBakingSpaceObjectInstance(this.domain, SpaceFactory.SPACE_OVEN, null, ""));
+		//state.addObject(SpaceFactory.getNewHeatingSpaceObjectInstance(this.domain, SpaceFactory.SPACE_STOVE, null, ""));
 		
 		List<String> mixingContainers = Arrays.asList("Large_Bowl");
 		for (String container : mixingContainers) { 
-			state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, SpaceFactory.SPACE_COUNTER));
+			state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, SpaceFactory.SPACE_COUNTER, null));
 		}
 		
 		List<String> heatingContainers = Arrays.asList("Large_Pot", "Large_Saucepan");
 		for (String container : heatingContainers) { 
-			state.addObject(ContainerFactory.getNewHeatingContainerObjectInstance(domain, container, null, SpaceFactory.SPACE_COUNTER));
+			state.addObject(ContainerFactory.getNewHeatingContainerObjectInstance(domain, container, null, SpaceFactory.SPACE_COUNTER, null));
 		}
 		
 		List<String> bakingContainers = Arrays.asList("Baking_Dish");
 		for (String container : bakingContainers) { 
-			state.addObject(ContainerFactory.getNewBakingContainerObjectInstance(domain, container, null, SpaceFactory.SPACE_COUNTER));
+			state.addObject(ContainerFactory.getNewBakingContainerObjectInstance(domain, container, null, SpaceFactory.SPACE_COUNTER, null));
 		}
 		
 		List<String> containers = new ArrayList<String>();
 		containers.addAll(mixingContainers);
 		containers.addAll(heatingContainers);
 		containers.addAll(bakingContainers);
-		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, SpaceFactory.SPACE_COUNTER, containers, "human"));
-		state.addObject(SpaceFactory.getNewObjectInstance(domain, "shelf", SpaceFactory.NO_ATTRIBUTES, null, ""));
+		//state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, SpaceFactory.SPACE_COUNTER, containers, "human"));
+		//state.addObject(SpaceFactory.getNewObjectInstance(domain, "shelf", SpaceFactory.NO_ATTRIBUTES, null, ""));
 		
 		ObjectClass containerClass = domain.getObjectClass(ContainerFactory.ClassName);		
 		ObjectInstance shelfSpace = state.getObject(SpaceFactory.SPACE_COUNTER);
 		
 		List<ObjectInstance> ingredientInstances = 
-				knowledgebase.getRecipeObjectInstanceList(domain, recipe);
+				knowledgebase.getRecipeObjectInstanceList(domain, null, recipe);
 		
 		List<ObjectInstance> ingredientsAndContainers = 
 				Recipe.getContainersAndIngredients(containerClass, ingredientInstances, shelfSpace.getName());
@@ -137,8 +138,8 @@ public class BasicKitchen implements DomainGenerator {
 			}
 		}
 		
-		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
-		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "shelf", null, null));
+		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human", null));
+		//state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "shelf", null, null));
 		
 		return state;
 	}
@@ -159,9 +160,6 @@ public class BasicKitchen implements DomainGenerator {
 			this.isFailure = new RecipeBotched("botched", domain, this.recipe.topLevelIngredient);
 		}
 
-		this.recipe.resetSubgoals();
-		this.recipe.addIngredientSubgoals();
-		this.recipe.setUpSubgoals(this.domain);
 		if (this.recipeSubgoals == null) {
 			this.recipeSubgoals = new ArrayList<BakingSubgoal>(this.recipe.getSubgoals());
 			this.completedSubgoals = new boolean[this.recipeSubgoals.size()];

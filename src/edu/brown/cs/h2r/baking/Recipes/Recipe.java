@@ -3,6 +3,7 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -26,11 +27,11 @@ import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
 
 public abstract class Recipe {
 	
-	public IngredientRecipe topLevelIngredient;
-	protected Knowledgebase knowledgebase;
-	protected List<BakingSubgoal> subgoals, ingredientSubgoals;
-	protected Set<String> recipeToolAttributes;
-	protected AbstractMap<String, IngredientRecipe> subgoalIngredients;
+	public final IngredientRecipe topLevelIngredient;
+	protected final Knowledgebase knowledgebase;
+	protected final List<BakingSubgoal> subgoals, ingredientSubgoals;
+	protected final Set<String> recipeToolAttributes;
+	protected final AbstractMap<String, IngredientRecipe> subgoalIngredients;
 	
 	public static final int NO_ATTRIBUTES = 0;
 	public static final int MIXED = 1;
@@ -41,21 +42,21 @@ public abstract class Recipe {
 	
 	protected String recipeName;
 	
-	public Recipe()
+	protected Recipe(Domain domain)
 	{
-		this.knowledgebase = new Knowledgebase();
-		this.subgoals = new ArrayList<BakingSubgoal>();
-		this.ingredientSubgoals = new ArrayList<BakingSubgoal>();
-		this.recipeToolAttributes = new HashSet<String>();
+		this.knowledgebase = Knowledgebase.getKnowledgebase(domain);
 		this.subgoalIngredients = new HashMap<String, IngredientRecipe>();
+		this.topLevelIngredient = this.createTopLevelIngredient();
+		this.subgoals = Collections.unmodifiableList(this.getSubgoals(domain));
+		this.ingredientSubgoals = Collections.unmodifiableList(this.createIngredientSubgoals());
+		
+		this.addRequiredRecipeAttributes();
+		
+		this.recipeToolAttributes = Collections.unmodifiableSet(this.createRecipeToolAttributes());
+		
 	}
 	
-	public void init(Domain domain) {
-		this.setUpSubgoals(domain);
-		this.addIngredientSubgoals();
-		this.addRequiredRecipeAttributes();
-		this.setUpRecipeToolAttributes();
-	}
+	protected abstract IngredientRecipe createTopLevelIngredient();
 	
 	public BakingPropositionalFunction getFailurePF(Domain domain) {
 		RecipeBotched isFailure = 
@@ -93,10 +94,6 @@ public abstract class Recipe {
 		count += ingredient.getConstituentIngredientsCount();
 		return count;
 	}
-	public List<ObjectInstance> getRecipeList(ObjectClass simpleIngredientClass)
-	{
-		return IngredientFactory.getIngredientInstancesList(simpleIngredientClass, this.topLevelIngredient);
-	}
 	
 	public static List<ObjectInstance> getContainersAndIngredients(ObjectClass containerClass, List<ObjectInstance> ingredients, String containerSpace)
 	{
@@ -105,7 +102,7 @@ public abstract class Recipe {
 		{
 			ObjectInstance container = 
 					ContainerFactory.getNewIngredientContainerObjectInstance(
-							containerClass, ingredient.getName() + "_bowl", ingredient.getName(), containerSpace);
+							containerClass, ingredient.getName() + "_bowl", ingredient.getName(), containerSpace, ingredient.getHashTuple().getHashingFactory());
 			ObjectInstance newIngredient = IngredientFactory.changeIngredientContainer(ingredient, container.getName());
 			containersAndIngredients.add(container);
 			containersAndIngredients.add(newIngredient);
@@ -113,11 +110,23 @@ public abstract class Recipe {
 		return containersAndIngredients;
 	}
 	
-	public Boolean isSuccess(State state, ObjectInstance topLevelObject)
-	{
-		return Recipe.isSuccess(state, this.topLevelIngredient, topLevelObject);
+	public Boolean isSuccess(State state) {
+		List<ObjectInstance> objects = state.getObjectsOfTrueClass(IngredientFactory.ClassNameSimple);
+		objects.addAll(state.getObjectsOfTrueClass(IngredientFactory.ClassNameComplex));
+		for (ObjectInstance object : objects) {
+			if (this.isSuccess(state, object)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
+	public Boolean isSuccess(State state, ObjectInstance topLevelObject)
+	{
+		return this.topLevelIngredient.isMatching(topLevelObject, state);
+	}
+		
+	/*
 	public static Boolean isSuccess(State state, IngredientRecipe ingredientRecipe, ObjectInstance object)
 	{
 		if (!ingredientRecipe.AttributesMatch(object)) {
@@ -195,7 +204,13 @@ public abstract class Recipe {
 		}
 		// all ingredients in our recipe have been fulfilled
 		return Recipe.allIngredientsFulfilled(state, recipeContents, compulsoryTraits, traitIngredients, compulsoryTraitMap, simpleIngredientRecipes, complexIngredientRecipes);
+	}*/
+	
+	public Boolean isFailure(State state) {
+		
+		return false;
 	}
+	
 	
 	public Boolean isFailure(State state, ObjectInstance object)
 	{
@@ -213,7 +228,7 @@ public abstract class Recipe {
 		// things to it (haven't baked it, haven't melted it).
 		if (IngredientFactory.isSwapped(object)) {
 			if (ingredientRecipe.getName().equals(object.getName())) {
-				if (ingredientRecipe.AttributesMatch(object)) {
+				if (ingredientRecipe.attributesMatch(object)) {
 					return false;
 				}
 			}
@@ -284,37 +299,37 @@ public abstract class Recipe {
 		return true;
 	}
 	
-	public abstract void setUpSubgoals(Domain domain);
+	public abstract List<BakingSubgoal> getSubgoals(Domain domain);
 	
 	public List<BakingSubgoal> getSubgoals() {
-		return this.subgoals;
+		return new ArrayList<BakingSubgoal>(this.subgoals);
 	}
 	
-	public void addIngredientSubgoals() {
+	public List<BakingSubgoal> createIngredientSubgoals() {
+		List<BakingSubgoal> ingredientSubgoals = new ArrayList<BakingSubgoal>();
 		for (BakingSubgoal sg : subgoals) {
 			if (sg.getGoal().getClassName().equals(AffordanceCreator.FINISH_PF)) {
-				this.ingredientSubgoals.add(sg);
+				ingredientSubgoals.add(sg);
 			}
 		}
+		return ingredientSubgoals;
 	}
 	
 	public List<BakingSubgoal> getIngredientSubgoals() {
-		return this.ingredientSubgoals;
+		return new ArrayList<BakingSubgoal>(this.ingredientSubgoals);
 	}
 	
-	public void setUpRecipeToolAttributes() {
+	private Set<String> createRecipeToolAttributes() {
+		Set<String> recipeToolAttributes = new HashSet<String>();
 		for (IngredientRecipe ing : this.topLevelIngredient.getConstituentIngredients()) {
-			this.recipeToolAttributes.addAll(ing.getToolAttributes());
+			recipeToolAttributes.addAll(ing.getToolAttributes());
 		}
-		this.recipeToolAttributes.addAll(this.topLevelIngredient.getToolAttributes());
+		recipeToolAttributes.addAll(this.topLevelIngredient.getToolAttributes());
+		return recipeToolAttributes;
 	}
 	
 	public Set<String> getRecipeToolAttributes() {
-		return this.recipeToolAttributes;
-	}
-	
-	public void resetSubgoals() {
-		this.subgoals = new ArrayList<BakingSubgoal>();
+		return new HashSet<String>(this.recipeToolAttributes);
 	}
 	
 	public static Set<String> getSubgoalToolAttributes(IngredientRecipe ingredient) {
@@ -360,7 +375,7 @@ public abstract class Recipe {
 		return false;
 	}
 	
-	public void addRequiredRecipeAttributes() {
+	private void addRequiredRecipeAttributes() {
 		for (BakingSubgoal sg : this.ingredientSubgoals) {
 			IngredientRecipe ing = sg.getIngredient();
 			if (Recipe.subgoalRequiresBaking(ing)) {
@@ -392,7 +407,7 @@ public abstract class Recipe {
 			return true;
 		}
 		// they don't have the right attributes (heated, peeled, etc).
-		if (!ingredientRecipe.AttributesMatch(object)) {
+		if (!ingredientRecipe.attributesMatch(object)) {
 			return true;
 		}
 		return false;
@@ -664,7 +679,7 @@ public abstract class Recipe {
 				return false;
 			}
 			if (ingredient.isSimple()) {
-				if (!Recipe.isSuccess(state, ingredient, ingredientObj)) {
+				if (ingredient.isMatching(ingredientObj, state)) {
 					return false;
 				}
 				traitIngredients.remove(ingredientObj);
@@ -673,7 +688,7 @@ public abstract class Recipe {
 				Collection<IngredientRecipe> complexIngredientRecipeValues = complexIngredientRecipes.values();
 				for (IngredientRecipe complexSubIngredient : complexIngredientRecipeValues)
 				{
-					if (Recipe.isSuccess(state, complexSubIngredient, ingredientObj))
+					if (complexSubIngredient.isMatching(ingredientObj, state))
 					{
 						exists = true;
 						break;
@@ -695,7 +710,7 @@ public abstract class Recipe {
 				if (IngredientFactory.getTraits(obj).contains(trait)) {
 					// Ensure traitIngredient has the correct Attributes (heated, baked...)
 					// I.E. The fat we are using is in fact heated.
-					match = compulsoryTraitMap.get(trait).AttributesMatch(obj);
+					match = compulsoryTraitMap.get(trait).attributesMatch(obj);
 					break;
 				}
 			}

@@ -12,21 +12,24 @@ import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunctio
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
 
 public class CucumberSalad extends Recipe {
-	public CucumberSalad() {
-		super();
+	public CucumberSalad(Domain domain) {
+		super(domain);
 		this.recipeName = "cucumber salad";
+	}
+	
+	protected IngredientRecipe createTopLevelIngredient() {
 		List<IngredientRecipe> ingredientList = new ArrayList<IngredientRecipe>();
 
 		ingredientList.add(knowledgebase.getIngredient("red_onions"));
 		ingredientList.add(knowledgebase.getIngredient("tomatoes"));
 		ingredientList.add(knowledgebase.getIngredient("cucumbers"));
-		IngredientRecipe salad = new IngredientRecipe("Salad", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList);
+		IngredientRecipe salad = new IngredientRecipe("Salad", Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, ingredientList);
 		this.subgoalIngredients.put(salad.getName(), salad);
 		
 		List<IngredientRecipe> ingredientList2 = new ArrayList<IngredientRecipe>();
 		ingredientList2.add(knowledgebase.getIngredient("pepper"));
 		ingredientList2.add(knowledgebase.getIngredient("olive_oil"));
-		IngredientRecipe dressing = new IngredientRecipe("dressing", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList2);
+		IngredientRecipe dressing = new IngredientRecipe("dressing", Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, ingredientList2);
 		dressing.addNecessaryTrait("lemon", Recipe.NO_ATTRIBUTES);
 		dressing.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
 		this.subgoalIngredients.put(dressing.getName(), dressing);
@@ -34,25 +37,28 @@ public class CucumberSalad extends Recipe {
 		List<IngredientRecipe> ingredientList3= new ArrayList<IngredientRecipe>();
 		ingredientList3.add(salad);
 		ingredientList3.add(dressing);
-		IngredientRecipe cucumberSalad = new IngredientRecipe("CucumberSalad", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, ingredientList3);
-		this.topLevelIngredient = cucumberSalad;
+		IngredientRecipe cucumberSalad = new IngredientRecipe("CucumberSalad", Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, ingredientList3);
 		this.subgoalIngredients.put(cucumberSalad.getName(), cucumberSalad);
+		
+		return cucumberSalad;
 	}
-	
-	public void setUpSubgoals(Domain domain) {
+	public List<BakingSubgoal> getSubgoals(Domain domain) {
+		List<BakingSubgoal> subgoals = new ArrayList<BakingSubgoal>();
 		BakingPropositionalFunction pf1 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("Salad"));
 		BakingSubgoal sg1 = new BakingSubgoal(pf1, this.subgoalIngredients.get("Salad"));
-		this.subgoals.add(sg1);
+		subgoals.add(sg1);
 		
 		BakingPropositionalFunction pf2 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("dressing"));
 		BakingSubgoal sg2 = new BakingSubgoal(pf2, this.subgoalIngredients.get("dressing"));
-		this.subgoals.add(sg2);
+		subgoals.add(sg2);
 		
 		BakingPropositionalFunction pf3 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("CucumberSalad"));
 		BakingSubgoal sg3 = new BakingSubgoal(pf3, this.subgoalIngredients.get("CucumberSalad"));
-		sg3.addPrecondition(sg1);
-		sg3.addPrecondition(sg2);
-		this.subgoals.add(sg3);
+		sg3 = sg3.addPrecondition(sg1);
+		sg3 = sg3.addPrecondition(sg2);
+		subgoals.add(sg3);
+		
+		return subgoals;
 	}
 	
 	public List<String> getRecipeProcedures() {

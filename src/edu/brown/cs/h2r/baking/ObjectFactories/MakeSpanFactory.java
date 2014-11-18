@@ -1,6 +1,7 @@
 package edu.brown.cs.h2r.baking.ObjectFactories;
 import java.util.Set;
 
+import burlap.behavior.statehashing.ObjectHashFactory;
 import burlap.oomdp.core.Attribute;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
@@ -36,12 +37,12 @@ public class MakeSpanFactory {
 		return objectClass;
 	}
 	
-	public static ObjectInstance getNewObjectInstance(Domain domain, String name, int agentCount) {
-		return MakeSpanFactory.getNewObjectInstance(MakeSpanFactory.getObjectClass(domain), name, agentCount);
+	public static ObjectInstance getNewObjectInstance(Domain domain, String name, int agentCount, ObjectHashFactory hashingFactory) {
+		return MakeSpanFactory.getNewObjectInstance(MakeSpanFactory.getObjectClass(domain), name, agentCount, hashingFactory);
 	}
 	
-	public static ObjectInstance getNewObjectInstance(ObjectClass agentClass, String name, int agentCount) {
-		ObjectInstance newInstance = new ObjectInstance(agentClass, name);
+	public static ObjectInstance getNewObjectInstance(ObjectClass agentClass, String name, int agentCount, ObjectHashFactory hashingFactory) {
+		ObjectInstance newInstance = new ObjectInstance(agentClass, name, hashingFactory);
 		return newInstance.changeValue(MakeSpanFactory.attributeAgentCount, agentCount);
 	}
 	

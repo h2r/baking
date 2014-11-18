@@ -4,10 +4,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 import Prediction.PolicyPrediction;
 import burlap.behavior.singleagent.Policy;
+import burlap.behavior.singleagent.Policy.ActionProb;
 import burlap.behavior.statehashing.NameDependentStateHashFactory;
+import burlap.behavior.statehashing.ObjectHashFactory;
 import burlap.behavior.statehashing.StateHashFactory;
 import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.Domain;
@@ -30,6 +33,7 @@ public class Human implements Agent {
 	private final static RewardFunction rewardFunction = new RecipeAgentSpecificMakeSpanRewardFunction(Human.HUMAN_NAME);
 	
 	public final static String HUMAN_NAME = "human";
+	private String name = Human.HUMAN_NAME;
 	private final static StateHashFactory hashingFactory = new NameDependentStateHashFactory();
 	private State startingState;
 	
@@ -38,15 +42,20 @@ public class Human implements Agent {
 	private KitchenSubdomain currentSubgoal;
 	private List<KitchenSubdomain> kitchenSubdomains;
 	private TerminalFunction isFailure;
-	private final Domain generalDomain;
+	private Domain generalDomain;
 	
 	public Human(Domain generalDomain) {
 		this.generalDomain = generalDomain;
 	}
 	
+	public Human(Domain generalDomain, String name) {
+		this.generalDomain = generalDomain;
+		this.name = name;
+	}
+	
 	@Override
 	public ObjectInstance getAgentObject() {
-		return AgentFactory.getNewHumanAgentObjectInstance(this.generalDomain, this.getAgentName());
+		return AgentFactory.getNewHumanAgentObjectInstance(this.generalDomain, this.getAgentName(), hashingFactory.getObjectHashFactory());
 	}
 	
 	@Override
@@ -55,19 +64,31 @@ public class Human implements Agent {
 	}
 	
 	public void chooseNewRecipe() {
-		List<Recipe> recipes = new ArrayList<Recipe>(AgentHelper.recipes());
-		Collections.shuffle(recipes);
-		this.currentRecipe = recipes.get(0);
+		List<Recipe> recipes = new ArrayList<Recipe>(AgentHelper.recipes(generalDomain));
+		//Collections.shuffle(recipes);
 		
+		this.setRecipe(recipes.get(0));
+	}
+	
+	public void setRecipe(Recipe recipe) {
+		this.currentRecipe = recipe;
+		this.currentSubgoal = null;
 		Domain specificDomain = AgentHelper.generateSpecificDomain(generalDomain, this.currentRecipe);
 		this.kitchenSubdomains = AgentHelper.generateRTDPPolicies(this.currentRecipe, specificDomain, this.startingState, Human.rewardFunction, Human.hashingFactory);
+	}
+	
+	
+	
+	public Recipe getCurrentRecipe() {
+		return this.currentRecipe;
 	}
 	
 	private void chooseNewSubgoal(State state) {
 		List<KitchenSubdomain> activeSubgoals = new ArrayList<KitchenSubdomain>();
 		
 		for (KitchenSubdomain subdomain : this.kitchenSubdomains) {
-			if (subdomain.getSubgoal().allPreconditionsCompleted(state)) {
+			if (subdomain.getSubgoal().allPreconditionsCompleted(state) && 
+					!subdomain.getSubgoal().goalCompleted(state)) {
 				activeSubgoals.add(subdomain);
 				
 			}
@@ -83,22 +104,22 @@ public class Human implements Agent {
 		final PropositionalFunction isFailure = this.currentSubgoal.getDomain().getPropFunction(AffordanceCreator.BOTCHED_PF);
 		this.isFailure = new RecipeTerminalFunction(isFailure);
 		
-		AgentHelper.setSubgoal(this.currentSubgoal);
-		
+		this.generalDomain = AgentHelper.setSubgoal(this.generalDomain, this.currentSubgoal.getSubgoal());
+		System.out.println(this.getAgentName() + " switches to task: " + this.currentSubgoal.toString());
 		
 	}
 	
 	
 	
 	@Override
-	public void addObservation(State state, GroundedAction action) {
+	public void addObservation(State state) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public String getAgentName() {
-		return Human.HUMAN_NAME;
+		return this.name;
 	}
 
 	@Override
@@ -109,7 +130,6 @@ public class Human implements Agent {
 		if (this.currentSubgoal.getSubgoal().goalCompleted(state)) {
 			this.kitchenSubdomains.remove(this.currentSubgoal);
 			this.chooseNewSubgoal(state);
-			System.out.println("Human switches to task: " + this.currentSubgoal.toString());
 		}
 		if (this.currentSubgoal == null) {
 			return null;
@@ -117,17 +137,58 @@ public class Human implements Agent {
 		if (this.isFinished(state)) {
 			return null;
 		}
-		PolicyPrediction.setSubgoal(this.currentSubgoal);
+		
 		Policy policy = this.currentSubgoal.getPolicy();
-		AbstractGroundedAction action = policy.getAction(state);
+		List<ActionProb> actionDistribution = policy.getActionDistributionForState(state);
+		List<ActionProb> allowableActions = new ArrayList<ActionProb>();
+		for (ActionProb actionProb : actionDistribution) {
+			GroundedAction groundedAction = (GroundedAction)actionProb.ga;
+			if (groundedAction.params[0].equals(this.getAgentName())) {
+				allowableActions.add(actionProb);
+			}
+		}
+		this.normalizeActionDistribution(allowableActions);
+		AbstractGroundedAction action = this.getActionFromPolicyDistribution(allowableActions);
+		if (action != null) {
+			GroundedAction groundedAction = (GroundedAction)action;
+			groundedAction.params[0] = this.name;
+		}
 		return action;
+	}
+	
+	private void normalizeActionDistribution(List<ActionProb> actionDistribution) {
+		double sumProbability = 0.0;
+		for (ActionProb actionProb : actionDistribution) {
+			sumProbability += actionProb.pSelection;
+		}
+		for (ActionProb actionProb : actionDistribution) {
+			actionProb.pSelection = (sumProbability == 0.0) ? 1.0 / actionDistribution.size() : actionProb.pSelection / sumProbability;
+		}
+	}
+	
+	private AbstractGroundedAction getActionFromPolicyDistribution(List<ActionProb> actionDistribution) {
+		Random random = new Random();
+		double roll = random.nextDouble();
+		double sumProbability = 0.0;
+		for (ActionProb actionProb : actionDistribution) {
+			sumProbability += actionProb.pSelection;
+			if (roll < sumProbability) {
+				return actionProb.ga;
+			}
+		}
+		return null;
 	}
 
 	public boolean isFinished(State state) {
-		boolean isFailure = this.isFailure.isTerminal(state);
-		boolean isGoalComplete = this.currentSubgoal.getSubgoal().goalCompleted(state);
+		
+		boolean isFailure = (this.isFailure == null) ? false : this.isFailure.isTerminal(state);
+		boolean isGoalComplete = (this.currentSubgoal == null) ? false : this.currentSubgoal.getSubgoal().goalCompleted(state);
 		boolean areGoalsCompleted = this.kitchenSubdomains.size() == 1;
 		return (isFailure || (isGoalComplete && areGoalsCompleted)); 
+	}
+	
+	public boolean isSuccess(State state) {
+		return this.currentRecipe.isSuccess(state);
 	}
 	
 	public double getCostActions(List<AbstractGroundedAction> actionSequence, List<State> stateSequence) {
@@ -136,7 +197,7 @@ public class Human implements Agent {
 		for (int i = 0; i < actionSequence.size(); i++) {
 			GroundedAction groundedAction = (GroundedAction)actionSequence.get(i);
 			State nextState = stateSequence.get(i+1);
-			cost += this.rewardFunction.reward(previousState, groundedAction, nextState);
+			cost += Human.rewardFunction.reward(previousState, groundedAction, nextState);
 		
 		}
 		return cost;

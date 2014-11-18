@@ -1,4 +1,5 @@
 package edu.brown.cs.h2r.baking.ObjectFactories;
+import burlap.behavior.statehashing.ObjectHashFactory;
 import burlap.oomdp.core.Attribute;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
@@ -23,29 +24,29 @@ public class AgentFactory {
 		return objectClass;
 	}
 	
-	public static ObjectInstance getNewObjectInstance(ObjectClass agentClass, String name, Boolean robot) {
-		ObjectInstance newInstance = new ObjectInstance(agentClass, name);
+	public static ObjectInstance getNewObjectInstance(ObjectClass agentClass, String name, ObjectHashFactory hashingFactory, Boolean robot) {
+		ObjectInstance newInstance = new ObjectInstance(agentClass, name, hashingFactory);
 		return newInstance.changeValue(AgentFactory.attributeRobot, robot ? 1 : 0);
 	}
 	
-	public static ObjectInstance getNewObjectInstance(Domain domain, String name, Boolean robot) {
-		return AgentFactory.getNewObjectInstance(AgentFactory.getObjectClass(domain), name, robot);
+	public static ObjectInstance getNewObjectInstance(Domain domain, String name, ObjectHashFactory hashingFactory, Boolean robot) {
+		return AgentFactory.getNewObjectInstance(AgentFactory.getObjectClass(domain), name, hashingFactory, robot);
 	}
 	
-	public static ObjectInstance getNewHumanAgentObjectInstance(ObjectClass agentClass, String name) {
-		return AgentFactory.getNewObjectInstance(agentClass, name, false);
+	public static ObjectInstance getNewHumanAgentObjectInstance(ObjectClass agentClass, String name, ObjectHashFactory hashingFactory) {
+		return AgentFactory.getNewObjectInstance(agentClass, name, hashingFactory, false);
 	}
 	
-	public static ObjectInstance getNewHumanAgentObjectInstance(Domain domain, String name) {
-		return AgentFactory.getNewObjectInstance(domain, name, false);
+	public static ObjectInstance getNewHumanAgentObjectInstance(Domain domain, String name, ObjectHashFactory hashingFactory) {
+		return AgentFactory.getNewObjectInstance(domain, name, hashingFactory, false);
 	}
 	
-	public static ObjectInstance getNewRobotAgentObjectInstance(ObjectClass agentClass, String name) {
-		return AgentFactory.getNewObjectInstance(agentClass, name, true);
+	public static ObjectInstance getNewRobotAgentObjectInstance(ObjectClass agentClass, String name, ObjectHashFactory hashingFactory) {
+		return AgentFactory.getNewObjectInstance(agentClass, name, hashingFactory, true);
 	}
 	
-	public static ObjectInstance getNewRobotAgentObjectInstance(Domain domain, String name) {
-		return AgentFactory.getNewObjectInstance(domain, name, true);
+	public static ObjectInstance getNewRobotAgentObjectInstance(Domain domain, String name, ObjectHashFactory hashingFactory) {
+		return AgentFactory.getNewObjectInstance(domain, name, hashingFactory, true);
 	}
 	
 	public static Boolean isRobot(ObjectInstance objectInstance) {

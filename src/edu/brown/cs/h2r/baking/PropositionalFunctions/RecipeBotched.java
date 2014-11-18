@@ -14,11 +14,21 @@ import edu.brown.cs.h2r.baking.Recipes.Recipe;
 
 public class RecipeBotched extends BakingPropositionalFunction {
 
-	List<BakingSubgoal> ingSubgoals;
+	private final List<BakingSubgoal> ingSubgoals;
 	public RecipeBotched(String name, Domain domain, IngredientRecipe ingredient) {
 		super(name, domain, new String[] {AgentFactory.ClassName}, ingredient);
 		this.ingSubgoals = new ArrayList<BakingSubgoal>();
 	}
+	
+	public RecipeBotched(String name, Domain domain, IngredientRecipe ingredient, List<BakingSubgoal> ingSubgoals) {
+		super(name, domain, new String[] {AgentFactory.ClassName}, ingredient);
+		this.ingSubgoals = new ArrayList<BakingSubgoal>(ingSubgoals);
+	}
+	
+	public BakingPropositionalFunction updatePF(Domain newDomain, IngredientRecipe ingredient, BakingSubgoal subgoal) {
+		return new RecipeBotched(this.name, newDomain, ingredient, this.ingSubgoals);
+	}
+	
 
 	@Override
 	public boolean isTrue(State state, String[] params) {

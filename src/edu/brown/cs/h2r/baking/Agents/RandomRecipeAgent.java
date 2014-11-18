@@ -24,7 +24,7 @@ public class RandomRecipeAgent extends Human implements Agent {
 		this.domain = domain;
 	}
 	@Override
-	public void addObservation(State state, GroundedAction action) {
+	public void addObservation(State state) {
 		// TODO Auto-generated method stub
 
 	}

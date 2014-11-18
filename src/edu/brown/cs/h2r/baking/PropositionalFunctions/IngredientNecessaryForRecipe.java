@@ -3,6 +3,7 @@ package edu.brown.cs.h2r.baking.PropositionalFunctions;
 import java.util.List;
 import java.util.Set;
 
+import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.Knowledgebase.Knowledgebase;
 import burlap.oomdp.core.Domain;
@@ -10,8 +11,15 @@ import burlap.oomdp.core.State;
 
 public class IngredientNecessaryForRecipe extends BakingPropositionalFunction {
 
+	private final Knowledgebase knowledgebase;
 	public IngredientNecessaryForRecipe(String name, Domain domain, IngredientRecipe ingredient) {
 		super(name, domain, new String[] {}, ingredient);
+		this.knowledgebase = Knowledgebase.getKnowledgebase(domain);
+		
+	}
+	
+	public BakingPropositionalFunction updatePF(Domain newDomain, IngredientRecipe ingredient, BakingSubgoal subgoal) {
+		return new IngredientNecessaryForRecipe(this.name, newDomain, ingredient);
 	}
 
 	@Override
@@ -27,7 +35,6 @@ public class IngredientNecessaryForRecipe extends BakingPropositionalFunction {
 					return true;
 				}
 			}
-			Knowledgebase knowledgebase = new Knowledgebase();
 			Set<String> ingredientTraits = this.topLevelIngredient.getConstituentNecessaryTraits().keySet();
 			Set<String> traits = knowledgebase.getTraits(name);
 			for (String trait : traits) {

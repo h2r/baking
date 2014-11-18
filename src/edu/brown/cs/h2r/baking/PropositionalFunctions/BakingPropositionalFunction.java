@@ -6,30 +6,32 @@ import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
 
-public class BakingPropositionalFunction extends PropositionalFunction {
+public abstract class BakingPropositionalFunction extends PropositionalFunction {
 
-	protected IngredientRecipe topLevelIngredient;
-	protected BakingSubgoal subgoal;
+	protected final IngredientRecipe topLevelIngredient;
+	protected final BakingSubgoal subgoal;
 	public BakingPropositionalFunction(String name, Domain domain, String[] params, IngredientRecipe ingredient) {
 		super(name, domain, params);
 		this.topLevelIngredient = ingredient;
+		this.subgoal = null;
 	}
 	
-	@Override
-	public boolean isTrue(State state, String[] params) {
-		return false;
+	public BakingPropositionalFunction(BakingPropositionalFunction pf, Domain domain) {
+		super(pf, domain);
+		this.topLevelIngredient = pf.topLevelIngredient;
+		this.subgoal = pf.subgoal;
 	}
 	
-	public void changeTopLevelIngredient(IngredientRecipe newIngredient) {
-		this.topLevelIngredient = newIngredient;
+	public BakingPropositionalFunction(BakingPropositionalFunction pf, Domain domain, IngredientRecipe ingredient, BakingSubgoal goal) {
+		super(pf, domain);
+		this.topLevelIngredient = ingredient;
+		this.subgoal = goal;
 	}
+	
+	public abstract BakingPropositionalFunction updatePF(Domain newDomain, IngredientRecipe ingredient, BakingSubgoal subgoal);
 	
 	public IngredientRecipe getTopLevelIngredient() {
 		return this.topLevelIngredient;
-	}
-	
-	public void setSubgoal(BakingSubgoal sg) {
-		this.subgoal = sg;
 	}
 
 }

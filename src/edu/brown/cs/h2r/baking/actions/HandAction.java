@@ -10,8 +10,8 @@ import edu.brown.cs.h2r.baking.ObjectFactories.ToolFactory;
 
 public class HandAction extends BakingAction {
 	public static final String className = "hand";
-	public HandAction(Domain domain, IngredientRecipe ingredient) {
-		super(HandAction.className, domain, ingredient, new String[] {AgentFactory.ClassName, ToolFactory.ClassName, SpaceFactory.ClassName});
+	public HandAction(Domain domain) {
+		super(HandAction.className, domain, new String[] {AgentFactory.ClassName, ToolFactory.ClassName, SpaceFactory.ClassName});
 	}
 	
 	public BakingActionResult checkActionIsApplicableInState(State state, String[] params) {

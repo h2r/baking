@@ -11,16 +11,11 @@ import burlap.behavior.statehashing.StateHashFactory;
 import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
-import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
-import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
-import edu.brown.cs.h2r.baking.BakingSubgoal;
-import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.RecipeAgentSpecificMakeSpanRewardFunction;
 import edu.brown.cs.h2r.baking.Experiments.KitchenSubdomain;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
-import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
 
 public abstract class AdaptiveAgent implements Agent {
 	private final Domain domain;
@@ -39,7 +34,7 @@ public abstract class AdaptiveAgent implements Agent {
 	
 	@Override
 	public ObjectInstance getAgentObject() {
-		return AgentFactory.getNewHumanAgentObjectInstance(this.domain, this.getAgentName());
+		return AgentFactory.getNewHumanAgentObjectInstance(this.domain, this.getAgentName(), this.hashingFactory.getObjectHashFactory());
 	}
 	
 	@Override
@@ -48,7 +43,7 @@ public abstract class AdaptiveAgent implements Agent {
 		this.subdomains.clear();
 		this.policyBeliefDistribution.clear();
 		this.stateHistory.add(state);
-		List<KitchenSubdomain> subdomains = AgentHelper.generateAllRTDFPolicies(domain, state, AgentHelper.recipes(),
+		List<KitchenSubdomain> subdomains = AgentHelper.generateAllRTDPPolicies(domain, state, AgentHelper.recipes(domain),
 				AdaptiveAgent.rewardFunction ,AdaptiveAgent.hashingFactory);
 		this.subdomains.addAll(subdomains);
 		this.policyBeliefDistribution.addAll(this.getInitialPolicyDistribution(subdomains));
@@ -82,32 +77,9 @@ public abstract class AdaptiveAgent implements Agent {
 	protected abstract AbstractGroundedAction getActionFromPolicyDistribution(List<PolicyProbability> policyDistribution, State state);
 	protected abstract void init();
 	@Override
-	public void addObservation(State state, GroundedAction action) {
+	public void addObservation(State state) {
+		this.stateHistory.add(state);
 		
-	}
-
-	protected final static void setSubgoal(KitchenSubdomain subdomain) {
-		Domain domain = subdomain.getDomain();
-		BakingSubgoal subgoal = subdomain.getSubgoal();
-		IngredientRecipe ingredient = subgoal.getIngredient();
-		
-		List<PropositionalFunction> propFunctions = domain.getPropFunctions();
-		for (PropositionalFunction pf : propFunctions) {
-			((BakingPropositionalFunction)pf).changeTopLevelIngredient(ingredient);
-			((BakingPropositionalFunction)pf).setSubgoal(subgoal);
-		}
-		
-		subgoal.getGoal().changeTopLevelIngredient(ingredient);
-	}
-	
-	protected final static void setSubgoal(Domain domain, BakingSubgoal subgoal, IngredientRecipe ingredient) {
-		List<PropositionalFunction> propFunctions = domain.getPropFunctions();
-		for (PropositionalFunction pf : propFunctions) {
-			((BakingPropositionalFunction)pf).changeTopLevelIngredient(ingredient);
-			((BakingPropositionalFunction)pf).setSubgoal(subgoal);
-		}
-		
-		subgoal.getGoal().changeTopLevelIngredient(ingredient);
 	}
 	
 	protected void updateBeliefDistribution(List<PolicyProbability> updatePolicyDistribution) {

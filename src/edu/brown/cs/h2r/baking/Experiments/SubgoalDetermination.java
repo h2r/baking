@@ -20,6 +20,7 @@ import burlap.behavior.singleagent.planning.commonpolicies.AffordanceGreedyQPoli
 import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
 import burlap.behavior.singleagent.planning.stochastic.rtdp.RTDP;
 import burlap.behavior.statehashing.NameDependentStateHashFactory;
+import burlap.behavior.statehashing.ObjectHashFactory;
 import burlap.behavior.statehashing.StateHashFactory;
 import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.Domain;
@@ -37,6 +38,7 @@ import edu.brown.cs.h2r.baking.BellmanAffordanceRTDP;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.RecipeAgentSpecificMakeSpanRewardFunction;
 import edu.brown.cs.h2r.baking.RecipeTerminalFunction;
+import edu.brown.cs.h2r.baking.Agents.AgentHelper;
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
 import edu.brown.cs.h2r.baking.Knowledgebase.Knowledgebase;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
@@ -44,13 +46,10 @@ import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ToolFactory;
-import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.ContainersCleaned;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
 import edu.brown.cs.h2r.baking.Recipes.Brownies;
-import edu.brown.cs.h2r.baking.Recipes.PeanutButterCookies;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
-import edu.brown.cs.h2r.baking.actions.BakingAction;
 import edu.brown.cs.h2r.baking.actions.GreaseAction;
 import edu.brown.cs.h2r.baking.actions.MixAction;
 import edu.brown.cs.h2r.baking.actions.MoveAction;
@@ -60,7 +59,7 @@ import edu.brown.cs.h2r.baking.actions.UseAction;
 
 public class SubgoalDetermination {
 	private final static StateHashFactory hashingFactory = new NameDependentStateHashFactory();
-	public static Domain generateGeneralDomain(List<Recipe> recipes) {
+	public static Domain generateGeneralDomain() {
 		Domain domain = new SADomain();
 		domain.addObjectClass(ContainerFactory.createObjectClass(domain));
 		domain.addObjectClass(IngredientFactory.createSimpleIngredientObjectClass(domain));
@@ -72,6 +71,13 @@ public class SubgoalDetermination {
 		domain.addObjectClass(ToolFactory.createObjectClass(domain));
 		domain.setObjectIdentiferDependence(true);
 		
+		Action mix = new MixAction(domain);
+		Action pour = new PourAction(domain);
+		Action move = new MoveAction(domain);
+		Action grease = new GreaseAction(domain);
+		Action aSwitch = new SwitchAction(domain);
+		Action use = new UseAction(domain);
+		
 		
 		// To the failed propFunction, add in all subgoals for a recipe that are based on an ingredient.
 		RecipeBotched failed = ((RecipeBotched)domain.getPropFunction(AffordanceCreator.BOTCHED_PF));
@@ -82,53 +88,34 @@ public class SubgoalDetermination {
 		return domain;
 	}
 	
-	public static Domain generateSpecificDomain(Domain generalDomain, Recipe recipe) {
-		Domain domain = new SADomain();
-		for (ObjectClass objectClass : generalDomain.getObjectClasses()) {
-			domain.addObjectClass(objectClass);
-		}
-		
-		Action mix = new MixAction(domain, recipe.topLevelIngredient);
-		Action pour = new PourAction(domain, recipe.topLevelIngredient);
-		Action move = new MoveAction(domain, recipe.topLevelIngredient);
-		Action grease = new GreaseAction(domain);
-		Action aSwitch = new SwitchAction(domain);
-		Action use = new UseAction(domain, recipe.topLevelIngredient);
-		//Action hand = new HandAction(domain, recipe.topLevelIngredient);
-		//Action waitAction = new WaitAction(domain);
-
-		recipe.init(domain);
-		return domain;
-	}
-	
-	public static State generateInitialState(Domain generalDomain, List<Domain> recipeDomains, List<Recipe> recipes) {
+	public static State generateInitialState(Domain generalDomain, List<Recipe> recipes) {
 		List<ObjectInstance> objects = new ArrayList<ObjectInstance>();
-		objects.add(AgentFactory.getNewHumanAgentObjectInstance(generalDomain, "human"));
+		ObjectHashFactory objectHashingFactory = hashingFactory.getObjectHashFactory();
+		objects.add(AgentFactory.getNewHumanAgentObjectInstance(generalDomain, "human", objectHashingFactory));
 		
 		
 		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2", "baking_dish", "melting_pot");
-		ObjectInstance counterSpace = SpaceFactory.getNewWorkingSpaceObjectInstance(generalDomain, SpaceFactory.SPACE_COUNTER, containers, "human");
+		ObjectInstance counterSpace = SpaceFactory.getNewWorkingSpaceObjectInstance(generalDomain, SpaceFactory.SPACE_COUNTER, containers, "human", objectHashingFactory);
 		objects.add(counterSpace);
 		
-		objects.add(ContainerFactory.getNewBakingContainerObjectInstance(generalDomain, "baking_dish", null, SpaceFactory.SPACE_COUNTER));
-		objects.add(ContainerFactory.getNewHeatingContainerObjectInstance(generalDomain, "melting_pot", null, SpaceFactory.SPACE_COUNTER));
-		objects.add(SpaceFactory.getNewBakingSpaceObjectInstance(generalDomain, SpaceFactory.SPACE_OVEN, null, ""));
-		objects.add(SpaceFactory.getNewHeatingSpaceObjectInstance(generalDomain, SpaceFactory.SPACE_STOVE, null, ""));
+		objects.add(ContainerFactory.getNewBakingContainerObjectInstance(generalDomain, "baking_dish", null, SpaceFactory.SPACE_COUNTER, objectHashingFactory));
+		objects.add(ContainerFactory.getNewHeatingContainerObjectInstance(generalDomain, "melting_pot", null, SpaceFactory.SPACE_COUNTER, objectHashingFactory));
+		objects.add(SpaceFactory.getNewBakingSpaceObjectInstance(generalDomain, SpaceFactory.SPACE_OVEN, null, "", objectHashingFactory));
+		objects.add(SpaceFactory.getNewHeatingSpaceObjectInstance(generalDomain, SpaceFactory.SPACE_STOVE, null, "", objectHashingFactory));
 		
 		for (String container : containers) { 
-			objects.add(ContainerFactory.getNewMixingContainerObjectInstance(generalDomain, container, null, SpaceFactory.SPACE_COUNTER));
+			objects.add(ContainerFactory.getNewMixingContainerObjectInstance(generalDomain, container, null, SpaceFactory.SPACE_COUNTER, objectHashingFactory));
 		}
 		
 		// Out of all the ingredients in our kitchen, plan over only those that might be useful!
-		Knowledgebase knowledgebase = new Knowledgebase();
+		Knowledgebase knowledgebase = Knowledgebase.getKnowledgebase(generalDomain);
 		
 		List<ObjectInstance> ingredients = new ArrayList<ObjectInstance>();
 		List<ObjectInstance> tools = new ArrayList<ObjectInstance>();
 		for (int i = 0;i < recipes.size(); i++) {
 			Recipe recipe = recipes.get(i);
-			Domain domain = recipeDomains.get(i);
-			ingredients.addAll(knowledgebase.getRecipeObjectInstanceList(domain, recipe));
-			tools.addAll(knowledgebase.getTools(domain, SpaceFactory.SPACE_COUNTER));
+			ingredients.addAll(knowledgebase.getRecipeObjectInstanceList(generalDomain, objectHashingFactory, recipe));
+			tools.addAll(knowledgebase.getTools(generalDomain, SpaceFactory.SPACE_COUNTER, objectHashingFactory));
 		}
 		
 	
@@ -140,173 +127,31 @@ public class SubgoalDetermination {
 		return new State(objects);
 	}
 	
-	public static List<KitchenSubdomain> generatePolicies(Recipe recipe, Domain domain, State state) {
-		// Add our actions to the domain.
-		
-		List<KitchenSubdomain> policyDomains = new ArrayList<KitchenSubdomain>();
-		
-		AffordanceCreator theCreator = new AffordanceCreator(domain, state, recipe.topLevelIngredient);
-		
-		//System.out.println("\n\nPlanner will now plan the "+recipe.topLevelIngredient.getName()+" recipe!");
-		
-		// High level planner that plans through the recipe's subgoals
-		List<BakingSubgoal> subgoals = recipe.getSubgoals();
-		Set<BakingSubgoal> activeSubgoals = new HashSet<BakingSubgoal>();
-		
-		final PropositionalFunction isFailure = domain.getPropFunction(AffordanceCreator.BOTCHED_PF);
-		
-		if (((RecipeBotched)isFailure).hasNoSubgoals()) {
-			for (BakingSubgoal sg : recipe.getIngredientSubgoals()) {
-				((RecipeBotched)isFailure).addSubgoal(sg);
-			}
-		}
-		
-		do {
-			// For all subgoals with all preconditions satisfied
-			for (BakingSubgoal sg : activeSubgoals) {
-				subgoals.remove(sg);
-				//System.out.println("Planning subgoal " + sg.getIngredient().getName());
-				KitchenSubdomain subdomain = generatePolicy(domain, state, recipe, sg);
-				state = SubgoalDetermination.getEndState(domain, state, subdomain.getPolicy(), sg.getGoal(), isFailure);
-				policyDomains.add(subdomain);
-			}
-			activeSubgoals.clear();
-			// Iterate through inactive subgoals to find those who have had all of their
-			// preconditions resolved.
-			for (BakingSubgoal sg : subgoals) {
-				if (sg.allPreconditionsCompleted(state)) {
-					activeSubgoals.add(sg);
-				}
-			}	
-		} while (!activeSubgoals.isEmpty());
-		return policyDomains;
-	}
-	
-	public static State getEndState(Domain domain, State state, Policy policy, BakingPropositionalFunction isSuccess, PropositionalFunction isFailure) {
-		TerminalFunction recipeTerminalFunction = new RecipeTerminalFunction(isSuccess, isFailure);
-		RewardFunction rf = new RecipeAgentSpecificMakeSpanRewardFunction("human");
-		EpisodeAnalysis episodeAnalysis = policy.evaluateBehavior(state, rf, recipeTerminalFunction,100);
-		
-		
-		for (GroundedAction action : episodeAnalysis.actionSequence) {
-			//System.out.println("\t" + action.actionName() + " " + Arrays.toString(action.params) );
-		}
-		
-		return episodeAnalysis.getState(episodeAnalysis.stateSequence.size() - 1);
-		
-	}
-	
-	public static KitchenSubdomain generatePolicy(Domain domain, State startingState, Recipe recipe, BakingSubgoal subgoal)
-	{
-		IngredientRecipe ingredient = subgoal.getIngredient();
-		String goalType = (subgoal.getGoal().getClass().isAssignableFrom(ContainersCleaned.class)) ? "_clean" : "";
-		//System.out.println(ingredient.getName() + goalType);
-		State currentState = new State(startingState);
-		
-		List<Action> actions = domain.getActions();
-		for (Action action : actions) {
-			((BakingAction)action).changePlanningIngredient(ingredient);
-		}
-		AffordanceCreator theCreator = new AffordanceCreator(domain, currentState, ingredient);
-		// Add the current top level ingredient so we can properly trim the action space
-		SubgoalDetermination.setSubgoal(domain, subgoal, ingredient);
-		final PropositionalFunction isSuccess = subgoal.getGoal();
-		
-		final PropositionalFunction isFailure = domain.getPropFunction(AffordanceCreator.BOTCHED_PF);
-		
-		TerminalFunction recipeTerminalFunction = new RecipeTerminalFunction(isSuccess, isFailure);
-		
-		RewardFunction rf = new RecipeAgentSpecificMakeSpanRewardFunction("human");
-		/*
-				new RewardFunction() {
-			@Override
-			// Uniform cost function for an optimistic algorithm that guarantees convergence.
-			public double reward(State state, GroundedAction a, State sprime) {
-				return -1;
-			}
-		};*/
-		
-		int numRollouts = 300; // RTDP
-		int maxDepth = 10; // RTDP
-		double vInit = 0;
-		double maxDelta = .01;
-		double gamma = 0.99;
-		
-		boolean affordanceMode = true;
-		RTDP planner;
-		Policy p;
-		AffordancesController affController = theCreator.getAffController();
-		if(affordanceMode) {
-			// RTDP planner that also uses affordances to trim action space during the Bellman update
-			planner = new BellmanAffordanceRTDP(domain, rf, recipeTerminalFunction, gamma, hashingFactory, vInit, numRollouts, maxDelta, maxDepth, affController);
-			planner.toggleDebugPrinting(false);
-			planner.planFromState(currentState);
-			
-			// Create a Q-greedy policy from the planner
-			p = new AffordanceGreedyQPolicy(affController, (QComputablePlanner)planner);
-
-		} else {
-			planner = new RTDP(domain, rf, recipeTerminalFunction, gamma, hashingFactory, vInit, numRollouts, maxDelta, maxDepth);
-			p = new GreedyQPolicy((QComputablePlanner)planner);
-		}
-		return KitchenSubdomain.makeSubdomain(domain, recipe, subgoal, startingState, p);
-	}
-
-	
-	
-	public static void setSubgoal(Domain domain, BakingSubgoal subgoal, IngredientRecipe ingredient) {
-		List<PropositionalFunction> propFunctions = domain.getPropFunctions();
-		for (PropositionalFunction pf : propFunctions) {
-			((BakingPropositionalFunction)pf).changeTopLevelIngredient(ingredient);
-			((BakingPropositionalFunction)pf).setSubgoal(subgoal);
-		}
-		
-		subgoal.getGoal().changeTopLevelIngredient(ingredient);
-	}
-
-	public static List<KitchenSubdomain> generateAllPolicies() {
-		List<KitchenSubdomain> policyDomains = new ArrayList<KitchenSubdomain>();
-		List<Recipe> recipes = Arrays.asList(
-				new Brownies(), 
-				/*new CucumberSalad()/*, 
-				new DeviledEggs(), 
-				new MashedPotatoes(),
-				new MoltenLavaCake(),
-				*/new PeanutButterCookies());
-		
-		Domain generalDomain = SubgoalDetermination.generateGeneralDomain(recipes);
-		List<Domain> recipeDomains = new ArrayList<Domain>();
-		for (Recipe recipe : recipes) {
-			recipeDomains.add(SubgoalDetermination.generateSpecificDomain(generalDomain, recipe));
-		}
-		State state = SubgoalDetermination.generateInitialState(generalDomain, recipeDomains, recipes);
-		
-		for (int i = 0; i < recipes.size(); i++) {
-			Recipe recipe = recipes.get(i);
-			Domain domain = recipeDomains.get(i);
-			policyDomains.addAll(SubgoalDetermination.generatePolicies(recipe, domain, state));
-		}
-		
-		return policyDomains;
-	}
-	
-	public static State generateRandomStateFromPolicy(KitchenSubdomain subdomain, int maxDepth) {
-		PolicyPrediction.setSubgoal(subdomain);
-		
+	public static List<AbstractGroundedAction> generateActionSequenceFromPolicy(KitchenSubdomain subdomain, int maxDepth) {
+		List<AbstractGroundedAction> actions = new ArrayList<AbstractGroundedAction>();
 		Policy policy = subdomain.getPolicy();
 		State state = subdomain.getStartState();
 		BakingSubgoal subgoal = subdomain.getSubgoal();
 		
-		//System.out.println("Taking actions");
+		System.out.println("Taking actions");
 		for (int i = 0; i < maxDepth; i++) {
 			if (subgoal.goalCompleted(state)) {
 				return null;
 			}
 			AbstractGroundedAction action = policy.getAction(state);
-			//System.out.println("\t" + action.actionName() + " " + Arrays.toString(action.params) );
+			System.out.println("\t" + action.actionName() + " " + Arrays.toString(action.params) );
 			state = action.executeIn(state);
+			actions.add(action);
 		}
-		return state;
+		return actions;
+	}
+	
+	public static State getStateFromActionSequence(State startingState, List<AbstractGroundedAction> actions) {
+		State currentState = startingState;
+		for (AbstractGroundedAction action : actions) {
+			currentState = action.executeIn(currentState);
+		}
+		return currentState;
 	}
 	
 	public static void insertPolicy(Map<String, Double> bestPolicies, PolicyProbability probability, KitchenSubdomain subdomain, int numberToReturn) {
@@ -351,9 +196,9 @@ public class SubgoalDetermination {
 	
 	public static void main(String[] argv) {
 		int maxAlpha = 3;
-		int numTries = 100;
+		int numTries = 10;
 		int depthType = 0;
-		int depth = 2;
+		int depth = 1;
 		
 		if (argv.length == 2) {
 			int Id = Integer.parseInt(argv[0]);
@@ -363,69 +208,94 @@ public class SubgoalDetermination {
 			
 			numTries = Integer.parseInt(argv[1]);
 		}
-		
-		List<KitchenSubdomain> policyDomains = SubgoalDetermination.generateAllPolicies();
+		Domain domain = SubgoalDetermination.generateGeneralDomain();
+		List<Recipe> recipes = AgentHelper.recipes(domain);
+		Knowledgebase knowledgebase = Knowledgebase.getKnowledgebase(domain);
+		knowledgebase.initKnowledgebase(recipes);
+		State state = SubgoalDetermination.generateInitialState(domain, recipes);
+		RewardFunction rf = new RewardFunction() {
+
+			@Override
+			public double reward(State s, GroundedAction a, State sprime) {
+				// TODO Auto-generated method stub
+				return -1;
+			}
+			
+		};
+		List<KitchenSubdomain> policyDomains = AgentHelper.generateAllRTDPPolicies(domain, state, recipes, rf, hashingFactory);
 		List<KitchenSubdomain> testDomains = new ArrayList<KitchenSubdomain>(policyDomains);
 		Random rando = new Random();
 		
 		
 		List<Double> successRate = new ArrayList<Double>();
 		PolicyPrediction prediction = new PolicyPrediction(policyDomains, depthType);			
-		int numSuccess = 0;
-		int numEstimateSuccesses = 0;
-		int numRandomGuesses = 0;
-		for (int i = 0; i < numTries; i++) {
-			int randomIndex = rando.nextInt(testDomains.size());
-			KitchenSubdomain policyDomain = testDomains.get(randomIndex);
-			State state = SubgoalDetermination.generateRandomStateFromPolicy(policyDomain, depth);
+		for (int k = 0; k < testDomains.size(); k++) {
+			int numSuccess = 0;
+			int numEstimateSuccesses = 0;
+			int numRandomGuesses = 0;
 			
-			while (state == null) {
-				testDomains.remove(randomIndex);
-				randomIndex = rando.nextInt(testDomains.size());
-				policyDomain = testDomains.get(randomIndex);
-				state = SubgoalDetermination.generateRandomStateFromPolicy(policyDomain, depth);
-			}
-			String actualName = policyDomain.toString();
-			//System.out.println("Actual: " + actualName);
-			List<PolicyProbability> policyDistribution = 
-					prediction.getPolicyDistributionFromStatePair(policyDomain.getStartState(), state, maxAlpha+1, policyDomain, SubgoalDetermination.hashingFactory, depthType);
+			KitchenSubdomain policyDomain = testDomains.get(k);
+			System.out.println(policyDomain.toString());
 			
-			if (policyDistribution == null) {
-				continue;
-			}
-			double maxProb = 0.0;
-			List<String> bestPolicies = new ArrayList<String>();
-			for (int j = 0; j < policyDistribution.size(); j++) {
-				PolicyProbability policyProbability = policyDistribution.get(j);
-				String name = policyProbability.getPolicyDomain().toString();
-						
+			for (int i = 0; i < numTries; i++) {
+				int randomIndex = rando.nextInt(testDomains.size());
+				System.out.println("Testing subgoal " + policyDomain.toString());
 				
-				double prob = (policyProbability == null) ? 0.0 : policyProbability.getProbability();
-				if (prob > maxProb) {
-					bestPolicies.clear();
-					bestPolicies.add(name);
-					maxProb = prob;	
-				} else if (prob == maxProb) {
-					bestPolicies.add(name);
+				List<AbstractGroundedAction> actions = SubgoalDetermination.generateActionSequenceFromPolicy(policyDomain, depth);
+				state = SubgoalDetermination.getStateFromActionSequence(policyDomain.getStartState(), actions);
+				if (state == null) {
+					/*
+					testDomains.remove(randomIndex);
+					randomIndex = rando.nextInt(testDomains.size());
+					policyDomain = testDomains.get(randomIndex);
+					state = SubgoalDetermination.generateRandomStateFromPolicy(policyDomain, depth);*/
+					break;
 				}
-				//System.out.println(name + ": " + prob);
-			}
-			Collections.shuffle(bestPolicies, rando);
-			if (bestPolicies.size() > 1) {
-				numRandomGuesses++;
-			}
-			String choice = bestPolicies.get(0);
-			//System.out.println("Best choice: " + choice);
-			if (choice.equals(actualName)) {
-				numSuccess++;
-				if (bestPolicies.size() == 1) {
-					numEstimateSuccesses++;
+				String actualName = policyDomain.toString();
+				if (k==1) {
+					System.out.print("");
+				}
+				//System.out.println("Actual: " + actualName);
+				List<PolicyProbability> policyDistribution = 
+						prediction.getPolicyDistributionFromStatePair(policyDomain.getStartState(), state, maxAlpha+1, 
+								policyDomain, actions, SubgoalDetermination.hashingFactory, depthType);
+				
+				if (policyDistribution == null) {
+					continue;
+				}
+				double maxProb = 0.0;
+				List<KitchenSubdomain> bestPolicies = new ArrayList<KitchenSubdomain>();
+				for (int j = 0; j < policyDistribution.size(); j++) {
+					PolicyProbability policyProbability = policyDistribution.get(j);
+					String name = policyProbability.getPolicyDomain().toString();
+							
+					double prob = (policyProbability == null) ? 0.0 : policyProbability.getProbability();
+					if (prob > maxProb) {
+						bestPolicies.clear();
+						bestPolicies.add(policyProbability.getPolicyDomain());
+						maxProb = prob;	
+					} else if (prob == maxProb) {
+						bestPolicies.add(policyProbability.getPolicyDomain());
+					}
+					System.out.println(name + ": " + prob);
+				}
+				Collections.shuffle(bestPolicies, rando);
+				if (bestPolicies.size() > 1) {
+					numRandomGuesses++;
+				}
+				KitchenSubdomain choice = bestPolicies.get(0);
+				//System.out.println("Best choice: " + choice);
+				if (choice.equals(policyDomain)) {
+					numSuccess++;
+					if (bestPolicies.size() == 1) {
+						numEstimateSuccesses++;
+					}
 				}
 			}
+			System.out.println("Depth, Depth Type, Successes, Estimate Successes, Informed Guesses, Total Trials");
+			System.out.println("" + depth + ", " + depthType + ", " + numSuccess + ", " + numEstimateSuccesses + ", " + numRandomGuesses + ", " +  numTries);
+			
 		}
-		
-		System.out.println("Depth, Depth Type, Successes, Estimate Successes, Informed Guesses, Total Trials");
-		System.out.println("" + depth + ", " + depthType + ", " + numSuccess + ", " + numEstimateSuccesses + ", " + numRandomGuesses + ", " +  numTries);
 		
 		/*successRate.add((double)numSuccess / numTries);
 		System.out.println("Success: " + numSuccess + "/" + numTries);

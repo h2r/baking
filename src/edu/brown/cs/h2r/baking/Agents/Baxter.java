@@ -50,7 +50,7 @@ public class Baxter implements Agent {
 	private StateHashFactory hashFactory;
 	
 	private static String agentClass = "robot";
-	private static Knowledgebase knowledgebase = new Knowledgebase();
+	private static Knowledgebase knowledgebase;
 	private Recipe recipe;
 	private Domain domain;
 	private List<Action> domainActions;
@@ -63,6 +63,7 @@ public class Baxter implements Agent {
 		this.domainPFs = domain.getPropFunctions();
 		this.hashFactory = hashFactory;
 		this.addSubgoalsToPF();
+		this.knowledgebase = Knowledgebase.getKnowledgebase(domain);
 	}
 		
 	@Override
@@ -83,7 +84,7 @@ public class Baxter implements Agent {
 	{
 		State beginningState = new State(state);
 		List<ObjectInstance> ingredients = 
-				Baxter.knowledgebase.getPotentialIngredientObjectInstanceList(this.domain, this.recipe.topLevelIngredient);
+				Baxter.knowledgebase.getPotentialIngredientObjectInstanceList(this.domain, this.recipe.topLevelIngredient, null);
 	
 		// Find actionable subgoals
 		List<BakingSubgoal> activeSubgoals = this.getActiveSubgoalsInState(beginningState, recipe.getSubgoals());
@@ -142,7 +143,7 @@ public class Baxter implements Agent {
 		
 		AffordanceCreator theCreator = new AffordanceCreator(domain, currentState, ingredient);
 		AffordancesController affordanceController = theCreator.getAffController();
-		this.setupForPlan(ingredient, subgoal, currentState);
+		this.domain = AgentHelper.setSubgoal(this.domain, subgoal);
 		
 		// TODO I don't think this is quite doing the optimal thing in regards to multiple agents.
 		final PropositionalFunction isSuccess = subgoal.getGoal();
@@ -194,22 +195,8 @@ public class Baxter implements Agent {
 		ExperimentHelper.makeSwappedIngredientObject(ingredient, endState, finalObjects, containerObjects);
 	}
 
-	protected void setupForPlan(IngredientRecipe ingredient,
-			BakingSubgoal subgoal, State currentState) {
-		for (Action action : this.domainActions) {
-			((BakingAction)action).changePlanningIngredient(ingredient);
-		}
-		
-		// Add the current top level ingredient so we can properly trim the action space
-		for (PropositionalFunction pf : this.domainPFs) {
-			((BakingPropositionalFunction)pf).changeTopLevelIngredient(ingredient);
-			((BakingPropositionalFunction)pf).setSubgoal(subgoal);
-		}
-		subgoal.getGoal().changeTopLevelIngredient(ingredient);
-	}
-
 	@Override
-	public void addObservation(State state, GroundedAction action) {
+	public void addObservation(State state) {
 		// TODO Auto-generated method stub
 		
 	}

@@ -2,18 +2,13 @@ package edu.brown.cs.h2r.baking.Experiments;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
+import burlap.behavior.statehashing.NameDependentStateHashFactory;
+import burlap.behavior.statehashing.ObjectHashFactory;
+import burlap.behavior.statehashing.StateHashFactory;
 import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
@@ -25,6 +20,8 @@ import edu.brown.cs.h2r.baking.Agents.AdaptiveByFlow;
 import edu.brown.cs.h2r.baking.Agents.Agent;
 import edu.brown.cs.h2r.baking.Agents.AgentHelper;
 import edu.brown.cs.h2r.baking.Agents.Human;
+import edu.brown.cs.h2r.baking.Agents.RandomActionAgent;
+import edu.brown.cs.h2r.baking.Agents.RandomRecipeAgent;
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
 import edu.brown.cs.h2r.baking.Knowledgebase.Knowledgebase;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
@@ -44,8 +41,8 @@ import edu.brown.cs.h2r.baking.actions.UseAction;
 
 public class TestManyAgents {
 	private static Random rando = new Random();
-	
-	private static Domain generateGeneralDomain(List<Recipe> recipes) {
+	private static StateHashFactory hashingFactory = new NameDependentStateHashFactory();
+	public static Domain generateGeneralDomain() {
 		Domain domain = new SADomain();
 		domain.addObjectClass(ContainerFactory.createObjectClass(domain));
 		domain.addObjectClass(IngredientFactory.createSimpleIngredientObjectClass(domain));
@@ -58,6 +55,13 @@ public class TestManyAgents {
 		domain.addObjectClass(MakeSpanFactory.getObjectClass(domain));
 		domain.setObjectIdentiferDependence(true);
 		
+		Action mix = new MixAction(domain);
+		Action pour = new PourAction(domain);
+		Action move = new MoveAction(domain);
+		Action grease = new GreaseAction(domain);
+		Action aSwitch = new SwitchAction(domain);
+		Action use = new UseAction(domain);
+		
 		
 		// To the failed propFunction, add in all subgoals for a recipe that are based on an ingredient.
 		RecipeBotched failed = ((RecipeBotched)domain.getPropFunction(AffordanceCreator.BOTCHED_PF));
@@ -68,54 +72,43 @@ public class TestManyAgents {
 		return domain;
 	}
 	
-	private static Domain generateSpecificDomain(Domain generalDomain, Recipe recipe) {
-		Domain domain = new SADomain();
-		for (ObjectClass objectClass : generalDomain.getObjectClasses()) {
-			domain.addObjectClass(objectClass);
-		}
-		
-		Action mix = new MixAction(domain, recipe.topLevelIngredient);
-		Action pour = new PourAction(domain, recipe.topLevelIngredient);
-		Action move = new MoveAction(domain, recipe.topLevelIngredient);
-		Action grease = new GreaseAction(domain);
-		Action aSwitch = new SwitchAction(domain);
-		Action use = new UseAction(domain, recipe.topLevelIngredient);
-		//Action hand = new HandAction(domain, recipe.topLevelIngredient);
-		//Action waitAction = new WaitAction(domain);
-
-		recipe.init(domain);
-		return domain;
-	}
-	
-	private static State generateInitialState(Domain generalDomain, List<Domain> recipeDomains, List<Recipe> recipes, Agent agent1, Agent agent2) {
+	private static State generateInitialState(Domain generalDomain, List<Recipe> recipes, Agent agent1, Agent agent2) {
+		ObjectHashFactory objectHashingFactory = hashingFactory.getObjectHashFactory();
 		List<ObjectInstance> objects = new ArrayList<ObjectInstance>();
 		objects.add(agent1.getAgentObject());
-		objects.add(agent2.getAgentObject());
-		ObjectInstance makeSpan = MakeSpanFactory.getNewObjectInstance(generalDomain, "makespan", 2);
+		
+		if (agent2 != null) {
+			objects.add(agent2.getAgentObject());
+		}
+		ObjectInstance makeSpan = MakeSpanFactory.getNewObjectInstance(generalDomain, "makespan", 2, objectHashingFactory);
+		objects.add(makeSpan);
 		
 		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2", "baking_dish", "melting_pot");
-		ObjectInstance counterSpace = SpaceFactory.getNewWorkingSpaceObjectInstance(generalDomain, SpaceFactory.SPACE_COUNTER, containers, "human");
+		ObjectInstance counterSpace = SpaceFactory.getNewWorkingSpaceObjectInstance(generalDomain, SpaceFactory.SPACE_COUNTER, containers, "human", objectHashingFactory);
 		objects.add(counterSpace);
 		
-		objects.add(ContainerFactory.getNewBakingContainerObjectInstance(generalDomain, "baking_dish", null, SpaceFactory.SPACE_COUNTER));
-		objects.add(ContainerFactory.getNewHeatingContainerObjectInstance(generalDomain, "melting_pot", null, SpaceFactory.SPACE_COUNTER));
-		objects.add(SpaceFactory.getNewBakingSpaceObjectInstance(generalDomain, SpaceFactory.SPACE_OVEN, null, ""));
-		objects.add(SpaceFactory.getNewHeatingSpaceObjectInstance(generalDomain, SpaceFactory.SPACE_STOVE, null, ""));
+		objects.add(ToolFactory.getNewSimpleToolObjectInstance(generalDomain, "whisk", "", "", SpaceFactory.SPACE_COUNTER, objectHashingFactory));
+		objects.add(ToolFactory.getNewSimpleToolObjectInstance(generalDomain, "spoon","", "", SpaceFactory.SPACE_COUNTER, objectHashingFactory));
+		
+		objects.add(ContainerFactory.getNewBakingContainerObjectInstance(generalDomain, "baking_dish", null, SpaceFactory.SPACE_COUNTER, objectHashingFactory));
+		objects.add(ContainerFactory.getNewHeatingContainerObjectInstance(generalDomain, "melting_pot", null, SpaceFactory.SPACE_COUNTER, objectHashingFactory));
+		objects.add(SpaceFactory.getNewBakingSpaceObjectInstance(generalDomain, SpaceFactory.SPACE_OVEN, null, "", objectHashingFactory));
+		objects.add(SpaceFactory.getNewHeatingSpaceObjectInstance(generalDomain, SpaceFactory.SPACE_STOVE, null, "", objectHashingFactory));
+		objects.add(ContainerFactory.getNewTrashContainerObjectInstance(generalDomain, "trash", SpaceFactory.SPACE_COUNTER, objectHashingFactory));
 		
 		for (String container : containers) { 
-			objects.add(ContainerFactory.getNewMixingContainerObjectInstance(generalDomain, container, null, SpaceFactory.SPACE_COUNTER));
+			objects.add(ContainerFactory.getNewMixingContainerObjectInstance(generalDomain, container, null, SpaceFactory.SPACE_COUNTER, objectHashingFactory));
 		}
 		
 		// Out of all the ingredients in our kitchen, plan over only those that might be useful!
-		Knowledgebase knowledgebase = new Knowledgebase();
+		Knowledgebase knowledgebase = Knowledgebase.getKnowledgebase(generalDomain);
 		
 		List<ObjectInstance> ingredients = new ArrayList<ObjectInstance>();
 		List<ObjectInstance> tools = new ArrayList<ObjectInstance>();
 		for (int i = 0;i < recipes.size(); i++) {
 			Recipe recipe = recipes.get(i);
-			Domain domain = recipeDomains.get(i);
-			ingredients.addAll(knowledgebase.getRecipeObjectInstanceList(domain, recipe));
-			tools.addAll(knowledgebase.getTools(domain, SpaceFactory.SPACE_COUNTER));
+			ingredients.addAll(knowledgebase.getRecipeObjectInstanceList(generalDomain, objectHashingFactory, recipe));
+			tools.addAll(knowledgebase.getTools(generalDomain, SpaceFactory.SPACE_COUNTER, objectHashingFactory));
 		}
 		
 	
@@ -163,8 +156,8 @@ public class TestManyAgents {
 		return state;
 	}
 	
-	private static double evaluateAgent(Human human, Agent partner, State startingState) {
-		
+	private static EvaluationResult evaluateAgent(Human human, Agent partner, State startingState) {
+		double actionBias = 0.5;
 		List<AbstractGroundedAction> actionSequence = new ArrayList<AbstractGroundedAction>();
 		List<State> stateSequence = new ArrayList<State>();
 		boolean finished = false;
@@ -173,6 +166,106 @@ public class TestManyAgents {
 		List<State> statePair = new ArrayList<State>();
 		List<AbstractGroundedAction> actionPair = new ArrayList<AbstractGroundedAction>();
 		human.chooseNewRecipe();
+		Human otherHuman = null;
+		
+		if (partner instanceof Human) {
+			otherHuman = (Human)partner;
+			otherHuman.setRecipe(human.getCurrentRecipe());
+			actionBias = 1.0;
+		}
+		
+		while (!finished) {
+			partner.addObservation(currentState);
+			
+			AbstractGroundedAction humanAction = human.getAction(currentState);
+			if (humanAction == null) {
+				if (human.isSuccess(currentState)) {
+					System.out.println("\n\nHuman finished successfully!!!\n\n");
+				}
+				else {
+					System.err.println("\n\nHuman failed recipe!!!\n\n");
+				}
+				break;
+			}
+			
+			State newState = 
+					TestManyAgents.performActions(currentState, humanAction, null, statePair, actionPair, actionBias);
+			
+			
+			AbstractGroundedAction partnerAction = null;
+			if (otherHuman != null) {
+				
+				//System.out.println("\nEvaluating how partner would complete recipe");
+				//TestManyAgents.evaluateHumanAlone(otherHuman, newState);
+				//System.out.println("");
+				partnerAction = TestManyAgents.getActionAndWait(otherHuman, newState);
+			} else {
+				partnerAction = TestManyAgents.getActionAndWait(partner, newState);
+			}
+			
+			
+			
+			currentState = TestManyAgents.performActions(currentState, humanAction, partnerAction, statePair, actionPair, actionBias);
+			
+			stateSequence.addAll(statePair);
+			actionSequence.addAll(actionPair);
+			boolean isRepeating = checkIfRepeating(stateSequence);
+			
+			finished = human.isFinished(currentState) || isRepeating;
+			if (finished) {
+				if (human.isSuccess(currentState)) {
+					System.out.println("\n\nHuman finished successfully!!!\n\n");
+				}
+				else {
+					if (isRepeating) {
+						System.err.println("\n\nState sequence repetition detected!");
+					}
+					System.err.println("\n\nHuman failed recipe!!!\n\n");
+				}
+				break;
+			}
+		}
+		double reward = human.getCostActions(actionSequence, stateSequence);
+		return new EvaluationResult(reward, human.isSuccess(currentState));
+	}
+	
+	private static boolean checkIfRepeating(List<State> stateSequence) {
+		List<State> reverse = new ArrayList<State>(stateSequence);
+		Collections.reverse(stateSequence);
+		
+		List<State> predicate = new ArrayList<State>();
+		int maximumPredicateSize = reverse.size() / 2;
+		for (int i = 1; i < maximumPredicateSize; i++) {
+			predicate.clear();
+			for (int j = 0; j < i; j++) {
+				predicate.add(reverse.get(j));
+				
+			}
+			boolean predicateMatch = true;
+			int offset = predicate.size();
+			for (int j = 0; j < predicate.size(); j++) {
+				if (!predicate.get(j).equals(reverse.get(j + offset))) {
+					predicateMatch = false;
+					break;
+				}
+			}
+			
+			if (predicateMatch) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private static EvaluationResult evaluateHumanAlone(Human human, State startingState) {
+		
+		List<AbstractGroundedAction> actionSequence = new ArrayList<AbstractGroundedAction>();
+		List<State> stateSequence = new ArrayList<State>();
+		boolean finished = false;
+		State currentState = startingState;
+		stateSequence.add(currentState);
+		List<State> statePair = new ArrayList<State>();
+		List<AbstractGroundedAction> actionPair = new ArrayList<AbstractGroundedAction>();
 		
 		while (!finished) {
 			AbstractGroundedAction humanAction = human.getAction(currentState);
@@ -181,18 +274,44 @@ public class TestManyAgents {
 				break;
 			}
 			
-			AbstractGroundedAction partnerAction = TestManyAgents.getActionAndWait(partner, currentState);
-			
-			currentState = TestManyAgents.performActions(currentState, humanAction, partnerAction, statePair, actionPair, 0.5);
+			currentState = TestManyAgents.performActions(currentState, humanAction, null, statePair, actionPair, 0.5);
 			stateSequence.addAll(statePair);
 			actionSequence.addAll(actionPair);
+			
 			finished = human.isFinished(currentState);
 		}
 		
-		return human.getCostActions(actionSequence, stateSequence);
+		if (human.isSuccess(currentState)) {
+			System.out.println("Recipe was a success");
+		} else {
+			System.err.println("Recipe was a failure");
+		}
+		double score = human.getCostActions(actionSequence, stateSequence);
+		return new EvaluationResult(score, human.isSuccess(currentState));
+	}
+	
+	private static void evaluateHuman(Domain generalDomain, Human human, int numTrials) {
+		double score = 0.0;
+		EvaluationResult result = new EvaluationResult();
+		for (int i = 0; i < numTrials; i++) {
+			List<Recipe> recipes = AgentHelper.recipes(generalDomain);
+			
+			State startingState = TestManyAgents.generateInitialState(generalDomain, recipes, human, null);
+			human.setInitialState(startingState);
+			
+			
+			System.out.println("Trial: " + i);
+			human.chooseNewRecipe();
+			result.incrementResult(TestManyAgents.evaluateHumanAlone(human, startingState));
+		}
+		
+		System.out.println("Human alone: " + result.toString());
+		
 	}
 	
 	private static AbstractGroundedAction getActionAndWait(final Agent agent, final State state) {
+		return agent.getAction(state);
+		/*
 		ExecutorService executor = Executors.newFixedThreadPool(2); 
 		AbstractGroundedAction action = null;
 		final Future<AbstractGroundedAction> handler = executor.submit(new Callable<AbstractGroundedAction>(){
@@ -206,48 +325,101 @@ public class TestManyAgents {
 			System.err.println("Waiting for agent's action timed out");
 		}
 		executor.shutdownNow();
-		return action;
+		return action;*/
+	}
+	
+	public static class EvaluationResult {
+		private double score;
+		private int numberSuccesses;
+		private int numberTrials;
+		
+		public EvaluationResult() {
+			this.score = 0.0;
+			this.numberSuccesses = 0;
+			this.numberTrials = 0;
+		}
+		
+		public EvaluationResult(double score, boolean wasSuccess) {
+			this.score = score;
+			this.numberSuccesses = (wasSuccess) ? 1 : 0;
+			this.numberTrials = 1;
+		}
+		public void incrementResults(double addedScore, boolean wasSuccess) {
+			this.score += addedScore;
+			this.numberSuccesses += (wasSuccess) ? 1 : 0;
+			this.numberTrials++;
+		}
+		
+		public void incrementResult(EvaluationResult other) {
+			this.score += other.score;
+			this.numberSuccesses += other.numberSuccesses;
+			this.numberTrials += other.numberTrials;
+		}
+		
+		public double getScore() {return this.score;}
+		
+		public int getSuccesses() {return this.numberSuccesses;}
+		
+		public int getTrials() {return this.numberTrials;}
+		
+		@Override
+		public String toString() {
+			return 
+			"Successes " + this.numberSuccesses + "/" + this.numberTrials + " Reward: " +  this.score / this.numberTrials;
+		}
 	}
 	
 	public static void main(String[] args) {
 		
-		Domain generalDomain = TestManyAgents.generateGeneralDomain(AgentHelper.recipes()); 
+		int numTrials = 100;
+		
+		Domain generalDomain = TestManyAgents.generateGeneralDomain(); 
+		
+		List<Recipe> recipes = AgentHelper.recipes(generalDomain);
+		Knowledgebase knowledgebase = Knowledgebase.getKnowledgebase(generalDomain);
+		knowledgebase.initKnowledgebase(recipes);
+		
+		Human human = new Human(generalDomain);
+		
+		State state = TestManyAgents.generateInitialState(generalDomain, recipes, human, null);
+		for (Recipe recipe : recipes) {
+			System.out.println("Testing recipe " + recipe.toString());
+			ExperimentHelper.testRecipeExecution(generalDomain, state, recipe);
+			System.out.println("\n\n");
+		}
+		
+		//TestManyAgents.evaluateHuman(generalDomain, human, numTrials);
+		//System.exit(0);
+		
+		
 		
 		List<Agent> agents = Arrays.asList(
+				(Agent)new RandomActionAgent(generalDomain),
+				(Agent)new RandomRecipeAgent(generalDomain),
+				(Agent)new Human(generalDomain, "friend"),
 				(Agent)new AdaptiveByFlow(generalDomain)
 				);
 		
-		int numTrials = 10;
 		
-		Map<Agent, Double> scores = new HashMap<Agent, Double>();
-		for (Agent agent : agents) {
-			System.out.println("Agent: " + agent.getAgentName());
-			double score = 0.0;
-			for (int i = 0; i < numTrials; i++) {
-				Human human = new Human(generalDomain);
-				
-				List<Domain> recipeDomains = new ArrayList<Domain>();
-				List<Recipe> recipes = AgentHelper.recipes();
-				for (Recipe recipe : recipes) {
-					recipeDomains.add(TestManyAgents.generateSpecificDomain(generalDomain, recipe));
-				}
-				
-				State startingState = TestManyAgents.generateInitialState(generalDomain, recipeDomains,recipes, human, agent);
-				human.setInitialState(startingState);
-				agent.setInitialState(startingState);
-				
-				System.out.println("Trial: " + i);
-				score += TestManyAgents.evaluateAgent(human, agent, startingState);
-			}
-			score /= numTrials;
-			scores.put(agent, score);
-		}
 		
-		for (Map.Entry<Agent, Double> entry : scores.entrySet()) {
-			Agent agent = entry.getKey();
-			Double score = entry.getValue();
-			System.out.println(agent.getAgentName() + ": " + score);
+		Agent agent = agents.get(3);
+		
+		System.out.println("Agent: " + agent.getAgentName());
+		EvaluationResult result = new EvaluationResult();
+		for (int i = 0; i < numTrials; i++) {
+			human = new Human(generalDomain);
+			
+			
+			State startingState = TestManyAgents.generateInitialState(generalDomain, recipes, human, agent);
+			human.setInitialState(startingState);
+			agent.setInitialState(startingState);
+			
+			System.out.println("Trial: " + i);
+			result.incrementResult(TestManyAgents.evaluateAgent(human, agent, startingState));
 		}
+		System.out.println(agent.getAgentName() + ": " +  result.toString());
+	
+		
 	}
 
 }

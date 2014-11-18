@@ -31,6 +31,7 @@ import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.BellmanAffordanceRTDP;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.RecipeTerminalFunction;
+import edu.brown.cs.h2r.baking.Agents.AgentHelper;
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
 import edu.brown.cs.h2r.baking.Knowledgebase.Knowledgebase;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
@@ -75,40 +76,35 @@ public class KevinsKitchen implements DomainGenerator {
 	
 	public void PlanRecipeOneAgent(Domain domain, Recipe recipe) {
 		// Add our actions to the domain.
-		Action mix = new MixAction(domain, recipe.topLevelIngredient);
-		Action pour = new PourAction(domain, recipe.topLevelIngredient);
-		Action move = new MoveAction(domain, recipe.topLevelIngredient);
+		Action mix = new MixAction(domain);
+		Action pour = new PourAction(domain);
+		Action move = new MoveAction(domain);
 		Action grease = new GreaseAction(domain);
 		Action aSwitch = new SwitchAction(domain);
-		Action use = new UseAction(domain, recipe.topLevelIngredient);
+		Action use = new UseAction(domain);
 		List<ObjectInstance> objects = new ArrayList<ObjectInstance>();
 		// Get the "highest" subgoal in our recipe.
 		if (this.topLevelIngredient == null) {
 			this.topLevelIngredient = recipe.topLevelIngredient;
 		}
 		
-		recipe.setUpSubgoals(domain);
-		// creates ingredient-only subgoals 
-		recipe.addIngredientSubgoals();
-		recipe.addRequiredRecipeAttributes();
-		recipe.setUpRecipeToolAttributes();
 		
-		objects.add(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
+		objects.add(AgentFactory.getNewHumanAgentObjectInstance(domain, "human", null));
 		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2", "baking_dish", "melting_pot");
-		objects.add(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, SpaceFactory.SPACE_COUNTER, containers, "human"));
+		//objects.add(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, SpaceFactory.SPACE_COUNTER, containers, "human"));
 
-		objects.add(ContainerFactory.getNewBakingContainerObjectInstance(domain, "baking_dish", null, SpaceFactory.SPACE_COUNTER));
-		objects.add(ContainerFactory.getNewHeatingContainerObjectInstance(domain, "melting_pot", null, SpaceFactory.SPACE_COUNTER));
-		objects.add(SpaceFactory.getNewBakingSpaceObjectInstance(domain, SpaceFactory.SPACE_OVEN, null, ""));
-		objects.add(SpaceFactory.getNewHeatingSpaceObjectInstance(domain, SpaceFactory.SPACE_STOVE, null, ""));
+		objects.add(ContainerFactory.getNewBakingContainerObjectInstance(domain, "baking_dish", null, SpaceFactory.SPACE_COUNTER, null));
+		objects.add(ContainerFactory.getNewHeatingContainerObjectInstance(domain, "melting_pot", null, SpaceFactory.SPACE_COUNTER, null));
+		//objects.add(SpaceFactory.getNewBakingSpaceObjectInstance(domain, SpaceFactory.SPACE_OVEN, null, ""));
+		//objects.add(SpaceFactory.getNewHeatingSpaceObjectInstance(domain, SpaceFactory.SPACE_STOVE, null, ""));
 		
 		for (String container : containers) { 
-			objects.add(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, SpaceFactory.SPACE_COUNTER));
+			objects.add(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, SpaceFactory.SPACE_COUNTER, null));
 		}
 		
 		// Out of all the ingredients in our kitchen, plan over only those that might be useful!
-		Knowledgebase knowledgebase = new Knowledgebase();
-		this.allIngredients = knowledgebase.getRecipeObjectInstanceList(domain, recipe);
+		Knowledgebase knowledgebase = Knowledgebase.getKnowledgebase(domain);
+		//this.allIngredients = knowledgebase.getRecipeObjectInstanceList(domain, recipe);
 		
 		
 		
@@ -118,7 +114,7 @@ public class KevinsKitchen implements DomainGenerator {
 				Recipe.getContainersAndIngredients(containerClass, this.allIngredients, SpaceFactory.SPACE_COUNTER);
 		
 		objects.addAll(ingredientsAndContainers);
-		objects.addAll(knowledgebase.getTools(domain, SpaceFactory.SPACE_COUNTER));
+		//objects.addAll(knowledgebase.getTools(domain, SpaceFactory.SPACE_COUNTER));
 		
 		State state = new State(objects);
 		
@@ -160,18 +156,9 @@ public class KevinsKitchen implements DomainGenerator {
 		
 		// TODO you should have startingState be set before this method.
 		List<Action> actions = domain.getActions();
-		for (Action action : actions) {
-			((BakingAction)action).changePlanningIngredient(ingredient);
-		}
 		AffordanceCreator theCreator = new AffordanceCreator(domain, startingState, ingredient);
 		// Add the current top level ingredient so we can properly trim the action space
-		List<PropositionalFunction> propFunctions = domain.getPropFunctions();
-		for (PropositionalFunction pf : propFunctions) {
-			((BakingPropositionalFunction)pf).changeTopLevelIngredient(ingredient);
-			((BakingPropositionalFunction)pf).setSubgoal(subgoal);
-		}
-		
-		subgoal.getGoal().changeTopLevelIngredient(ingredient);
+		domain = AgentHelper.setSubgoal(domain, subgoal);
 		final PropositionalFunction isSuccess = subgoal.getGoal();
 		final PropositionalFunction isFailure = domain.getPropFunction(AffordanceCreator.BOTCHED_PF);
 		
@@ -249,6 +236,6 @@ public class KevinsKitchen implements DomainGenerator {
 		
 		KevinsKitchen kitchen = new KevinsKitchen();
 		Domain domain = kitchen.generateDomain();
-		kitchen.PlanRecipeOneAgent(domain, new Brownies());
+		kitchen.PlanRecipeOneAgent(domain, Brownies.getRecipe(domain));
 	}
 }

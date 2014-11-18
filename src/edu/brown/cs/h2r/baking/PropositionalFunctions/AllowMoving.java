@@ -6,6 +6,7 @@ import java.util.Set;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
+import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
@@ -17,6 +18,11 @@ public class AllowMoving extends BakingPropositionalFunction {
 	public AllowMoving(String name, Domain domain, IngredientRecipe ingredient) {
 		super(name, domain, new String[]{AgentFactory.ClassName, ContainerFactory.ClassName, SpaceFactory.ClassName}, ingredient) ;
 	}
+	
+	public BakingPropositionalFunction updatePF(Domain newDomain, IngredientRecipe ingredient, BakingSubgoal subgoal) {
+		return new AllowMoving(this.name, newDomain, ingredient);
+	}
+	
 	@Override
 	public boolean isTrue(State state, String[] params) {
 		ObjectInstance space = state.getObject(params[2]);
@@ -26,17 +32,17 @@ public class AllowMoving extends BakingPropositionalFunction {
 		String containerSpaceName = ContainerFactory.getSpaceName(container);
 		ObjectInstance containerSpace = state.getObject(containerSpaceName);
 		
-		if (SpaceFactory.isCleaning(containerSpace)) {
-			return false;
-		}
+		//if (SpaceFactory.isCleaning(containerSpace)) {
+		//	return false;
+		//}
 		
 		
 		if (SpaceFactory.isBaking(space)) {
 			return this.checkMoveToBaking(state, container, contents);
 		} else if (SpaceFactory.isHeating(space)) {
 			return this.checkMoveToHeating(state, container, contents);
-		} else if (SpaceFactory.isCleaning(space)) { 
-			return this.checkMoveToCleaning(state, container);
+		//} else if (SpaceFactory.isCleaning(space)) { 
+		 //	return this.checkMoveToCleaning(state, container);
 		} else {
 			return !(ContainerFactory.isEmptyContainer(container));
 		} 

@@ -5,25 +5,27 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import burlap.oomdp.core.Domain;
 import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 
 public class RecipeActionParameters {
 	AbstractMap<String, List<String[]>> recipeActionParams;
-	
-	public RecipeActionParameters() {
+	Domain domain;
+	public RecipeActionParameters(Domain domain) {
 		this.recipeActionParams = new HashMap<String, List<String[]>>();
-		generateBrowniesParams();
+		this.domain = domain;
+		generateBrowniesParams();/*
 		generateCucumberSaladParams();
 		generateDeviledEggsParams();
-		generateMoltenLavaCakeParams();
-		generatePeanutButerCookiesParams();
+		generateMoltenLavaCakeParams();*/
+		generatePeanutButerCookiesParams();/*
 		generatePecanPieParams();
 		generateChocolateChipCookiesParams();
 		generateCranberryWalnutCookiesParams();
 		generateBannanaBreadParams();
 		generateCherryBlondiesParams();
 		generateCherryPieParams();
-		generateBlueberryMuffinsParams();
+		generateBlueberryMuffinsParams();*/
 	}
 	
 	public List<String[]> getRecipeParams(String recipeName) {
@@ -31,51 +33,37 @@ public class RecipeActionParameters {
 	}
 	
 	public void generateBrowniesParams() {
-		Brownies brownies = new Brownies();
+		Brownies brownies = Brownies.getRecipe(domain);
 		List<String[]> actionParams = Arrays.asList(
-			/*new String[] {"pour", "human", "vanilla_bowl", "mixing_bowl_1"},*/
-			/*new String[] {"pour", "human", "eggs_bowl", "mixing_bowl_1"},*/
-			new String[] {"pour", "human", "butter_bowl", "mixing_bowl_1"},
-			new String[] {"move", "baxter", "butter_bowl", SpaceFactory.SPACE_SINK},
-			new String[] {"pour", "human", "white_sugar_bowl", "mixing_bowl_1"},
-			new String[] {"move", "baxter", "white_sugar_bowl", SpaceFactory.SPACE_SINK},
-			new String[] {"hand", "baxter", "whisk", SpaceFactory.SPACE_COUNTER},
+			new String[] {"switch", "human", SpaceFactory.SPACE_OVEN},
+				
+			new String[] {"pour", "human", "butter_bowl", "melting_pot"},
+			new String[] {"move", "human", "melting_pot", SpaceFactory.SPACE_STOVE},
+			new String[] {"switch", "human", SpaceFactory.SPACE_STOVE},
+			new String[] {"move", "human", "melting_pot", SpaceFactory.SPACE_COUNTER},
 			
+			
+			new String[] {"pour", "human", "vanilla_bowl", "mixing_bowl_1"},
+			new String[] {"pour", "human", "eggs_bowl", "mixing_bowl_1"},
 			new String[] {"mix", "human", "mixing_bowl_1", "whisk"},
 			
 			new String[] {"pour", "human", "flour_bowl", "mixing_bowl_2"},
-			
-			new String[] {"move", "baxter", "flour_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"pour", "human", "salt_bowl", "mixing_bowl_2"},
 			new String[] {"pour", "human", "cocoa_bowl", "mixing_bowl_2"},
-			new String[] {"move", "baxter", "cocoa_bowl", SpaceFactory.SPACE_SINK},
-			
-			/*new String[] {"pour", "human", "salt_bowl", "mixing_bowl_2"},
-			new String[] {"pour", "human", "baking_powder_bowl", "mixing_bowl_2"},*/
-			
-			new String[] {"hand", "baxter", "spoon", SpaceFactory.SPACE_COUNTER},
-			
 			new String[] {"mix", "human", "mixing_bowl_2", "spoon"},
-			new String[] {"hand", "human", "spoon", SpaceFactory.SPACE_ROBOT},
-			
-			new String[] {"hand", "baxter", "spoon", SpaceFactory.SPACE_SINK},
 			
 			new String[] {"pour", "human", "mixing_bowl_1", "mixing_bowl_2"},
-			new String[] {"move", "baxter", "mixing_bowl_1", SpaceFactory.SPACE_SINK},
 			new String[] {"mix", "human", "mixing_bowl_2", "whisk"},
-			new String[] {"hand", "human", "whisk", SpaceFactory.SPACE_ROBOT},
 			
 			new String[] {"pour", "human", "mixing_bowl_2", "baking_dish"},
-			new String[] {"move", "baxter", "mixing_bowl_2", SpaceFactory.SPACE_SINK},
 			
-			new String[] {"switch", "baxter", SpaceFactory.SPACE_OVEN},
-			new String[] {"move", "human", "baking_dish", SpaceFactory.SPACE_OVEN},
-			new String[] {"hand", "baxter", "whisk", SpaceFactory.SPACE_SINK}
+			new String[] {"move", "human", "baking_dish", SpaceFactory.SPACE_OVEN}
 		);
 		this.recipeActionParams.put(brownies.getRecipeName(), actionParams);
 	}
 	
 	public void generateCucumberSaladParams() {
-		CucumberSalad recipe = new CucumberSalad();
+		CucumberSalad recipe = new CucumberSalad(domain);
 		List<String[]> actionParams = Arrays.asList(
 			new String[] {"pour", "human", "red_onion_bowl", "mixing_bowl_1"},
 			new String[] {"move", "baxter", "red_onion_bowl", SpaceFactory.SPACE_SINK},
@@ -113,7 +101,7 @@ public class RecipeActionParameters {
 	}
 	
 	public void generateDeviledEggsParams() {
-		DeviledEggs recipe = new DeviledEggs();
+		DeviledEggs recipe = new DeviledEggs(domain);
 		List<String[]> actionParams = Arrays.asList(
 			new String[] {"pour", "human", "egg_yolk_bowl", "mixing_bowl_1"},
 			new String[] {"move", "baxter", "egg_yolk_bowl", SpaceFactory.SPACE_SINK},
@@ -150,7 +138,7 @@ public class RecipeActionParameters {
 	}
 	
 	public void generateMashedPotatoesParams() {
-		MashedPotatoes recipe = new MashedPotatoes();
+		MashedPotatoes recipe = new MashedPotatoes(domain);
 		List<String[]> actionParams = Arrays.asList(
 			
 		);
@@ -158,8 +146,10 @@ public class RecipeActionParameters {
 	}
 	
 	public void generateMoltenLavaCakeParams() {
-		MoltenLavaCake recipe = new MoltenLavaCake();
+		MoltenLavaCake recipe = new MoltenLavaCake(domain);
 		List<String[]> actionParams = Arrays.asList(
+			new String[] {"switch", "baxter", SpaceFactory.SPACE_OVEN},
+				
 			new String[] {"pour", "human", "chocoloate_squares_bowl", "mixing_bowl_1"},
 			new String[] {"move", "baxter", "chocolate_squares_bowl", SpaceFactory.SPACE_SINK},
 			new String[] {"pour", "human", "butter_bowl", "mixing_bowl_1"},
@@ -176,7 +166,7 @@ public class RecipeActionParameters {
 			new String[] {"hand", "baxter", "spoon", SpaceFactory.SPACE_COUNTER},
 			new String[] {"mix", "human", "mixing_bowl_1", "spoon"},
 			
-			new String[] {"pour", "human", "eggs_bowl_bowl", "mixing_bowl_1"},
+			new String[] {"pour", "human", "eggs_bowl", "mixing_bowl_1"},
 			new String[] {"move", "baxter", "eggs_bowl", SpaceFactory.SPACE_SINK},
 			new String[] {"pour", "human", "egg_yolks_bowl_bowl", "mixing_bowl_1"},
 			new String[] {"move", "baxter", "egg_tolks_bowl", SpaceFactory.SPACE_SINK},
@@ -191,7 +181,6 @@ public class RecipeActionParameters {
 			new String[] {"pour", "human", "mixing_bowl_1", "baking_dish"},
 			new String[] {"move", "baxter", "mixing_bowl_1", SpaceFactory.SPACE_SINK},
 			
-			new String[] {"switch", "baxter", SpaceFactory.SPACE_OVEN},
 			new String[] {"move", "human", "baking_dish", SpaceFactory.SPACE_OVEN},
 			new String[] {"hand", "human", "spoon", SpaceFactory.SPACE_ROBOT},
 			new String[] {"hand", "baxter", "spoon", SpaceFactory.SPACE_SINK}
@@ -200,54 +189,39 @@ public class RecipeActionParameters {
 	}
 	
 	public void generatePeanutButerCookiesParams() {
-		PeanutButterCookies recipe = new PeanutButterCookies();
+		PeanutButterCookies recipe = PeanutButterCookies.getRecipe(domain);
 		List<String[]> actionParams = Arrays.asList(
-			new String[] {"pour", "human", "peanut_butter_bowl", "mixing_bowl_1"},
-			new String[] {"move", "baxter", "peanut_butter_bowl", SpaceFactory.SPACE_SINK},
+			new String[] {"switch", "human", SpaceFactory.SPACE_OVEN},
 			new String[] {"pour", "human", "butter_bowl", "mixing_bowl_1"},
-			new String[] {"move", "baxter", "butter_bowl", SpaceFactory.SPACE_SINK},
-			new String[] {"pour", "human", "white_sugar_bowl", "mixing_bowl_1"},
-			new String[] {"move", "baxter", "white_sugar_bowl", SpaceFactory.SPACE_SINK},
-			new String[] {"hand", "baxter", "whisk", SpaceFactory.SPACE_COUNTER},
-			
+			//new String[] {"move", "human", "melting_pot", SpaceFactory.SPACE_STOVE},
+			//new String[] {"switch", "human", SpaceFactory.SPACE_STOVE},
+			//new String[] {"move", "human", "melting_pot", SpaceFactory.SPACE_COUNTER},
+				
+				
+			new String[] {"pour", "human", "peanut_butter_bowl", "mixing_bowl_1"},
+			//new String[] {"pour", "human", "melting_pot", "mixing_bowl_1"},
 			new String[] {"mix", "human", "mixing_bowl_1", "whisk"},
-			new String[] {"pour", "human", "eggs_bowl_bowl", "mixing_bowl_1"},
-			new String[] {"move", "baxter", "eggs_bowl", SpaceFactory.SPACE_SINK},
+			
+			new String[] {"pour", "human", "eggs_bowl", "mixing_bowl_1"},
 			new String[] {"mix", "human", "mixing_bowl_1", "whisk"},
 
-			new String[] {"pour", "human",  "flour_bowl", "mixing_bowl_2"},
-			new String[] {"move", "baxter", "flour_bowl", SpaceFactory.SPACE_SINK},
 			new String[] {"pour", "human",  "baking_powder_bowl", "mixing_bowl_2"},
-			new String[] {"move", "baxter", "baking_powder_bowl", SpaceFactory.SPACE_SINK},
-			new String[] {"pour", "human",  "salt_bowl", "mixing_bowl_2"},
-			new String[] {"move", "baxter", "salt_bowl", SpaceFactory.SPACE_SINK},
 			new String[] {"pour", "human",  "baking_soda_bowl", "mixing_bowl_2"},
-			new String[] {"move", "baxter", "baking_soda_bowl", SpaceFactory.SPACE_SINK},
-			
-			new String[] {"hand", "baxter", "spoon", SpaceFactory.SPACE_COUNTER},
-			
 			new String[] {"mix", "human", "mixing_bowl_2", "spoon"},
-			new String[] {"hand", "human", "whisk", SpaceFactory.SPACE_ROBOT},
-			
-			new String[] {"hand", "baxter", "whisk", SpaceFactory.SPACE_SINK},
 			
 			new String[] {"pour", "human", "mixing_bowl_1", "mixing_bowl_2"},
-			new String[] {"move", "baxter", "mixing_bowl_1", SpaceFactory.SPACE_SINK},
 			new String[] {"mix", "human", "mixing_bowl_2", "spoon"},
-			new String[] {"hand", "human", "spoon", SpaceFactory.SPACE_ROBOT},
 			
 			new String[] {"pour", "human", "mixing_bowl_2", "baking_dish"},
-			new String[] {"move", "baxter", "mixing_bowl_2", SpaceFactory.SPACE_SINK},
 			
-			new String[] {"switch", "baxter", SpaceFactory.SPACE_OVEN},
-			new String[] {"move", "human", "baking_dish", SpaceFactory.SPACE_OVEN},
-			new String[] {"hand", "baxter", "spoon", SpaceFactory.SPACE_SINK}
+			new String[] {"move", "human", "baking_dish", SpaceFactory.SPACE_OVEN}
+			//new String[] {"hand", "baxter", "spoon", SpaceFactory.SPACE_SINK}
 		);
 		this.recipeActionParams.put(recipe.getRecipeName(), actionParams);
 	}
 	
 	public void generatePecanPieParams() {
-		PecanPie recipe = new PecanPie();
+		PecanPie recipe = new PecanPie(domain);
 		List<String[]> actionParams = Arrays.asList(
 			new String[] {"pour", "human", "flour_bowl", "mixing_bowl_1"},
 			new String[] {"move", "baxter", "flour_bowl", SpaceFactory.SPACE_SINK},
@@ -306,7 +280,7 @@ public class RecipeActionParameters {
 	}
 	
 	public void generateChocolateChipCookiesParams() {
-		ChocolateChipCookies cookies = new ChocolateChipCookies();
+		ChocolateChipCookies cookies = new ChocolateChipCookies(domain);
 		List<String[]> actionParams = Arrays.asList(
 			new String[] {"hand", "baxter", "whisk", SpaceFactory.SPACE_COUNTER},	
 			new String[] {"pour", "human", "butter_bowl", "mixing_bowl_1"},
@@ -351,7 +325,7 @@ public class RecipeActionParameters {
 	}
 	
 	public void generateCranberryWalnutCookiesParams() {
-		CranberryWalnutCookies cookies = new CranberryWalnutCookies();
+		CranberryWalnutCookies cookies = new CranberryWalnutCookies(domain);
 		List<String[]> actionParams = Arrays.asList(
 			new String[] {"hand", "baxter", "whisk", SpaceFactory.SPACE_COUNTER},	
 			new String[] {"pour", "human", "butter_bowl", "mixing_bowl_1"},
@@ -400,7 +374,7 @@ public class RecipeActionParameters {
 	}
 	
 	public void generateBannanaBreadParams() {
-		BannanaBread bread  = new BannanaBread();
+		BannanaBread bread  = new BannanaBread(domain);
 		List<String[]> actionParams = Arrays.asList(
 			new String[] {"hand", "baxter", "whisk", SpaceFactory.SPACE_COUNTER},	
 			new String[] {"pour", "human", "butter_bowl", "mixing_bowl_1"},
@@ -439,7 +413,7 @@ public class RecipeActionParameters {
 	}
 	
 	public void generateCherryBlondiesParams() {
-		CherryBlondies blondies = new CherryBlondies();
+		CherryBlondies blondies = new CherryBlondies(domain);
 		List<String[]> actionParams = Arrays.asList(
 			new String[] {"hand", "baxter", "whisk", SpaceFactory.SPACE_COUNTER},	
 			new String[] {"pour", "human", "butter_bowl", "mixing_bowl_1"},
@@ -484,7 +458,7 @@ public class RecipeActionParameters {
 	}
 	
 	public void generateCherryPieParams() {
-		CherryPie recipe = new CherryPie();
+		CherryPie recipe = new CherryPie(domain);
 		List<String[]> actionParams = Arrays.asList(
 			new String[] {"pour", "human", "flour_bowl", "mixing_bowl_1"},
 			new String[] {"move", "baxter", "flour_bowl", SpaceFactory.SPACE_SINK},
@@ -530,7 +504,7 @@ public class RecipeActionParameters {
 	}
 	
 	public void generateBlueberryMuffinsParams() {
-		BlueberryMuffins muffins = new BlueberryMuffins();
+		BlueberryMuffins muffins = new BlueberryMuffins(domain);
 		List<String[]> actionParams = Arrays.asList(
 			new String[] {"hand", "baxter", "whisk", SpaceFactory.SPACE_COUNTER},	
 			new String[] {"pour", "human", "butter_bowl", "mixing_bowl_1"},

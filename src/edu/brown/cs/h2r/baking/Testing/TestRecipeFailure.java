@@ -8,6 +8,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import burlap.behavior.statehashing.NameDependentStateHashFactory;
+import burlap.behavior.statehashing.ObjectHashFactory;
+import burlap.behavior.statehashing.StateHashFactory;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
@@ -29,18 +32,22 @@ public class TestRecipeFailure {
 		Domain domain;
 		List<ObjectInstance> allIngredients;
 		IngredientRecipe topLevelIngredient;
+		StateHashFactory hashingFactory = new NameDependentStateHashFactory();
+		ObjectHashFactory objectHashingFactory = hashingFactory.getObjectHashFactory();
 		
 		@Before
 		public void setUp() {
 			domain = new SADomain();
 			setUpDomain();
+			knowledgebase = Knowledgebase.getKnowledgebase(domain);
+			
 			List<ObjectInstance> objectsToAdd = new ArrayList<ObjectInstance>();
-			objectsToAdd.add(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
+			objectsToAdd.add(AgentFactory.getNewHumanAgentObjectInstance(domain, "human", objectHashingFactory));
 			List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2");
-			objectsToAdd.add(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter", containers, "human"));
+			objectsToAdd.add(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter", containers, "human", objectHashingFactory));
 
 			for (String container : containers) { 
-				objectsToAdd.add(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "counter"));
+				objectsToAdd.add(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "counter", objectHashingFactory));
 			}
 			this.state = new State(objectsToAdd);
 		}
@@ -79,16 +86,15 @@ public class TestRecipeFailure {
 		// Tests to see if failure is found on bad attributes on a subgoal.
 		@Test
 		public void badAttributesSubgoal() {
-			topLevelIngredient = new MashedPotatoes().topLevelIngredient;
-			knowledgebase = new Knowledgebase();
-			allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(domain, topLevelIngredient);
+			topLevelIngredient = new MashedPotatoes(domain).topLevelIngredient;
+			allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(domain, topLevelIngredient, objectHashingFactory);
 			setUpState();
 			
 			List<String> contents = Arrays.asList("butter", "potatoes", "salt", "eggs");
 			
 			ObjectInstance mash = IngredientFactory.getNewComplexIngredientObjectInstance(
 					domain.getObjectClass("complex_ingredient"), "Mashed_potatoes", Recipe.NO_ATTRIBUTES, 
-					Recipe.SWAPPED, "mixing_bowl_1", null, null, new HashSet<String>(),new HashSet<String>(), new HashSet<String>(), contents);
+					Recipe.SWAPPED, "mixing_bowl_1", null, null, new HashSet<String>(),new HashSet<String>(), new HashSet<String>(), contents, objectHashingFactory);
 			
 			// Potatoes haven't been peeled
 			BakingAsserts.assertFailure(state, topLevelIngredient, mash);
@@ -97,16 +103,15 @@ public class TestRecipeFailure {
 		// Test double up on a trait ingredient failure
 		@Test
 		public void extraTraitIngredient() {
-			topLevelIngredient = new MashedPotatoes().topLevelIngredient;
-			knowledgebase = new Knowledgebase();
-			allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(domain, topLevelIngredient);
+			topLevelIngredient = new MashedPotatoes(domain).topLevelIngredient;
+			allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(domain, topLevelIngredient, objectHashingFactory);
 			setUpState();
 			
 			List<String> contents = Arrays.asList("butter", "potatoes", "salt", "eggs", "sea_salt");
 			
 			ObjectInstance mash = IngredientFactory.getNewComplexIngredientObjectInstance(
 					domain.getObjectClass("complex_ingredient"), "Mashed_potatoes", Recipe.NO_ATTRIBUTES,
-					Recipe.SWAPPED, "mixing_bowl_1", null, null, new HashSet<String>(),new HashSet<String>(), new HashSet<String>(), contents);
+					Recipe.SWAPPED, "mixing_bowl_1", null, null, new HashSet<String>(),new HashSet<String>(), new HashSet<String>(), contents, objectHashingFactory);
 			
 			BakingAsserts.assertFailure(state, topLevelIngredient, mash);
 			
@@ -115,27 +120,26 @@ public class TestRecipeFailure {
 		// Test to see if failure is found in a subgoal of the top level ingredient
 		@Test
 		public void extraIngredientInSubgoal() {
-			topLevelIngredient = new CucumberSalad().topLevelIngredient;
-			knowledgebase = new Knowledgebase();
-			allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(domain, topLevelIngredient);
+			topLevelIngredient = new CucumberSalad(domain).topLevelIngredient;
+			allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(domain, topLevelIngredient, objectHashingFactory);
 			setUpState();
 			ObjectClass ob = domain.getObjectClass("complex_ingredient");
 			
 			List<String> saladContents = Arrays.asList("tomatoes", "cucumbers", "red_onions");
 			ObjectInstance salad = IngredientFactory.getNewComplexIngredientObjectInstance(
 					ob, "Salad", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, "mixing_bowl_1", null,  
-					null, new HashSet<String>(),new HashSet<String>(), new HashSet<String>(), saladContents);
+					null, new HashSet<String>(),new HashSet<String>(), new HashSet<String>(), saladContents, objectHashingFactory);
 			this.state = this.state.appendObject(salad);
 			
 			List<String> dressingContents = Arrays.asList("salt", "pepper", "olive_oil", "lemon_juice", "sea_salt");
 			ObjectInstance dressing = IngredientFactory.getNewComplexIngredientObjectInstance(
 					ob, "dressing", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, "mixing_bowl_2", null, 
-					null, new HashSet<String>(),new HashSet<String>(), new HashSet<String>(), dressingContents);
+					null, new HashSet<String>(),new HashSet<String>(), new HashSet<String>(), dressingContents, objectHashingFactory);
 			this.state = this.state.appendObject(dressing);
 			
 			ObjectInstance cucumberSalad = IngredientFactory.getNewComplexIngredientObjectInstance(
 					ob, "CucumberSalad", Recipe.NO_ATTRIBUTES, Recipe.SWAPPED, "mixing_bowl_1", null, 
-					null, new HashSet<String>(), new HashSet<String>(), new HashSet<String>(), Arrays.asList("Salad", "dressing"));
+					null, new HashSet<String>(), new HashSet<String>(), new HashSet<String>(), Arrays.asList("Salad", "dressing"), objectHashingFactory);
 			
 			BakingAsserts.assertFailure(state, topLevelIngredient, cucumberSalad);
 		}
@@ -143,9 +147,8 @@ public class TestRecipeFailure {
 		// Tests to see if failure is found when not all ingredients are available
 		@Test
 		public void cantCompleteRecipe() {
-			topLevelIngredient = new MashedPotatoes().topLevelIngredient;
-			knowledgebase = new Knowledgebase();
-			allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(domain, topLevelIngredient);
+			topLevelIngredient = new MashedPotatoes(domain).topLevelIngredient;
+			allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(domain, topLevelIngredient, objectHashingFactory);
 			
 			int index = 0;
 			for (ObjectInstance ing : allIngredients) {
@@ -162,7 +165,7 @@ public class TestRecipeFailure {
 			
 			ObjectInstance mash = IngredientFactory.getNewComplexIngredientObjectInstance(
 					domain.getObjectClass("complex_ingredient"), "Mashed_potatoes", Recipe.NO_ATTRIBUTES, 
-					Recipe.SWAPPED, "mixing_bowl_1", null, null, new HashSet<String>(),new HashSet<String>(), new HashSet<String>(), contents);
+					Recipe.SWAPPED, "mixing_bowl_1", null, null, new HashSet<String>(),new HashSet<String>(), new HashSet<String>(), contents, objectHashingFactory);
 			
 			BakingAsserts.assertFailure(state, topLevelIngredient, mash);
 		}
@@ -170,9 +173,8 @@ public class TestRecipeFailure {
 		// Tests to see if failure is found if not enough of an ingredient is available
 		@Test
 		public void notEnoughIngredient() {
-			topLevelIngredient = new MashedPotatoes().topLevelIngredient;
-			knowledgebase = new Knowledgebase();
-			allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(domain, topLevelIngredient);
+			topLevelIngredient = new MashedPotatoes(domain).topLevelIngredient;
+			allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(domain, topLevelIngredient, objectHashingFactory);
 			setUpState();
 			ObjectInstance eggs = state.getObject("eggs");
 			ObjectInstance newEggs = IngredientFactory.changeUseCount(eggs, 0);
@@ -181,7 +183,7 @@ public class TestRecipeFailure {
 			
 			ObjectInstance mash = IngredientFactory.getNewComplexIngredientObjectInstance(
 					domain.getObjectClass("complex_ingredient"), "Mashed_potatoes", Recipe.NO_ATTRIBUTES,
-					Recipe.SWAPPED, "mixing_bowl_1", null, null, new HashSet<String>(),new HashSet<String>(), new HashSet<String>(), contents);
+					Recipe.SWAPPED, "mixing_bowl_1", null, null, new HashSet<String>(),new HashSet<String>(), new HashSet<String>(), contents, objectHashingFactory);
 			
 			BakingAsserts.assertFailure(state, topLevelIngredient, mash);
 			org.junit.Assert.assertTrue(true);

@@ -62,17 +62,17 @@ public class SingleAgentKitchen implements DomainGenerator {
 	public void PlanRecipeOneAgent(Domain domain, Recipe recipe)
 	{
 		State state = new State();
-		Action mix = new MixAction(domain, recipe.topLevelIngredient);
+		Action mix = new MixAction(domain);
 		//Action bake = new BakeAction(domain);
-		Action pour = new PourAction(domain, recipe.topLevelIngredient);
-		Action move = new MoveAction(domain, recipe.topLevelIngredient);
-		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
+		Action pour = new PourAction(domain);
+		Action move = new MoveAction(domain);
+		//state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
 		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2");
-		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "shelf", null, null));
-		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter", containers, "human"));
+		//state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "shelf", null, null));
+		//state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter", containers, "human"));
 		
 		for (String container : containers) { 
-			state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "counter"));
+			//state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "counter"));
 		}
 
 		this.PlanIngredient(domain, state, recipe.topLevelIngredient);
@@ -94,7 +94,7 @@ public class SingleAgentKitchen implements DomainGenerator {
 		ObjectInstance shelfSpace = currentState.getObject("shelf");
 		
 		List<ObjectInstance> ingredientInstances = 
-				IngredientFactory.getSimpleIngredients(simpleIngredientClass, ingredient);
+				IngredientFactory.getSimpleIngredients(simpleIngredientClass, ingredient, null);
 		List<ObjectInstance> containerInstances = Recipe.getContainersAndIngredients(containerClass, ingredientInstances, shelfSpace.getName());
 		
 		
@@ -157,14 +157,14 @@ public class SingleAgentKitchen implements DomainGenerator {
 	
 	public static State getOneAgent(Domain domain){
 		State state = new State();
-		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
+		//state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human"));
 		
 		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2");
-		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "shelf", null, null));
-		state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter", containers, "human"));
+		//state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "shelf", null, null));
+		//state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter", containers, "human"));
 		
 		for (String container : containers) { 
-			state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "counter"));
+			//state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "counter"));
 		}
 		return state;
 	}
@@ -173,6 +173,6 @@ public class SingleAgentKitchen implements DomainGenerator {
 		
 		SingleAgentKitchen kitchen = new SingleAgentKitchen();
 		Domain domain = kitchen.generateDomain();
-		kitchen.PlanRecipeOneAgent(domain, new Brownies());
+		kitchen.PlanRecipeOneAgent(domain, Brownies.getRecipe(domain));
 	}
 }

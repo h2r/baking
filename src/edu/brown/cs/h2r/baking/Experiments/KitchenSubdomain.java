@@ -1,19 +1,26 @@
 package edu.brown.cs.h2r.baking.Experiments;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import burlap.behavior.singleagent.Policy;
 import burlap.oomdp.core.Domain;
+import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
+import burlap.oomdp.singleagent.SADomain;
 import edu.brown.cs.h2r.baking.BakingSubgoal;
+import edu.brown.cs.h2r.baking.IngredientRecipe;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 
 public class KitchenSubdomain {
 
-	Recipe recipe;
-	BakingSubgoal subgoal;
-	State startState;
-	Policy policy;
-	Domain domain;
+	private final Recipe recipe;
+	private final BakingSubgoal subgoal;
+	private final State startState;
+	private final Policy policy;
+	private final Domain domain;
 	
 	private KitchenSubdomain(Domain domain, Recipe recipe, BakingSubgoal subgoal, State startState, Policy policy) {
 		this.domain = domain;
@@ -28,7 +35,23 @@ public class KitchenSubdomain {
 		{
 			return null;
 		}
-		return new KitchenSubdomain(domain, recipe, subgoal, startState, policy);
+		
+		IngredientRecipe ingredient = subgoal.getIngredient();
+		
+		SADomain newDomain = new SADomain((SADomain)domain);
+		
+		List<PropositionalFunction> propFunctions = domain.getPropFunctions();
+		List<PropositionalFunction> newPropFunctions = new ArrayList<PropositionalFunction>();
+		for (PropositionalFunction pf : propFunctions) {
+			BakingPropositionalFunction oldPf = (BakingPropositionalFunction)pf;
+			newPropFunctions.add(oldPf.updatePF(newDomain, ingredient, subgoal));
+		}
+		
+		return new KitchenSubdomain(new SADomain(newDomain, propFunctions), recipe, subgoal, startState, policy);
+	}
+	
+	public static KitchenSubdomain makeSubdomain(KitchenSubdomain other) {
+		return new KitchenSubdomain(other.domain, other.recipe, other.subgoal, other.startState, other.policy);
 	}
 
 	public Domain getDomain() {
@@ -52,6 +75,10 @@ public class KitchenSubdomain {
 	
 	public Policy getPolicy() {
 		return this.policy;
+	}
+
+	public boolean isValidInState(State state) {
+		return this.subgoal.allPreconditionsCompleted(state) && !this.subgoal.goalCompleted(state);
 	}
 	
 	@Override

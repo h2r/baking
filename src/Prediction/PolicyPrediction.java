@@ -1,6 +1,7 @@
 package Prediction;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,6 +15,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import burlap.behavior.singleagent.Policy;
 import burlap.behavior.singleagent.Policy.ActionProb;
@@ -30,6 +33,7 @@ import burlap.oomdp.core.TransitionProbability;
 import burlap.oomdp.singleagent.GroundedAction;
 import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
+import edu.brown.cs.h2r.baking.Agents.AgentHelper;
 import edu.brown.cs.h2r.baking.Experiments.KitchenSubdomain;
 import edu.brown.cs.h2r.baking.Experiments.SubgoalDetermination;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
@@ -37,10 +41,15 @@ import edu.brown.cs.h2r.baking.Recipes.Recipe;
 
 public class PolicyPrediction {
 
+	private static Lock systemOutMutex = new ReentrantLock();
 	private static int numberThreadsCreated = 0;
 	public static final int DEFAULT_MAX_DEPTH = 5;
 	private int nextPolicy = 0;
 	private int depthType;
+	
+	private static List<AbstractGroundedAction> actualActions;
+	private static KitchenSubdomain actualPolicy;
+	
 	List<KitchenSubdomain> policies;
 	
 	public PolicyPrediction(List<KitchenSubdomain> policies, int depthType) {
@@ -59,20 +68,6 @@ public class PolicyPrediction {
 			
 		}
 		return foundActionProbability;
-	}
-	
-	public static void setSubgoal(KitchenSubdomain subdomain) {
-		Domain domain = subdomain.getDomain();
-		BakingSubgoal subgoal = subdomain.getSubgoal();
-		IngredientRecipe ingredient = subgoal.getIngredient();
-		
-		List<PropositionalFunction> propFunctions = domain.getPropFunctions();
-		for (PropositionalFunction pf : propFunctions) {
-			((BakingPropositionalFunction)pf).changeTopLevelIngredient(ingredient);
-			((BakingPropositionalFunction)pf).setSubgoal(subgoal);
-		}
-		
-		subgoal.getGoal().changeTopLevelIngredient(ingredient);
 	}
 	
 	public List<PolicyProbability> getPolicyDistributionFromStateActionPair(State state, GroundedAction observedAction) {
@@ -104,23 +99,37 @@ public class PolicyPrediction {
 
 	private static List<ActionProb> getActionDistributionForPolicyInState(State state, KitchenSubdomain subdomain) {
 		
-		PolicyPrediction.setSubgoal(subdomain);
-		//List<ActionProb> actionDistribution = subdomain.getPolicy().getActionDistributionForState(state);
 		Set<AbstractGroundedAction> allActions = new HashSet<AbstractGroundedAction>();
 		List<ActionProb> distribution = subdomain.getPolicy().getActionDistributionForState(state);
+		return distribution;/*
+		List<List<ActionProb>> distributions = new ArrayList<List<ActionProb>>();
 		boolean keepGoing = true;
-		while (keepGoing) {
+		int count = 0;
+		for (int i = 0; i < 100; i++) {
+			//System.out.println(distribution.toString());
+			distributions.add(distribution);
 			PolicyPrediction.setSubgoal(subdomain);
 			List<ActionProb> otherDistribution = subdomain.getPolicy().getActionDistributionForState(state);
 			if (!otherDistribution.retainAll(distribution)) {
-				return distribution;
+				count++;
 			}
 			else {
-				//System.err.println("Second call to get action distribution failed to reproduce same results");
+				System.err.println("Second call to get action distribution failed to reproduce same results");
 				PolicyPrediction.setSubgoal(subdomain);
 				distribution = subdomain.getPolicy().getActionDistributionForState(state);
 			}
+			if (count == 10) {
+				if (count != i + 1) {
+					for (List<ActionProb> dist : distributions) {
+						System.out.println(dist.toString());
+					}
+					System.out.println("");
+				}
+				
+				return distribution;
+			}
 		}
+		
 		
 		List<ActionProb> actionDistribution = new ArrayList<ActionProb>(allActions.size());
 		double normalizedProbability = 1.0 / allActions.size();
@@ -128,7 +137,7 @@ public class PolicyPrediction {
 			actionDistribution.add(new ActionProb(action, normalizedProbability));
 		}
 		
-		return actionDistribution;
+		return actionDistribution;*/
 	}
 
 	public double getFlowToStateCondition(KitchenSubdomain subdomain, State fromState, StateConditionTest goalCondition, int maxDepth) throws InterruptedException {
@@ -200,7 +209,7 @@ public class PolicyPrediction {
 		return this.getPolicyDistributionFromStatePair(fromState, endState, DEFAULT_MAX_DEPTH);
 	}*/
 	
-	public List<PolicyProbability> getPolicyDistributionFromStatePair(State fromState, State endState, int maxDepth, KitchenSubdomain actual, StateHashFactory hashingFactory, int depthType) {
+	public List<PolicyProbability> getPolicyDistributionFromStatePair(State fromState, State endState, int maxDepth, KitchenSubdomain actual, List<AbstractGroundedAction> actualActions, StateHashFactory hashingFactory, int depthType) {
 		final State goalState = endState.copy();
 		StateConditionTest goalCondition = new StateConditionTest() {
 			@Override
@@ -209,20 +218,61 @@ public class PolicyPrediction {
 			}
 		};
 		
-		return this.getPolicyDistributionFromStateGoalCondition(fromState, goalCondition, maxDepth, actual, hashingFactory, depthType);
+		return this.getPolicyDistributionFromStateGoalCondition(fromState, goalCondition, maxDepth, actual, actualActions, hashingFactory, depthType);
 	}
 	
 	/*public List<PolicyProbability> getPolicyDistributionFromStateGoalCondition(State fromState, StateConditionTest goalCondition) {
 		return this.getPolicyDistributionFromStateGoalCondition(fromState, goalCondition, DEFAULT_MAX_DEPTH);
 	}*/
 	
+	public List<PolicyProbability> getUniformPolicyDistribution() {
+		List<PolicyProbability> distribution = 
+				new ArrayList<PolicyProbability>();
+		for (KitchenSubdomain policyDomain : this.policies) {
+			distribution.add(PolicyProbability.newPolicyProbability(policyDomain, 1.0 / this.policies.size()));
+		}
+		return distribution;
+	}
+	
+	public List<PolicyProbability> getPolicyDistributionForValidInState(State state) {
+	
+		int numberValid = 0;
+		for (KitchenSubdomain policyDomain : this.policies) {
+			if (policyDomain.getSubgoal().allPreconditionsCompleted(state) &&
+					!policyDomain.getSubgoal().goalCompleted(state)) {
+				numberValid++;
+			}
+		}
+		List<PolicyProbability> distribution = 
+				new ArrayList<PolicyProbability>();
+		for (KitchenSubdomain policyDomain : this.policies) {
+			if (policyDomain.getSubgoal().allPreconditionsCompleted(state) &&
+					!policyDomain.getSubgoal().goalCompleted(state)) {
+						distribution.add(PolicyProbability.newPolicyProbability(policyDomain, 1.0 / numberValid));
+					}
+			else {
+				distribution.add(PolicyProbability.newPolicyProbability(policyDomain, 0.0));
+			}
+				
+			
+		}
+		return distribution;
+	}
+	
 	public List<PolicyProbability> getPolicyDistributionFromStateGoalCondition(State fromState, 
-			final StateConditionTest goalCondition, final int maxDepth, KitchenSubdomain actual, StateHashFactory hashingFactory, final int depthType){
+			final StateConditionTest goalCondition, final int maxDepth, KitchenSubdomain actual, List<AbstractGroundedAction> actualActions, StateHashFactory hashingFactory, final int depthType){
+		
+		PolicyPrediction.actualPolicy = actual;
+		PolicyPrediction.actualActions = actualActions;
+		
+		if (goalCondition.satisfies(fromState)) {
+			return this.getPolicyDistributionForValidInState(fromState);
+		}
 		
 		final List<PolicyProbability> distribution = 
 				new ArrayList<PolicyProbability>(Collections.nCopies(this.policies.size(), new PolicyProbability()));
 		
-		final String actualName = (actual == null) ? "*UNKNOWN*" : SubgoalDetermination.buildName(actual);
+		final String actualName = (actual == null) ? "*UNKNOWN*" : actual.toString();
 		final StateHashTuple fromStateTuple = hashingFactory.hashState(fromState);
 		final StateHashFactory hashFactory = new NameDependentStateHashFactory((NameDependentStateHashFactory)hashingFactory);
 		final List<KitchenSubdomain> policyDomains = this.policies;
@@ -251,6 +301,10 @@ public class PolicyPrediction {
 					sumProbability += future.get();	
 			}
 		} catch (InterruptedException | ExecutionException e) {
+			if (e instanceof ExecutionException) {
+				System.err.println(e.getMessage());
+				e.printStackTrace();
+			}
 		}
 		executor.shutdown();
 		try {
@@ -297,7 +351,12 @@ public class PolicyPrediction {
 		
 		State fromState = fromStateTuple.getState();
 		
-		String name = SubgoalDetermination.buildName(subdomain);
+		
+		
+		String name = subdomain.toString();
+		if (name.equals("brownies - wet_ingredients")) {
+			System.out.println("");
+		}
 		Policy policy = subdomain.getPolicy();
 		int currentDepth = 1;
 		Map<StateHashTuple, Map<KitchenSubdomain, Double>> flowMap = new HashMap<StateHashTuple, Map<KitchenSubdomain, Double>>();
@@ -306,7 +365,22 @@ public class PolicyPrediction {
 			//System.out.println("");
 		}
 		double depthProbability = getDepthProbability(1, maxDepth, depthType);
-		double currentProbability = depthProbability * flow1(subdomain, fromState, goalCondition);
+		boolean shouldBePositive = (actualPolicy == null) ? false : name.equals(actualPolicy.toString());
+		double flow = flow1(subdomain, fromState, goalCondition, shouldBePositive);
+		double currentProbability = depthProbability * flow;
+		
+		/*PolicyPrediction.systemOutMutex.lock();
+		System.out.println(subdomain.toString());
+		System.out.println("Depth: " + currentDepth);
+		System.out.println("Flow map size: " + flowMap.size());
+		
+		System.out.println("Flow: " + flow);
+		System.out.println("Depth Prob: " + depthProbability);
+		System.out.println("Current Prob: " + currentProbability + "\n");
+		if (actualName.equals(name) && currentProbability == 0.0) {
+			System.out.print("");
+		}
+		PolicyPrediction.systemOutMutex.unlock();*/
 		
 		
 		Map<KitchenSubdomain, Double> map = new HashMap<KitchenSubdomain, Double>();
@@ -318,27 +392,28 @@ public class PolicyPrediction {
 		double totalFlow = 1.0, previousFlow = 1.0;
 		while (currentDepth++ < maxDepth && totalFlow != 0) {
 			
-			if (subdomain.toString().equals("brownies - dry_ingredients")) {
+			//if (subdomain.toString().equals("brownies - wet_ingredients")) {
 				//System.out.println(subdomain.toString());
-			}
+			//}
 			
 			totalFlow = computeFlowToAllStates(subdomain, goalCondition, flowMap, hashingFactory);
-			double flow = flowT(subdomain, goalCondition, flowMap);
+			flow = flowT(subdomain, goalCondition, flowMap);
 			depthProbability = getDepthProbability(currentDepth, maxDepth, depthType);
 			currentProbability += depthProbability * flow;
 			
-			if (subdomain.toString().equals("brownies - dry_ingredients")) {
-//				System.out.println(subdomain.toString());
-//				System.out.println("Depth: " + currentDepth);
-//				System.out.println("Flow map size: " + flowMap.size());
-//				
-//				System.out.println("Flow: " + flow);
-//				System.out.println("Depth Prob: " + depthProbability);
-//				System.out.println("Current Prob: " + currentProbability);
+			//if (subdomain.toString().equals("brownies - wet_ingredients")) {
+			/*
+				System.out.println(subdomain.toString());
+				System.out.println("Depth: " + currentDepth);
+				System.out.println("Flow map size: " + flowMap.size());
+				
+				System.out.println("Flow: " + flow);
+				System.out.println("Depth Prob: " + depthProbability);
+				System.out.println("Current Prob: " + currentProbability + "\n");*/
 				
 				
 				
-			}
+			//}
 			
 			if (flow > 1.0) {
 				//System.err.println("flow: " + totalFlow);
@@ -353,16 +428,18 @@ public class PolicyPrediction {
 			}
 			
 		}
-		if (actualName.equals(name) && currentProbability == 0.0) {
+		//if (actualName.equals(name) && currentProbability == 0.0) {
 			//System.err.println("Probability of actual is: " + currentProbability);
-		}
+		//}
 		
-		
+		//if (name.equals(actualPolicy.toString()) && currentProbability == 0.0) {
+		//	System.out.print("");
+		//}
 		
 		return PolicyProbability.newPolicyProbability(subdomain, currentProbability);
 	}
 	
-	private static double flow1(KitchenSubdomain policy, State fromState, State nextState) throws InterruptedException {
+	private static double flow1(KitchenSubdomain policy, State fromState, State nextState, boolean shouldBePositive) throws InterruptedException {
 		final State goalState = nextState.copy();
 		StateConditionTest goalCondition = new StateConditionTest() {
 			@Override
@@ -371,10 +448,10 @@ public class PolicyPrediction {
 			}
 		};
 		
-		return flow1(policy, fromState, goalCondition);
+		return flow1(policy, fromState, goalCondition, shouldBePositive);
 	}
 	
-	private static double flow1(KitchenSubdomain policy, State fromState, StateConditionTest goalCondition) throws InterruptedException {
+	private static double flow1(KitchenSubdomain policy, State fromState, StateConditionTest goalCondition, boolean shouldBePositive) throws InterruptedException {
 		// Get possible actions from the fromState
 		List<ActionProb> actionDistribution = PolicyPrediction.getActionDistributionForPolicyInState(fromState, policy);
 		if (Thread.interrupted()) {
@@ -408,6 +485,9 @@ public class PolicyPrediction {
 				}
 			}
 		}
+		if (shouldBePositive && probability == 0.0) {
+			System.out.print("");
+		}
 		return probability;
 	}
 	
@@ -428,14 +508,15 @@ public class PolicyPrediction {
 			double fT = 0;
 			
 			// Get flow_1 from this state to the goal state
-			double f1 = flow1(policy, previousState, goalCondition);
+			double f1 = flow1(policy, previousState, goalCondition, false);
 			
 			for (Map.Entry<KitchenSubdomain, Double> entry2 : policyFlowMap.entrySet()) {
 				KitchenSubdomain otherPolicy = entry2.getKey();
 				Double policyFT = entry2.getValue();
 				
 				// Get flow_{T-1} from start up to this state
-				double transitionProbability = (policy == otherPolicy) ? probabilityStaying : probabilitySwitching;
+				double transitionProbability = 
+						PolicyPrediction.getPolicyTransitionProbability(otherPolicy, policy, previousState, policyFlowMap.keySet());
 				fT += transitionProbability * policyFT;
 			}
 			// Update total probability
@@ -444,6 +525,68 @@ public class PolicyPrediction {
 		}
 		
 		return probability;
+	}
+	
+	private static double getPolicyTransitionProbability(KitchenSubdomain previous, KitchenSubdomain next, State state, Collection<KitchenSubdomain> allPolicies) {
+		double probabilityStayingInRecipe = 0.9;
+		double probabilityLeavingRecipe = 0.1;
+		
+		
+		List<KitchenSubdomain> policiesInRecipe = new ArrayList<KitchenSubdomain>();
+		List<KitchenSubdomain> policiesNotInRecipe = new ArrayList<KitchenSubdomain>();
+		for (KitchenSubdomain policyDomain : allPolicies) {
+			if (previous.getRecipe().equals(policyDomain.getRecipe())) {
+				policiesInRecipe.add(policyDomain);
+			} else {
+				policiesNotInRecipe.add(policyDomain);
+			}
+		}
+		
+		List<KitchenSubdomain> validPoliciesInRecipe = new ArrayList<KitchenSubdomain>();
+		List<KitchenSubdomain> validPoliciesNotInRecipe = new ArrayList<KitchenSubdomain>();
+		
+		for (KitchenSubdomain policyDomain : policiesInRecipe) {
+			if (policyDomain.getSubgoal().allPreconditionsCompleted(state) &&
+					!policyDomain.getSubgoal().goalCompleted(state)) {
+				validPoliciesInRecipe.add(policyDomain);
+			}
+		}
+		
+		for (KitchenSubdomain policyDomain : policiesNotInRecipe) {
+			if (policyDomain.getSubgoal().allPreconditionsCompleted(state) &&
+					!policyDomain.getSubgoal().goalCompleted(state)) {
+				validPoliciesNotInRecipe.add(policyDomain);
+			}
+		}
+		
+		if (previous.getSubgoal().goalCompleted(state)) {
+			if (next.equals(previous)) {
+				return 0.0;
+			} else {
+				if (validPoliciesInRecipe.contains(next)) {
+					return probabilityStayingInRecipe / validPoliciesInRecipe.size();
+				} else if (validPoliciesNotInRecipe.contains(next)) {
+					return probabilityLeavingRecipe / validPoliciesNotInRecipe.size();
+				} else {
+					return 0.0;
+				}
+			}
+			
+		} else {
+			if (next.equals(previous)) {
+				return 0.9;
+			} else {
+				if (validPoliciesInRecipe.contains(next)) {
+					return 0.1 * probabilityStayingInRecipe / validPoliciesInRecipe.size();
+				} else if (validPoliciesNotInRecipe.contains(next)) {
+					return 0.1 * probabilityLeavingRecipe / validPoliciesNotInRecipe.size();
+				} else {
+					return 0.0;
+				}
+			}
+		}
+		
+		
 	}
 	
 	private static double computeFlowToAllStates(KitchenSubdomain policy, StateConditionTest goalCondition, Map<StateHashTuple, Map<KitchenSubdomain, Double>> previousFlow, StateHashFactory hashingFactory) {

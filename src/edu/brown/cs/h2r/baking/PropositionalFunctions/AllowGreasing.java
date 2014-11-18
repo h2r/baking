@@ -14,7 +14,10 @@ import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 public class AllowGreasing extends BakingPropositionalFunction {
 	public AllowGreasing(String name, Domain domain,  IngredientRecipe ingredient) {
 		super(name, domain, new String[] {AgentFactory.ClassName, ContainerFactory.ClassName, IngredientFactory.ClassNameSimple},ingredient);
-		this.subgoal = null;
+	}
+	
+	public BakingPropositionalFunction updatePF(Domain newDomain, IngredientRecipe ingredient, BakingSubgoal subgoal) {
+		return new AllowGreasing(this.name, newDomain, ingredient);
 	}
 
 	public boolean isTrue(State state, String[] params) {

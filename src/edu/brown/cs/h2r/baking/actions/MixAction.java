@@ -1,6 +1,4 @@
 package edu.brown.cs.h2r.baking.actions;
-import static java.util.Arrays.asList;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -15,7 +13,6 @@ import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
-import edu.brown.cs.h2r.baking.Experiments.ExperimentHelper;
 import edu.brown.cs.h2r.baking.Knowledgebase.Knowledgebase;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
@@ -26,15 +23,16 @@ import edu.brown.cs.h2r.baking.Recipes.Recipe;
 
 
 public class MixAction extends BakingAction {
+	public static final String[] PARAMETER_CLASSES = 
+			new String[] {AgentFactory.ClassName, ContainerFactory.ClassName, ToolFactory.ClassName}; 
+	
 	public static final List<String> dries = Arrays.asList("flour", "cocoa", "salt", "baking_powder");
 	public static final List<String> wets = Arrays.asList("eggs", "vanilla", "butter", "white_sugar");
 	public static final List<String> simples = Arrays.asList("flour", "cocoa", "salt", "baking_powder", "eggs", "vanilla", "butter", "white_sugar");
 	
 	public static final String className = "mix";
-	private Knowledgebase knowledgebase;
-	public MixAction(Domain domain, IngredientRecipe ingredient) {
-		super(MixAction.className, domain, ingredient, new String[] {AgentFactory.ClassName, ContainerFactory.ClassName, ToolFactory.ClassName});
-		this.knowledgebase = new Knowledgebase();
+	public MixAction(Domain domain) {
+		super(MixAction.className, domain, PARAMETER_CLASSES);
 	}
 	
 	@Override
@@ -130,17 +128,10 @@ public class MixAction extends BakingAction {
 	private State mix(State state, ObjectInstance container, ObjectInstance tool)
 	{	
 		ObjectClass complexIngredientClass = this.domain.getObjectClass(IngredientFactory.ClassNameComplex);
-		Random rando = new Random();
 		Set<String> contents = ContainerFactory.getContentNames(container);
 		if (contents.size() < 2) {
 			return state;
 		}
-		String res  = knowledgebase.canCombine(state, container);
-		
-		// can we make a premade combination (liquid + flour = dough?)
-		if (!res.equals("")) {
-			return this.combineIngredients(state, domain, ingredient, container, res);
-		} 
 		
 		// get all of the objects for contents of container
 		Set<ObjectInstance> objects = new HashSet<ObjectInstance>();
@@ -148,40 +139,62 @@ public class MixAction extends BakingAction {
 			objects.add(state.getObject(obj));
 		}
 		
-		ObjectInstance[] objectArray = new ObjectInstance[objects.size()];
-		objectArray = objects.toArray(objectArray);
+		List<IngredientRecipe> newCombinations = this.knowledgebase.checkCombination(objects, state);
+		if (newCombinations.size() != 0) {
+			if (newCombinations.size() > 1) {
+				System.err.println("This combination was found in more than one recipe, unsure how to resolve ambiguity");
+			}
+			return this.makeSwappedIngredient(state, domain, container, newCombinations, objects);
+		}
+		
+		return makeArbitraryIngredient(state, container,
+				complexIngredientClass, contents, objects);
+	}
+
+	private State makeArbitraryIngredient(State state,
+			ObjectInstance container, ObjectClass complexIngredientClass,
+			Set<String> contents, Set<ObjectInstance> objects) {
+		
 		
 		//find traits shared amongst ingredients
-		Set<String> traits;
-		Set<String> allTraits = IngredientFactory.getTraits(objectArray[0]);
-		traits = new HashSet<String>(IngredientFactory.getTraits(objectArray[1]));
-		traits.retainAll(allTraits);
+		if (objects.size()  == 0) {
+			return state;
+		}
+		Set<String> traits = new HashSet<String>(IngredientFactory.getTraits(objects.iterator().next()));
+		for (ObjectInstance object : objects) {
+			traits.retainAll(IngredientFactory.getTraits(object));
+		}
 	
 		// hide objects
 		// Hidden copies exist in the domain but aren't accounted for when planning.
 		Set<ObjectInstance> hidden_copies = new HashSet<ObjectInstance>();
-		for (String name: contents) {
-			ObjectInstance ing = state.getObject(name);
-			if (!IngredientFactory.isSimple(ing)) {
-				hidden_copies.add(IngredientFactory.makeHiddenObjectCopy(state, this.domain, ing));
+		for (ObjectInstance object : objects) {
+			if (!IngredientFactory.isSimple(object)) {
+				hidden_copies.add(IngredientFactory.makeHiddenObjectCopy(state, this.domain, object));
 			}
 		}
+		
+		Random rando = new Random();
 		
 		// create the new ingredients
 		ObjectInstance newIngredient = 
 				IngredientFactory.getNewComplexIngredientObjectInstance(complexIngredientClass, 
 						Integer.toString(rando.nextInt()), Recipe.NO_ATTRIBUTES, false, container.getName(),
-						null, null, traits, new TreeSet<String>(), new TreeSet<String>(), contents);
-		state = state.appendObject(newIngredient);
-		
-		// manipulate container's references
-		ContainerFactory.removeContents(container);
-		ContainerFactory.addIngredient(container, newIngredient.getName());
-		IngredientFactory.changeIngredientContainer(newIngredient, container.getName());
+						null, null, traits, new TreeSet<String>(), new TreeSet<String>(), contents, container.getHashTuple().getHashingFactory());
 		
 		// Remove objects from state, add in their hidden copies.
 		List<ObjectInstance> objectsToAdd = new ArrayList<ObjectInstance>(hidden_copies.size());
 		List<ObjectInstance> objectsToRemove = new ArrayList<ObjectInstance>(hidden_copies.size());
+				
+				
+		// manipulate container's references
+		ObjectInstance newContainer = ContainerFactory.removeContents(container);
+		newContainer = ContainerFactory.addIngredient(newContainer, newIngredient.getName());
+		newIngredient = IngredientFactory.changeIngredientContainer(newIngredient, container.getName());
+		
+		objectsToAdd.add(newContainer);
+		objectsToRemove.add(container);
+		
 		for (ObjectInstance ob : hidden_copies) {
 			objectsToRemove.add(state.getObject(ob.getName()));
 			objectsToAdd.add(ob);
@@ -193,20 +206,58 @@ public class MixAction extends BakingAction {
 		// it is in.
 		ObjectInstance receivingSpace = state.getObject(ContainerFactory.getSpaceName(container));
 		if (SpaceFactory.isBaking(receivingSpace) && SpaceFactory.getOnOff(receivingSpace)) {
-			IngredientFactory.bakeIngredient(newIngredient);
+			newIngredient = IngredientFactory.bakeIngredient(newIngredient);
 		} else if (SpaceFactory.isHeating(receivingSpace) && SpaceFactory.getOnOff(receivingSpace)) {
-			IngredientFactory.heatIngredient(newIngredient);
+			newIngredient = IngredientFactory.heatIngredient(newIngredient);
 		}
 		
-		// check to see if this new ingredient can be swapped for a swappedIngredient
-		return this.makeSwappedIngredient(state, newIngredient);
+		return state.appendObject(newIngredient);
 	}
 	
-	public void changeKnowledgebase(Knowledgebase kb) {
-		this.knowledgebase = kb;
+	
+	public State makeSwappedIngredient(State state, Domain domain, ObjectInstance container, 
+			List<IngredientRecipe> combinations, Collection<ObjectInstance> combinedIngredients) {
+		IngredientRecipe newIngredient = combinations.get(0);
+		
+		//get the actual traits from the trait map
+		Set<String> ings = ContainerFactory.getContentNames(container);
+		ObjectInstance newIng = 
+				IngredientFactory.getNewComplexIngredientObjectInstance(domain, newIngredient, true, container.getName(), container.getHashTuple().getHashingFactory());
+		
+		// Make the hidden Copies
+		List<ObjectInstance> objectsToRemove = new ArrayList<ObjectInstance>(ings.size());
+		Set<ObjectInstance> hiddenCopies = new HashSet<ObjectInstance>();
+		for (String name : ings) {
+			ObjectInstance ob = state.getObject(name);
+			objectsToRemove.add(ob);
+			hiddenCopies.add(IngredientFactory.makeHiddenObjectCopy(state, domain, ob));
+		}
+		ObjectInstance newContainer = ContainerFactory.removeContents(container);
+		newContainer = ContainerFactory.addIngredient(newContainer, newIng.getName());
+		state = state.replaceObject(container, newContainer);
+		state = state.removeAll(objectsToRemove);
+		state = state.appendAllObjects(hiddenCopies);
+		
+		ContainerFactory.addIngredient(newContainer, newIng.getName());
+		newIng = IngredientFactory.changeIngredientContainer(newIng, container.getName());
+		
+		ObjectInstance receivingSpace = state.getObject(ContainerFactory.getSpaceName(container));
+		
+		if (SpaceFactory.isBaking(receivingSpace) && SpaceFactory.getOnOff(receivingSpace)) {
+			newIng = IngredientFactory.bakeIngredient(newIng);
+		} else if (SpaceFactory.isHeating(receivingSpace) && SpaceFactory.getOnOff(receivingSpace)) {
+			//IngredientFactory.heatIngredient(newIng);
+			Knowledgebase.heatContainer(state, container);
+		}
+		
+		state = state.appendObject(newIng);
+		
+		
+		return state;
 	}
 	
-	public State combineIngredients(State state, Domain domain, IngredientRecipe recipe, ObjectInstance container, String toswap) {
+	/*
+	public State combineIngredients(State state, Domain domain, ObjectInstance container, String toswap) {
 		Set<String> traits = new HashSet<String>(knowledgebase.getTraits(recipe.getName()));
 		//get the actual traits from the trait map
 		Set<String> ings = ContainerFactory.getContentNames(container);
@@ -246,7 +297,7 @@ public class MixAction extends BakingAction {
 	// This method should make and ingredientObject of our swapped object that was just created.
 	// This object should be a subgoal ingredient for the recipe. If w return null, then that
 	// means that the complex ingredient we created is not a subgoal ingredient.
-	public State makeSwappedIngredient(State state, ObjectInstance newIngredient) {
+	public State makeSwappedIngredient(State state) {
 		// if our complex ingredient is a succesful swapped ingredient, then we swap it for a copy of said swapped ingredient.
 		// By calling fakeAttributeCopy, we can create our swapped ingredient even if the recipe calls for it to be baked
 		// or melted (in which case, Recipe.isSuccess would return false).
@@ -268,4 +319,5 @@ public class MixAction extends BakingAction {
 		}
 		return state;
 	}
+	*/
 }

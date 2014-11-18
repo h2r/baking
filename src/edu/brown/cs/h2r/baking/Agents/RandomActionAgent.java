@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import burlap.behavior.statehashing.NameDependentStateHashFactory;
 import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
@@ -14,11 +15,12 @@ import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 
 public class RandomActionAgent implements Agent {
 	private final Domain domain;
+	private final NameDependentStateHashFactory hashingFactory = new NameDependentStateHashFactory();
 	public RandomActionAgent(Domain domain) {
 		this.domain = domain;
 	}
 	@Override
-	public void addObservation(State state, GroundedAction action) {
+	public void addObservation(State state) {
 		// TODO Auto-generated method stub
 
 	}
@@ -30,7 +32,7 @@ public class RandomActionAgent implements Agent {
 
 	@Override
 	public ObjectInstance getAgentObject() {
-		return AgentFactory.getNewRobotAgentObjectInstance(this.domain, this.getAgentName());
+		return AgentFactory.getNewRobotAgentObjectInstance(this.domain, this.getAgentName(), this.hashingFactory.getObjectHashFactory());
 	}
 
 	@Override
@@ -42,6 +44,9 @@ public class RandomActionAgent implements Agent {
 		List<GroundedAction> groundedActions = new ArrayList<GroundedAction>();
 		for (Action action : actions) {
 			groundedActions.addAll(action.getAllApplicableGroundedActions(state));
+		}
+		if (groundedActions.size() == 0) {
+			System.err.println("Grounded actions for random agent is 0");
 		}
 		Collections.shuffle(groundedActions);
 		

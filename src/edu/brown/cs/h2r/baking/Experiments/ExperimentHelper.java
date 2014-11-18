@@ -2,19 +2,36 @@ package edu.brown.cs.h2r.baking.Experiments;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
+import burlap.behavior.singleagent.EpisodeAnalysis;
+import burlap.behavior.singleagent.Policy;
 import burlap.oomdp.core.Domain;
+import burlap.oomdp.core.GroundedProp;
 import burlap.oomdp.core.ObjectInstance;
+import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
+import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
+import burlap.oomdp.singleagent.RewardFunction;
+import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
+import edu.brown.cs.h2r.baking.RecipeAgentSpecificMakeSpanRewardFunction;
+import edu.brown.cs.h2r.baking.RecipeTerminalFunction;
+import edu.brown.cs.h2r.baking.Agents.AgentHelper;
+import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.MakeSpanFactory;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
+import edu.brown.cs.h2r.baking.Recipes.RecipeActionParameters;
+import edu.brown.cs.h2r.baking.actions.BakingAction;
+import edu.brown.cs.h2r.baking.actions.BakingActionResult;
 
 public class ExperimentHelper {
 
@@ -136,7 +153,7 @@ public class ExperimentHelper {
 		
 		for (ObjectInstance obj : finalObjects)
 		{
-			if (Recipe.isSuccess(endState, ingredient, obj))
+			if (ingredient.isMatching(obj, endState))
 			{
 				namedIngredient = ExperimentHelper.getNewNamedComplexIngredient(obj, ingredient.getName());
 				namedIngredient = IngredientFactory.changeSwapped(namedIngredient);
@@ -173,5 +190,93 @@ public class ExperimentHelper {
 			}
 		}
 		return null;
+	}
+	
+	public static State takeAction(Domain domain, State state, String actionName, String ...params ) {
+		Action action = domain.getAction(actionName);
+		GroundedAction groundedAction = new GroundedAction(action, params);
+		BakingActionResult result = ((BakingAction)action).checkActionIsApplicableInState(state, params);
+		if (!result.getIsSuccess()) {
+			System.err.println(result.getWhyFailed());
+		}
+		
+		return groundedAction.executeIn(state);
+	}
+	
+	public static void testRecipeExecution(Domain domain, State state, Recipe recipe) {
+		RecipeActionParameters recipeParams = new RecipeActionParameters(domain);
+		List<String[]> actionParams = recipeParams.getRecipeParams(recipe.getRecipeName());
+		List<BakingSubgoal> subgoals = recipe.getSubgoals();
+		Map<String, Boolean> previousValues = new HashMap<String, Boolean>();
+		for (String[] params : actionParams) {
+			System.out.println(Arrays.toString(params));
+			State previousState = state.copy();
+			if (params[0].equals("mix")) {
+				System.out.print("");
+			}
+			
+			state = takeAction(domain, state, params[0], Arrays.copyOfRange(params, 1, params.length));
+			String successString = (previousState.equals(state)) ? "failure":"success";
+			System.out.println("Action was a " + successString);
+			//System.out.println("Recipe failure " + recipe.isFailure(state));
+			System.out.println("Recipe success " + recipe.isSuccess(state));
+			for (BakingSubgoal subgoal : subgoals) {
+				
+				
+				IngredientRecipe ing = subgoal.getIngredient();
+				
+				BakingPropositionalFunction pf = subgoal.getGoal();
+				domain = AgentHelper.setSubgoal(domain, subgoal);
+				
+				
+				List<BakingSubgoal> preconditions = subgoal.getPreconditions();
+				String pfType = pf.toString();
+				for (GroundedProp prop : pf.getAllGroundedPropsForState(state)) {
+					String subgoalString = "Subgoal " + ing.getName() + " - " + pfType + " " + Arrays.toString(prop.params);
+					Boolean currentValue = prop.isTrue(state);
+					Boolean previousValue = previousValues.get(subgoalString);
+					if (previousValue == null || previousValue != currentValue) {
+						System.out.println("    " + subgoalString + ": " + currentValue);
+					}
+					previousValues.put(subgoalString, currentValue);
+				}
+				
+				for (BakingSubgoal precondition : preconditions) {
+					IngredientRecipe ing2 = precondition.getIngredient();
+					BakingPropositionalFunction pf2 = precondition.getGoal();
+					pfType = pf2.toString();
+					for (GroundedProp prop : pf2.getAllGroundedPropsForState(state)) {
+						String preconditionString = "Precondition " + ing2.getName() + " - " + pfType + " " + Arrays.toString(prop.params);
+						Boolean currentValue = prop.isTrue(state);
+						Boolean previousValue = previousValues.get(preconditionString);
+						if (previousValue == null || previousValue != currentValue) {
+							System.out.println("      " + preconditionString + ": " + currentValue);
+						}
+						previousValues.put(preconditionString, currentValue);
+					}
+				}
+				
+			}
+		}
+	}
+
+	public static State getEndState(KitchenSubdomain policyDomain) {
+		BakingSubgoal subgoal = policyDomain.getSubgoal();
+		Domain domain = policyDomain.getDomain();
+		Policy policy = policyDomain.getPolicy();
+		State startingState = policyDomain.getStartState();
+		PropositionalFunction isFailure = domain.getPropFunction(AffordanceCreator.BOTCHED_PF);
+		
+		TerminalFunction recipeTerminalFunction = new RecipeTerminalFunction(subgoal.getGoal(), isFailure);
+		RewardFunction rf = new RecipeAgentSpecificMakeSpanRewardFunction("human");
+		EpisodeAnalysis episodeAnalysis = policy.evaluateBehavior(startingState, rf, recipeTerminalFunction,100);
+		
+		
+		for (GroundedAction action : episodeAnalysis.actionSequence) {
+			//System.out.println("\t" + action.actionName() + " " + Arrays.toString(action.params) );
+		}
+		
+		return episodeAnalysis.getState(episodeAnalysis.stateSequence.size() - 1);
+		
 	}
 }
