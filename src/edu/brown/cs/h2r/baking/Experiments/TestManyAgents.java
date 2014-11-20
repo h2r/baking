@@ -219,7 +219,7 @@ public class TestManyAgents {
 			finished = human.isSuccess(currentState) || reward < -200.0;
 			if (finished) {
 				if (human.isSuccess(currentState)) {
-					System.out.println("\n\nHuman finished successfully!!!\n\n");
+					//System.out.println("\n\nHuman finished successfully!!!\n\n");
 				}
 				else {
 					if (reward < -200.0) {
