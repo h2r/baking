@@ -105,7 +105,7 @@ public class Human implements Agent {
 		this.isFailure = new RecipeTerminalFunction(isFailure);
 		
 		this.generalDomain = AgentHelper.setSubgoal(this.generalDomain, this.currentSubgoal.getSubgoal());
-		System.out.println(this.getAgentName() + " switches to task: " + this.currentSubgoal.toString());
+		//System.out.println(this.getAgentName() + " switches to task: " + this.currentSubgoal.toString());
 		
 	}
 	

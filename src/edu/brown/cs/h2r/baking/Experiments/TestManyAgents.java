@@ -3,7 +3,9 @@ package edu.brown.cs.h2r.baking.Experiments;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import burlap.behavior.statehashing.NameDependentStateHashFactory;
@@ -183,7 +185,7 @@ public class TestManyAgents {
 					//System.out.println("\n\nHuman finished successfully!!!\n\n");
 				}
 				else {
-					System.err.println("\n\nHuman failed recipe!!!\n\n");
+					//System.err.println("\n\nHuman failed recipe!!!\n\n");
 				}
 				break;
 			}
@@ -218,9 +220,9 @@ public class TestManyAgents {
 				}
 				else {
 					if (isRepeating) {
-						System.err.println("\n\nState sequence repetition detected!");
+						//System.err.println("\n\nState sequence repetition detected!");
 					}
-					System.err.println("\n\nHuman failed recipe!!!\n\n");
+					//System.err.println("\n\nHuman failed recipe!!!\n\n");
 				}
 				break;
 			}
@@ -270,7 +272,7 @@ public class TestManyAgents {
 		while (!finished) {
 			AbstractGroundedAction humanAction = human.getAction(currentState);
 			if (humanAction == null) {
-				System.err.println("Human chose to do nothing");
+				//System.err.println("Human chose to do nothing");
 				break;
 			}
 			
@@ -284,7 +286,7 @@ public class TestManyAgents {
 		if (human.isSuccess(currentState)) {
 			//System.out.println("Recipe was a success");
 		} else {
-			System.err.println("Recipe was a failure");
+			//System.err.println("Recipe was a failure");
 		}
 		double score = human.getCostActions(actionSequence, stateSequence);
 		return new EvaluationResult(score, human.isSuccess(currentState));
@@ -322,7 +324,7 @@ public class TestManyAgents {
 		try {
 			action =  handler.get(10000, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException | ExecutionException | TimeoutException e) {
-			System.err.println("Waiting for agent's action timed out");
+			//System.err.println("Waiting for agent's action timed out");
 		}
 		executor.shutdownNow();
 		return action;*/
@@ -377,7 +379,7 @@ public class TestManyAgents {
 	
 	public static void main(String[] args) {
 		
-		int numTrials = 10;
+		int numTrials = 2;
 		int agentChoice = 3;
 		if (args.length > 1) {
 			int trialNumber = Integer.parseInt(args[1]);
@@ -393,11 +395,11 @@ public class TestManyAgents {
 		Human human = new Human(generalDomain);
 		
 		State state = TestManyAgents.generateInitialState(generalDomain, recipes, human, null);
-		for (Recipe recipe : recipes) {
+		/*for (Recipe recipe : recipes) {
 			//System.out.println("Testing recipe " + recipe.toString());
 			ExperimentHelper.testRecipeExecution(generalDomain, state, recipe);
 			//System.out.println("\n\n");
-		}
+		}*/
 		
 		//TestManyAgents.evaluateHuman(generalDomain, human, numTrials);
 		//System.exit(0);
@@ -411,26 +413,34 @@ public class TestManyAgents {
 				(Agent)new AdaptiveByFlow(generalDomain)
 				);
 		
+		Map<Agent, EvaluationResult> results = new HashMap<Agent, EvaluationResult>();
 		
-		
-		Agent agent = agents.get(agentChoice);
-		
-		//System.out.println("Agent: " + agent.getAgentName());
-		EvaluationResult result = new EvaluationResult();
-		for (int i = 0; i < numTrials; i++) {
-			human = new Human(generalDomain);
-			
-			
-			State startingState = TestManyAgents.generateInitialState(generalDomain, recipes, human, agent);
-			human.setInitialState(startingState);
-			agent.setInitialState(startingState);
-			
-			//System.out.println("Trial: " + i);
-			result.incrementResult(TestManyAgents.evaluateAgent(human, agent, startingState));
+		//Agent agent = agents.get(agentChoice);
+		for (Agent agent : agents) {
+			//System.out.println("Agent: " + agent.getAgentName());
+			EvaluationResult result = new EvaluationResult();
+			results.put(agent, result);
+			for (int i = 0; i < numTrials; i++) {
+				human = new Human(generalDomain);
+				
+				
+				State startingState = TestManyAgents.generateInitialState(generalDomain, recipes, human, agent);
+				human.setInitialState(startingState);
+				agent.setInitialState(startingState);
+				
+				//System.out.println("Trial: " + i);
+				result.incrementResult(TestManyAgents.evaluateAgent(human, agent, startingState));
+			}
 		}
 		
 		System.out.println("Agent, Successes, Trials, Average reward, average successful reward");
-		System.out.println(agent.getAgentName() + ", " +  result.toString());
+		
+		for (Map.Entry<Agent, EvaluationResult> entry : results.entrySet()) {
+			System.out.println(entry.getKey().getAgentName() + ", " +  entry.getValue().toString());
+		
+		}
+		
+		
 	
 		
 	}

@@ -64,7 +64,7 @@ public class AdaptiveByFlow extends AdaptiveAgent implements Agent {
 		
 		Collections.shuffle(bestPolicies);
 		PolicyProbability bestPolicy = bestPolicies.get(0);
-		System.out.println("Inferred subgoal " + bestPolicy.toString());
+		//System.out.println("Inferred subgoal " + bestPolicy.toString());
 		TerminalFunction terminalFunction = bestPolicy.getPolicyDomain().getTerminalFunction();
 		//if (terminalFunction.isTerminal(state)) {
 		//	return null;
