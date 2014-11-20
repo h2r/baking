@@ -380,10 +380,12 @@ public class TestManyAgents {
 	public static void main(String[] args) {
 		
 		int numTrials = 5;
-		int agentChoice = 3;
+		int trialId = 0;
 		if (args.length > 1) {
-			int trialNumber = Integer.parseInt(args[1]);
-			agentChoice = trialNumber % (4);
+			numTrials = Integer.parseInt(args[1]);
+			trialId = Integer.parseInt(args[2]);
+		} else {
+			System.err.println("Usage TestManyAgents numTrials trialId");
 		}
 		
 		Domain generalDomain = TestManyAgents.generateGeneralDomain(); 
