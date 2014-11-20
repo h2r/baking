@@ -377,7 +377,7 @@ public class TestManyAgents {
 	
 	public static void main(String[] args) {
 		
-		int numTrials = 2;
+		int numTrials = 10;
 		int agentChoice = 3;
 		if (args.length > 1) {
 			int trialNumber = Integer.parseInt(args[1]);
