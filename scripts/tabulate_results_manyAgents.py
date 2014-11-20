@@ -34,7 +34,7 @@ if len(argv) > 1:
             if agent not in data.keys():
                 data[agent] = [[],[],[],[]]
             for i in range(4):
-                data[agent][i].append(int(line[i+1]))
+                data[agent][i].append(float(line[i+1]))
 
     print("Agent, Successes, Trials, Average reward, average successful reward")
     for agent, line in data.iteritems():
