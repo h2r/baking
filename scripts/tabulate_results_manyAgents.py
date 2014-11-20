@@ -18,11 +18,12 @@ if len(argv) > 1:
             isFirst = True
             data_lines = []
             for line in csvreader:
-                if isFirst:
-                    labels = line
-                    isFirst = False
-                else:
-                    data_lines.append(line)
+                if not line.strip():
+                    if isFirst:
+                        labels = line
+                        isFirst = False
+                    else:
+                        data_lines.append(line)
         except:
             print("error on file")
             continue
