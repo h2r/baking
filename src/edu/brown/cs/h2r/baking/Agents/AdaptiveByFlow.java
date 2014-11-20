@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import Prediction.PolicyPrediction;
-import Prediction.PolicyProbability;
 import burlap.behavior.singleagent.Policy;
 import burlap.behavior.statehashing.NameDependentStateHashFactory;
 import burlap.behavior.statehashing.StateHashFactory;
@@ -14,6 +12,8 @@ import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.singleagent.GroundedAction;
+import edu.brown.cs.h2r.baking.Prediction.PolicyPrediction;
+import edu.brown.cs.h2r.baking.Prediction.PolicyProbability;
 import edu.brown.cs.h2r.baking.actions.BakingAction;
 import edu.brown.cs.h2r.baking.actions.BakingActionResult;
 

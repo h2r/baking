@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-import Prediction.PolicyPrediction;
 import burlap.behavior.singleagent.Policy;
 import burlap.behavior.singleagent.Policy.ActionProb;
 import burlap.behavior.statehashing.NameDependentStateHashFactory;
@@ -25,6 +24,7 @@ import edu.brown.cs.h2r.baking.RecipeTerminalFunction;
 import edu.brown.cs.h2r.baking.Experiments.KitchenSubdomain;
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
+import edu.brown.cs.h2r.baking.Prediction.PolicyPrediction;
 import edu.brown.cs.h2r.baking.Recipes.Brownies;
 import edu.brown.cs.h2r.baking.Recipes.PeanutButterCookies;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;

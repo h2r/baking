@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import Prediction.PolicyPrediction;
 import burlap.behavior.affordances.AffordancesController;
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.Policy;
@@ -33,6 +32,7 @@ import edu.brown.cs.h2r.baking.Experiments.ExperimentHelper;
 import edu.brown.cs.h2r.baking.Experiments.KitchenSubdomain;
 import edu.brown.cs.h2r.baking.Experiments.SubgoalDetermination;
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
+import edu.brown.cs.h2r.baking.Prediction.PolicyPrediction;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.ContainersCleaned;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
@@ -99,7 +99,7 @@ public class AgentHelper {
 		List<KitchenSubdomain> policyDomains = new ArrayList<KitchenSubdomain>();
 		List<BakingSubgoal> subgoals = recipe.getSubgoals();
 		
-		System.out.println("\n\nPlanner will now plan the "+recipe.topLevelIngredient.getName()+" recipe!");
+		//System.out.println("\n\nPlanner will now plan the "+recipe.topLevelIngredient.getName()+" recipe!");
 		
 		// High level planner that plans through the recipe's subgoals
 		Set<BakingSubgoal> activeSubgoals = new HashSet<BakingSubgoal>();
@@ -111,7 +111,7 @@ public class AgentHelper {
 			// For all subgoals with all preconditions satisfied
 			for (BakingSubgoal sg : activeSubgoals) {
 				subgoals.remove(sg);
-				System.out.println("Planning subgoal " + sg.getIngredient().getName());
+				//System.out.println("Planning subgoal " + sg.getIngredient().getName());
 				KitchenSubdomain subdomain = AgentHelper.generateRTDPPolicy(domain, state, recipe, sg, rf, hashingFactory);
 				
 				state = ExperimentHelper.getEndState(subdomain);
@@ -135,7 +135,7 @@ public class AgentHelper {
 	{
 		IngredientRecipe ingredient = subgoal.getIngredient();
 		String goalType = (subgoal.getGoal().getClass().isAssignableFrom(ContainersCleaned.class)) ? "_clean" : "";
-		System.out.println(ingredient.getName() + goalType);
+		//System.out.println(ingredient.getName() + goalType);
 		State currentState = new State(startingState);
 		
 		// Add the current top level ingredient so we can properly trim the action space

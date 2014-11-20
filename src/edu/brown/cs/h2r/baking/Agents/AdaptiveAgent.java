@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import Prediction.PolicyProbability;
 import burlap.behavior.singleagent.Policy;
 import burlap.behavior.statehashing.NameDependentStateHashFactory;
 import burlap.behavior.statehashing.StateHashFactory;
@@ -16,6 +15,7 @@ import burlap.oomdp.singleagent.RewardFunction;
 import edu.brown.cs.h2r.baking.RecipeAgentSpecificMakeSpanRewardFunction;
 import edu.brown.cs.h2r.baking.Experiments.KitchenSubdomain;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
+import edu.brown.cs.h2r.baking.Prediction.PolicyProbability;
 
 public abstract class AdaptiveAgent implements Agent {
 	private final Domain domain;

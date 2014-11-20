@@ -10,8 +10,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import Prediction.PolicyPrediction;
-import Prediction.PolicyProbability;
 import burlap.behavior.affordances.AffordancesController;
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.Policy;
@@ -46,6 +44,8 @@ import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ToolFactory;
+import edu.brown.cs.h2r.baking.Prediction.PolicyPrediction;
+import edu.brown.cs.h2r.baking.Prediction.PolicyProbability;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.ContainersCleaned;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
 import edu.brown.cs.h2r.baking.Recipes.Brownies;

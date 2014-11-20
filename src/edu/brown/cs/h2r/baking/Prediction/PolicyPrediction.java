@@ -1,4 +1,4 @@
-package Prediction;
+package edu.brown.cs.h2r.baking.Prediction;
 
 import java.util.ArrayList;
 import java.util.Collection;

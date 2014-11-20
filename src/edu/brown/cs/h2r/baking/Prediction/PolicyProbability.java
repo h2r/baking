@@ -1,4 +1,4 @@
-package Prediction;
+package edu.brown.cs.h2r.baking.Prediction;
 
 import burlap.behavior.singleagent.Policy;
 import burlap.oomdp.core.TerminalFunction;

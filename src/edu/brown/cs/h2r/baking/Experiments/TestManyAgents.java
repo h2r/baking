@@ -132,10 +132,10 @@ public class TestManyAgents {
 		AbstractGroundedAction secondAction = (action1First) ? action2 : action1;
 		
 		if (firstAction != null) {
-			System.out.println("Executing action " + firstAction.toString());
+			//System.out.println("Executing action " + firstAction.toString());
 			State nextState = firstAction.executeIn(state);
 			if (nextState.equals(state)) {
-				System.out.println("Action had no effect");
+				//System.out.println("Action had no effect");
 			}
 			state = nextState;
 			statePair.add(state);
@@ -143,10 +143,10 @@ public class TestManyAgents {
 		}
 
 		if (secondAction != null) {
-			System.out.println("Executing action " + secondAction.toString());
+			//System.out.println("Executing action " + secondAction.toString());
 			State nextState = secondAction.executeIn(state);
 			if (nextState.equals(state)) {
-				System.out.println("Action had no effect");
+				//System.out.println("Action had no effect");
 			}
 			state = nextState;
 			statePair.add(state);
@@ -180,7 +180,7 @@ public class TestManyAgents {
 			AbstractGroundedAction humanAction = human.getAction(currentState);
 			if (humanAction == null) {
 				if (human.isSuccess(currentState)) {
-					System.out.println("\n\nHuman finished successfully!!!\n\n");
+					//System.out.println("\n\nHuman finished successfully!!!\n\n");
 				}
 				else {
 					System.err.println("\n\nHuman failed recipe!!!\n\n");
@@ -195,9 +195,9 @@ public class TestManyAgents {
 			AbstractGroundedAction partnerAction = null;
 			if (otherHuman != null) {
 				
-				//System.out.println("\nEvaluating how partner would complete recipe");
+				////System.out.println("\nEvaluating how partner would complete recipe");
 				//TestManyAgents.evaluateHumanAlone(otherHuman, newState);
-				//System.out.println("");
+				////System.out.println("");
 				partnerAction = TestManyAgents.getActionAndWait(otherHuman, newState);
 			} else {
 				partnerAction = TestManyAgents.getActionAndWait(partner, newState);
@@ -214,7 +214,7 @@ public class TestManyAgents {
 			finished = human.isFinished(currentState) || isRepeating;
 			if (finished) {
 				if (human.isSuccess(currentState)) {
-					System.out.println("\n\nHuman finished successfully!!!\n\n");
+					//System.out.println("\n\nHuman finished successfully!!!\n\n");
 				}
 				else {
 					if (isRepeating) {
@@ -282,7 +282,7 @@ public class TestManyAgents {
 		}
 		
 		if (human.isSuccess(currentState)) {
-			System.out.println("Recipe was a success");
+			//System.out.println("Recipe was a success");
 		} else {
 			System.err.println("Recipe was a failure");
 		}
@@ -300,12 +300,12 @@ public class TestManyAgents {
 			human.setInitialState(startingState);
 			
 			
-			System.out.println("Trial: " + i);
+			//System.out.println("Trial: " + i);
 			human.chooseNewRecipe();
 			result.incrementResult(TestManyAgents.evaluateHumanAlone(human, startingState));
 		}
 		
-		System.out.println("Human alone: " + result.toString());
+		//System.out.println("Human alone: " + result.toString());
 		
 	}
 	
@@ -330,28 +330,33 @@ public class TestManyAgents {
 	
 	public static class EvaluationResult {
 		private double score;
+		private double successScore;
 		private int numberSuccesses;
 		private int numberTrials;
 		
 		public EvaluationResult() {
 			this.score = 0.0;
+			this.successScore = 0.0;
 			this.numberSuccesses = 0;
 			this.numberTrials = 0;
 		}
 		
 		public EvaluationResult(double score, boolean wasSuccess) {
 			this.score = score;
+			this.successScore = (wasSuccess) ? score : 0.0;
 			this.numberSuccesses = (wasSuccess) ? 1 : 0;
 			this.numberTrials = 1;
 		}
 		public void incrementResults(double addedScore, boolean wasSuccess) {
 			this.score += addedScore;
+			this.successScore += (wasSuccess) ? score : 0.0;
 			this.numberSuccesses += (wasSuccess) ? 1 : 0;
 			this.numberTrials++;
 		}
 		
 		public void incrementResult(EvaluationResult other) {
 			this.score += other.score;
+			this.successScore += other.successScore;
 			this.numberSuccesses += other.numberSuccesses;
 			this.numberTrials += other.numberTrials;
 		}
@@ -362,16 +367,22 @@ public class TestManyAgents {
 		
 		public int getTrials() {return this.numberTrials;}
 		
+		// Successes, Trials, Average reward, average success reward
 		@Override
 		public String toString() {
-			return 
-			"Successes " + this.numberSuccesses + "/" + this.numberTrials + " Reward: " +  this.score / this.numberTrials;
+			double averageSuccessScore = (this.numberSuccesses == 0) ? 0.0 : this.successScore / this.numberSuccesses;
+			return "" + this.numberSuccesses + ", " + this.numberTrials + ", " + this.score / this.numberTrials + ", " + averageSuccessScore;
 		}
 	}
 	
 	public static void main(String[] args) {
 		
-		int numTrials = 100;
+		int numTrials = 2;
+		int agentChoice = 3;
+		if (args.length > 1) {
+			int trialNumber = Integer.parseInt(args[1]);
+			agentChoice = trialNumber % (4);
+		}
 		
 		Domain generalDomain = TestManyAgents.generateGeneralDomain(); 
 		
@@ -383,9 +394,9 @@ public class TestManyAgents {
 		
 		State state = TestManyAgents.generateInitialState(generalDomain, recipes, human, null);
 		for (Recipe recipe : recipes) {
-			System.out.println("Testing recipe " + recipe.toString());
+			//System.out.println("Testing recipe " + recipe.toString());
 			ExperimentHelper.testRecipeExecution(generalDomain, state, recipe);
-			System.out.println("\n\n");
+			//System.out.println("\n\n");
 		}
 		
 		//TestManyAgents.evaluateHuman(generalDomain, human, numTrials);
@@ -402,9 +413,9 @@ public class TestManyAgents {
 		
 		
 		
-		Agent agent = agents.get(3);
+		Agent agent = agents.get(agentChoice);
 		
-		System.out.println("Agent: " + agent.getAgentName());
+		//System.out.println("Agent: " + agent.getAgentName());
 		EvaluationResult result = new EvaluationResult();
 		for (int i = 0; i < numTrials; i++) {
 			human = new Human(generalDomain);
@@ -414,10 +425,12 @@ public class TestManyAgents {
 			human.setInitialState(startingState);
 			agent.setInitialState(startingState);
 			
-			System.out.println("Trial: " + i);
+			//System.out.println("Trial: " + i);
 			result.incrementResult(TestManyAgents.evaluateAgent(human, agent, startingState));
 		}
-		System.out.println(agent.getAgentName() + ": " +  result.toString());
+		
+		System.out.println("Agent, Successes, Trials, Average reward, average successful reward");
+		System.out.println(agent.getAgentName() + ", " +  result.toString());
 	
 		
 	}
