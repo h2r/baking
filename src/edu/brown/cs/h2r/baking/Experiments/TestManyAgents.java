@@ -381,7 +381,7 @@ public class TestManyAgents {
 		
 		int numTrials = 5;
 		int trialId = 0;
-		if (args.length > 1) {
+		if (args.length == 3) {
 			numTrials = Integer.parseInt(args[1]);
 			trialId = Integer.parseInt(args[2]);
 		} else {
