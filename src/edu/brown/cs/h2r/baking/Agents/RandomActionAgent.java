@@ -46,7 +46,7 @@ public class RandomActionAgent implements Agent {
 			groundedActions.addAll(action.getAllApplicableGroundedActions(state));
 		}
 		if (groundedActions.size() == 0) {
-			System.err.println("Grounded actions for random agent is 0");
+			//System.err.println("Grounded actions for random agent is 0");
 		}
 		Collections.shuffle(groundedActions);
 		

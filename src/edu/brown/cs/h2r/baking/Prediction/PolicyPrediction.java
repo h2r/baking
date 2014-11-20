@@ -196,7 +196,7 @@ public class PolicyPrediction {
 			}
 		}
 		if (Math.abs(1.0 - totalProb) > 0.01) {
-			System.err.println("Action discribution does not sum to 1.0");
+			//System.err.println("Action discribution does not sum to 1.0");
 		}
 		if (totalFlow > 0.0) {
 			////System.out.println("Depth : " + maxDepth);
@@ -302,8 +302,8 @@ public class PolicyPrediction {
 			}
 		} catch (InterruptedException | ExecutionException e) {
 			if (e instanceof ExecutionException) {
-				System.err.println(e.getMessage());
-				e.printStackTrace();
+				//System.err.println(e.getMessage());
+				//e.printStackTrace();
 			}
 		}
 		executor.shutdown();

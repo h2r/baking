@@ -104,11 +104,11 @@ public abstract class AdaptiveAgent implements Agent {
 		}
 		
 		if (previousSumProbability == 0.0) {
-			System.err.println("All previous probabilities are 0.0");
+			//System.err.println("All previous probabilities are 0.0");
 		}
 		
 		if (updateSumProbability == 0.0) {
-			System.err.println("All update probabilities are 0.0");
+			//System.err.println("All update probabilities are 0.0");
 		}
 		
 		

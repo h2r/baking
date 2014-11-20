@@ -44,7 +44,7 @@ public class AdaptiveByFlow extends AdaptiveAgent implements Agent {
 	@Override
 	protected AbstractGroundedAction getActionFromPolicyDistribution(List<PolicyProbability> policyDistribution, State state) {
 		if (policyDistribution.size() == 0) {
-			System.err.println("No valid policies were found. Returning null action");
+			//System.err.println("No valid policies were found. Returning null action");
 			return null;
 		}
 		
@@ -106,8 +106,8 @@ public class AdaptiveByFlow extends AdaptiveAgent implements Agent {
 			BakingActionResult result = bakingAction.checkActionIsApplicableInState(state, groundedAction.params);
 			
 			if (!result.getIsSuccess()) {
-				System.err.println(this.getAgentName() + " chose action " + groundedAction.toString() + " which cannot succeed because:");
-				System.err.println(result.getWhyFailed());
+				//System.err.println(this.getAgentName() + " chose action " + groundedAction.toString() + " which cannot succeed because:");
+				//System.err.println(result.getWhyFailed());
 			}
 			
 			isValidAction = (
