@@ -385,6 +385,7 @@ public class TestManyAgents {
 			numTrials = Integer.parseInt(args[1]);
 			trialId = Integer.parseInt(args[2]);
 		} else {
+			System.err.println("Args provided: "  + Arrays.toString(args));
 			System.err.println("Usage TestManyAgents numTrials trialId");
 			System.exit(0);
 		}
