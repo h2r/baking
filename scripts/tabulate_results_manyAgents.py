@@ -2,7 +2,7 @@ from sys import argv
 from glob import glob
 from csv import reader, Error
 import math
-import statistics
+import numpy
 
 
 if len(argv) > 1:
@@ -37,4 +37,4 @@ if len(argv) > 1:
 
     print("Agent, Successes, Trials, Average reward, average successful reward")
     for agent, line in data.iteritems():
-        print(str(agent) + ", " + str(sum(line[0])) + ", " + str(sum(line[1])) + ", " + str( statistics.mean(line[2])) + str(statistics.mean(line[3])) + " +- " + str(statistics.stdev(line[3])))
+        print(str(agent) + ", " + str(sum(line[0])) + ", " + str(sum(line[1])) + ", " + str( numpy.mean(line[2])) + str(numpy.mean(line[3])) + " +- " + str(numpy.std(line[3], ddof=1)))
