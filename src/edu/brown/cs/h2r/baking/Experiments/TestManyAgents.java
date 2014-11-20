@@ -386,6 +386,7 @@ public class TestManyAgents {
 			trialId = Integer.parseInt(args[2]);
 		} else {
 			System.err.println("Usage TestManyAgents numTrials trialId");
+			System.exit(0);
 		}
 		
 		Domain generalDomain = TestManyAgents.generateGeneralDomain(); 
