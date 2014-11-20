@@ -17,6 +17,7 @@ import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.Action;
+import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.SADomain;
 import edu.brown.cs.h2r.baking.Agents.AdaptiveByFlow;
 import edu.brown.cs.h2r.baking.Agents.Agent;
@@ -38,6 +39,7 @@ import edu.brown.cs.h2r.baking.actions.GreaseAction;
 import edu.brown.cs.h2r.baking.actions.MixAction;
 import edu.brown.cs.h2r.baking.actions.MoveAction;
 import edu.brown.cs.h2r.baking.actions.PourAction;
+import edu.brown.cs.h2r.baking.actions.ResetAction;
 import edu.brown.cs.h2r.baking.actions.SwitchAction;
 import edu.brown.cs.h2r.baking.actions.UseAction;
 
@@ -213,12 +215,16 @@ public class TestManyAgents {
 			actionSequence.addAll(actionPair);
 			boolean isRepeating = checkIfRepeating(stateSequence);
 			
-			finished = human.isFinished(currentState) || isRepeating;
+			double reward = human.getCostActions(actionSequence, stateSequence);
+			finished = human.isSuccess(currentState) || reward < -200.0;
 			if (finished) {
 				if (human.isSuccess(currentState)) {
-					//System.out.println("\n\nHuman finished successfully!!!\n\n");
+					System.out.println("\n\nHuman finished successfully!!!\n\n");
 				}
 				else {
+					if (reward < -200.0) {
+						//System.err.println("Error became to large");
+					}
 					if (isRepeating) {
 						//System.err.println("\n\nState sequence repetition detected!");
 					}
@@ -274,6 +280,11 @@ public class TestManyAgents {
 			if (humanAction == null) {
 				//System.err.println("Human chose to do nothing");
 				break;
+			}
+			
+			GroundedAction groundedAction = (GroundedAction)humanAction;
+			if (groundedAction.action instanceof ResetAction) {
+				//System.err.println("Human resetting state");
 			}
 			
 			currentState = TestManyAgents.performActions(currentState, humanAction, null, statePair, actionPair, 0.5);
@@ -383,7 +394,7 @@ public class TestManyAgents {
 		int trialId = 0;
 		if (args.length == 2) {
 			numTrials = Integer.parseInt(args[0]);
-			trialId = Integer.parseInt(args[1]);
+			trialId = Integer.parseInt(args[1	]);
 		} else {
 			System.err.println("Args provided: "  + Arrays.toString(args));
 			System.err.println("Usage TestManyAgents numTrials trialId");
@@ -399,6 +410,7 @@ public class TestManyAgents {
 		Human human = new Human(generalDomain);
 		
 		State state = TestManyAgents.generateInitialState(generalDomain, recipes, human, null);
+		ResetAction resetAction = new ResetAction(generalDomain, state);
 		/*for (Recipe recipe : recipes) {
 			//System.out.println("Testing recipe " + recipe.toString());
 			ExperimentHelper.testRecipeExecution(generalDomain, state, recipe);
@@ -419,7 +431,6 @@ public class TestManyAgents {
 		
 		Map<Agent, EvaluationResult> results = new HashMap<Agent, EvaluationResult>();
 		
-		//Agent agent = agents.get(agentChoice);
 		for (Agent agent : agents) {
 			//System.out.println("Agent: " + agent.getAgentName());
 			EvaluationResult result = new EvaluationResult();

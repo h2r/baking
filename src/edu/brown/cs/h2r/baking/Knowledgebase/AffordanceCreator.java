@@ -32,6 +32,7 @@ import edu.brown.cs.h2r.baking.actions.GreaseAction;
 import edu.brown.cs.h2r.baking.actions.MixAction;
 import edu.brown.cs.h2r.baking.actions.MoveAction;
 import edu.brown.cs.h2r.baking.actions.PourAction;
+import edu.brown.cs.h2r.baking.actions.ResetAction;
 import edu.brown.cs.h2r.baking.actions.SwitchAction;
 import edu.brown.cs.h2r.baking.actions.UseAction;
 
@@ -170,6 +171,8 @@ public class AffordanceCreator {
 				return AffordanceCreator.GREASE_PF;
 			case SwitchAction.className:
 				return AffordanceCreator.SWITCH_PF;
+			case ResetAction.className:
+				return AffordanceCreator.BOTCHED_PF;
 			default:
 				System.err.println("Action " + actionName + " has no PF associated with it!");
 				System.exit(0);
