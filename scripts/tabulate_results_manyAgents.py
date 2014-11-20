@@ -38,4 +38,4 @@ if len(argv) > 1:
 
     print("Agent, Successes, Trials, Average reward, average successful reward")
     for agent, line in data.iteritems():
-        print(str(agent) + ", " + str(sum(line[0])) + ", " + str(sum(line[1])) + ", " + str( numpy.mean(line[2])) + str(numpy.mean(line[3])) + " +- " + str(numpy.std(line[3], ddof=1)))
+        print(str(agent) + ", " + str(sum(int(line[0]))) + ", " + str(sum(int(line[1]))) + ", " + str( numpy.mean(line[2])) + ", " + str(numpy.mean(line[3])) + " +- " + str(numpy.std(line[3], ddof=1)))
