@@ -2,18 +2,8 @@ from sys import argv
 from glob import glob
 from csv import reader, Error
 import math
+import statistics
 
-
-def calculate_interval(num_successes, num_trials):
-	num_failures = num_trials - num_successes
-	z = 1.96 # for 95% confidence
-	z2 = 1.96 * 1.96
-
-	num_smoothed_trials = num_trials + z2
-	num_smoothed_success = (num_successes + 0.5 * z2) / num_smoothed_trials
-	num_smoothed_failure = 1.0 - num_smoothed_success
-	interval = z * math.sqrt(num_smoothed_success * num_smoothed_failure / num_smoothed_trials)
-	return num_smoothed_success, interval
 
 if len(argv) > 1:
 	directory = argv[1]
@@ -24,24 +14,27 @@ if len(argv) > 1:
 		file = open(filename, 'rb')
 		
 		csvreader = reader(file, delimiter=",")
-                try:
-		    labels = csvreader.next()
-		    data_line = csvreader.next()
-                except:
+        try:
+        	isFirst = True
+        	data_lines = []
+        	for line in csvreader:
+        		if isFirst:
+				    labels = line
+				    isFirst = False
+				else:
+			    	data_lines.append(line)
+        except:
 		    print("error on file")
 		    continue
-		depth = data_line[0]
-		depth_type = data_line[1]
 
-		if depth_type not in data.keys():
-			data[depth_type] = dict()
-		if depth not in data[depth_type].keys():
-			data[depth_type][depth] = [0, 0, 0, 0]
-		for i in range(4):
-			data[depth_type][depth][i] += int(data_line[i+2])
+		#Agent, Successes, Trials, Average reward, average successful reward
+		for line in data_lines:
+			agent = line[0]
+			if agent not in data.keys():
+				data[agent] = [[],[],[],[]]
+			for i in range(4):
+				data[agent][i].append(int(line[i+1]))
 
-	print("Depth, Depth Type, Successes, Estimate Successes, Informed Guesses, Total Trials")
-	for depth_type, data_by_depth in data.iteritems():
-		for depth, data_sum in data_by_depth.iteritems():
-			probability_success, interval = calculate_interval(data_sum[0], data_sum[3])
-			print(str(depth) + ", " + str(depth_type	) + ", " + str(data_sum) + ", " + str(probability_success) + " +- " + str(interval))
+	print("Agent, Successes, Trials, Average reward, average successful reward")
+	for agent, line in data.iteritems():
+		print(str(agent) + ", " + str(sum(line[0])) + ", " + str(sum(line[1])) + ", " + str( statistics.mean(line[2])) + str(statistics.mean(line[3])) + " +- " + str(statistics.stdev(line[3])))
