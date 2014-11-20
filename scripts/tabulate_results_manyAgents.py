@@ -24,7 +24,7 @@ if len(argv) > 1:
                         isFirst = False
                     else:
                         data_lines.append(line)
-        except:
+        except Error as e:
             print("error on file")
             continue
 
