@@ -305,7 +305,7 @@ public class TestManyAgents {
 		return new EvaluationResult(score, human.isSuccess(currentState));
 	}
 	
-	private static void evaluateHuman(Domain generalDomain, Human human, int numTrials) {
+	private static EvaluationResult evaluateHuman(Domain generalDomain, Human human, int numTrials) {
 		double score = 0.0;
 		EvaluationResult result = new EvaluationResult();
 		for (int i = 0; i < numTrials; i++) {
@@ -319,7 +319,7 @@ public class TestManyAgents {
 			human.chooseNewRecipe();
 			result.incrementResult(TestManyAgents.evaluateHumanAlone(human, startingState));
 		}
-		
+		return result;
 		//System.out.println("Human alone: " + result.toString());
 		
 	}
@@ -392,16 +392,16 @@ public class TestManyAgents {
 	
 	public static void main(String[] args) {
 		
-		int numTrials = 3;
+		int numTrials = 8;
 		int trialId = 0;
-		if (args.length == 2) {
+		/*if (args.length == 2) {
 			numTrials = Integer.parseInt(args[0]);
 			trialId = Integer.parseInt(args[1]);
 		} else {
 			System.err.println("Args provided: "  + Arrays.toString(args));
 			System.err.println("Usage TestManyAgents numTrials trialId");
 			System.exit(0);
-		}
+		}*/
 		
 		Domain generalDomain = TestManyAgents.generateGeneralDomain(); 
 		
@@ -420,7 +420,6 @@ public class TestManyAgents {
 			//System.out.println("\n\n");
 		}*/
 		
-		//TestManyAgents.evaluateHuman(generalDomain, human, numTrials);
 		//System.exit(0);
 		
 		
@@ -432,13 +431,13 @@ public class TestManyAgents {
 				(Agent)new AdaptiveByFlow(generalDomain)
 				);
 		
-		Map<Agent, EvaluationResult> results = new HashMap<Agent, EvaluationResult>();
-		
+		Map<String, EvaluationResult> results = new HashMap<String, EvaluationResult>();
+		results.put("solo", TestManyAgents.evaluateHuman(generalDomain, human, numTrials));
 		for (Agent agent : agents) {
 			//System.out.println("Agent: " + agent.getAgentName());
 		//Agent agent = agents.get(2);
 			EvaluationResult result = new EvaluationResult();
-			results.put(agent, result);
+			results.put(agent.getAgentName(), result);
 			for (int i = 0; i < numTrials; i++) {
 				human = new Human(generalDomain);
 				
@@ -454,8 +453,8 @@ public class TestManyAgents {
 		
 		System.out.println("Agent, Successes, Trials, Average reward, average successful reward");
 		
-		for (Map.Entry<Agent, EvaluationResult> entry : results.entrySet()) {
-			System.out.println(entry.getKey().getAgentName() + ", " +  entry.getValue().toString());
+		for (Map.Entry<String, EvaluationResult> entry : results.entrySet()) {
+			System.out.println(entry.getKey() + ", " +  entry.getValue().toString());
 		
 		}
 		
