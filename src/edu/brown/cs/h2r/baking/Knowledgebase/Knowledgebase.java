@@ -90,9 +90,6 @@ public class Knowledgebase {
 	private void generateAllIngredients() {
 		for (Entry<String, BakingInformation> entry : this.parser.getIngredientMap().entrySet()) {
 			String name = entry.getKey();
-			if (name.equals("butter")) {
-				System.out.println("");
-			}
 			IngredientRecipe ing = new IngredientRecipe(name, Recipe.NO_ATTRIBUTES, null);
 			BakingInformation info = entry.getValue();
 			List<String> traits = null;

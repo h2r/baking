@@ -65,7 +65,7 @@ public class Human implements Agent {
 	
 	public void chooseNewRecipe() {
 		List<Recipe> recipes = new ArrayList<Recipe>(AgentHelper.recipes(generalDomain));
-		//Collections.shuffle(recipes);
+		Collections.shuffle(recipes);
 		
 		this.setRecipe(recipes.get(0));
 	}
@@ -73,8 +73,7 @@ public class Human implements Agent {
 	public void setRecipe(Recipe recipe) {
 		this.currentRecipe = recipe;
 		this.currentSubgoal = null;
-		Domain specificDomain = AgentHelper.generateSpecificDomain(generalDomain, this.currentRecipe);
-		this.kitchenSubdomains = AgentHelper.generateRTDPPolicies(this.currentRecipe, specificDomain, this.startingState, Human.rewardFunction, Human.hashingFactory);
+		this.kitchenSubdomains = AgentHelper.generateRTDPPolicies(this.currentRecipe, this.generalDomain, this.startingState, Human.rewardFunction, Human.hashingFactory);
 	}
 	
 	

@@ -49,41 +49,18 @@ import edu.brown.cs.h2r.baking.actions.UseAction;
 
 public class AgentHelper {
 	
-	public static Domain generateSpecificDomain(Domain generalDomain, Recipe recipe) {
-		Domain domain = new SADomain();
-		for (ObjectClass objectClass : generalDomain.getObjectClasses()) {
-			domain.addObjectClass(objectClass);
-		}
-		
-		Action mix = new MixAction(domain);
-		Action pour = new PourAction(domain);
-		Action move = new MoveAction(domain);
-		Action grease = new GreaseAction(domain);
-		Action aSwitch = new SwitchAction(domain);
-		Action use = new UseAction(domain);
-		//Action hand = new HandAction(domain, recipe.topLevelIngredient);
-		//Action waitAction = new WaitAction(domain);
-
-		return domain;
-	}
-	
 	public static List<Recipe> recipes(Domain domain) {
 		return Arrays.asList(
 				(Recipe)Brownies.getRecipe(domain)/*, 
 				new CucumberSalad(), 
 				new DeviledEggs(), 
 				new MashedPotatoes(),
-				new MoltenLavaCake(),
-				PeanutButterCookies.getRecipe(domain)*/);
+				new MoltenLavaCake()*/,
+				PeanutButterCookies.getRecipe(domain));
 	}
 	
 	public static List<KitchenSubdomain> generateAllRTDPPolicies(Domain generalDomain, State startingState, List<Recipe> recipes, RewardFunction rf, StateHashFactory hashingFactory) {
 		List<KitchenSubdomain> policyDomains = new ArrayList<KitchenSubdomain>();
-		
-		List<Domain> recipeDomains = new ArrayList<Domain>();
-		for (Recipe recipe : recipes) {
-			recipeDomains.add(AgentHelper.generateSpecificDomain(generalDomain, recipe));
-		}
 		
 		for (int i = 0; i < recipes.size(); i++) {
 			Recipe recipe = recipes.get(i);

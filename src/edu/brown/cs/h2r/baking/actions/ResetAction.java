@@ -14,12 +14,11 @@ import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 
 public class ResetAction extends BakingAction {
-	private final State resetState;
+	private State resetState;
 	public static final String className = "reset";
-	public ResetAction(Domain domain, State initialState) {
+	public ResetAction(Domain domain) {
 		super(ResetAction.className, domain, new String[] {AgentFactory.ClassName});
 		this.domain = domain;
-		this.resetState = initialState;
 	}
 	
 	@Override
@@ -38,6 +37,10 @@ public class ResetAction extends BakingAction {
 		}
 		
 		return BakingActionResult.success();
+	}
+	
+	public void setState(State state) {
+		this.resetState = state;
 	}
 	
 	@Override

@@ -26,16 +26,16 @@ public class AllowSwitching extends BakingPropositionalFunction {
 		
 		ObjectInstance space = state.getObject(params[1]);
 		// Since no subgoal for this ingredient is applicable to the switch action, ignore it!
-		if (this.subgoal == null) {
-			return false;
-		}
-		String subgoalClassName = this.subgoal.getGoal().getClassName();
+		//if (this.subgoal == null) {
+		//	return false;
+		//}
+		/*String subgoalClassName = this.subgoal.getGoal().getClassName();
 		if (subgoalClassName.equals(AffordanceCreator.SPACEON_PF)) {
 			// If the subgoal hasn't been fulfilled by some binding on the state
 			if (!this.subgoal.goalCompleted(state)) {
 				return true;
 			}
-		}
+		}*/
 		
 		if (!SpaceFactory.getOnOff(space)) {
 			// topLevelIngredient's .getRecipeHeated return whether, at some point in the recipe, an

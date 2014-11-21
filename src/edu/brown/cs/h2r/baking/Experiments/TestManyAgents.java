@@ -65,6 +65,8 @@ public class TestManyAgents {
 		Action grease = new GreaseAction(domain);
 		Action aSwitch = new SwitchAction(domain);
 		Action use = new UseAction(domain);
+		Action resetAction = new ResetAction(domain);
+		
 		
 		
 		// To the failed propFunction, add in all subgoals for a recipe that are based on an ingredient.
@@ -390,8 +392,8 @@ public class TestManyAgents {
 	
 	public static void main(String[] args) {
 		
-		int numTrials = 5;
-		int trialId = 0;
+		int numTrials = 3;
+		int trialId = 0;/*
 		if (args.length == 2) {
 			numTrials = Integer.parseInt(args[0]);
 			trialId = Integer.parseInt(args[1	]);
@@ -399,7 +401,7 @@ public class TestManyAgents {
 			System.err.println("Args provided: "  + Arrays.toString(args));
 			System.err.println("Usage TestManyAgents numTrials trialId");
 			System.exit(0);
-		}
+		}*/
 		
 		Domain generalDomain = TestManyAgents.generateGeneralDomain(); 
 		
@@ -410,7 +412,8 @@ public class TestManyAgents {
 		Human human = new Human(generalDomain);
 		
 		State state = TestManyAgents.generateInitialState(generalDomain, recipes, human, null);
-		ResetAction resetAction = new ResetAction(generalDomain, state);
+		ResetAction reset = (ResetAction)generalDomain.getAction(ResetAction.className);
+		reset.setState(state);
 		/*for (Recipe recipe : recipes) {
 			//System.out.println("Testing recipe " + recipe.toString());
 			ExperimentHelper.testRecipeExecution(generalDomain, state, recipe);
@@ -433,6 +436,7 @@ public class TestManyAgents {
 		
 		for (Agent agent : agents) {
 			//System.out.println("Agent: " + agent.getAgentName());
+		//Agent agent = agents.get(2);
 			EvaluationResult result = new EvaluationResult();
 			results.put(agent, result);
 			for (int i = 0; i < numTrials; i++) {
