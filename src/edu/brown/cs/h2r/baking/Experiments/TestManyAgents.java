@@ -393,15 +393,15 @@ public class TestManyAgents {
 	public static void main(String[] args) {
 		
 		int numTrials = 3;
-		int trialId = 0;/*
+		int trialId = 0;
 		if (args.length == 2) {
 			numTrials = Integer.parseInt(args[0]);
-			trialId = Integer.parseInt(args[1	]);
+			trialId = Integer.parseInt(args[1]);
 		} else {
 			System.err.println("Args provided: "  + Arrays.toString(args));
 			System.err.println("Usage TestManyAgents numTrials trialId");
 			System.exit(0);
-		}*/
+		}
 		
 		Domain generalDomain = TestManyAgents.generateGeneralDomain(); 
 		
