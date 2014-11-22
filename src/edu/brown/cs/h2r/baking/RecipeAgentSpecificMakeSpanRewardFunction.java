@@ -7,6 +7,7 @@ import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 import edu.brown.cs.h2r.baking.ObjectFactories.MakeSpanFactory;
+import edu.brown.cs.h2r.baking.actions.ResetAction;
 import edu.brown.cs.h2r.baking.actions.WaitAction;
 
 public class RecipeAgentSpecificMakeSpanRewardFunction implements RewardFunction {
@@ -28,12 +29,12 @@ public class RecipeAgentSpecificMakeSpanRewardFunction implements RewardFunction
 
 	@Override
 	public double reward(State state, GroundedAction a, State sprime) {
-		
+		double actionFactor = (a.action instanceof ResetAction) ? 2.0 : 1.0;
 		List<ObjectInstance> objectInstances = state.getObjectsOfTrueClass(MakeSpanFactory.ClassName);
 		if (!objectInstances.isEmpty()) {
 			Set<String> occupiedAgents = MakeSpanFactory.getOccupiedAgentNames(objectInstances.get(0));
 			if (occupiedAgents.contains(a.params[0]) || occupiedAgents.isEmpty()) {
-				return (a.params[0] == this.agent) ? this.costMe : this.costYou;
+				return (a.params[0] == this.agent) ? actionFactor * this.costMe : actionFactor * this.costYou;
 			}
 			else if (!(a.action instanceof WaitAction)){
 				return -0.5;
@@ -42,7 +43,7 @@ public class RecipeAgentSpecificMakeSpanRewardFunction implements RewardFunction
 			}
 		}
 		else {
-			return (a.params[0] == this.agent) ? this.costMe : this.costYou;
+			return (a.params[0] == this.agent) ? actionFactor * this.costMe : actionFactor * this.costYou;
 		}
 
 		//String[] classes = a.action.getParameterClasses();

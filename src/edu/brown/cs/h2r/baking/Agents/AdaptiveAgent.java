@@ -20,7 +20,7 @@ import edu.brown.cs.h2r.baking.Prediction.PolicyProbability;
 public abstract class AdaptiveAgent implements Agent {
 	private final Domain domain;
 	protected final static StateHashFactory hashingFactory = new NameDependentStateHashFactory();
-	protected final static RewardFunction rewardFunction = new RecipeAgentSpecificMakeSpanRewardFunction(Human.HUMAN_NAME);;
+	protected final static RewardFunction rewardFunction = new RecipeAgentSpecificMakeSpanRewardFunction("human");
 	protected final List<State> stateHistory;
 	private final List<PolicyProbability> policyBeliefDistribution;
 	protected final List<KitchenSubdomain> subdomains;

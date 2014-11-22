@@ -30,10 +30,8 @@ import edu.brown.cs.h2r.baking.Recipes.PeanutButterCookies;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 
 public class Human implements Agent {
-	private final static RewardFunction rewardFunction = new RecipeAgentSpecificMakeSpanRewardFunction(Human.HUMAN_NAME);
+	private final static RewardFunction rewardFunction = new RecipeAgentSpecificMakeSpanRewardFunction("human");
 	
-	public final static String HUMAN_NAME = "human";
-	private String name = Human.HUMAN_NAME;
 	private final static StateHashFactory hashingFactory = new NameDependentStateHashFactory();
 	private State startingState;
 	
@@ -50,7 +48,6 @@ public class Human implements Agent {
 	
 	public Human(Domain generalDomain, String name) {
 		this.generalDomain = generalDomain;
-		this.name = name;
 	}
 	
 	@Override
@@ -68,6 +65,7 @@ public class Human implements Agent {
 		Collections.shuffle(recipes);
 		
 		this.setRecipe(recipes.get(0));
+		System.out.println(this.getAgentName() + " chose " + this.currentRecipe.toString());
 	}
 	
 	public void setRecipe(Recipe recipe) {
@@ -83,6 +81,9 @@ public class Human implements Agent {
 	}
 	
 	private void chooseNewSubgoal(State state) {
+		if (this.startingState.equals(state)) {
+			this.setRecipe(this.currentRecipe);
+		}
 		List<KitchenSubdomain> activeSubgoals = new ArrayList<KitchenSubdomain>();
 		
 		for (KitchenSubdomain subdomain : this.kitchenSubdomains) {
@@ -118,25 +119,40 @@ public class Human implements Agent {
 
 	@Override
 	public String getAgentName() {
-		return this.name;
+		return "human";
 	}
 
 	@Override
 	public AbstractGroundedAction getAction(State state) {
 		if (this.currentSubgoal == null) {
 			this.chooseNewSubgoal(state);
-		}
-		if (this.currentSubgoal.getSubgoal().goalCompleted(state)) {
+		} else if (this.currentSubgoal.getSubgoal().goalCompleted(state)) {
 			this.kitchenSubdomains.remove(this.currentSubgoal);
 			this.chooseNewSubgoal(state);
 		}
 		if (this.currentSubgoal == null) {
-			return null;
-		}
-		if (this.isFinished(state)) {
-			return null;
+			return new GroundedAction(this.generalDomain.getAction("reset"), new String[] {"human"});
 		}
 		
+		List<ActionProb> allowableActions = this.getAllowableActions(state);
+		if (allowableActions.size() == 0) {
+			this.chooseNewSubgoal(state);
+			if (this.currentSubgoal == null) {
+				return null;
+			}
+			allowableActions = this.getAllowableActions(state);
+		}
+		this.normalizeActionDistribution(allowableActions);
+		AbstractGroundedAction action = this.getActionFromPolicyDistribution(allowableActions);
+		if (action != null) {
+			GroundedAction groundedAction = (GroundedAction)action;
+			groundedAction.params[0] = this.getAgentName();
+		}
+		
+		return action;
+	}
+
+	private List<ActionProb> getAllowableActions(State state) {
 		Policy policy = this.currentSubgoal.getPolicy();
 		List<ActionProb> actionDistribution = policy.getActionDistributionForState(state);
 		List<ActionProb> allowableActions = new ArrayList<ActionProb>();
@@ -146,13 +162,7 @@ public class Human implements Agent {
 				allowableActions.add(actionProb);
 			}
 		}
-		this.normalizeActionDistribution(allowableActions);
-		AbstractGroundedAction action = this.getActionFromPolicyDistribution(allowableActions);
-		if (action != null) {
-			GroundedAction groundedAction = (GroundedAction)action;
-			groundedAction.params[0] = this.name;
-		}
-		return action;
+		return allowableActions;
 	}
 	
 	private void normalizeActionDistribution(List<ActionProb> actionDistribution) {

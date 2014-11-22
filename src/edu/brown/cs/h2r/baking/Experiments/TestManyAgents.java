@@ -100,7 +100,7 @@ public class TestManyAgents {
 		objects.add(ContainerFactory.getNewHeatingContainerObjectInstance(generalDomain, "melting_pot", null, SpaceFactory.SPACE_COUNTER, objectHashingFactory));
 		objects.add(SpaceFactory.getNewBakingSpaceObjectInstance(generalDomain, SpaceFactory.SPACE_OVEN, null, "", objectHashingFactory));
 		objects.add(SpaceFactory.getNewHeatingSpaceObjectInstance(generalDomain, SpaceFactory.SPACE_STOVE, null, "", objectHashingFactory));
-		objects.add(ContainerFactory.getNewTrashContainerObjectInstance(generalDomain, "trash", SpaceFactory.SPACE_COUNTER, objectHashingFactory));
+		//objects.add(ContainerFactory.getNewTrashContainerObjectInstance(generalDomain, "trash", SpaceFactory.SPACE_COUNTER, objectHashingFactory));
 		
 		for (String container : containers) { 
 			objects.add(ContainerFactory.getNewMixingContainerObjectInstance(generalDomain, container, null, SpaceFactory.SPACE_COUNTER, objectHashingFactory));
@@ -174,12 +174,12 @@ public class TestManyAgents {
 		human.chooseNewRecipe();
 		Human otherHuman = null;
 		
-		if (partner instanceof Human) {
+		if ((partner instanceof Human) && !(partner instanceof RandomRecipeAgent)) {
 			otherHuman = (Human)partner;
 			otherHuman.setRecipe(human.getCurrentRecipe());
 			actionBias = 1.0;
 		}
-		
+		boolean isSuccess = false;
 		while (!finished) {
 			partner.addObservation(currentState);
 			
@@ -189,6 +189,7 @@ public class TestManyAgents {
 					//System.out.println("\n\nHuman finished successfully!!!\n\n");
 				}
 				else {
+					humanAction = human.getAction(currentState);
 					//System.err.println("\n\nHuman failed recipe!!!\n\n");
 				}
 				break;
@@ -206,7 +207,10 @@ public class TestManyAgents {
 				////System.out.println("");
 				partnerAction = TestManyAgents.getActionAndWait(otherHuman, newState);
 			} else {
-				partnerAction = TestManyAgents.getActionAndWait(partner, newState);
+				partnerAction = TestManyAgents.getActionAndWait(partner, currentState);
+				if (partnerAction == null) {
+					partnerAction = TestManyAgents.getActionAndWait(partner, currentState);
+				}
 			}
 			
 			
@@ -216,11 +220,11 @@ public class TestManyAgents {
 			stateSequence.addAll(statePair);
 			actionSequence.addAll(actionPair);
 			boolean isRepeating = checkIfRepeating(stateSequence);
-			
+			isSuccess = human.isSuccess(currentState);
 			double reward = human.getCostActions(actionSequence, stateSequence);
-			finished = human.isSuccess(currentState) || reward < -200.0;
+			finished = isSuccess || reward < -200.0;
 			if (finished) {
-				if (human.isSuccess(currentState)) {
+				if (isSuccess) {
 					//System.out.println("\n\nHuman finished successfully!!!\n\n");
 				}
 				else {
@@ -236,7 +240,7 @@ public class TestManyAgents {
 			}
 		}
 		double reward = human.getCostActions(actionSequence, stateSequence);
-		return new EvaluationResult(reward, human.isSuccess(currentState));
+		return new EvaluationResult(reward, isSuccess);
 	}
 	
 	private static boolean checkIfRepeating(List<State> stateSequence) {
@@ -393,7 +397,7 @@ public class TestManyAgents {
 	public static void main(String[] args) {
 		
 		int numTrials = 8;
-		int trialId = 0;
+		int trialId = 0;/*
 		if (args.length == 2) {
 			numTrials = Integer.parseInt(args[0]);
 			trialId = Integer.parseInt(args[1]);
@@ -401,7 +405,7 @@ public class TestManyAgents {
 			System.err.println("Args provided: "  + Arrays.toString(args));
 			System.err.println("Usage TestManyAgents numTrials trialId");
 			System.exit(0);
-		}
+		}	*/
 		
 		Domain generalDomain = TestManyAgents.generateGeneralDomain(); 
 		
@@ -412,8 +416,6 @@ public class TestManyAgents {
 		Human human = new Human(generalDomain);
 		
 		State state = TestManyAgents.generateInitialState(generalDomain, recipes, human, null);
-		ResetAction reset = (ResetAction)generalDomain.getAction(ResetAction.className);
-		reset.setState(state);
 		/*for (Recipe recipe : recipes) {
 			//System.out.println("Testing recipe " + recipe.toString());
 			ExperimentHelper.testRecipeExecution(generalDomain, state, recipe);
@@ -430,37 +432,30 @@ public class TestManyAgents {
 				(Agent)new Human(generalDomain, "friend"),
 				(Agent)new AdaptiveByFlow(generalDomain)
 				);
+		System.out.println("Agent, Successes, Trials, Average reward, average successful reward");
+		ResetAction reset = (ResetAction)generalDomain.getAction(ResetAction.className);
+		reset.setState(state);
+		//System.out.println("solo" + ", " +  TestManyAgents.evaluateHuman(generalDomain, human, numTrials).toString());
 		
-		Map<String, EvaluationResult> results = new HashMap<String, EvaluationResult>();
-		results.put("solo", TestManyAgents.evaluateHuman(generalDomain, human, numTrials));
 		for (Agent agent : agents) {
 			//System.out.println("Agent: " + agent.getAgentName());
-		//Agent agent = agents.get(2);
-			EvaluationResult result = new EvaluationResult();
-			results.put(agent.getAgentName(), result);
+		//Agent agent = agents.get(1);
+			EvaluationResult result;
 			for (int i = 0; i < numTrials; i++) {
 				human = new Human(generalDomain);
 				
 				
 				State startingState = TestManyAgents.generateInitialState(generalDomain, recipes, human, agent);
+				reset.setState(startingState);
+				
 				human.setInitialState(startingState);
 				agent.setInitialState(startingState);
 				
+				
 				//System.out.println("Trial: " + i);
-				result.incrementResult(TestManyAgents.evaluateAgent(human, agent, startingState));
+				result = TestManyAgents.evaluateAgent(human, agent, startingState);
+				System.out.println(agent.getAgentName() + ", " +  result.toString());
 			}
-		}
-		
-		System.out.println("Agent, Successes, Trials, Average reward, average successful reward");
-		
-		for (Map.Entry<String, EvaluationResult> entry : results.entrySet()) {
-			System.out.println(entry.getKey() + ", " +  entry.getValue().toString());
-		
-		}
-		
-		
-	
-		
+		}	
 	}
-
 }

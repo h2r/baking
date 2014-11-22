@@ -21,7 +21,7 @@ import edu.brown.cs.h2r.baking.Scheduling.Workflow.Node;
 
 public class SchedulingComparison {
 
-	public static Workflow buildSortedWorkflow(int numberNodes) {
+	public static Workflow buildSortedWorkflow(int numberNodes, int numberEdges) {
 		Random rando = new Random();
 		List<Workflow.Node> nodes = new ArrayList<Workflow.Node>();
 		
@@ -30,10 +30,11 @@ public class SchedulingComparison {
 		}
 		Workflow workflow = new Workflow(nodes);
 		
-		for (int i = 0; i < numberNodes; i++) {
+		int edges = 0;
+		while(edges < numberEdges) {
 			int from = rando.nextInt(numberNodes);
 			int to = rando.nextInt(numberNodes);
-			workflow.connect(from, to);
+			edges += (workflow.connect(from, to)) ? 1 : 0;
 		}
 		return workflow.sort();
 	}
@@ -98,7 +99,7 @@ public class SchedulingComparison {
 				new GreedyScheduler(),
 				new WeightByShortest(),
 				new WeightByDifference(),
-				new ExhaustiveScheduler(3)/*,
+				new ExhaustiveScheduler(5)/*,
 				new ExhaustiveScheduler()*/
 				);
 		
@@ -107,17 +108,20 @@ public class SchedulingComparison {
 			System.out.println("Workflow time for " + entry.getKey() + ": " + SchedulingComparison.getAgentsSoloTime(workflow, entry.getValue()));
 		}*/
 		
-		for (Scheduler scheduler : schedulers) {
-			double sum = 0.0;
-			for (int i = 0; i < numTries; i++) {
-				Workflow workflow = SchedulingComparison.buildSortedWorkflow(20);
-				Map<String, Map<Workflow.Node, Double>> actionTimeLookup = SchedulingComparison.buildActionTimeLookup(workflow, 2);
-				
-				List<AssignedWorkflow> assignments = scheduler.schedule(workflow, actionTimeLookup);
-				//SchedulingComparison.verifyAssignments(workflow, assignments);
-				sum += SchedulingHelper.computeSequenceTime(assignments);
+		List<Integer> connectedness = Arrays.asList(20, 40, 60);
+		for (Integer edges : connectedness) {
+			for (Scheduler scheduler : schedulers) {
+				double sum = 0.0;
+				for (int i = 0; i < numTries; i++) {
+					Workflow workflow = SchedulingComparison.buildSortedWorkflow(20, edges);
+					Map<String, Map<Workflow.Node, Double>> actionTimeLookup = SchedulingComparison.buildActionTimeLookup(workflow, 2);
+					
+					List<AssignedWorkflow> assignments = scheduler.schedule(workflow, actionTimeLookup);
+					//SchedulingComparison.verifyAssignments(workflow, assignments);
+					sum += SchedulingHelper.computeSequenceTime(assignments);
+				}
+				System.out.println(scheduler.getClass().getSimpleName() + ", " + edges + ": " + sum / numTries);
 			}
-			System.out.println(scheduler.getClass().getCanonicalName() + ": " + sum / numTries);
 		}
 	}
 }
