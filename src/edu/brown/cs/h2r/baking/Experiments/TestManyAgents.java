@@ -437,11 +437,13 @@ public class TestManyAgents {
 		reset.setState(state);
 		//System.out.println("solo" + ", " +  TestManyAgents.evaluateHuman(generalDomain, human, numTrials).toString());
 		
-		for (Agent agent : agents) {
+		
 			//System.out.println("Agent: " + agent.getAgentName());
 		//Agent agent = agents.get(1);
 			EvaluationResult result;
-			for (int i = 0; i < numTrials; i++) {
+		for (int i = 0; i < numTrials; i++) {
+			for (Agent agent : agents) {
+			
 				human = new Human(generalDomain);
 				
 				
