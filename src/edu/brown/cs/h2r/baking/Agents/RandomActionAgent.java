@@ -32,7 +32,7 @@ public class RandomActionAgent implements Agent {
 
 	@Override
 	public ObjectInstance getAgentObject() {
-		return AgentFactory.getNewRobotAgentObjectInstance(this.domain, this.getAgentName(), this.hashingFactory.getObjectHashFactory());
+		return AgentFactory.getNewHumanAgentObjectInstance(this.domain, this.getAgentName(), this.hashingFactory.getObjectHashFactory());
 	}
 
 	@Override

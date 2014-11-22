@@ -2,6 +2,7 @@ package edu.brown.cs.h2r.baking.Experiments;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -108,19 +109,21 @@ public class SchedulingComparison {
 			System.out.println("Workflow time for " + entry.getKey() + ": " + SchedulingComparison.getAgentsSoloTime(workflow, entry.getValue()));
 		}*/
 		
-		List<Integer> connectedness = Arrays.asList(20, 40, 60);
+		List<Integer> connectedness = Arrays.asList(60, 40, 20);
+		Collections.shuffle(connectedness);
 		for (Integer edges : connectedness) {
-			for (Scheduler scheduler : schedulers) {
+			for (int i = 0; i < numTries; i++) {
 				double sum = 0.0;
-				for (int i = 0; i < numTries; i++) {
+				for (Scheduler scheduler : schedulers) {
 					Workflow workflow = SchedulingComparison.buildSortedWorkflow(20, edges);
 					Map<String, Map<Workflow.Node, Double>> actionTimeLookup = SchedulingComparison.buildActionTimeLookup(workflow, 2);
 					
 					List<AssignedWorkflow> assignments = scheduler.schedule(workflow, actionTimeLookup);
 					//SchedulingComparison.verifyAssignments(workflow, assignments);
-					sum += SchedulingHelper.computeSequenceTime(assignments);
+					double time = SchedulingHelper.computeSequenceTime(assignments);
+					System.out.println(scheduler.getClass().getSimpleName() + ", " + edges + ": " + time);
 				}
-				System.out.println(scheduler.getClass().getSimpleName() + ", " + edges + ": " + sum / numTries);
+				
 			}
 		}
 	}
