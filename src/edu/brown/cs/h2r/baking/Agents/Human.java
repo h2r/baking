@@ -65,7 +65,7 @@ public class Human implements Agent {
 		Collections.shuffle(recipes);
 		
 		this.setRecipe(recipes.get(0));
-		System.out.println(this.getAgentName() + " chose " + this.currentRecipe.toString());
+		//System.out.println(this.getAgentName() + " chose " + this.currentRecipe.toString());
 	}
 	
 	public void setRecipe(Recipe recipe) {
