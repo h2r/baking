@@ -199,13 +199,15 @@ public class SubgoalDetermination {
 		int depthType = 0;
 		int depth = 1;
 		
-		if (argv.length == 2) {
-			int Id = Integer.parseInt(argv[0]);
+		if (argv.length > 0) {
+			numTries = Integer.parseInt(argv[1]);
+		}
+		if (argv.length > 1) {
+			int Id = Integer.parseInt(argv[1]);
 			int experimentModel = Id % 12;
 			depthType = experimentModel % 3;
 			depth = experimentModel / 3 + 1;
 			
-			numTries = Integer.parseInt(argv[1]);
 		}
 		Domain domain = SubgoalDetermination.generateGeneralDomain();
 		List<Recipe> recipes = AgentHelper.recipes(domain);
