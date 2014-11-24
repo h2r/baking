@@ -200,7 +200,7 @@ public class SubgoalDetermination {
 		int depth = 1;
 		
 		if (argv.length > 0) {
-			numTries = Integer.parseInt(argv[1]);
+			numTries = Integer.parseInt(argv[0]);
 		}
 		if (argv.length > 1) {
 			int Id = Integer.parseInt(argv[1]);
