@@ -65,7 +65,7 @@ public class Human implements Agent {
 		Collections.shuffle(recipes);
 		
 		this.setRecipe(recipes.get(0));
-		System.out.println(this.getAgentName() + " chose " + this.currentRecipe.toString());
+		//System.out.println(this.getAgentName() + " chose " + this.currentRecipe.toString());
 	}
 	
 	public void setRecipe(Recipe recipe) {
@@ -105,7 +105,7 @@ public class Human implements Agent {
 		this.isFailure = new RecipeTerminalFunction(isFailure);
 		
 		this.generalDomain = AgentHelper.setSubgoal(this.generalDomain, this.currentSubgoal.getSubgoal());
-		System.out.println(this.getAgentName() + " switches to task: " + this.currentSubgoal.toString());
+		//System.out.println(this.getAgentName() + " switches to task: " + this.currentSubgoal.toString());
 		
 	}
 	
@@ -201,7 +201,7 @@ public class Human implements Agent {
 	}
 	
 	public boolean isSubgoalFinished(State state) {
-		return this.currentSubgoal.getSubgoal().goalCompleted(state);
+		return (this.currentSubgoal == null) ? true : this.currentSubgoal.getSubgoal().goalCompleted(state);
 	}
 	
 	public double getCostActions(List<AbstractGroundedAction> actionSequence, List<State> stateSequence) {

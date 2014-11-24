@@ -138,10 +138,10 @@ public class TestManyAgents {
 		AbstractGroundedAction secondAction = (action1First) ? action2 : action1;
 		
 		if (firstAction != null) {
-			System.out.println("Executing action " + firstAction.toString());
+			//System.out.println("Executing action " + firstAction.toString());
 			State nextState = firstAction.executeIn(state);
 			if (nextState.equals(state)) {
-				System.out.println("Action had no effect");
+				//System.out.println("Action had no effect");
 			}
 			state = nextState;
 			statePair.add(state);
@@ -149,10 +149,10 @@ public class TestManyAgents {
 		}
 
 		if (secondAction != null) {
-			System.out.println("Executing action " + secondAction.toString());
+			//System.out.println("Executing action " + secondAction.toString());
 			State nextState = secondAction.executeIn(state);
 			if (nextState.equals(state)) {
-				System.out.println("Action had no effect");
+				//System.out.println("Action had no effect");
 			}
 			state = nextState;
 			statePair.add(state);
@@ -226,11 +226,11 @@ public class TestManyAgents {
 			double reward = human.getCostActions(actionSequence, stateSequence);
 			finished = isSuccess || reward < -1000.0;
 			
-			if (human.isSubgoalFinished(currentState)) {
-				System.out.println("Subgoal is finished");
+			/*if (human.isSubgoalFinished(currentState)) {
+				//System.out.println("Subgoal is finished");
 			} else {
-				System.out.println("Subogal is not finished");
-			}
+				//System.out.println("Subogal is not finished");
+			}*/
 			
 			if (finished) {
 				if (isSuccess) {
@@ -435,16 +435,16 @@ public class TestManyAgents {
 		
 		
 		
-		List<Agent> agents = Arrays.asList(/*
+		List<Agent> agents = Arrays.asList(
 				(Agent)new RandomActionAgent(generalDomain),
 				(Agent)new RandomRecipeAgent(generalDomain),
-				(Agent)new Human(generalDomain, "friend"),*/
+				(Agent)new Human(generalDomain, "friend"),
 				(Agent)new AdaptiveByFlow(generalDomain)
 				);
 		System.out.println("Agent, Successes, Trials, Average reward, average successful reward");
 		ResetAction reset = (ResetAction)generalDomain.getAction(ResetAction.className);
 		reset.setState(state);
-		//System.out.println("solo" + ", " +  TestManyAgents.evaluateHuman(generalDomain, human, numTrials).toString());
+		System.out.println("solo" + ", " +  TestManyAgents.evaluateHuman(generalDomain, human, numTrials).toString());
 		
 		
 			//System.out.println("Agent: " + agent.getAgentName());
