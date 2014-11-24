@@ -83,7 +83,7 @@ public class KitchenSubdomain {
 	
 	@Override
 	public String toString() {
-		return this.recipe.toString() + " - " + this.subgoal.toString();
+		return this.subgoal.toString();
 	}
 	
 }

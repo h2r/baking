@@ -25,20 +25,20 @@ public class PecanPie extends Recipe {
 		IngredientRecipe dryCrust = new IngredientRecipe("dry_crust", Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, ingredientList);
 		dryCrust.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
 		dryCrust.addNecessaryTrait("sugar", Recipe.NO_ATTRIBUTES);
-		this.subgoalIngredients.put(dryCrust.getName(), dryCrust);
+		this.subgoalIngredients.put(dryCrust.getSimpleName(), dryCrust);
 		
 		List<IngredientRecipe> ingredientList2 = new ArrayList<IngredientRecipe>();
 		ingredientList2.add(knowledgebase.getIngredient("butter"));
 		ingredientList2.add(dryCrust);
 		IngredientRecipe flakyCrust = new IngredientRecipe("flaky_crust", Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, ingredientList2);
-		this.subgoalIngredients.put(flakyCrust.getName(), flakyCrust);
+		this.subgoalIngredients.put(flakyCrust.getSimpleName(), flakyCrust);
 
 		
 		List<IngredientRecipe> ingredientList3 = new ArrayList<IngredientRecipe>();
 		ingredientList3.add(knowledgebase.getIngredient("eggs"));
 		ingredientList3.add(flakyCrust);
 		IngredientRecipe pieCrust = new IngredientRecipe("pie_crust", Recipe.BAKED, this, Recipe.SWAPPED, ingredientList3);
-		this.subgoalIngredients.put(pieCrust.getName(), pieCrust);
+		this.subgoalIngredients.put(pieCrust.getSimpleName(), pieCrust);
 
 		
 		List<IngredientRecipe> ingredientList4 = new ArrayList<IngredientRecipe>();
@@ -47,7 +47,7 @@ public class PecanPie extends Recipe {
 		IngredientRecipe pieMix = new IngredientRecipe("pie_mix", Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, ingredientList4);
 		pieMix.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
 		pieMix.addNecessaryTrait("sugar", Recipe.NO_ATTRIBUTES);
-		this.subgoalIngredients.put(pieMix.getName(), pieMix);
+		this.subgoalIngredients.put(pieMix.getSimpleName(), pieMix);
 		
 		List<IngredientRecipe> ingredientList5 = new ArrayList<IngredientRecipe>();
 		ingredientList5.add(knowledgebase.getIngredient("pecans"));
@@ -55,20 +55,20 @@ public class PecanPie extends Recipe {
 		ingredientList5.add(knowledgebase.getIngredient("vanilla"));
 		ingredientList5.add(pieMix);
 		IngredientRecipe filling = new IngredientRecipe("filling", Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, ingredientList5);
-		this.subgoalIngredients.put(filling.getName(), filling);
+		this.subgoalIngredients.put(filling.getSimpleName(), filling);
 
 		List<IngredientRecipe> ingredientList6 = new ArrayList<IngredientRecipe>();
 		ingredientList6.add(filling);
 		ingredientList6.add(knowledgebase.getIngredient("eggs"));
 		IngredientRecipe finishedFilling = new IngredientRecipe("finished_filling", Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, ingredientList6);
-		this.subgoalIngredients.put(finishedFilling.getName(), finishedFilling);
+		this.subgoalIngredients.put(finishedFilling.getSimpleName(), finishedFilling);
 		
 		List<IngredientRecipe> ingredientList7 = new ArrayList<IngredientRecipe>();
 		ingredientList7.add(finishedFilling);
 		ingredientList7.add(pieCrust);
 		IngredientRecipe pecanPie = new IngredientRecipe("PecanPie", Recipe.BAKED, this, Recipe.SWAPPED, ingredientList7);
 		
-		this.subgoalIngredients.put(pecanPie.getName(), pecanPie);
+		this.subgoalIngredients.put(pecanPie.getSimpleName(), pecanPie);
 		
 		return pecanPie;
 	}

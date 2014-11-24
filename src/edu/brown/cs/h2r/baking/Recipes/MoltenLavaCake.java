@@ -31,14 +31,14 @@ public class MoltenLavaCake extends Recipe {
 		chocolate.setHeatedState("melted");
 		ingredientList.add(chocolate);
 		IngredientRecipe melted = new IngredientRecipe("melted_stuff", Recipe.HEATED, this, Recipe.SWAPPED, ingredientList);
-		this.subgoalIngredients.put(melted.getName(), melted);
+		this.subgoalIngredients.put(melted.getSimpleName(), melted);
 		
 		List<IngredientRecipe> ingredientList2 = new ArrayList<IngredientRecipe>();
 		ingredientList2.add(melted);
 		IngredientRecipe batter = new IngredientRecipe("batter", Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, ingredientList2);
 		batter.addNecessaryTrait("flour", Recipe.NO_ATTRIBUTES);
 		batter.addNecessaryTrait("sugar", Recipe.NO_ATTRIBUTES);
-		this.subgoalIngredients.put(batter.getName(), batter);
+		this.subgoalIngredients.put(batter.getSimpleName(), batter);
 		
 		
 		List<IngredientRecipe> ingredientList3 = new ArrayList<IngredientRecipe>();
@@ -46,7 +46,7 @@ public class MoltenLavaCake extends Recipe {
 		ingredientList3.add(knowledgebase.getIngredient("eggs"));
 		ingredientList3.add(knowledgebase.getIngredient("egg_yolks"));
 		IngredientRecipe unflavoredBatter = new IngredientRecipe("unflavored_batter", Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, ingredientList3);
-		this.subgoalIngredients.put(unflavoredBatter.getName(), unflavoredBatter);
+		this.subgoalIngredients.put(unflavoredBatter.getSimpleName(), unflavoredBatter);
 		
 		List<IngredientRecipe> ingredientList4 = new ArrayList<IngredientRecipe>();
 		ingredientList4.add(unflavoredBatter);
@@ -54,7 +54,7 @@ public class MoltenLavaCake extends Recipe {
 		ingredientList4.add(knowledgebase.getIngredient("orange_liqueur"));
 		IngredientRecipe cake = new IngredientRecipe("molten_lava_cake", Recipe.BAKED, this, Recipe.SWAPPED, ingredientList4);
 		
-		this.subgoalIngredients.put(cake.getName(), cake);
+		this.subgoalIngredients.put(cake.getSimpleName(), cake);
 		
 		return cake;
 	}

@@ -24,20 +24,20 @@ public class CherryPie extends Recipe {
 		IngredientRecipe dryCrust = new IngredientRecipe("dry_crust", Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, ingredientList);
 		dryCrust.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
 		dryCrust.addNecessaryTrait("sugar", Recipe.NO_ATTRIBUTES);
-		this.subgoalIngredients.put(dryCrust.getName(), dryCrust);
+		this.subgoalIngredients.put(dryCrust.getSimpleName(), dryCrust);
 		
 		List<IngredientRecipe> ingredientList2 = new ArrayList<IngredientRecipe>();
 		ingredientList2.add(knowledgebase.getIngredient("butter"));
 		ingredientList2.add(dryCrust);
 		IngredientRecipe flakyCrust = new IngredientRecipe("flaky_crust", Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, ingredientList2);
-		this.subgoalIngredients.put(flakyCrust.getName(), flakyCrust);
+		this.subgoalIngredients.put(flakyCrust.getSimpleName(), flakyCrust);
 
 		
 		List<IngredientRecipe> ingredientList3 = new ArrayList<IngredientRecipe>();
 		ingredientList3.add(knowledgebase.getIngredient("eggs"));
 		ingredientList3.add(flakyCrust);
 		IngredientRecipe pieCrust = new IngredientRecipe("pie_crust", Recipe.BAKED, this, Recipe.SWAPPED, ingredientList3);
-		this.subgoalIngredients.put(pieCrust.getName(), pieCrust);
+		this.subgoalIngredients.put(pieCrust.getSimpleName(), pieCrust);
 
 		
 		List<IngredientRecipe> ingredientList4 = new ArrayList<IngredientRecipe>();
@@ -46,13 +46,13 @@ public class CherryPie extends Recipe {
 		ingredientList4.add(knowledgebase.getIngredient("almond_extract"));
 		IngredientRecipe pieMix = new IngredientRecipe("pie_mix", Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, ingredientList4);
 		pieMix.addNecessaryTrait("sugar", Recipe.NO_ATTRIBUTES);
-		this.subgoalIngredients.put(pieMix.getName(), pieMix);
+		this.subgoalIngredients.put(pieMix.getSimpleName(), pieMix);
 		
 		List<IngredientRecipe> ingredientList7 = new ArrayList<IngredientRecipe>();
 		ingredientList7.add(pieMix);
 		ingredientList7.add(pieCrust);
 		IngredientRecipe cherryPie = new IngredientRecipe("cherryPie", Recipe.BAKED, this, Recipe.SWAPPED, ingredientList7);
-		this.subgoalIngredients.put(cherryPie.getName(), cherryPie);
+		this.subgoalIngredients.put(cherryPie.getSimpleName(), cherryPie);
 		
 		return cherryPie;
 	}

@@ -173,12 +173,12 @@ public class AllowPouring extends BakingPropositionalFunction {
 		if (IngredientFactory.isSimple(object)) {
 			return false;
 		}
-		if (this.topLevelIngredient.getName().equals(name)) {
+		if (this.topLevelIngredient.getFullName().equals(name)) {
 			return topLevelIngredient.getBaked();
 		}
 		List<IngredientRecipe> contents = this.topLevelIngredient.getConstituentIngredients();
 		for (IngredientRecipe ingredient : contents) {
-			if (ingredient.getName().equals(name)) {
+			if (ingredient.getFullName().equals(name)) {
 				return ingredient.getBaked();
 			}
 		}
@@ -191,12 +191,12 @@ public class AllowPouring extends BakingPropositionalFunction {
 		if (IngredientFactory.isHeatedIngredient(object)) {
 			return false;
 		}
-		if (this.topLevelIngredient.getName().equals(name)) {
+		if (this.topLevelIngredient.getFullName().equals(name)) {
 			return topLevelIngredient.getHeated();
 		}
 		List<IngredientRecipe> contents = this.topLevelIngredient.getContents();
 		for (IngredientRecipe ingredient : contents) {
-			if (ingredient.getName().equals(name)) {
+			if (ingredient.getFullName().equals(name)) {
 				return ingredient.getHeated();
 			}
 		}
@@ -215,7 +215,7 @@ public class AllowPouring extends BakingPropositionalFunction {
 			String contentName = ingObject.getName();
 			IngredientRecipe match = null;
 			for (IngredientRecipe ing : necessaryIngs) {
-				if (ing.getName().equals(contentName)) {
+				if (ing.getFullName().equals(contentName)) {
 					match = ing;
 					break;
 				}
@@ -276,7 +276,7 @@ public class AllowPouring extends BakingPropositionalFunction {
 			return this.topLevelIngredient.toolAttributesMatch(ingObject);
 		}*/
 		for (IngredientRecipe ing : necessaryIngs) {
-			if (ing.getName().equals(ingObject.getName())) {
+			if (ing.getFullName().equals(ingObject.getName())) {
 				return true;
 			}
 			//if (ing.isMatching(ingObject, state)) {
@@ -313,7 +313,7 @@ public class AllowPouring extends BakingPropositionalFunction {
 								Set<String> cNames = ContainerFactory.getConstituentSwappedContentNames(container, state);
 								for (String name : cNames) {
 									// we laready have the ingredient for this subgoal, no need to keep going!
-									if (this.topLevelIngredient.getName().equals(name)) {
+									if (this.topLevelIngredient.getFullName().equals(name)) {
 										return false;
 									}
 									ObjectInstance obj = state.getObject(name);

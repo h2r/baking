@@ -32,13 +32,13 @@ public class PeanutButterCookies extends Recipe {
 		IngredientRecipe creamed = new IngredientRecipe("creamed_ingredients",
 				Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, ingredientList);
 		//creamed.addNecessaryTrait("sugar", Recipe.NO_ATTRIBUTES);
-		this.subgoalIngredients.put(creamed.getName(), creamed);
+		this.subgoalIngredients.put(creamed.getSimpleName(), creamed);
 		
 		List<IngredientRecipe> ingredientList2 = new ArrayList<IngredientRecipe>();
 		ingredientList2.add(creamed);
 		ingredientList2.add(knowledgebase.getIngredient("eggs"));
 		IngredientRecipe wetIngredients = new IngredientRecipe("wet_ingredients", Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, ingredientList2);
-		this.subgoalIngredients.put(wetIngredients.getName(), wetIngredients);
+		this.subgoalIngredients.put(wetIngredients.getSimpleName(), wetIngredients);
 		
 		List<IngredientRecipe> ingredientList3 = new ArrayList<IngredientRecipe>();
 		ingredientList3.add(knowledgebase.getIngredient("baking_soda"));
@@ -46,7 +46,7 @@ public class PeanutButterCookies extends Recipe {
 		IngredientRecipe dryIngredients = new IngredientRecipe("dry_ingredients", Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, ingredientList3);
 		//dryIngredients.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
 		//dryIngredients.addNecessaryTrait("flour", Recipe.NO_ATTRIBUTES);
-		this.subgoalIngredients.put(dryIngredients.getName(), dryIngredients);
+		this.subgoalIngredients.put(dryIngredients.getSimpleName(), dryIngredients);
 		
 		List<IngredientRecipe> ingredientList4 = new ArrayList<IngredientRecipe>();
 		ingredientList4.add(wetIngredients);
@@ -54,7 +54,7 @@ public class PeanutButterCookies extends Recipe {
 		
 		IngredientRecipe cookies = new IngredientRecipe("peanutButterCookies", Recipe.BAKED, this, Recipe.SWAPPED, ingredientList4);
 		
-		this.subgoalIngredients.put(cookies.getName(), cookies);
+		this.subgoalIngredients.put(cookies.getSimpleName(), cookies);
 		
 		return cookies;
 	}
@@ -70,11 +70,11 @@ public class PeanutButterCookies extends Recipe {
 		List<BakingSubgoal> subgoals = new ArrayList<BakingSubgoal>();
 		BakingPropositionalFunction pf1 = new SpaceOn(AffordanceCreator.SPACEON_PF, domain, this.topLevelIngredient, "oven");
 		BakingSubgoal sg1 = new BakingSubgoal(pf1, this.topLevelIngredient);
-		subgoals.add(sg1);
+		//subgoals.add(sg1);
 		
 		BakingPropositionalFunction pf2 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("creamed_ingredients"));
 		BakingSubgoal sg2 = new BakingSubgoal(pf2, this.subgoalIngredients.get("creamed_ingredients"));
-		sg2 = sg2.addPrecondition(sg1);
+		//sg2 = sg2.addPrecondition(sg1);
 		subgoals.add(sg2);
 
 		BakingPropositionalFunction pf3 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("wet_ingredients"));
@@ -84,7 +84,7 @@ public class PeanutButterCookies extends Recipe {
 		
 		BakingPropositionalFunction pf4 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("dry_ingredients"));
 		BakingSubgoal sg4 = new BakingSubgoal(pf4, this.subgoalIngredients.get("dry_ingredients"));
-		sg4 = sg4.addPrecondition(sg1);
+		//sg4 = sg4.addPrecondition(sg1);
 		subgoals.add(sg4);
 		
 		BakingPropositionalFunction pf5 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("peanutButterCookies"));

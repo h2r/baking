@@ -24,7 +24,7 @@ public class CucumberSalad extends Recipe {
 		ingredientList.add(knowledgebase.getIngredient("tomatoes"));
 		ingredientList.add(knowledgebase.getIngredient("cucumbers"));
 		IngredientRecipe salad = new IngredientRecipe("Salad", Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, ingredientList);
-		this.subgoalIngredients.put(salad.getName(), salad);
+		this.subgoalIngredients.put(salad.getSimpleName(), salad);
 		
 		List<IngredientRecipe> ingredientList2 = new ArrayList<IngredientRecipe>();
 		ingredientList2.add(knowledgebase.getIngredient("pepper"));
@@ -32,13 +32,13 @@ public class CucumberSalad extends Recipe {
 		IngredientRecipe dressing = new IngredientRecipe("dressing", Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, ingredientList2);
 		dressing.addNecessaryTrait("lemon", Recipe.NO_ATTRIBUTES);
 		dressing.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
-		this.subgoalIngredients.put(dressing.getName(), dressing);
+		this.subgoalIngredients.put(dressing.getSimpleName(), dressing);
 		
 		List<IngredientRecipe> ingredientList3= new ArrayList<IngredientRecipe>();
 		ingredientList3.add(salad);
 		ingredientList3.add(dressing);
 		IngredientRecipe cucumberSalad = new IngredientRecipe("CucumberSalad", Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, ingredientList3);
-		this.subgoalIngredients.put(cucumberSalad.getName(), cucumberSalad);
+		this.subgoalIngredients.put(cucumberSalad.getSimpleName(), cucumberSalad);
 		
 		return cucumberSalad;
 	}

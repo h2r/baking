@@ -152,7 +152,7 @@ public class ToolFactory {
 	}
 	
 	public static ObjectInstance removeIngredient(ObjectInstance tool, IngredientRecipe ingredient) {
-		return tool.replaceRelationalTarget(ToolFactory.attributeContains, ingredient.getName());
+		return tool.replaceRelationalTarget(ToolFactory.attributeContains, ingredient.getFullName());
 	}
 	
 	public static boolean toolCanCarry(ObjectInstance tool) {
@@ -170,7 +170,7 @@ public class ToolFactory {
 		if (!ToolFactory.toolCanCarry(tool)) {
 			return false;
 		}
-		return ToolFactory.getContents(tool).contains(ingredient.getName());
+		return ToolFactory.getContents(tool).contains(ingredient.getFullName());
 	}
 	
 	public static boolean isEmpty(ObjectInstance tool) {

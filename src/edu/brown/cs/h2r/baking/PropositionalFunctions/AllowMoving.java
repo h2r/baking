@@ -49,7 +49,7 @@ public class AllowMoving extends BakingPropositionalFunction {
 	}
 	
 	private boolean checkMoveToBaking(State state, ObjectInstance container, Set<String> contents) {
-		String ingredientName = topLevelIngredient.getName();
+		String ingredientName = topLevelIngredient.getFullName();
 		boolean recipeIngBaked = this.topLevelIngredient.getBaked();
 		if (!ContainerFactory.isBakingContainer(container)) {
 			return false;
@@ -62,7 +62,7 @@ public class AllowMoving extends BakingPropositionalFunction {
 		} else {
 			List<IngredientRecipe> ingredientContents = this.topLevelIngredient.getContents();
 			for (IngredientRecipe ing : ingredientContents) {
-				String name = ing.getName();
+				String name = ing.getFullName();
 				ObjectInstance obj = state.getObject(name);
 				if (obj != null && ing.getBaked() && contents.contains(name)) {
 					if (!IngredientFactory.isBakedIngredient(obj)) {
@@ -75,7 +75,7 @@ public class AllowMoving extends BakingPropositionalFunction {
 	}
 	
 	private boolean checkMoveToHeating(State state, ObjectInstance container, Set<String> contents) {
-		String ingredientName = topLevelIngredient.getName();
+		String ingredientName = topLevelIngredient.getFullName();
 		boolean recipeIngHeated = this.topLevelIngredient.getHeated();
 		ObjectInstance topLevelObj = state.getObject(ingredientName);
 		if (!ContainerFactory.isHeatingContainer(container)) {
@@ -90,7 +90,7 @@ public class AllowMoving extends BakingPropositionalFunction {
 		} else {
 			List<IngredientRecipe> ingredientContents = this.topLevelIngredient.getContents();
 			for (IngredientRecipe ing : ingredientContents) {
-				String name = ing.getName();
+				String name = ing.getFullName();
 				ObjectInstance obj = state.getObject(name);
 				if (ing.getHeated() && contents.contains(name)) {
 					if (!IngredientFactory.isHeatedIngredient(obj)) {

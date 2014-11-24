@@ -25,7 +25,7 @@ public class DeviledEggs extends Recipe {
 		IngredientRecipe yolkMix = new IngredientRecipe("yolk_mix", Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, ingredientList);
 		yolkMix.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
 		yolkMix.addNecessaryTrait("mustard", Recipe.NO_ATTRIBUTES);
-		this.subgoalIngredients.put(yolkMix.getName(), yolkMix);
+		this.subgoalIngredients.put(yolkMix.getSimpleName(), yolkMix);
 		
 		List<IngredientRecipe> ingredientList2 = new ArrayList<IngredientRecipe>();
 		ingredientList2.add(knowledgebase.getIngredient("chopped_tarragon"));
@@ -33,7 +33,7 @@ public class DeviledEggs extends Recipe {
 		ingredientList2.add(knowledgebase.getIngredient("shallots"));
 		ingredientList2.add(yolkMix);
 		IngredientRecipe finishedMix = new IngredientRecipe("finished_mix", Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, ingredientList2);
-		this.subgoalIngredients.put(finishedMix.getName(), finishedMix);
+		this.subgoalIngredients.put(finishedMix.getSimpleName(), finishedMix);
 		
 		List<IngredientRecipe> ingredientList3 = new ArrayList<IngredientRecipe>();
 		ingredientList3.add(knowledgebase.getIngredient("egg_whites"));
@@ -41,7 +41,7 @@ public class DeviledEggs extends Recipe {
 		
 		IngredientRecipe deviledEggs = new IngredientRecipe("DeviledEggs", Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, ingredientList3);
 		
-		this.subgoalIngredients.put(deviledEggs.getName(), deviledEggs);
+		this.subgoalIngredients.put(deviledEggs.getSimpleName(), deviledEggs);
 		
 		return deviledEggs;
 	}

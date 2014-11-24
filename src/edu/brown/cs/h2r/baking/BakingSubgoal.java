@@ -59,7 +59,7 @@ public class BakingSubgoal {
 	
 	@Override
 	public String toString() {
-		return this.getIngredient().getName();
+		return this.getIngredient().getFullName();
 	}
 	public Boolean goalCompleted(State state) {
 		Boolean completed = false;

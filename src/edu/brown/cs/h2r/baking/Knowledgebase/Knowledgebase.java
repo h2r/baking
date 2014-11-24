@@ -196,7 +196,7 @@ public class Knowledgebase {
 			ObjectClass oc = ing.isSimple() ? 
 					domain.getObjectClass(IngredientFactory.ClassNameSimple) : 
 						domain.getObjectClass(IngredientFactory.ClassNameComplex);
-			ObjectInstance obj = IngredientFactory.getNewIngredientInstance(ing, ing.getName(), oc, hashingFactory);
+			ObjectInstance obj = IngredientFactory.getNewIngredientInstance(ing, ing.getFullName(), oc, hashingFactory);
 			ingredientObjects.add(obj);
 		}
 		return ingredientObjects;
@@ -215,7 +215,7 @@ public class Knowledgebase {
 		List<IngredientRecipe> ingredients = this.getPotentialIngredientList(domain, tlIngredient);
 		for (IngredientRecipe ing : ingredients) {
 			ObjectClass oc = ing.isSimple() ? domain.getObjectClass(IngredientFactory.ClassNameSimple) : domain.getObjectClass(IngredientFactory.ClassNameComplex);
-			ObjectInstance obj = IngredientFactory.getNewIngredientInstance(ing, ing.getName(), oc, hashingFactory);
+			ObjectInstance obj = IngredientFactory.getNewIngredientInstance(ing, ing.getFullName(), oc, hashingFactory);
 			obj = IngredientFactory.clearBooleanAttributes(obj);
 			obj = IngredientFactory.clearToolAttributes(obj);
 			ingredientObjects.add(obj);
@@ -245,18 +245,18 @@ public class Knowledgebase {
 		Set<List<IngredientRecipe>> matchedIngredients = this.findIngredientsMatchingIngredientTraits(tlIngredient);
 		for (List<IngredientRecipe> list : matchedIngredients) {
 			for (IngredientRecipe ingredient : list) {
-				ingredients.put(ingredient.getName(), ingredient);
+				ingredients.put(ingredient.getFullName(), ingredient);
 			}
 		}
 		
 		List<IngredientRecipe> contents = tlIngredient.getContents();
 		for (IngredientRecipe ingredient : contents) {
 			if (ingredient.isSimple()) {
-				IngredientRecipe foundIngredient = ingredients.get(ingredient.getName());
+				IngredientRecipe foundIngredient = ingredients.get(ingredient.getFullName());
 				if (foundIngredient != null) {
 					foundIngredient.incrementUseCount();
 				} else {
-					ingredients.put(ingredient.getName(), ingredient);
+					ingredients.put(ingredient.getFullName(), ingredient);
 				}
 			} else {
 				this.addPotentialIngredientList(domain, ingredient, ingredients);

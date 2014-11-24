@@ -35,14 +35,14 @@ public class CherryBlondies extends Recipe {
 		ingredientList.add(knowledgebase.getIngredient("almond_extract"));
 		ingredientList.add(knowledgebase.getIngredient("eggs"));
 		IngredientRecipe creamedIngredients = new IngredientRecipe("creamed_ingredients", Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, ingredientList);
-		this.subgoalIngredients.put(creamedIngredients.getName(), creamedIngredients);
+		this.subgoalIngredients.put(creamedIngredients.getSimpleName(), creamedIngredients);
 		
 		List<IngredientRecipe> ingredientList3 = new ArrayList<IngredientRecipe>();
 		ingredientList3.add(knowledgebase.getIngredient("baking_powder"));
 		IngredientRecipe dryIngs = new IngredientRecipe ("dry_ingredients", Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, ingredientList3);
 		dryIngs.addNecessaryTrait("flour", Recipe.NO_ATTRIBUTES);
 		dryIngs.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
-		this.subgoalIngredients.put(dryIngs.getName(), dryIngs);
+		this.subgoalIngredients.put(dryIngs.getSimpleName(), dryIngs);
 		
 		List<IngredientRecipe> ingredientList4 = new ArrayList<IngredientRecipe>();
 		ingredientList4.add(dryIngs);
@@ -52,7 +52,7 @@ public class CherryBlondies extends Recipe {
 		ingredientList4.add(knowledgebase.getIngredient("sliced_almonds"));
 		IngredientRecipe blondies = new IngredientRecipe("cherry_blondies", Recipe.BAKED, this, Recipe.SWAPPED, ingredientList4);
 		
-		this.subgoalIngredients.put(blondies.getName(), blondies);
+		this.subgoalIngredients.put(blondies.getSimpleName(), blondies);
 		
 		return blondies;
 	}

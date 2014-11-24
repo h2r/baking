@@ -98,6 +98,9 @@ public class SubgoalDetermination {
 		ObjectInstance counterSpace = SpaceFactory.getNewWorkingSpaceObjectInstance(generalDomain, SpaceFactory.SPACE_COUNTER, containers, "human", objectHashingFactory);
 		objects.add(counterSpace);
 		
+		objects.add(ToolFactory.getNewSimpleToolObjectInstance(generalDomain, "whisk", "", "", SpaceFactory.SPACE_COUNTER, objectHashingFactory));
+		objects.add(ToolFactory.getNewSimpleToolObjectInstance(generalDomain, "spoon","", "", SpaceFactory.SPACE_COUNTER, objectHashingFactory));
+		
 		objects.add(ContainerFactory.getNewBakingContainerObjectInstance(generalDomain, "baking_dish", null, SpaceFactory.SPACE_COUNTER, objectHashingFactory));
 		objects.add(ContainerFactory.getNewHeatingContainerObjectInstance(generalDomain, "melting_pot", null, SpaceFactory.SPACE_COUNTER, objectHashingFactory));
 		objects.add(SpaceFactory.getNewBakingSpaceObjectInstance(generalDomain, SpaceFactory.SPACE_OVEN, null, "", objectHashingFactory));
@@ -133,13 +136,13 @@ public class SubgoalDetermination {
 		State state = subdomain.getStartState();
 		BakingSubgoal subgoal = subdomain.getSubgoal();
 		
-		System.out.println("Taking actions");
+		//System.out.println("Taking actions");
 		for (int i = 0; i < maxDepth; i++) {
 			if (subgoal.goalCompleted(state)) {
 				return null;
 			}
 			AbstractGroundedAction action = policy.getAction(state);
-			System.out.println("\t" + action.actionName() + " " + Arrays.toString(action.params) );
+			//System.out.println("\t" + action.actionName() + " " + Arrays.toString(action.params) );
 			state = action.executeIn(state);
 			actions.add(action);
 		}
@@ -155,7 +158,7 @@ public class SubgoalDetermination {
 	}
 	
 	public static void insertPolicy(Map<String, Double> bestPolicies, PolicyProbability probability, KitchenSubdomain subdomain, int numberToReturn) {
-		String key = subdomain.getRecipe().topLevelIngredient.getName() + " - " + subdomain.getSubgoal().getIngredient().getName();
+		String key = subdomain.toString();
 		Double value = probability.getProbability();
 		if (bestPolicies.size() < numberToReturn) {
 			bestPolicies.put(key, value);
@@ -189,11 +192,7 @@ public class SubgoalDetermination {
 		return bestPolicies;
 		
 	}
-	
-	public static String buildName(KitchenSubdomain policyDomain) {
-		return policyDomain.getRecipe().topLevelIngredient.getName() + " - " + policyDomain.getSubgoal().getIngredient().getName();
-	}
-	
+		
 	public static void main(String[] argv) {
 		int maxAlpha = 3;
 		int numTries = 10;
@@ -213,6 +212,13 @@ public class SubgoalDetermination {
 		Knowledgebase knowledgebase = Knowledgebase.getKnowledgebase(domain);
 		knowledgebase.initKnowledgebase(recipes);
 		State state = SubgoalDetermination.generateInitialState(domain, recipes);
+		
+		//for (Recipe recipe : recipes) {
+		//System.out.println("Testing recipe " + recipe.toString());
+		//	ExperimentHelper.testRecipeExecution(domain, state, recipe);
+		//System.out.println("\n\n");
+		//}
+		
 		RewardFunction rf = new RewardFunction() {
 
 			@Override
@@ -229,17 +235,21 @@ public class SubgoalDetermination {
 		
 		List<Double> successRate = new ArrayList<Double>();
 		PolicyPrediction prediction = new PolicyPrediction(policyDomains, depthType);			
-		for (int k = 0; k < testDomains.size(); k++) {
+		//int k = testDomains.size() -1 ;
+		System.out.println("Chosen policy, Depth, Depth Type, Successes, Estimate Successes, Informed Guesses, Total Trials");
+		
+		for (int i = 0; i < numTries; i++) {
+			
+			for (int k = 0; k < testDomains.size(); k++) {
 			int numSuccess = 0;
 			int numEstimateSuccesses = 0;
 			int numRandomGuesses = 0;
 			
 			KitchenSubdomain policyDomain = testDomains.get(k);
-			System.out.println(policyDomain.toString());
+			//System.out.println(policyDomain.toString());
 			
-			for (int i = 0; i < numTries; i++) {
 				int randomIndex = rando.nextInt(testDomains.size());
-				System.out.println("Testing subgoal " + policyDomain.toString());
+				//System.out.println("Testing subgoal " + policyDomain.toString());
 				
 				List<AbstractGroundedAction> actions = SubgoalDetermination.generateActionSequenceFromPolicy(policyDomain, depth);
 				state = SubgoalDetermination.getStateFromActionSequence(policyDomain.getStartState(), actions);
@@ -252,9 +262,9 @@ public class SubgoalDetermination {
 					break;
 				}
 				String actualName = policyDomain.toString();
-				if (k==1) {
-					System.out.print("");
-				}
+				//if (k==1) {
+				//	System.out.print("");
+				//}
 				//System.out.println("Actual: " + actualName);
 				List<PolicyProbability> policyDistribution = 
 						prediction.getPolicyDistributionFromStatePair(policyDomain.getStartState(), state, maxAlpha+1, 
@@ -277,7 +287,7 @@ public class SubgoalDetermination {
 					} else if (prob == maxProb) {
 						bestPolicies.add(policyProbability.getPolicyDomain());
 					}
-					System.out.println(name + ": " + prob);
+					//System.out.println(name + ": " + prob);
 				}
 				Collections.shuffle(bestPolicies, rando);
 				if (bestPolicies.size() > 1) {
@@ -291,9 +301,9 @@ public class SubgoalDetermination {
 						numEstimateSuccesses++;
 					}
 				}
+				System.out.println(policyDomain.toString() + ", " + depth + ", " + depthType + ", " + numSuccess + ", " + numEstimateSuccesses + ", " + numRandomGuesses + ", " +  1);
 			}
-			System.out.println("Depth, Depth Type, Successes, Estimate Successes, Informed Guesses, Total Trials");
-			System.out.println("" + depth + ", " + depthType + ", " + numSuccess + ", " + numEstimateSuccesses + ", " + numRandomGuesses + ", " +  numTries);
+			
 			
 		}
 		

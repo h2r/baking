@@ -138,7 +138,7 @@ public class Baxter implements Agent {
 	protected State planIngredient(List<AbstractGroundedAction> actionSequence, State startingState, List<ObjectInstance> ingredients, 
 			IngredientRecipe ingredient, BakingSubgoal subgoal)
 	{
-		System.out.println(ingredient.getName());
+		System.out.println(ingredient.getFullName());
 		State currentState = new State(startingState);
 		
 		AffordanceCreator theCreator = new AffordanceCreator(domain, currentState, ingredient);

@@ -27,7 +27,7 @@ public class AgentSpecificHeuristic implements Heuristic {
 		this.recipeIngredients = new ArrayList<String>();
 		for (IngredientRecipe ingredient : ingredients)
 		{
-			this.recipeIngredients.add(ingredient.getName());
+			this.recipeIngredients.add(ingredient.getFullName());
 		}
 		this.costMe = -1;
 		this.costYou = -2;
@@ -41,7 +41,7 @@ public class AgentSpecificHeuristic implements Heuristic {
 		this.recipeIngredients = new ArrayList<String>();
 		for (IngredientRecipe ingredient : ingredients)
 		{
-			this.recipeIngredients.add(ingredient.getName());
+			this.recipeIngredients.add(ingredient.getFullName());
 		}
 		this.costMe = costMe;
 		this.costYou = costYou;

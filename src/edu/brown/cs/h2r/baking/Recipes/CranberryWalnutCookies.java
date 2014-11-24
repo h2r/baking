@@ -34,7 +34,7 @@ public class CranberryWalnutCookies extends Recipe {
 		ingredientList.add(knowledgebase.getIngredient("brown_sugar"));
 		ingredientList.add(knowledgebase.getIngredient("white_sugar"));
 		IngredientRecipe creamedIngredients = new IngredientRecipe("creamed_ingredients", Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, ingredientList);
-		this.subgoalIngredients.put(creamedIngredients.getName(), creamedIngredients);
+		this.subgoalIngredients.put(creamedIngredients.getSimpleName(), creamedIngredients);
 		
 		
 		List<IngredientRecipe> ingredientList2 = new ArrayList<IngredientRecipe>();
@@ -43,7 +43,7 @@ public class CranberryWalnutCookies extends Recipe {
 		ingredientList2.add(creamedIngredients);
 		IngredientRecipe wetIngs = new IngredientRecipe("wet_ingredients", Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, ingredientList2);
 
-		this.subgoalIngredients.put(wetIngs.getName(), wetIngs);
+		this.subgoalIngredients.put(wetIngs.getSimpleName(), wetIngs);
 		
 		
 		List<IngredientRecipe> ingredientList3 = new ArrayList<IngredientRecipe>();
@@ -52,7 +52,7 @@ public class CranberryWalnutCookies extends Recipe {
 		IngredientRecipe dryIngs = new IngredientRecipe ("dry_ingredients", Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, ingredientList3);
 		dryIngs.addNecessaryTrait("flour", Recipe.NO_ATTRIBUTES);
 		dryIngs.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
-		this.subgoalIngredients.put(dryIngs.getName(), dryIngs);
+		this.subgoalIngredients.put(dryIngs.getSimpleName(), dryIngs);
 		
 		List<IngredientRecipe> ingredientList4 = new ArrayList<IngredientRecipe>();
 		ingredientList4.add(dryIngs);
@@ -61,7 +61,7 @@ public class CranberryWalnutCookies extends Recipe {
 		ingredientList3.add(knowledgebase.getIngredient("chopped_walnuts"));
 		IngredientRecipe cookies = new IngredientRecipe("cranberry_walnut_cookies", Recipe.BAKED, this, Recipe.SWAPPED, ingredientList4);
 		
-		this.subgoalIngredients.put(cookies.getName(), cookies);
+		this.subgoalIngredients.put(cookies.getSimpleName(), cookies);
 		
 		return cookies;
 	}

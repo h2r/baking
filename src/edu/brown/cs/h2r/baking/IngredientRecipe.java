@@ -98,7 +98,8 @@ public class IngredientRecipe {
 	
 	@Override 
 	public String toString() {
-		return this.name;
+		String recipeName = (this.recipe == null || this.isSimple()) ? "" : this.recipe.toString()  + " - ";
+		return recipeName + this.name;
 	}
 	public Boolean isSimple() {
 		if (this.necessaryTraits == null || this.necessaryTraits.size() == 0) {
@@ -126,9 +127,13 @@ public class IngredientRecipe {
 	public void setBaked() {
 		this.baked = true;
 	}
-		
-	public String getName() {
+	
+	public String getSimpleName(){
 		return this.name;
+	}
+	
+	public String getFullName() {
+		return this.toString();
 	}
 	
 	public Set<String> getToolTraits() {
@@ -222,7 +227,7 @@ public class IngredientRecipe {
 	public List<String> getContentNames() {
 		List<String> contents = new ArrayList<String>();
 		for (IngredientRecipe ing : this.contents) {
-			contents.add(ing.getName());
+			contents.add(ing.toString());
 		}
 		return contents;
 	}
@@ -362,7 +367,7 @@ public class IngredientRecipe {
 		if (!this.isSimple()) {
 			contents.addAll(this.getContents());
 		}
-		IngredientRecipe newIng = new IngredientRecipe(this.getName(), attributes, this.recipe, this.getSwapped(),
+		IngredientRecipe newIng = new IngredientRecipe(this.toString(), attributes, this.recipe, this.getSwapped(),
 				contents);
 		newIng.addNecessaryTraits(this.getNecessaryTraits());
 		return newIng;
@@ -381,7 +386,7 @@ public class IngredientRecipe {
 		if (!this.isSimple()) {
 			contents.addAll(this.getContents());
 		}
-		IngredientRecipe newIng = new IngredientRecipe(this.getName(), attributes, this.recipe, this.getSwapped(),
+		IngredientRecipe newIng = new IngredientRecipe(this.toString(), attributes, this.recipe, this.getSwapped(),
 				contents);
 		newIng.addNecessaryTraits(this.getNecessaryTraits());
 		return newIng;
@@ -410,7 +415,7 @@ public class IngredientRecipe {
 	public static AbstractMap<String, IngredientRecipe> getRecursiveSwappedIngredients(IngredientRecipe ingredient) {
 		AbstractMap<String, IngredientRecipe> swapped = new HashMap<String, IngredientRecipe>();
 		if (ingredient.getSwapped()) {
-			swapped.put(ingredient.getName(), ingredient);
+			swapped.put(ingredient.toString(), ingredient);
 		}
 		if (ingredient.isSimple()) {
 			return swapped;
@@ -525,21 +530,7 @@ public class IngredientRecipe {
 	
 	// Check if this object in state matches this ingredient recipe
 	public boolean isMatching(ObjectInstance object, State state) {
-		return this.isSameItem(object, state);
-		
-		// If the name doesn't match, have to compare the attributes and contents
-		//if (object.getName() != this.name) {
-			
-		//}
-		
-		// Otherwise, just check that the attributes match
-		//return this.getAttributeNumber() == IngredientFactory.getAttributeNumber(object);
-	}
-	
-	// Checks if these objects are the same, even if they have a different name
-	public boolean isSameItem(ObjectInstance object, State state) {
-
-		if (object.getName().equals(this.name)) {
+		if (object.getName().equals(this.toString())) {
 			System.out.print("");
 		}
 		// If the attributes don't match, then not there yet
@@ -550,7 +541,7 @@ public class IngredientRecipe {
 		// If this is a simple ingredient, then the names must match. Yes this is called twice if going through
 		// isMatching, astute observer
 		if (IngredientFactory.isSimple(object)) {
-			return this.isSimple() && (object.getName().equals(this.name));
+			return this.isSimple() && (object.getName().equals(this.toString()));
 		}
 		
 		// Now we check the subIngredients
@@ -590,7 +581,5 @@ public class IngredientRecipe {
 		
 		
 		return true;
-		
-		
 	}
 }

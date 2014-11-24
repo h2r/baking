@@ -31,7 +31,7 @@ public class IngredientNecessaryForRecipe extends BakingPropositionalFunction {
 			String name = params[0];
 			List<IngredientRecipe> contents = this.topLevelIngredient.getConstituentIngredients();
 			for (IngredientRecipe ingredient : contents) {
-				if (ingredient.getName().equals(params[0])) {
+				if (ingredient.getFullName().equals(params[0])) {
 					return true;
 				}
 			}

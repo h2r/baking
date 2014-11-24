@@ -146,7 +146,7 @@ public class BakingAsserts {
 		for (IngredientRecipe i : ings) {
 			Boolean match = false;
 			for (IngredientRecipe ingredient : constituentIngredients) {
-				if (ingredient.getName().equals(i.getName())) {
+				if (ingredient.getFullName().equals(i.getFullName())) {
 					match = true;
 					break;
 				}

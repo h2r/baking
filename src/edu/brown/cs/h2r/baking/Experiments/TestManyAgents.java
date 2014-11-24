@@ -138,10 +138,10 @@ public class TestManyAgents {
 		AbstractGroundedAction secondAction = (action1First) ? action2 : action1;
 		
 		if (firstAction != null) {
-			//System.out.println("Executing action " + firstAction.toString());
+			System.out.println("Executing action " + firstAction.toString());
 			State nextState = firstAction.executeIn(state);
 			if (nextState.equals(state)) {
-				//System.out.println("Action had no effect");
+				System.out.println("Action had no effect");
 			}
 			state = nextState;
 			statePair.add(state);
@@ -149,10 +149,10 @@ public class TestManyAgents {
 		}
 
 		if (secondAction != null) {
-			//System.out.println("Executing action " + secondAction.toString());
+			System.out.println("Executing action " + secondAction.toString());
 			State nextState = secondAction.executeIn(state);
 			if (nextState.equals(state)) {
-				//System.out.println("Action had no effect");
+				System.out.println("Action had no effect");
 			}
 			state = nextState;
 			statePair.add(state);
@@ -180,8 +180,9 @@ public class TestManyAgents {
 			actionBias = 1.0;
 		}
 		boolean isSuccess = false;
+		partner.addObservation(currentState);
+		
 		while (!finished) {
-			partner.addObservation(currentState);
 			
 			AbstractGroundedAction humanAction = human.getAction(currentState);
 			if (humanAction == null) {
@@ -216,6 +217,7 @@ public class TestManyAgents {
 			
 			
 			currentState = TestManyAgents.performActions(currentState, humanAction, partnerAction, statePair, actionPair, actionBias);
+			//partner.addObservation(currentState);
 			
 			stateSequence.addAll(statePair);
 			actionSequence.addAll(actionPair);
@@ -223,6 +225,13 @@ public class TestManyAgents {
 			isSuccess = human.isSuccess(currentState);
 			double reward = human.getCostActions(actionSequence, stateSequence);
 			finished = isSuccess || reward < -1000.0;
+			
+			if (human.isSubgoalFinished(currentState)) {
+				System.out.println("Subgoal is finished");
+			} else {
+				System.out.println("Subogal is not finished");
+			}
+			
 			if (finished) {
 				if (isSuccess) {
 					//System.out.println("\n\nHuman finished successfully!!!\n\n");
@@ -426,10 +435,10 @@ public class TestManyAgents {
 		
 		
 		
-		List<Agent> agents = Arrays.asList(
+		List<Agent> agents = Arrays.asList(/*
 				(Agent)new RandomActionAgent(generalDomain),
 				(Agent)new RandomRecipeAgent(generalDomain),
-				(Agent)new Human(generalDomain, "friend"),
+				(Agent)new Human(generalDomain, "friend"),*/
 				(Agent)new AdaptiveByFlow(generalDomain)
 				);
 		System.out.println("Agent, Successes, Trials, Average reward, average successful reward");

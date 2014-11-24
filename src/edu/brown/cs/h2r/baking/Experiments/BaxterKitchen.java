@@ -150,7 +150,7 @@ public class BaxterKitchen {
 		// Add our actions to the domain.
 		List<Policy> policies = new ArrayList<Policy>();
 		State state = this.generateInitialState(domain, recipe);
-		System.out.println("\n\nPlanner will now plan the "+recipe.topLevelIngredient.getName()+" recipe!");
+		System.out.println("\n\nPlanner will now plan the "+recipe.topLevelIngredient.getFullName()+" recipe!");
 		
 		// High level planner that plans through the recipe's subgoals
 		List<BakingSubgoal> subgoals = recipe.getSubgoals();
@@ -179,7 +179,7 @@ public class BaxterKitchen {
 	{
 		IngredientRecipe ingredient = subgoal.getIngredient();
 		String goalType = (subgoal.getGoal().getClass().isAssignableFrom(ContainersCleaned.class)) ? "_clean" : "";
-		System.out.println(ingredient.getName() + goalType);
+		System.out.println(ingredient.getFullName() + goalType);
 		State currentState = new State(startingState);
 		
 		List<Action> actions = domain.getActions();
@@ -241,7 +241,7 @@ public class BaxterKitchen {
 	
 	public State determineAndEvaluatePolicy(Domain domain, State startingState, BakingSubgoal subgoal) {
 		IngredientRecipe ingredient = subgoal.getIngredient();
-		System.out.println(ingredient.getName());
+		System.out.println(ingredient.getFullName());
 		State currentState = new State(startingState);
 		
 		List<Action> actions = domain.getActions();
@@ -397,7 +397,7 @@ public class BaxterKitchen {
 			
 			List<ObjectInstance> tools = state.getObjectsOfTrueClass(ToolFactory.ClassName);
 			for (ObjectInstance tool : tools) {
-				List<String> subgoalTools = toolSubgoalLookup.get(subgoal.getIngredient().getName());
+				List<String> subgoalTools = toolSubgoalLookup.get(subgoal.getIngredient().getFullName());
 				
 				if ( subgoalTools.contains(tool.getName())) {
 					String toolSpace = ToolFactory.getSpaceName(tool);
@@ -425,11 +425,11 @@ public class BaxterKitchen {
 		
 		for (IngredientRecipe ingredient : ingredients) {
 			if (ingredient.isSimple()) {
-				containers.add(ingredient.getName() + "_bowl");
+				containers.add(ingredient.getSimpleName() + "_bowl");
 			}
 		}
 		
-		containers.add((subgoal.getIngredient().getName().equals("dry_ingredients")) ? "mixing_bowl_1" : "mixing_bowl_2");
+		containers.add((subgoal.getIngredient().getSimpleName().equals("dry_ingredients")) ? "mixing_bowl_1" : "mixing_bowl_2");
 		
 		return containers;
 	}
@@ -584,12 +584,12 @@ public class BaxterKitchen {
 					IngredientRecipe ing2 = precondition.getIngredient();
 					BakingPropositionalFunction pf2 = precondition.getGoal();
 					//checkSubgoal &=  pf2.isTrue(state, "");
-					System.out.println("Precondition " + ing2.getName() + ": " + pf2.isTrue(state, ""));
+					System.out.println("Precondition " + ing2.getFullName() + ": " + pf2.isTrue(state, ""));
 					
 				}
 				//if (checkSubgoal)
 				String isClean = (pf instanceof ContainersCleaned) ? "_clean" : "";
-				System.out.println("Subgoal " + ing.getName() + isClean + ": " + pf.isTrue(state, ""));				
+				System.out.println("Subgoal " + ing.getFullName() + isClean + ": " + pf.isTrue(state, ""));				
 			}
 		}
 	}

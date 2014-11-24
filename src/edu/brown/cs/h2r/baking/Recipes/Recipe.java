@@ -227,7 +227,7 @@ public abstract class Recipe {
 		// We either have the correct ingredient but haven't done the correct
 		// things to it (haven't baked it, haven't melted it).
 		if (IngredientFactory.isSwapped(object)) {
-			if (ingredientRecipe.getName().equals(object.getName())) {
+			if (ingredientRecipe.getFullName().equals(object.getName())) {
 				if (ingredientRecipe.attributesMatch(object)) {
 					return false;
 				}
@@ -401,7 +401,7 @@ public abstract class Recipe {
 			// Object is not a simple ingredient, but the ingredient we are checking against is. FAIL!
 			return true;
 		}
-		if (!ingredientRecipe.getName().equals(object.getName()))
+		if (!ingredientRecipe.getFullName().equals(object.getName()))
 		{
 			// They aren't even the same name. FAIL!
 			return true;
@@ -456,7 +456,7 @@ public abstract class Recipe {
 			Boolean goodIngredient = false;
 			// Check that the object is a required ingredient
 			for (IngredientRecipe ing : recipeContents) {
-				if (ing.getName().equals(contentName)) {
+				if (ing.getFullName().equals(contentName)) {
 					goodIngredient = true;
 					foundAGoodIngredient = true;
 				}
@@ -487,7 +487,7 @@ public abstract class Recipe {
 		for (String name : contents) {
 			IngredientRecipe match = null;
 			for (IngredientRecipe recipeContent : recipeContents) {
-				if (recipeContent.getName().equals(name)) {
+				if (recipeContent.getFullName().equals(name)) {
 					if (!isFailure(state, recipeContent, state.getObject(name))) {
 						match = recipeContent;
 						break;
@@ -529,7 +529,7 @@ public abstract class Recipe {
 			String name = ing.getName();
 			// do we have any named ingredients we still need in our state?
 			for (IngredientRecipe recipeContent : recipeContents) {
-				if (recipeContent.getName().equals(name) && IngredientFactory.getUseCount(ing) > 0) {
+				if (recipeContent.getFullName().equals(name) && IngredientFactory.getUseCount(ing) > 0) {
 					match = recipeContent;
 					break;
 				}
@@ -558,7 +558,7 @@ public abstract class Recipe {
 				IngredientRecipe match = null;
 				ObjectInstance ing = state.getObject(name);
 				for (IngredientRecipe recipeContent : recipeContents) {
-					if (recipeContent.getName().equals(name)) {
+					if (recipeContent.getFullName().equals(name)) {
 						match = recipeContent;
 						break;
 					}
@@ -608,7 +608,7 @@ public abstract class Recipe {
 		for (ObjectInstance swappedObj : swappedObjectIngredients) {
 			match = null;
 			for (IngredientRecipe swappedIng : swappedRecipeIngredients) {
-				if (swappedIng.getName().equals(swappedObj.getName())) {
+				if (swappedIng.getFullName().equals(swappedObj.getName())) {
 					int ingSize = swappedIng.getConstituentIngredients().size() + swappedIng.getConstituentNecessaryTraits().size();
 					int objSize = IngredientFactory.getRecursiveContentsForIngredient(state,swappedObj).size();
 					if (ingSize == objSize) {
@@ -665,7 +665,7 @@ public abstract class Recipe {
 		 * ingredient, it will remove it form traitIngredients, since it was "used up".
 		 */
 		for (IngredientRecipe ingredient : recipeContents) {
-			String ingredientName = ingredient.getName();
+			String ingredientName = ingredient.getFullName();
 			ObjectInstance ingredientObj = null;
 			Boolean match = false;
 			for (ObjectInstance obj : traitIngredients) {

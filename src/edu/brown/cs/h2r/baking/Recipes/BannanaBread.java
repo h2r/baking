@@ -34,7 +34,7 @@ public class BannanaBread extends Recipe {
 		ingredientList.add(butter);
 		ingredientList.add(knowledgebase.getIngredient("bannanas"));
 		IngredientRecipe mashedIngredients = new IngredientRecipe("mashed_ingredients", Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, ingredientList);
-		this.subgoalIngredients.put(mashedIngredients.getName(), mashedIngredients);
+		this.subgoalIngredients.put(mashedIngredients.getSimpleName(), mashedIngredients);
 		
 		List<IngredientRecipe> ingredientList2 = new ArrayList<IngredientRecipe>();
 		ingredientList2.add(knowledgebase.getIngredient("baking_soda"));
@@ -42,7 +42,7 @@ public class BannanaBread extends Recipe {
 		IngredientRecipe dryIngs = new IngredientRecipe ("dry_ingredients", Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, ingredientList2);
 		dryIngs.addNecessaryTrait("flour", Recipe.NO_ATTRIBUTES);
 		dryIngs.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
-		this.subgoalIngredients.put(dryIngs.getName(), dryIngs);
+		this.subgoalIngredients.put(dryIngs.getSimpleName(), dryIngs);
 				
 		List<IngredientRecipe> ingredientList3 = new ArrayList<IngredientRecipe>();
 		ingredientList3.add(knowledgebase.getIngredient("vanilla"));
@@ -50,7 +50,7 @@ public class BannanaBread extends Recipe {
 		ingredientList3.add(dryIngs);
 		IngredientRecipe bannanaBread = new IngredientRecipe("bannana_bread", Recipe.BAKED, this, Recipe.SWAPPED, ingredientList3);
 		bannanaBread.addNecessaryTrait("sugar", Recipe.NO_ATTRIBUTES);
-		this.subgoalIngredients.put(bannanaBread.getName(), bannanaBread);
+		this.subgoalIngredients.put(bannanaBread.getSimpleName(), bannanaBread);
 		
 		return bannanaBread;
 	}

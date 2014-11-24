@@ -155,14 +155,14 @@ public class ExperimentHelper {
 		{
 			if (ingredient.isMatching(obj, endState))
 			{
-				namedIngredient = ExperimentHelper.getNewNamedComplexIngredient(obj, ingredient.getName());
+				namedIngredient = ExperimentHelper.getNewNamedComplexIngredient(obj, ingredient.getFullName());
 				namedIngredient = IngredientFactory.changeSwapped(namedIngredient);
 				String container = IngredientFactory.getContainer(obj);
 				namedIngredient = IngredientFactory.changeIngredientContainer(namedIngredient, container);
 				
 				ObjectInstance containerInstance = endState.getObject(container);
 				ObjectInstance newContainer = ContainerFactory.removeContents(containerInstance);
-				newContainer = ContainerFactory.addIngredient(newContainer, ingredient.getName());
+				newContainer = ContainerFactory.addIngredient(newContainer, ingredient.getFullName());
 				
 				return endState.replaceAllObjects(Arrays.asList(containerInstance, obj), Arrays.asList(newContainer, namedIngredient));
 			}
@@ -212,7 +212,7 @@ public class ExperimentHelper {
 			System.out.println(Arrays.toString(params));
 			State previousState = state.copy();
 			if (params[0].equals("mix")) {
-				System.out.print("");
+				//System.out.print("");
 			}
 			
 			state = takeAction(domain, state, params[0], Arrays.copyOfRange(params, 1, params.length));
@@ -232,7 +232,7 @@ public class ExperimentHelper {
 				List<BakingSubgoal> preconditions = subgoal.getPreconditions();
 				String pfType = pf.toString();
 				for (GroundedProp prop : pf.getAllGroundedPropsForState(state)) {
-					String subgoalString = "Subgoal " + ing.getName() + " - " + pfType + " " + Arrays.toString(prop.params);
+					String subgoalString = "Subgoal " + ing.getFullName() + " - " + pfType + " " + Arrays.toString(prop.params);
 					Boolean currentValue = prop.isTrue(state);
 					Boolean previousValue = previousValues.get(subgoalString);
 					if (previousValue == null || previousValue != currentValue) {
@@ -246,7 +246,7 @@ public class ExperimentHelper {
 					BakingPropositionalFunction pf2 = precondition.getGoal();
 					pfType = pf2.toString();
 					for (GroundedProp prop : pf2.getAllGroundedPropsForState(state)) {
-						String preconditionString = "Precondition " + ing2.getName() + " - " + pfType + " " + Arrays.toString(prop.params);
+						String preconditionString = "Precondition " + ing2.getFullName() + " - " + pfType + " " + Arrays.toString(prop.params);
 						Boolean currentValue = prop.isTrue(state);
 						Boolean previousValue = previousValues.get(preconditionString);
 						if (previousValue == null || previousValue != currentValue) {

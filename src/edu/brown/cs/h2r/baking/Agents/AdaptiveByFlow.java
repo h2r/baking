@@ -32,7 +32,13 @@ public class AdaptiveByFlow extends AdaptiveAgent implements Agent {
 	
 	@Override
 	protected final List<PolicyProbability> getPolicyDistribution(State currentState) {
+		
 		State lastObservedState = this.stateHistory.get(this.stateHistory.size() - 1);
+		if (currentState.equals(lastObservedState)) {
+			//System.err.println("The last two states are equals");
+		} else {
+			//System.err.println("Not equal");
+		}
 		List<PolicyProbability> policyDistribution = 
 				prediction.getPolicyDistributionFromStatePair(lastObservedState, currentState, 
 						MAX_ALPHA, null, null, AdaptiveByFlow.hashingFactory, 0);
@@ -64,7 +70,7 @@ public class AdaptiveByFlow extends AdaptiveAgent implements Agent {
 		
 		Collections.shuffle(bestPolicies);
 		PolicyProbability bestPolicy = bestPolicies.get(0);
-		//System.out.println("Inferred subgoal " + bestPolicy.toString());
+		System.out.println("Inferred subgoal " + bestPolicy.toString());
 		TerminalFunction terminalFunction = bestPolicy.getPolicyDomain().getTerminalFunction();
 		//if (terminalFunction.isTerminal(state)) {
 		//	return null;

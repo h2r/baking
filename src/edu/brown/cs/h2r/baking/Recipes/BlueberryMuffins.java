@@ -36,7 +36,7 @@ public class BlueberryMuffins extends Recipe {
 		ingredientList.add(knowledgebase.getIngredient("sour_cream"));
 		IngredientRecipe wetIngs = new IngredientRecipe("wetIngs", Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, ingredientList);
 		wetIngs.addNecessaryTrait("sugar", Recipe.NO_ATTRIBUTES);
-		this.subgoalIngredients.put(wetIngs.getName(), wetIngs);
+		this.subgoalIngredients.put(wetIngs.getSimpleName(), wetIngs);
 		
 		List<IngredientRecipe> ingredientList3 = new ArrayList<IngredientRecipe>();
 		ingredientList3.add(knowledgebase.getIngredient("baking_powder"));
@@ -44,14 +44,14 @@ public class BlueberryMuffins extends Recipe {
 		IngredientRecipe dryIngs = new IngredientRecipe ("dry_ingredients", Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, ingredientList3);
 		dryIngs.addNecessaryTrait("flour", Recipe.NO_ATTRIBUTES);
 		dryIngs.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
-		this.subgoalIngredients.put(dryIngs.getName(), dryIngs);
+		this.subgoalIngredients.put(dryIngs.getSimpleName(), dryIngs);
 		
 		List<IngredientRecipe> ingredientList4 = new ArrayList<IngredientRecipe>();
 		ingredientList4.add(dryIngs);
 		ingredientList4.add(wetIngs);
 		ingredientList4.add(knowledgebase.getIngredient("blueberries"));
 		IngredientRecipe muffins = new IngredientRecipe("blueberryMuffins", Recipe.BAKED, this, Recipe.SWAPPED, ingredientList4);
-		this.subgoalIngredients.put(muffins.getName(), muffins);
+		this.subgoalIngredients.put(muffins.getSimpleName(), muffins);
 		
 		return muffins;
 	}

@@ -47,7 +47,7 @@ public class Brownies extends Recipe {
 		
 		IngredientRecipe wetIngs = new IngredientRecipe("wet_ingredients", Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, ingredientList);
 		//wetIngs.addNecessaryTrait("sugar", Recipe.NO_ATTRIBUTES);
-		this.subgoalIngredients.put(wetIngs.getName(), wetIngs);
+		this.subgoalIngredients.put(wetIngs.getSimpleName(), wetIngs);
 		
 		// In a large saucepan, melt 1/2 cup butter.
 		
@@ -63,13 +63,13 @@ public class Brownies extends Recipe {
 		// Add the necessaryTraits and their respective attributes
 		dryIngs.addNecessaryTrait("flour", Recipe.NO_ATTRIBUTES);
 		dryIngs.addNecessaryTrait("salt", Recipe.NO_ATTRIBUTES);
-		this.subgoalIngredients.put(dryIngs.getName(), dryIngs);
+		this.subgoalIngredients.put(dryIngs.getSimpleName(), dryIngs);
 		
 		List<IngredientRecipe> ingredientList3 = new ArrayList<IngredientRecipe>();
 		ingredientList3.add(dryIngs);
 		ingredientList3.add(wetIngs);
 		IngredientRecipe brownies = new IngredientRecipe("brownie_batter", Recipe.BAKED, this, Recipe.SWAPPED, ingredientList3);
-		this.subgoalIngredients.put(brownies.getName(), brownies);
+		this.subgoalIngredients.put(brownies.getSimpleName(), brownies);
 		return brownies;
 	}
 	

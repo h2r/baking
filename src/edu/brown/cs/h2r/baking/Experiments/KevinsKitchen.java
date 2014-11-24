@@ -119,7 +119,7 @@ public class KevinsKitchen implements DomainGenerator {
 		State state = new State(objects);
 		
 		
-		System.out.println("\n\nPlanner will now plan the "+recipe.topLevelIngredient.getName()+" recipe!");
+		System.out.println("\n\nPlanner will now plan the "+recipe.topLevelIngredient.getFullName()+" recipe!");
 		
 		// High level planner that plans through the recipe's subgoals
 		List<BakingSubgoal> subgoals = recipe.getSubgoals();
@@ -152,7 +152,7 @@ public class KevinsKitchen implements DomainGenerator {
 	
 	public State PlanIngredient(Domain domain, State startingState, IngredientRecipe ingredient, BakingSubgoal subgoal)
 	{
-		System.out.println(ingredient.getName());
+		System.out.println(ingredient.getFullName());
 		
 		// TODO you should have startingState be set before this method.
 		List<Action> actions = domain.getActions();
