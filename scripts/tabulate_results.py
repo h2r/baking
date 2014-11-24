@@ -30,8 +30,8 @@ if len(argv) > 1:
                 except:
 		    print("error on file")
 		    continue
-		depth = data_line[0]
-		depth_type = data_line[1]
+		depth = data_line[1]
+		depth_type = data_line[2]
 
 		if depth_type not in data.keys():
 			data[depth_type] = dict()
