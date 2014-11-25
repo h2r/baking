@@ -34,7 +34,7 @@ public class Human implements Agent {
 	
 	private final static StateHashFactory hashingFactory = new NameDependentStateHashFactory();
 	private State startingState;
-	
+	private final String name;
 	
 	private Recipe currentRecipe;
 	private KitchenSubdomain currentSubgoal;
@@ -44,10 +44,12 @@ public class Human implements Agent {
 	
 	public Human(Domain generalDomain) {
 		this.generalDomain = generalDomain;
+		this.name = "human";
 	}
 	
 	public Human(Domain generalDomain, String name) {
 		this.generalDomain = generalDomain;
+		this.name = name;
 	}
 	
 	@Override
@@ -119,11 +121,14 @@ public class Human implements Agent {
 
 	@Override
 	public String getAgentName() {
-		return "human";
+		return this.name;
 	}
 
 	@Override
 	public AbstractGroundedAction getAction(State state) {
+		if (this.isSuccess(state)) {
+			return null;
+		}
 		if (this.currentSubgoal == null) {
 			this.chooseNewSubgoal(state);
 		} else if (this.currentSubgoal.getSubgoal().goalCompleted(state)) {

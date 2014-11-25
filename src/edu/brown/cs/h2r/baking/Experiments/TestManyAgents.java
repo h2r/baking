@@ -441,18 +441,20 @@ public class TestManyAgents {
 				(Agent)new Human(generalDomain, "friend"),
 				(Agent)new AdaptiveByFlow(generalDomain)
 				);
-		Collections.shuffle(agents);
 		System.out.println("Agent, Successes, Trials, Average reward, average successful reward");
 		ResetAction reset = (ResetAction)generalDomain.getAction(ResetAction.className);
 		reset.setState(state);
-		System.out.println("solo" + ", " +  TestManyAgents.evaluateHuman(generalDomain, human, numTrials).toString());
 		
 		
 			//System.out.println("Agent: " + agent.getAgentName());
-		//Agent agent = agents.get(1);
+		Agent agent = agents.get(1);
+		
 			EvaluationResult result;
 		for (int i = 0; i < numTrials; i++) {
-			for (Agent agent : agents) {
+			//System.out.println("solo" + ", " +  TestManyAgents.evaluateHuman(generalDomain, human, 1).toString());
+			
+			//Collections.shuffle(agents);
+			//for (Agent agent : agents) {
 			
 				human = new Human(generalDomain);
 				
@@ -467,7 +469,7 @@ public class TestManyAgents {
 				//System.out.println("Trial: " + i);
 				result = TestManyAgents.evaluateAgent(human, agent, startingState);
 				System.out.println(agent.getAgentName() + ", " +  result.toString());
-			}
+			//}
 		}	
 	}
 }

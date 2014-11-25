@@ -17,8 +17,8 @@ public class RecipeAgentSpecificMakeSpanRewardFunction implements RewardFunction
 	private double costYou;
 	public RecipeAgentSpecificMakeSpanRewardFunction(String agent) {
 		this.agent = agent;
-		this.costMe = -2;
-		this.costYou = -1;
+		this.costMe = -1;
+		this.costYou = -2;
 	}
 	
 	public RecipeAgentSpecificMakeSpanRewardFunction(String agent, double costMe, double costYou) {
@@ -34,7 +34,7 @@ public class RecipeAgentSpecificMakeSpanRewardFunction implements RewardFunction
 		if (!objectInstances.isEmpty()) {
 			Set<String> occupiedAgents = MakeSpanFactory.getOccupiedAgentNames(objectInstances.get(0));
 			if (occupiedAgents.contains(a.params[0]) || occupiedAgents.isEmpty()) {
-				return (a.params[0] == this.agent) ? actionFactor * this.costMe : actionFactor * this.costYou;
+				return (a.params[0].equals(this.agent)) ? actionFactor * this.costMe : actionFactor * this.costYou;
 			}
 			else if (!(a.action instanceof WaitAction)){
 				return -0.5;
