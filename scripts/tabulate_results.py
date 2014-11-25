@@ -48,7 +48,7 @@ if len(argv) > 1:
             if depth not in data[depth_type].keys():
                 data[depth_type][depth] = [[], [], [], []]
             for i in range(4):
-                data[depth_type][depth][i].append(int(data_line[i+3]))
+                data[depth_type][depth][i].append(int(line[i+3]))
 
 
 
