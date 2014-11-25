@@ -1,7 +1,7 @@
 from sys import argv
 from glob import glob
 from csv import reader, Error
-import math
+import math, numpy
 
 
 def calculate_interval(num_successes, num_trials):
@@ -55,5 +55,5 @@ if len(argv) > 1:
     print("Depth, Depth Type, Successes, Estimate Successes, Informed Guesses, Total Trials")
     for depth_type, data_by_depth in data.iteritems():
         for depth, data_sum in data_by_depth.iteritems():
-            probability_success, interval = calculate_interval(data_sum[0], data_sum[3])
-            print(str(depth) + ", " + str(depth_type    ) + ", " + str(data_sum) + ", " + str(probability_success) + " +- " + str(interval))
+            probability_success, interval = calculate_interval(sum(data_sum[0]), sum(data_sum[3]))
+            print(str(depth) + ", " + str(depth_type) + ", " + str(sum(data_sum)) + ", " + str(numpy.mean(probability_success)) + " +- " + str(interval))
