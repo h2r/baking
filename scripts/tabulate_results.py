@@ -39,7 +39,10 @@ if len(argv) > 1:
             continue
 
         #Agent, Successes, Trials, Average reward, average successful reward
+
         for line in data_lines:
+            depth = data_line[1]
+            depth_type = data_line[2]
             if depth_type not in data.keys():
                 data[depth_type] = dict()
             if depth not in data[depth_type].keys():
