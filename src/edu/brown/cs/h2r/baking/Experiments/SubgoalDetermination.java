@@ -134,6 +134,9 @@ public class SubgoalDetermination {
 	}
 	
 	public static State getStateFromActionSequence(State startingState, List<AbstractGroundedAction> actions) {
+		if (actions == null) {
+			return null;
+		}
 		State currentState = startingState;
 		for (AbstractGroundedAction action : actions) {
 			currentState = action.executeIn(currentState);
