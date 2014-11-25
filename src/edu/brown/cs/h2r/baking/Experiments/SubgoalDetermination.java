@@ -219,7 +219,7 @@ public class SubgoalDetermination {
 				for (int depthType = 0; depthType < 3; depthType++) {
 					List<Double> successRate = new ArrayList<Double>();
 					PolicyPrediction prediction = new PolicyPrediction(policyDomains, depthType);			
-					for (int depth = 0; depth < 4; depth++) {	
+					for (int depth = 1; depth < 5; depth++) {	
 						int numSuccess = 0;
 						int numEstimateSuccesses = 0;
 						int numRandomGuesses = 0;
