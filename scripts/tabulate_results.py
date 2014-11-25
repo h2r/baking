@@ -56,4 +56,9 @@ if len(argv) > 1:
     for depth_type, data_by_depth in data.iteritems():
         for depth, data_sum in data_by_depth.iteritems():
             probability_success, interval = calculate_interval(sum(data_sum[0]), sum(data_sum[3]))
+            print(str(depth))
+            print(str(depth_type))
+            print(str(sum(data_sum)))
+            print(str(numpy.mean(probability_success)))
+            print(str(interval))
             print(str(depth) + ", " + str(depth_type) + ", " + str(sum(data_sum)) + ", " + str(numpy.mean(probability_success)) + " +- " + str(interval))
