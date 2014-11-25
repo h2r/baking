@@ -447,14 +447,14 @@ public class TestManyAgents {
 		
 		
 			//System.out.println("Agent: " + agent.getAgentName());
-		Agent agent = agents.get(1);
+		//Agent agent = agents.get(1);
 		
 			EvaluationResult result;
 		for (int i = 0; i < numTrials; i++) {
-			//System.out.println("solo" + ", " +  TestManyAgents.evaluateHuman(generalDomain, human, 1).toString());
+			System.out.println("solo" + ", " +  TestManyAgents.evaluateHuman(generalDomain, human, 1).toString());
 			
-			//Collections.shuffle(agents);
-			//for (Agent agent : agents) {
+			Collections.shuffle(agents);
+			for (Agent agent : agents) {
 			
 				human = new Human(generalDomain);
 				
@@ -469,7 +469,7 @@ public class TestManyAgents {
 				//System.out.println("Trial: " + i);
 				result = TestManyAgents.evaluateAgent(human, agent, startingState);
 				System.out.println(agent.getAgentName() + ", " +  result.toString());
-			//}
+			}
 		}	
 	}
 }
