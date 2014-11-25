@@ -4,7 +4,9 @@ from csv import reader, Error
 import math, numpy
 
 
-def calculate_interval(num_successes, num_trials):
+def calculate_interval(successes, trials):
+    num_trials = sum(trials)
+    num_successes = sum(successes)
     num_failures = num_trials - num_successes
     z = 1.96 # for 95% confidence
     z2 = 1.96 * 1.96
@@ -61,4 +63,7 @@ if len(argv) > 1:
             print(str((data_sum)))
             print(str(numpy.mean(probability_success)))
             print(str(interval))
-            print(str(depth) + ", " + str(depth_type) + ", " + str(sum(data_sum)) + ", " + str(numpy.mean(probability_success)) + " +- " + str(interval))
+            data_sum_str = str([sum(x) for x in data_sum])
+            data_mean_str = str(numpy.mean(probability_success))
+            
+            print(str(depth) + ", " + str(depth_type) + ", " + data_sum_str + ", " + data_mean_str + " +- " + str(interval))
