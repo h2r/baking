@@ -441,6 +441,7 @@ public class TestManyAgents {
 				(Agent)new Human(generalDomain, "friend"),
 				(Agent)new AdaptiveByFlow(generalDomain)
 				);
+		Collections.shuffle(agents);
 		System.out.println("Agent, Successes, Trials, Average reward, average successful reward");
 		ResetAction reset = (ResetAction)generalDomain.getAction(ResetAction.className);
 		reset.setState(state);
