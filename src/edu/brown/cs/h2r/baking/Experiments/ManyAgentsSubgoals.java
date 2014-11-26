@@ -43,7 +43,7 @@ import edu.brown.cs.h2r.baking.actions.ResetAction;
 import edu.brown.cs.h2r.baking.actions.SwitchAction;
 import edu.brown.cs.h2r.baking.actions.UseAction;
 
-public class TestManyAgents {
+public class ManyAgentsSubgoals {
 	private static Random rando = new Random();
 	private static StateHashFactory hashingFactory = new NameDependentStateHashFactory();
 	public static Domain generateGeneralDomain() {
@@ -131,7 +131,7 @@ public class TestManyAgents {
 		
 		statePair.clear();
 		actionPair.clear();
-		double roll = TestManyAgents.rando.nextDouble();
+		double roll = ManyAgentsSubgoals.rando.nextDouble();
 		boolean action1First = (roll < bias);
 		
 		AbstractGroundedAction firstAction = (action1First) ? action1 : action2;
@@ -176,7 +176,7 @@ public class TestManyAgents {
 		
 		if ((partner instanceof Human) && !(partner instanceof RandomRecipeAgent)) {
 			otherHuman = (Human)partner;
-			otherHuman.setRecipe(human.getCurrentRecipe());
+			otherHuman.setSubgoal(human.getCurrentSubgoal());
 			actionBias = 1.0;
 		}
 		boolean isSuccess = false;
@@ -197,7 +197,7 @@ public class TestManyAgents {
 			}
 			
 			State newState = 
-					TestManyAgents.performActions(currentState, humanAction, null, statePair, actionPair, actionBias);
+					ManyAgentsSubgoals.performActions(currentState, humanAction, null, statePair, actionPair, actionBias);
 			
 			
 			AbstractGroundedAction partnerAction = null;
@@ -206,9 +206,9 @@ public class TestManyAgents {
 				////System.out.println("\nEvaluating how partner would complete recipe");
 				//TestManyAgents.evaluateHumanAlone(otherHuman, newState);
 				////System.out.println("");
-				partnerAction = TestManyAgents.getActionAndWait(otherHuman, newState);
+				partnerAction = ManyAgentsSubgoals.getActionAndWait(otherHuman, newState);
 			} else {
-				partnerAction = TestManyAgents.getActionAndWait(partner, currentState);
+				partnerAction = ManyAgentsSubgoals.getActionAndWait(partner, currentState);
 				if (partnerAction == null) {
 					//partnerAction = TestManyAgents.getActionAndWait(partner, currentState);
 				}
@@ -216,7 +216,7 @@ public class TestManyAgents {
 			
 			
 			
-			currentState = TestManyAgents.performActions(currentState, humanAction, partnerAction, statePair, actionPair, actionBias);
+			currentState = ManyAgentsSubgoals.performActions(currentState, humanAction, partnerAction, statePair, actionPair, actionBias);
 			//partner.addObservation(currentState);
 			
 			stateSequence.addAll(statePair);
@@ -302,7 +302,7 @@ public class TestManyAgents {
 				//System.err.println("Human resetting state");
 			}
 			
-			currentState = TestManyAgents.performActions(currentState, humanAction, null, statePair, actionPair, 0.5);
+			currentState = ManyAgentsSubgoals.performActions(currentState, humanAction, null, statePair, actionPair, 0.5);
 			stateSequence.addAll(statePair);
 			actionSequence.addAll(actionPair);
 			
@@ -324,13 +324,13 @@ public class TestManyAgents {
 		for (int i = 0; i < numTrials; i++) {
 			List<Recipe> recipes = AgentHelper.recipes(generalDomain);
 			
-			State startingState = TestManyAgents.generateInitialState(generalDomain, recipes, human, null);
+			State startingState = ManyAgentsSubgoals.generateInitialState(generalDomain, recipes, human, null);
 			human.setInitialState(startingState);
 			
 			
 			//System.out.println("Trial: " + i);
 			human.chooseNewRecipe();
-			result.incrementResult(TestManyAgents.evaluateHumanAlone(human, startingState));
+			result.incrementResult(ManyAgentsSubgoals.evaluateHumanAlone(human, startingState));
 		}
 		return result;
 		//System.out.println("Human alone: " + result.toString());
@@ -406,17 +406,9 @@ public class TestManyAgents {
 	public static void main(String[] args) {
 		
 		int numTrials = 20;
-		int trialId = 0;/*
-		if (args.length == 2) {
-			numTrials = Integer.parseInt(args[0]);
-			trialId = Integer.parseInt(args[1]);
-		} else {
-			System.err.println("Args provided: "  + Arrays.toString(args));
-			System.err.println("Usage TestManyAgents numTrials trialId");
-			System.exit(0);
-		}	*/
+		int trialId = 0;
 		
-		Domain generalDomain = TestManyAgents.generateGeneralDomain(); 
+		Domain generalDomain = ManyAgentsSubgoals.generateGeneralDomain(); 
 		
 		List<Recipe> recipes = AgentHelper.recipes(generalDomain);
 		Knowledgebase knowledgebase = Knowledgebase.getKnowledgebase(generalDomain);
@@ -424,7 +416,6 @@ public class TestManyAgents {
 		
 		Human human = new Human(generalDomain);
 		
-		State state = TestManyAgents.generateInitialState(generalDomain, recipes, human, null);
 		/*for (Recipe recipe : recipes) {
 			//System.out.println("Testing recipe " + recipe.toString());
 			ExperimentHelper.testRecipeExecution(generalDomain, state, recipe);
@@ -443,33 +434,50 @@ public class TestManyAgents {
 				);
 		System.out.println("Agent, Successes, Trials, Average reward, average successful reward");
 		ResetAction reset = (ResetAction)generalDomain.getAction(ResetAction.className);
-		reset.setState(state);
 		
+		Map<String, State> startingStates = new HashMap<String, State>();
+		for (Agent agent : agents) {
+			State state = ManyAgentsSubgoals.generateInitialState(generalDomain, recipes, human, agent);
+			startingStates.put(agent.getAgentName(), state);
+		}
+		State soloState = ManyAgentsSubgoals.generateInitialState(generalDomain, recipes, human, null);
+		startingStates.put("solo", soloState);
 		
+		Map<String, Human> humanAgents = new HashMap<String, Human>();
 			//System.out.println("Agent: " + agent.getAgentName());
-		Agent agent = agents.get(3);
+		//Agent agent = agents.get(3);
 		
 			EvaluationResult result;
 		for (int i = 0; i < numTrials; i++) {
-			//System.out.println("solo" + ", " +  TestManyAgents.evaluateHuman(generalDomain, human, 1).toString());
 			
-			//Collections.shuffle(agents);
-			//for (Agent agent : agents) {
+			System.out.println("solo" + ", " +  ManyAgentsSubgoals.evaluateHuman(generalDomain, human, 1).toString());
 			
-				human = new Human(generalDomain);
+			Collections.shuffle(agents);
+			for (Agent agent : agents) {
+			
+			String agentName = agent.getAgentName();
+			
+				State startingState = startingStates.get(agentName);
 				
+				human = humanAgents.get(agentName);
+				if (human == null) {
+					human = new Human(generalDomain);
+					human.setInitialState(startingState);
+					reset.setState(startingState);
+					
+					human.buildAllSubdomains();
+					humanAgents.put(agentName, human);
+				}
+				startingState = human.getNewStartingState();
 				
-				State startingState = TestManyAgents.generateInitialState(generalDomain, recipes, human, agent);
 				reset.setState(startingState);
 				
 				human.setInitialState(startingState);
 				agent.setInitialState(startingState);
 				
-				
-				//System.out.println("Trial: " + i);
-				result = TestManyAgents.evaluateAgent(human, agent, startingState);
+				result = ManyAgentsSubgoals.evaluateAgent(human, agent, startingState);
 				System.out.println(agent.getAgentName() + ", " +  result.toString());
-			//}
+			}
 		}	
 	}
 }

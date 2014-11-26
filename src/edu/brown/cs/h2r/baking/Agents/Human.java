@@ -8,6 +8,7 @@ import java.util.Random;
 
 import burlap.behavior.singleagent.Policy;
 import burlap.behavior.singleagent.Policy.ActionProb;
+import burlap.behavior.singleagent.planning.stochastic.rtdp.RTDP;
 import burlap.behavior.statehashing.NameDependentStateHashFactory;
 import burlap.behavior.statehashing.ObjectHashFactory;
 import burlap.behavior.statehashing.StateHashFactory;
@@ -28,9 +29,18 @@ import edu.brown.cs.h2r.baking.Prediction.PolicyPrediction;
 import edu.brown.cs.h2r.baking.Recipes.Brownies;
 import edu.brown.cs.h2r.baking.Recipes.PeanutButterCookies;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
+import edu.brown.cs.h2r.baking.actions.ResetAction;
 
 public class Human implements Agent {
-	private final static RewardFunction rewardFunction = new RecipeAgentSpecificMakeSpanRewardFunction("human");
+	private final static RewardFunction rewardFunction = new RewardFunction() {
+
+		@Override
+		public double reward(State s, GroundedAction a, State sprime) {
+			// TODO Auto-generated method stub
+			return (a.action instanceof ResetAction) ? -2 : -1;
+		}
+		
+	};
 	
 	private final static StateHashFactory hashingFactory = new NameDependentStateHashFactory();
 	private State startingState;
@@ -39,6 +49,7 @@ public class Human implements Agent {
 	private Recipe currentRecipe;
 	private KitchenSubdomain currentSubgoal;
 	private List<KitchenSubdomain> kitchenSubdomains;
+	private List<KitchenSubdomain> allKitchenSubdomains;
 	private TerminalFunction isFailure;
 	private Domain generalDomain;
 	
@@ -76,10 +87,27 @@ public class Human implements Agent {
 		this.kitchenSubdomains = AgentHelper.generateRTDPPolicies(this.currentRecipe, this.generalDomain, this.startingState, Human.rewardFunction, Human.hashingFactory);
 	}
 	
+	public void setSubgoal(String subgoalName) {
+		for (KitchenSubdomain subdomain : this.allKitchenSubdomains) {
+			if (subdomain.toString().equals(subgoalName)) {
+				this.currentRecipe = subdomain.getRecipe();
+				this.currentSubgoal = subdomain;
+				return;
+			}
+		}
+		this.currentRecipe = null;
+		this.currentSubgoal = null;
+		
+	}
+	
 	
 	
 	public Recipe getCurrentRecipe() {
 		return this.currentRecipe;
+	}
+	
+	public String getCurrentSubgoal() {
+		return (this.currentSubgoal == null) ? "" : this.currentSubgoal.toString();
 	}
 	
 	private void chooseNewSubgoal(State state) {
@@ -158,6 +186,8 @@ public class Human implements Agent {
 	}
 
 	private List<ActionProb> getAllowableActions(State state) {
+		RTDP planner = this.currentSubgoal.getPlanner();
+		planner.planFromState(state);
 		Policy policy = this.currentSubgoal.getPolicy();
 		List<ActionProb> actionDistribution = policy.getActionDistributionForState(state);
 		List<ActionProb> allowableActions = new ArrayList<ActionProb>();
@@ -202,7 +232,7 @@ public class Human implements Agent {
 	}
 	
 	public boolean isSuccess(State state) {
-		return this.currentRecipe.isSuccess(state);
+		return (this.currentSubgoal == null) ? false : this.currentSubgoal.getSubgoal().goalCompleted(state);
 	}
 	
 	public boolean isSubgoalFinished(State state) {
@@ -214,10 +244,28 @@ public class Human implements Agent {
 		State previousState = this.startingState;
 		for (int i = 0; i < actionSequence.size(); i++) {
 			GroundedAction groundedAction = (GroundedAction)actionSequence.get(i);
-			State nextState = stateSequence.get(i+1);
-			cost += Human.rewardFunction.reward(previousState, groundedAction, nextState);
+			cost += (groundedAction.params[0].equals("human")) ? 1 : 0;
+			//State nextState = stateSequence.get(i+1);
+			//cost += Human.rewardFunction.reward(previousState, groundedAction, nextState);
 		
 		}
 		return cost;
+	}
+	
+	public void buildAllSubdomains() {
+		this.allKitchenSubdomains = AgentHelper.generateAllRTDPPolicies(this.generalDomain, this.startingState, 
+				AgentHelper.recipes(generalDomain), Human.rewardFunction, Human.hashingFactory);
+	}
+	
+	public State getNewStartingState() {
+		if (this.allKitchenSubdomains == null) {
+			return null;
+		}
+		List<KitchenSubdomain> subdomains = new ArrayList<KitchenSubdomain>(this.allKitchenSubdomains);
+		Collections.shuffle(subdomains);
+		KitchenSubdomain currentSubdomain = subdomains.get(0);
+		this.currentSubgoal = currentSubdomain;
+		this.currentRecipe = currentSubdomain.getRecipe();
+		return this.currentSubgoal.getStartState();
 	}
 }

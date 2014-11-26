@@ -35,7 +35,7 @@ public class AdaptiveByFlow extends AdaptiveAgent implements Agent {
 		
 		State lastObservedState = this.stateHistory.get(this.stateHistory.size() - 1);
 		if (currentState.equals(lastObservedState)) {
-			//System.err.println("The last two states are equals");
+			return null;
 		} else {
 			//System.err.println("Not equal");
 		}
@@ -70,7 +70,7 @@ public class AdaptiveByFlow extends AdaptiveAgent implements Agent {
 		
 		Collections.shuffle(bestPolicies);
 		PolicyProbability bestPolicy = bestPolicies.get(0);
-		//System.out.println("Inferred subgoal " + bestPolicy.toString());
+		System.out.println("Inferred subgoal " + bestPolicy.toString());
 		TerminalFunction terminalFunction = bestPolicy.getPolicyDomain().getTerminalFunction();
 		//if (terminalFunction.isTerminal(state)) {
 		//	return null;
@@ -88,6 +88,7 @@ public class AdaptiveByFlow extends AdaptiveAgent implements Agent {
 		
 		boolean isValidAction = false;
 		AbstractGroundedAction action = policy.getAction(state);
+		int tries = 0;
 		while (!isValidAction) {
 			if (Thread.interrupted()) {
 				return null;
@@ -112,8 +113,12 @@ public class AdaptiveByFlow extends AdaptiveAgent implements Agent {
 			BakingActionResult result = bakingAction.checkActionIsApplicableInState(state, groundedAction.params);
 			
 			if (!result.getIsSuccess()) {
-				//System.err.println(this.getAgentName() + " chose action " + groundedAction.toString() + " which cannot succeed because:");
-				//System.err.println(result.getWhyFailed());
+				System.err.println(this.getAgentName() + " chose action " + groundedAction.toString() + " which cannot succeed because:");
+				System.err.println(result.getWhyFailed());
+				tries++;
+				if (tries == 3) {
+					return null;
+				}
 			}
 			
 			isValidAction = (

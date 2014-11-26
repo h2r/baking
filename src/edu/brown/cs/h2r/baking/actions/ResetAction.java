@@ -35,6 +35,9 @@ public class ResetAction extends BakingAction {
 		if (AgentFactory.isRobot(agent)) {
 			return BakingActionResult.failure(agentName + " cannot perform this action");
 		}
+		if (!agentName.equals("human")) {
+			return BakingActionResult.failure(agentName + " cannot perform this action");
+		}
 		
 		return BakingActionResult.success();
 	}

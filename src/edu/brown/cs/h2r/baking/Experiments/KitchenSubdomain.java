@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import burlap.behavior.singleagent.Policy;
+import burlap.behavior.singleagent.planning.stochastic.rtdp.AffordanceRTDP;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
@@ -20,18 +21,20 @@ public class KitchenSubdomain {
 	private final BakingSubgoal subgoal;
 	private final State startState;
 	private final Policy policy;
+	private final AffordanceRTDP planner;
 	private final Domain domain;
 	
-	private KitchenSubdomain(Domain domain, Recipe recipe, BakingSubgoal subgoal, State startState, Policy policy) {
+	private KitchenSubdomain(Domain domain, Recipe recipe, BakingSubgoal subgoal, State startState, Policy policy, AffordanceRTDP planner) {
 		this.domain = domain;
 		this.recipe = recipe;
 		this.subgoal = subgoal;
 		this.startState = startState.copy();
 		this.policy = policy;
+		this.planner = planner;
 	}
 	
-	public static KitchenSubdomain makeSubdomain(Domain domain, Recipe recipe, BakingSubgoal subgoal, State startState, Policy policy) {
-		if (subgoal == null || startState == null || policy == null )
+	public static KitchenSubdomain makeSubdomain(Domain domain, Recipe recipe, BakingSubgoal subgoal, State startState, Policy policy, AffordanceRTDP planner) {
+		if (subgoal == null || startState == null || policy == null || planner == null)
 		{
 			return null;
 		}
@@ -47,11 +50,11 @@ public class KitchenSubdomain {
 			newPropFunctions.add(oldPf.updatePF(newDomain, ingredient, subgoal));
 		}
 		
-		return new KitchenSubdomain(new SADomain(newDomain, propFunctions), recipe, subgoal, startState, policy);
+		return new KitchenSubdomain(new SADomain(newDomain, propFunctions), recipe, subgoal, startState, policy, planner);
 	}
 	
 	public static KitchenSubdomain makeSubdomain(KitchenSubdomain other) {
-		return new KitchenSubdomain(other.domain, other.recipe, other.subgoal, other.startState, other.policy);
+		return new KitchenSubdomain(other.domain, other.recipe, other.subgoal, other.startState, other.policy, other.planner);
 	}
 
 	public Domain getDomain() {
@@ -75,6 +78,10 @@ public class KitchenSubdomain {
 	
 	public Policy getPolicy() {
 		return this.policy;
+	}
+	
+	public AffordanceRTDP getPlanner() {
+		return this.planner;
 	}
 
 	public boolean isValidInState(State state) {

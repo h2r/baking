@@ -12,6 +12,7 @@ import burlap.behavior.singleagent.Policy;
 import burlap.behavior.singleagent.planning.QComputablePlanner;
 import burlap.behavior.singleagent.planning.commonpolicies.AffordanceGreedyQPolicy;
 import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
+import burlap.behavior.singleagent.planning.stochastic.rtdp.AffordanceRTDP;
 import burlap.behavior.singleagent.planning.stochastic.rtdp.RTDP;
 import burlap.behavior.statehashing.StateHashFactory;
 import burlap.oomdp.core.Domain;
@@ -132,24 +133,19 @@ public class AgentHelper {
 		double gamma = 0.99;
 		
 		boolean affordanceMode = true;
-		RTDP planner;
+		AffordanceRTDP planner;
 		Policy p;
 		AffordancesController affController = theCreator.getAffController();
-		if(affordanceMode) {
-			// RTDP planner that also uses affordances to trim action space during the Bellman update
-			planner = new BellmanAffordanceRTDP(domain, rf, recipeTerminalFunction, gamma, hashingFactory, vInit, 
-					numRollouts, maxDelta, maxDepth, affController);
-			planner.toggleDebugPrinting(false);
-			planner.planFromState(currentState);
-			
-			// Create a Q-greedy policy from the planner
-			p = new AffordanceGreedyQPolicy(affController, (QComputablePlanner)planner);
+		// RTDP planner that also uses affordances to trim action space during the Bellman update
+		planner = new BellmanAffordanceRTDP(domain, rf, recipeTerminalFunction, gamma, hashingFactory, vInit, 
+				numRollouts, maxDelta, maxDepth, affController);
+		planner.toggleDebugPrinting(false);
+		planner.planFromState(currentState);
+		
+		// Create a Q-greedy policy from the planner
+		p = new AffordanceGreedyQPolicy(affController, (QComputablePlanner)planner);
 
-		} else {
-			planner = new RTDP(domain, rf, recipeTerminalFunction, gamma, hashingFactory, vInit, numRollouts, maxDelta, maxDepth);
-			p = new GreedyQPolicy((QComputablePlanner)planner);
-		}
-		return KitchenSubdomain.makeSubdomain(domain, recipe, subgoal, startingState, p);
+		return KitchenSubdomain.makeSubdomain(domain, recipe, subgoal, startingState, p, planner);
 	}
 	
 	public static Domain setSubgoal(Domain domain, BakingSubgoal subgoal) {

@@ -11,16 +11,26 @@ import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
+import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 import edu.brown.cs.h2r.baking.RecipeAgentSpecificMakeSpanRewardFunction;
 import edu.brown.cs.h2r.baking.Experiments.KitchenSubdomain;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.Prediction.PolicyProbability;
+import edu.brown.cs.h2r.baking.actions.ResetAction;
 
 public abstract class AdaptiveAgent implements Agent {
 	private final Domain domain;
 	protected final static StateHashFactory hashingFactory = new NameDependentStateHashFactory();
-	protected final static RewardFunction rewardFunction = new RecipeAgentSpecificMakeSpanRewardFunction("human");
+	protected final static RewardFunction rewardFunction = new RewardFunction() {
+
+		@Override
+		public double reward(State s, GroundedAction a, State sprime) {
+			// TODO Auto-generated method stub
+			return (a.action instanceof ResetAction) ? -2 : -1;
+		}
+		
+	};
 	protected final List<State> stateHistory;
 	private final List<PolicyProbability> policyBeliefDistribution;
 	protected final List<KitchenSubdomain> subdomains;
@@ -66,6 +76,9 @@ public abstract class AdaptiveAgent implements Agent {
 	@Override
 	public AbstractGroundedAction getAction(State state) {
 		List<PolicyProbability> policyDistribution = this.getPolicyDistribution(state);
+		if (policyDistribution == null) {
+			return null;
+		}
 		this.updateBeliefDistribution(policyDistribution);
 		
 		List<PolicyProbability> policyBeliefDistribution = Collections.unmodifiableList(this.policyBeliefDistribution);
