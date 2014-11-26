@@ -138,10 +138,10 @@ public class ManyAgentsSubgoals {
 		AbstractGroundedAction secondAction = (action1First) ? action2 : action1;
 		
 		if (firstAction != null) {
-			System.out.println("Executing action " + firstAction.toString());
+			//System.out.println("Executing action " + firstAction.toString());
 			State nextState = firstAction.executeIn(state);
 			if (nextState.equals(state)) {
-				System.out.println("Action had no effect");
+				//System.out.println("Action had no effect");
 			}
 			state = nextState;
 			statePair.add(state);
@@ -149,10 +149,10 @@ public class ManyAgentsSubgoals {
 		}
 
 		if (secondAction != null) {
-			System.out.println("Executing action " + secondAction.toString());
+			//System.out.println("Executing action " + secondAction.toString());
 			State nextState = secondAction.executeIn(state);
 			if (nextState.equals(state)) {
-				System.out.println("Action had no effect");
+				//System.out.println("Action had no effect");
 			}
 			state = nextState;
 			statePair.add(state);
