@@ -110,6 +110,13 @@ public class Human implements Agent {
 		return (this.currentSubgoal == null) ? "" : this.currentSubgoal.toString();
 	}
 	
+	public void chooseNewSubdomain() {
+		Random random = new Random();
+		int choice = random.nextInt(this.allKitchenSubdomains.size());
+		this.currentSubgoal = this.allKitchenSubdomains.get(choice);
+		this.currentRecipe = this.currentSubgoal.getRecipe();
+	}
+	
 	private void chooseNewSubgoal(State state) {
 		if (this.startingState.equals(state)) {
 			this.setRecipe(this.currentRecipe);
@@ -232,7 +239,7 @@ public class Human implements Agent {
 	}
 	
 	public boolean isSuccess(State state) {
-		return (this.currentSubgoal == null) ? false : this.currentSubgoal.getSubgoal().goalCompleted(state);
+		return this.currentRecipe.isSuccess(state);
 	}
 	
 	public boolean isSubgoalFinished(State state) {

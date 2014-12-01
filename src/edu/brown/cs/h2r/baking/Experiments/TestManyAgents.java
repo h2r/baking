@@ -138,10 +138,10 @@ public class TestManyAgents {
 		AbstractGroundedAction secondAction = (action1First) ? action2 : action1;
 		
 		if (firstAction != null) {
-			System.out.println("Executing action " + firstAction.toString());
+			//System.out.println("Executing action " + firstAction.toString());
 			State nextState = firstAction.executeIn(state);
 			if (nextState.equals(state)) {
-				System.out.println("Action had no effect");
+				//System.out.println("Action had no effect");
 			}
 			state = nextState;
 			statePair.add(state);
@@ -149,10 +149,10 @@ public class TestManyAgents {
 		}
 
 		if (secondAction != null) {
-			System.out.println("Executing action " + secondAction.toString());
+			//System.out.println("Executing action " + secondAction.toString());
 			State nextState = secondAction.executeIn(state);
 			if (nextState.equals(state)) {
-				System.out.println("Action had no effect");
+				//System.out.println("Action had no effect");
 			}
 			state = nextState;
 			statePair.add(state);
@@ -447,14 +447,14 @@ public class TestManyAgents {
 		
 		
 			//System.out.println("Agent: " + agent.getAgentName());
-		Agent agent = agents.get(3);
+		//Agent agent = agents.get(3);
 		
 			EvaluationResult result;
 		for (int i = 0; i < numTrials; i++) {
-			//System.out.println("solo" + ", " +  TestManyAgents.evaluateHuman(generalDomain, human, 1).toString());
+			System.out.println("solo" + ", " +  TestManyAgents.evaluateHuman(generalDomain, human, 1).toString());
 			
-			//Collections.shuffle(agents);
-			//for (Agent agent : agents) {
+			Collections.shuffle(agents);
+			for (Agent agent : agents) {
 			
 				human = new Human(generalDomain);
 				
@@ -469,7 +469,7 @@ public class TestManyAgents {
 				//System.out.println("Trial: " + i);
 				result = TestManyAgents.evaluateAgent(human, agent, startingState);
 				System.out.println(agent.getAgentName() + ", " +  result.toString());
-			//}
+			}
 		}	
 	}
 }

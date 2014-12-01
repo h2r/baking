@@ -171,11 +171,13 @@ public class ManyAgentsSubgoals {
 		stateSequence.add(currentState);
 		List<State> statePair = new ArrayList<State>();
 		List<AbstractGroundedAction> actionPair = new ArrayList<AbstractGroundedAction>();
-		human.chooseNewRecipe();
+		human.chooseNewSubdomain();
+		
 		Human otherHuman = null;
 		
 		if ((partner instanceof Human) && !(partner instanceof RandomRecipeAgent)) {
 			otherHuman = (Human)partner;
+			otherHuman.buildAllSubdomains();
 			otherHuman.setSubgoal(human.getCurrentSubgoal());
 			actionBias = 1.0;
 		}
@@ -222,9 +224,9 @@ public class ManyAgentsSubgoals {
 			stateSequence.addAll(statePair);
 			actionSequence.addAll(actionPair);
 			boolean isRepeating = checkIfRepeating(stateSequence);
-			isSuccess = human.isSuccess(currentState);
+			isSuccess = human.isSubgoalFinished(currentState);
 			double reward = human.getCostActions(actionSequence, stateSequence);
-			finished = isSuccess || reward < -1000.0;
+			finished = isSuccess || reward < -100.0;
 			
 			/*if (human.isSubgoalFinished(currentState)) {
 				//System.out.println("Subgoal is finished");
@@ -449,7 +451,7 @@ public class ManyAgentsSubgoals {
 		
 			EvaluationResult result;
 		for (int i = 0; i < numTrials; i++) {
-			
+			reset.setState(soloState);
 			System.out.println("solo" + ", " +  ManyAgentsSubgoals.evaluateHuman(generalDomain, human, 1).toString());
 			
 			Collections.shuffle(agents);
