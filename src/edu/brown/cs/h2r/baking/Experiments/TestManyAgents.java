@@ -224,7 +224,7 @@ public class TestManyAgents {
 			boolean isRepeating = checkIfRepeating(stateSequence);
 			isSuccess = human.isSuccess(currentState);
 			double reward = human.getCostActions(actionSequence, stateSequence);
-			finished = isSuccess || reward < -1000.0;
+			finished = isSuccess || reward > 1000.0;
 			
 			/*if (human.isSubgoalFinished(currentState)) {
 				//System.out.println("Subgoal is finished");

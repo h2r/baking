@@ -226,7 +226,7 @@ public class ManyAgentsSubgoals {
 			boolean isRepeating = checkIfRepeating(stateSequence);
 			isSuccess = human.isSubgoalFinished(currentState);
 			double reward = human.getCostActions(actionSequence, stateSequence);
-			finished = isSuccess || reward < -100.0;
+			finished = isSuccess || reward > 100.0;
 			
 			/*if (human.isSubgoalFinished(currentState)) {
 				//System.out.println("Subgoal is finished");
