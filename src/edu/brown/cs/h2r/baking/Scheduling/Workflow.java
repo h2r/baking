@@ -8,15 +8,93 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import burlap.oomdp.core.State;
+import burlap.oomdp.singleagent.GroundedAction;
 import edu.brown.cs.h2r.baking.Scheduling.Workflow.Node;
 
 public class Workflow implements Iterable<Node> {
 
 	private final List<Node> actions;
-	public Workflow(List<Node> actions) {
-		this.actions = new ArrayList<Node>(actions);
+	private final State startState;
+	public Workflow(State startState) {
+		this.actions = new ArrayList<Node>();
+		this.startState = startState;
 	}
 	
+	public Workflow(List<Node> actions) {
+		this.actions = new ArrayList<Node>(actions);
+		this.startState = null;
+	}
+	
+	public Workflow(State startState, List<Node> actions) {
+		this.actions = new ArrayList<Node>(actions);
+		this.startState = startState;
+	}
+	
+	public boolean add(Node node){
+		return this.actions.add(node);
+	}
+	
+	public boolean add(Node node, List<Integer> dependencies) {
+		boolean result = this.actions.add(node);
+		for (Integer i : dependencies) {
+			if (!this.connect(i, node.id)) {
+				System.err.println("Cycle detected in this graph, that shouldn't happen");
+				return false;
+			}
+		}
+		return result;
+	}
+	
+	
+	public static Workflow buildWorkflow(State state, List<GroundedAction> actions) {
+		Workflow workflow = new Workflow(state);
+		
+		for (int i = 0; i < actions.size(); i++) {
+			GroundedAction action = actions.get(i);
+			Node node = new Node(i, action);
+			List<Integer> dependencies = Workflow.getDependencies(action, workflow);
+			workflow.add(node, dependencies);
+		}
+		
+		return workflow;
+	}
+	
+	public static List<Integer> getDependencies(GroundedAction action, Workflow workflow) {
+		State compareState = workflow.getEndState();
+		List<Integer> dependencies = new ArrayList<Integer>();
+		List<Node> ready = workflow.getReadyNodes();
+		Node newNode = new Node(workflow.size(), action);
+		
+		for (Node node : ready) {
+			Workflow sorted = workflow.sort();
+			sorted.remove(node);
+			sorted.add(newNode);
+			sorted.add(node);
+			State state = sorted.getEndState();
+			if (!state.equals(compareState)) {
+				dependencies.add(node.id);
+			}
+		}
+		return dependencies;
+	}
+	
+	public State getStartState() {
+		return this.startState;
+	}
+	
+	public State getEndState() {
+		State state = this.startState;
+		for (Node node : this) {
+			GroundedAction action = node.action;
+			if (!action.action.applicableInState(state, action.params)) {
+				return state;
+			}
+			state = action.executeIn(state);
+		}
+		
+		return state;
+	}
 	@Override
 	public Iterator<Node> iterator() {
 		return this.actions.iterator();
@@ -56,7 +134,8 @@ public class Workflow implements Iterable<Node> {
 		if (sortedNodes.size() != this.actions.size()) {
 			System.err.println("Sorting failed");
 		}
-		return new Workflow(new ArrayList<Node>(sortedNodes));
+		
+		return new Workflow(this.startState, new ArrayList<Node>(sortedNodes));
 	}
 	
 	public List<Node> getReadyNodes() {
@@ -77,6 +156,11 @@ public class Workflow implements Iterable<Node> {
 			}
 		}
 		return nodes;
+	}
+	
+	public void insert(int position, Node node) {
+		position = Math.min(this.actions.size(), position);
+		this.actions.set(position, node);
 	}
 	
 	public boolean remove(int id) {
@@ -118,11 +202,22 @@ public class Workflow implements Iterable<Node> {
 	
 	public static class Node {
 		private final int id;
+		private final GroundedAction action;
 		private int degree;
 		private final Set<Node> parents;
 		private final Set<Node> children;
+		
 		public Node(int id) {
 			this.id = id;
+			this.action = null;
+			this.degree = 0;
+			this.parents = new HashSet<Node>();
+			this.children = new HashSet<Node>();
+		}
+		
+		public Node(int id, GroundedAction action) {
+			this.id = id;
+			this.action = action;
 			this.degree = 0;
 			this.parents = new HashSet<Node>();
 			this.children = new HashSet<Node>();
