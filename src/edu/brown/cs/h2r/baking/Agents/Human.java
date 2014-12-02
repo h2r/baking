@@ -262,6 +262,7 @@ public class Human implements Agent {
 	public void buildAllSubdomains() {
 		this.allKitchenSubdomains = AgentHelper.generateAllRTDPPolicies(this.generalDomain, this.startingState, 
 				AgentHelper.recipes(generalDomain), Human.rewardFunction, Human.hashingFactory);
+		this.kitchenSubdomains = new ArrayList<KitchenSubdomain>(this.allKitchenSubdomains);
 	}
 	
 	public State getNewStartingState() {
