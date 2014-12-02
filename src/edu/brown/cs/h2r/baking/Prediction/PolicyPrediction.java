@@ -277,7 +277,7 @@ public class PolicyPrediction {
 		final StateHashFactory hashFactory = new NameDependentStateHashFactory((NameDependentStateHashFactory)hashingFactory);
 		final List<KitchenSubdomain> policyDomains = this.policies;
 		int numCores = Runtime.getRuntime().availableProcessors();
-		ExecutorService executor = Executors.newFixedThreadPool(1);
+		ExecutorService executor = Executors.newFixedThreadPool(numCores);
 		List<Future<Double>> futures  = new LinkedList<Future<Double>>();
 		this.nextPolicy = 0;
 		for (int i = 0; i < this.policies.size(); i++) {
