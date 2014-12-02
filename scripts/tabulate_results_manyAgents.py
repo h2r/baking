@@ -30,6 +30,8 @@ if len(argv) > 1:
 
         #Agent, Successes, Trials, Average reward, average successful reward
         for line in data_lines:
+            if len(line) != 5:
+		continue
             agent = line[0]
             if agent not in data.keys():
                 data[agent] = [[],[],[],[]]
