@@ -308,7 +308,7 @@ public class ManyAgentsSubgoals {
 			stateSequence.addAll(statePair);
 			actionSequence.addAll(actionPair);
 			
-			finished = human.isFinished(currentState);
+			finished = human.isSubgoalFinished(currentState);
 		}
 		
 		if (human.isSuccess(currentState)) {
@@ -331,7 +331,7 @@ public class ManyAgentsSubgoals {
 			
 			
 			//System.out.println("Trial: " + i);
-			human.chooseNewRecipe();
+			human.chooseNewSubdomain();
 			result.incrementResult(ManyAgentsSubgoals.evaluateHumanAlone(human, startingState));
 		}
 		return result;
@@ -449,9 +449,13 @@ public class ManyAgentsSubgoals {
 			//System.out.println("Agent: " + agent.getAgentName());
 		//Agent agent = agents.get(3);
 		
-			EvaluationResult result;
+		EvaluationResult result;
+		human.buildAllSubdomains();
+		humanAgents.put("solo", human);
+		
 		for (int i = 0; i < numTrials; i++) {
 			reset.setState(soloState);
+			human = humanAgents.get("solo");
 			System.out.println("solo" + ", " +  ManyAgentsSubgoals.evaluateHuman(generalDomain, human, 1).toString());
 			
 			Collections.shuffle(agents);
