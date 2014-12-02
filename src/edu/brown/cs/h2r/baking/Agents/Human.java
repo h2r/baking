@@ -110,11 +110,12 @@ public class Human implements Agent {
 		return (this.currentSubgoal == null) ? "" : this.currentSubgoal.toString();
 	}
 	
-	public void chooseNewSubdomain() {
+	public State chooseNewSubdomain() {
 		Random random = new Random();
 		int choice = random.nextInt(this.allKitchenSubdomains.size());
 		this.currentSubgoal = this.allKitchenSubdomains.get(choice);
 		this.currentRecipe = this.currentSubgoal.getRecipe();
+		return this.currentSubgoal.getStartState();
 	}
 	
 	private void chooseNewSubgoal(State state) {

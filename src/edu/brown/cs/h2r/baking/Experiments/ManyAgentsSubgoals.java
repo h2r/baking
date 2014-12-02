@@ -171,7 +171,7 @@ public class ManyAgentsSubgoals {
 		stateSequence.add(currentState);
 		List<State> statePair = new ArrayList<State>();
 		List<AbstractGroundedAction> actionPair = new ArrayList<AbstractGroundedAction>();
-		human.chooseNewSubdomain();
+		currentState = human.chooseNewSubdomain();
 		
 		Human otherHuman = null;
 		
@@ -317,7 +317,7 @@ public class ManyAgentsSubgoals {
 			//System.err.println("Recipe was a failure");
 		}
 		double score = human.getCostActions(actionSequence, stateSequence);
-		return new EvaluationResult(score, human.isSuccess(currentState));
+		return new EvaluationResult(score, human.isSubgoalFinished(currentState));
 	}
 	
 	private static EvaluationResult evaluateHuman(Domain generalDomain, Human human, int numTrials) {
@@ -331,7 +331,7 @@ public class ManyAgentsSubgoals {
 			
 			
 			//System.out.println("Trial: " + i);
-			human.chooseNewSubdomain();
+			startingState = human.chooseNewSubdomain();
 			result.incrementResult(ManyAgentsSubgoals.evaluateHumanAlone(human, startingState));
 		}
 		return result;
@@ -450,7 +450,10 @@ public class ManyAgentsSubgoals {
 		//Agent agent = agents.get(3);
 		
 		EvaluationResult result;
+		human.setInitialState(soloState);
+		reset.setState(soloState);
 		human.buildAllSubdomains();
+		
 		humanAgents.put("solo", human);
 		
 		for (int i = 0; i < numTrials; i++) {
