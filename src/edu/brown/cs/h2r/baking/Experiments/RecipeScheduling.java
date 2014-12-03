@@ -143,16 +143,17 @@ public class RecipeScheduling {
 		return new State(objects);
 	}
 	
-	public static Map<String, Map<Workflow.Node, Double>> buildActionTimeLookup(Workflow workflow, int numAgents) {
+	public static Map<String, Map<Workflow.Node, Double>> buildActionTimeLookup(Workflow workflow, int numAgents, List<Double> factors) {
 		Map<String, Map<Workflow.Node, Double>> actionTimeLookup = new HashMap<String, Map<Workflow.Node, Double>>();
 		
 		Random random = new Random();
 		
 		for (int i = 0; i < numAgents; i++) {
 			String id = Integer.toString(i);
+			Double factor = factors.get(i);
 			Map<Workflow.Node, Double> times = new HashMap<Workflow.Node, Double>();
 			for (Workflow.Node node : workflow) {
-				times.put(node, random.nextDouble());
+				times.put(node, factor * random.nextDouble());
 			}
 			actionTimeLookup.put(id, times);
 		}
@@ -231,21 +232,30 @@ public class RecipeScheduling {
 			List<GroundedAction> actionList = AgentHelper.generateRecipeActionSequence(state, policyDomains);
 			actionLists.put(recipe.toString(), actionList);
 		}
+		Map<String, List<Double>> factorLookup = new HashMap<String, List<Double>>();
+		factorLookup.put("same", Arrays.asList(1.0, 1.0));
+		factorLookup.put("slow", Arrays.asList(0.5, 2.0));
+		factorLookup.put("fast", Arrays.asList(2.0, 0.5));
 		
 		
 		for (int i = 0; i < numTries; i++) {
 			double sum = 0.0;
+			for (Map.Entry<String, List<Double>> factorEntry : factorLookup.entrySet()) {
+				
+			
 			Collections.shuffle(schedulers);
 			
-			for (Map.Entry<String, List<GroundedAction>> entry : actionLists.entrySet()) {
-				for (Scheduler scheduler : schedulers) {
+				for (Map.Entry<String, List<GroundedAction>> entry : actionLists.entrySet()) {
 					List<GroundedAction> actionList = entry.getValue();
 					Workflow workflow = Workflow.buildWorkflow(state, actionList);
-					Map<String, Map<Workflow.Node, Double>> actionTimeLookup = RecipeScheduling.buildActionTimeLookup(workflow, 2);
+					Map<String, Map<Workflow.Node, Double>> actionTimeLookup = RecipeScheduling.buildActionTimeLookup(workflow, 2, factorEntry.getValue());
 					
-					List<AssignedWorkflow> assignments = scheduler.schedule(workflow, actionTimeLookup);
-					double time = SchedulingHelper.computeSequenceTime(assignments);
-					System.out.println(scheduler.getClass().getSimpleName() + ", " + entry.getKey() + ", " + time);
+					for (Scheduler scheduler : schedulers) {
+						
+						List<AssignedWorkflow> assignments = scheduler.schedule(workflow, actionTimeLookup);
+						double time = SchedulingHelper.computeSequenceTime(assignments);
+						System.out.println(scheduler.getClass().getSimpleName() + ", " + factorEntry.getKey() + ", " + entry.getKey() + ", " + time);
+					}
 				}
 			}
 		}
