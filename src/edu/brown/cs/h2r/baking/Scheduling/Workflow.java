@@ -42,6 +42,7 @@ public class Workflow implements Iterable<Node> {
 				System.err.println("Cycle detected in this graph, that shouldn't happen");
 				return false;
 			}
+			
 		}
 		return result;
 	}
@@ -54,6 +55,7 @@ public class Workflow implements Iterable<Node> {
 			GroundedAction action = actions.get(i);
 			Node node = new Node(i, action);
 			List<Integer> dependencies = Workflow.getDependencies(action, workflow);
+			
 			workflow.add(node, dependencies);
 		}
 		
@@ -61,16 +63,17 @@ public class Workflow implements Iterable<Node> {
 	}
 	
 	public static List<Integer> getDependencies(GroundedAction action, Workflow workflow) {
+		
 		State compareState = workflow.getEndState();
+		compareState = action.executeIn(compareState);
 		List<Integer> dependencies = new ArrayList<Integer>();
 		List<Node> ready = workflow.getReadyNodes();
 		Node newNode = new Node(workflow.size(), action);
 		
 		for (Node node : ready) {
 			Workflow sorted = workflow.sort();
-			sorted.remove(node);
 			sorted.add(newNode);
-			sorted.add(node);
+			sorted.swap(node, newNode);
 			State state = sorted.getEndState();
 			if (!state.equals(compareState)) {
 				dependencies.add(node.id);
@@ -86,6 +89,9 @@ public class Workflow implements Iterable<Node> {
 	public State getEndState() {
 		State state = this.startState;
 		for (Node node : this) {
+			if (node == null) {
+				continue;
+			}
 			GroundedAction action = node.action;
 			if (!action.action.applicableInState(state, action.params)) {
 				return state;
@@ -163,6 +169,16 @@ public class Workflow implements Iterable<Node> {
 		this.actions.set(position, node);
 	}
 	
+	public void swap(Node node1, Node node2) {
+		int index1 = this.actions.indexOf(node1);
+		int index2 = this.actions.indexOf(node2);
+		if (index1 < 0 || index2 < 0) {
+			return;
+		}
+		this.actions.set(index1, node2);
+		this.actions.set(index2, node1);
+	}
+	
 	public boolean remove(int id) {
 		Node node = this.actions.get(id);
 		if (node == null) {
@@ -177,8 +193,7 @@ public class Workflow implements Iterable<Node> {
 		}
 		
 		node.pop();
-		this.actions.set(node.id, null);
-		return true;
+		return this.actions.remove(node);
 	}
 	
 	public Set<Node> remove(Set<Node> toRemove) {
@@ -232,7 +247,7 @@ public class Workflow implements Iterable<Node> {
 		}
 		
 		public boolean isAvailable(Set<Node> accomplishedNodes) {
-			return this.children.isEmpty() || accomplishedNodes.containsAll(this.children);
+			return this.parents.isEmpty() || accomplishedNodes.containsAll(this.parents);
 		}
 		
 		private int maxDegree() {
@@ -294,10 +309,12 @@ public class Workflow implements Iterable<Node> {
 		}
 		
 		public void pop() {
-			for (Node parent : this.parents) {
+			List<Node> parents = new ArrayList<Node>(this.parents);
+			for (Node parent : parents) {
 				parent.removeChild(this);
 			}
-			for (Node child : this.children) {
+			List<Node> children = new ArrayList<Node>(this.children);
+			for (Node child : children) {
 				child.removeParent(this);
 			}
 		}

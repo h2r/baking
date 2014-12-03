@@ -29,14 +29,14 @@ public class BellmanAffordanceRTDP extends AffordanceRTDP {
 	public BellmanAffordanceRTDP(Domain domain, RewardFunction rf, TerminalFunction tf, 
 			double gamma, StateHashFactory hashingFactory, double vInit, int numRollouts, 
 			double maxDelta, int maxDepth, AffordancesController affController) {
-		super(domain, rf, tf, gamma, hashingFactory, vInit, numRollouts, maxDelta, maxDepth, affController, 0);
+		super(domain, rf, tf, gamma, hashingFactory, vInit, numRollouts, maxDelta, maxDepth, affController, 10);
 		this.affController = affController;
 	}
 	
 	@Override
 	// Runs a BellmanUpdate, but also uses affordances to trim the action space, which will allow
 	// the planner to plan optimally!
-	protected double performBellmanUpdateOn(StateHashTuple sh) {
+	public double performAffordanceBellmanUpdateOn(StateHashTuple sh, AffordancesController affController) {
 		if(this.tf.isTerminal(sh.getState())){
 			//terminal states always have a state value of 0
 			valueFunction.put(sh, 0.);
@@ -62,13 +62,18 @@ public class BellmanAffordanceRTDP extends AffordanceRTDP {
 		}
 		
 		
+		
 		// Have affordances prune away all unnecessary actions
 		List<QValue> affFilteredQValues = new ArrayList<QValue>();
 		List<AbstractGroundedAction> qActions = new ArrayList<AbstractGroundedAction>();
-		for(QValue q : allQValues){
-			qActions.add(q.a);
+		//for(QValue q : allQValues){
+		//	qActions.add(q.a);
+		//}
+		qActions = this.affController.getPrunedActionsForState(this.actions, sh.getState());
+		
+		if (qActions.size() == 0) {
+			System.err.println("Q Values size is 0");
 		}
-		qActions = this.affController.getPrunedActionsForState(sh.getState());
 		
 		for(QValue q : allQValues){
 			if(qActions.contains(q.a)){
@@ -84,8 +89,10 @@ public class BellmanAffordanceRTDP extends AffordanceRTDP {
 		// Find max Q values
 		List <QValue> maxActions = new ArrayList<QValue>();
 		maxActions.add(affFilteredQValues.get(0));
+		double minQ = 0;
 		for(int i = 0; i < affFilteredQValues.size(); i++){
 			QValue q = affFilteredQValues.get(i);
+			minQ = Math.min(minQ, q.q);
 			if(q.q == maxQ){
 				maxActions.add(q);
 			}
@@ -95,6 +102,7 @@ public class BellmanAffordanceRTDP extends AffordanceRTDP {
 				maxQ = q.q;
 			}
 		}
+		//System.out.println("min q " + minQ);
 	
 		// perform bellman update
 		valueFunction.put(sh, maxQ);
