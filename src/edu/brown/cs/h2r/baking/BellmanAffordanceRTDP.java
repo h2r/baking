@@ -29,7 +29,7 @@ public class BellmanAffordanceRTDP extends AffordanceRTDP {
 	public BellmanAffordanceRTDP(Domain domain, RewardFunction rf, TerminalFunction tf, 
 			double gamma, StateHashFactory hashingFactory, double vInit, int numRollouts, 
 			double maxDelta, int maxDepth, AffordancesController affController) {
-		super(domain, rf, tf, gamma, hashingFactory, vInit, numRollouts, maxDelta, maxDepth, affController, 10);
+		super(domain, rf, tf, gamma, hashingFactory, vInit, numRollouts, maxDelta, maxDepth, affController, 0);
 		this.affController = affController;
 	}
 	
@@ -43,68 +43,36 @@ public class BellmanAffordanceRTDP extends AffordanceRTDP {
 			return 0;
 		}
 		
-		
-		double maxQ = Double.NEGATIVE_INFINITY;
-		
 		Map<String,String> matching = null;
 		StateHashTuple indexSH = mapToStateIndex.get(sh);
 		if(this.containsParameterizedActions && !this.domain.isObjectIdentifierDependent()){
 			matching = sh.getState().getObjectMatchingTo(indexSH.getState(), false);
 		}
 		
-		// get all actions and Q values
-		List <QValue> allQValues = new ArrayList<QValue>();
-		for(Action a : actions){
-			List<GroundedAction> applications = a.getAllApplicableGroundedActions(sh.getState());
-			for(GroundedAction ga : applications){
-				allQValues.add(this.getQ(sh, ga, matching));
-			}
-		}
-		
-		
-		
 		// Have affordances prune away all unnecessary actions
 		List<QValue> affFilteredQValues = new ArrayList<QValue>();
-		List<AbstractGroundedAction> qActions = new ArrayList<AbstractGroundedAction>();
-		//for(QValue q : allQValues){
-		//	qActions.add(q.a);
-		//}
-		qActions = this.affController.getPrunedActionsForState(this.actions, sh.getState());
+		List<AbstractGroundedAction> qActions =  
+				this.affController.getPrunedActionsForState(this.actions, sh.getState());
 		
-		if (qActions.size() == 0) {
-			System.err.println("Q Values size is 0");
-		}
-		
-		for(QValue q : allQValues){
-			if(qActions.contains(q.a)){
-				affFilteredQValues.add(q);
-			}
+		for (AbstractGroundedAction action : qActions) {
+			affFilteredQValues.add(this.getQ(sh,(GroundedAction)action, matching));
 		}
 		
 		// If Affordances prune away all actions, back off to full action set 
 		if (affFilteredQValues.isEmpty()) {
-			affFilteredQValues = allQValues;
+			for(Action a : actions){
+				List<GroundedAction> applications = a.getAllApplicableGroundedActions(sh.getState());
+				for(GroundedAction ga : applications){
+					affFilteredQValues.add(this.getQ(sh, ga, matching));
+				}
+			}
 		}
 
 		// Find max Q values
-		List <QValue> maxActions = new ArrayList<QValue>();
-		maxActions.add(affFilteredQValues.get(0));
-		double minQ = 0;
+		double maxQ = Double.NEGATIVE_INFINITY;
 		for(int i = 0; i < affFilteredQValues.size(); i++){
-			QValue q = affFilteredQValues.get(i);
-			minQ = Math.min(minQ, q.q);
-			if(q.q == maxQ){
-				maxActions.add(q);
-			}
-			else if(q.q > maxQ){
-				maxActions.clear();
-				maxActions.add(q);
-				maxQ = q.q;
-			}
+			maxQ = Math.max(maxQ, affFilteredQValues.get(i).q);
 		}
-		//System.out.println("min q " + minQ);
-	
-		// perform bellman update
 		valueFunction.put(sh, maxQ);
 	
 		return maxQ;

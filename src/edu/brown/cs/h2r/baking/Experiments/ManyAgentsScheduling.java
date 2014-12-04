@@ -224,7 +224,7 @@ public class ManyAgentsScheduling {
 			actionSequence.addAll(actionPair);
 			boolean isRepeating = checkIfRepeating(stateSequence);
 			isSuccess = human.isSuccess(currentState);
-			double reward = human.getCostActions(actionSequence, stateSequence);
+			double reward = AgentHelper.computeSequenceTime(actionSequence);
 			finished = isSuccess || reward > 1000.0;
 			
 			/*if (human.isSubgoalFinished(currentState)) {
@@ -249,7 +249,7 @@ public class ManyAgentsScheduling {
 				break;
 			}
 		}
-		double reward = human.getCostActions(actionSequence, stateSequence);
+		double reward = AgentHelper.computeCompleteSequenceTime(actionSequence);
 		return new EvaluationResult(reward, isSuccess);
 	}
 	
@@ -405,8 +405,6 @@ public class ManyAgentsScheduling {
 	}
 	
 	public static Map<Workflow.Node, Double> buildActionTimeLookup(Workflow workflow, double factor) {
-		Map<String, Map<Workflow.Node, Double>> actionTimeLookup = new HashMap<String, Map<Workflow.Node, Double>>();
-		
 		Random random = new Random();
 		Map<Workflow.Node, Double> times = new HashMap<Workflow.Node, Double>();
 		
@@ -468,6 +466,7 @@ public class ManyAgentsScheduling {
 			System.out.println("solo" + ", " +  ManyAgentsScheduling.evaluateHuman(generalDomain, human, 1).toString());
 			
 			Collections.shuffle(agents);
+			
 			for (Agent agent : agents) {
 			
 				human = new Human(generalDomain);

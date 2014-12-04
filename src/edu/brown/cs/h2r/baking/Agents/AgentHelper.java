@@ -2,8 +2,11 @@ package edu.brown.cs.h2r.baking.Agents;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import burlap.behavior.affordances.AffordancesController;
@@ -11,16 +14,13 @@ import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.Policy;
 import burlap.behavior.singleagent.planning.QComputablePlanner;
 import burlap.behavior.singleagent.planning.commonpolicies.AffordanceGreedyQPolicy;
-import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
 import burlap.behavior.singleagent.planning.stochastic.rtdp.AffordanceRTDP;
-import burlap.behavior.singleagent.planning.stochastic.rtdp.RTDP;
 import burlap.behavior.statehashing.StateHashFactory;
+import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.Domain;
-import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
-import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.SADomain;
@@ -31,25 +31,48 @@ import edu.brown.cs.h2r.baking.RecipeAgentSpecificMakeSpanRewardFunction;
 import edu.brown.cs.h2r.baking.RecipeTerminalFunction;
 import edu.brown.cs.h2r.baking.Experiments.ExperimentHelper;
 import edu.brown.cs.h2r.baking.Experiments.KitchenSubdomain;
-import edu.brown.cs.h2r.baking.Experiments.SubgoalDetermination;
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
-import edu.brown.cs.h2r.baking.Prediction.PolicyPrediction;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
-import edu.brown.cs.h2r.baking.PropositionalFunctions.ContainersCleaned;
-import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
 import edu.brown.cs.h2r.baking.Recipes.Brownies;
 import edu.brown.cs.h2r.baking.Recipes.PeanutButterCookies;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
-import edu.brown.cs.h2r.baking.actions.BakingAction;
-import edu.brown.cs.h2r.baking.actions.GreaseAction;
-import edu.brown.cs.h2r.baking.actions.MixAction;
-import edu.brown.cs.h2r.baking.actions.MoveAction;
-import edu.brown.cs.h2r.baking.actions.PourAction;
-import edu.brown.cs.h2r.baking.actions.SwitchAction;
-import edu.brown.cs.h2r.baking.actions.UseAction;
 
 public class AgentHelper {
+	public static final Map<String, Map<GroundedAction, Double>> actionTimes = new HashMap<String, Map<GroundedAction, Double>>();
+	private static final Map<String, Double> agentFactors = new HashMap<String, Double>();
+	private static final Random random = new Random();
 	
+	public static void setAgentFactors(Map<String, Double> factors) {
+		AgentHelper.agentFactors.putAll(factors);
+	}
+	
+	public static double getActionTime(GroundedAction action) {
+		String agentName = (action.params[0].equals("human")) ? "human" : "other";
+		Map<GroundedAction, Double> times = AgentHelper.actionTimes.get(agentName);
+		if (times == null) {
+			times = new HashMap<GroundedAction, Double>();
+			AgentHelper.actionTimes.put(agentName, times);
+		}
+		Double time = times.get(action);
+		if (time == null) {
+			double factor = AgentHelper.agentFactors.get(agentName);
+			time = factor * AgentHelper.random.nextDouble();
+			times.put(action, time);
+		}
+		return times.get(action);
+	}
+	
+	public static double computeSequenceTime(List<AbstractGroundedAction> actions) {
+		double time = 0.0;
+		for (AbstractGroundedAction action : actions) {
+			time += AgentHelper.getActionTime((GroundedAction)action);
+		}
+		return time;	
+	}
+	
+	public static double computeCompleteSequenceTime(List<AbstractGroundedAction> actions) {
+		return 0.0;
+	}
 	public static List<Recipe> recipes(Domain domain) {
 		return Arrays.asList(
 				(Recipe)Brownies.getRecipe(domain)/*, 
@@ -162,7 +185,7 @@ public class AgentHelper {
 		// RTDP planner that also uses affordances to trim action space during the Bellman update
 		planner = new BellmanAffordanceRTDP(domain, rf, recipeTerminalFunction, gamma, hashingFactory, vInit, 
 				numRollouts, maxDelta, maxDepth, affController);
-		planner.toggleDebugPrinting(false);
+		planner.toggleDebugPrinting(true);
 		planner.planFromState(currentState);
 		
 		// Create a Q-greedy policy from the planner

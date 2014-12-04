@@ -8,7 +8,7 @@ import java.util.Set;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
-import edu.brown.cs.h2r.baking.IngredientRecipe;
+import burlap.oomdp.core.StateBuilder;
 import edu.brown.cs.h2r.baking.Knowledgebase.Knowledgebase;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
@@ -152,19 +152,23 @@ public class PourAction extends BakingAction {
 	
 	private static State pourIntoWorking(State state, ObjectInstance pouringContainer, 
 			ObjectInstance receivingContainer) {
+		StateBuilder stateBuilder = new StateBuilder(state);
 		Set<String> ingredients = ContainerFactory.getContentNames(pouringContainer);
 		ObjectInstance newReceiving = ContainerFactory.addIngredients(receivingContainer, ingredients);
-		state = state.replaceObject(receivingContainer, newReceiving);
+		stateBuilder.replace(receivingContainer, newReceiving);
+		//state = state.replaceObject(receivingContainer, newReceiving);
 		ObjectInstance newPouring = ContainerFactory.removeContents(pouringContainer);
-		state = state.replaceObject(pouringContainer, newPouring);
+		stateBuilder.replace(pouringContainer, newPouring);
+		//state = state.replaceObject(pouringContainer, newPouring);
 		
 		for (String ingredient : ingredients) {
 			ObjectInstance ingredientInstance = state.getObject(ingredient);
 			ObjectInstance newInstance = IngredientFactory.changeIngredientContainer(ingredientInstance, receivingContainer.getName());
-			state = state.replaceObject(ingredientInstance, newInstance);
+			//state = state.replaceObject(ingredientInstance, newInstance);
+			stateBuilder.replace(ingredientInstance, newInstance);
 		}
 		
-		return state;
+		return stateBuilder.toState();
 		
 		
 	}

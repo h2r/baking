@@ -230,6 +230,9 @@ public class RecipeScheduling {
 		for (Recipe recipe : recipes) {
 			List<KitchenSubdomain> policyDomains = AgentHelper.generateRTDPPolicies(recipe, domain, state, rewardFunction, hashingFactory);
 			List<GroundedAction> actionList = AgentHelper.generateRecipeActionSequence(state, policyDomains);
+			for (GroundedAction action : actionList) {
+				System.out.println(action.toString());
+			}
 			actionLists.put(recipe.toString(), actionList);
 		}
 		Map<String, List<Double>> factorLookup = new HashMap<String, List<Double>>();
