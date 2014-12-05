@@ -49,8 +49,7 @@ public class BasicKitchen implements DomainGenerator {
 	
 	Knowledgebase knowledgebase;
 	
-	public BasicKitchen(Recipe recipe) {
-		this.recipe = recipe;
+	public BasicKitchen() {
 		this.stateHashFactory = new NameDependentStateHashFactory();
 		knowledgebase = Knowledgebase.getKnowledgebase(domain);
 		
@@ -62,6 +61,10 @@ public class BasicKitchen implements DomainGenerator {
 	
 	public String getCurrentStateString() {
 		return this.parser.stateToString(this.currentState);
+	}
+	
+	public void setRecipe(Recipe recipe) {
+		this.recipe = recipe;
 	}
 	
 	public Recipe getRecipe() {
@@ -96,49 +99,49 @@ public class BasicKitchen implements DomainGenerator {
 		
 		List<String> mixingContainers = Arrays.asList("Large_Bowl");
 		for (String container : mixingContainers) { 
-			state.addObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, SpaceFactory.SPACE_COUNTER, null));
+			state = state.appendObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, SpaceFactory.SPACE_COUNTER, stateHashFactory.getObjectHashFactory()));
 		}
 		
 		List<String> heatingContainers = Arrays.asList("Large_Pot", "Large_Saucepan");
 		for (String container : heatingContainers) { 
-			state.addObject(ContainerFactory.getNewHeatingContainerObjectInstance(domain, container, null, SpaceFactory.SPACE_COUNTER, null));
+			state = state.appendObject(ContainerFactory.getNewHeatingContainerObjectInstance(domain, container, null, SpaceFactory.SPACE_COUNTER, stateHashFactory.getObjectHashFactory()));
 		}
 		
 		List<String> bakingContainers = Arrays.asList("Baking_Dish");
 		for (String container : bakingContainers) { 
-			state.addObject(ContainerFactory.getNewBakingContainerObjectInstance(domain, container, null, SpaceFactory.SPACE_COUNTER, null));
+			state = state.appendObject(ContainerFactory.getNewBakingContainerObjectInstance(domain, container, null, SpaceFactory.SPACE_COUNTER, stateHashFactory.getObjectHashFactory()));
 		}
 		
 		List<String> containers = new ArrayList<String>();
 		containers.addAll(mixingContainers);
 		containers.addAll(heatingContainers);
 		containers.addAll(bakingContainers);
-		//state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, SpaceFactory.SPACE_COUNTER, containers, "human"));
+		state = state.appendObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, SpaceFactory.SPACE_COUNTER, containers, "human",  stateHashFactory.getObjectHashFactory()));
 		//state.addObject(SpaceFactory.getNewObjectInstance(domain, "shelf", SpaceFactory.NO_ATTRIBUTES, null, ""));
 		
 		ObjectClass containerClass = domain.getObjectClass(ContainerFactory.ClassName);		
 		ObjectInstance shelfSpace = state.getObject(SpaceFactory.SPACE_COUNTER);
 		
 		List<ObjectInstance> ingredientInstances = 
-				knowledgebase.getRecipeObjectInstanceList(domain, null, recipe);
+				knowledgebase.getRecipeObjectInstanceList(domain, stateHashFactory.getObjectHashFactory(), recipe);
 		
 		List<ObjectInstance> ingredientsAndContainers = 
 				Recipe.getContainersAndIngredients(containerClass, ingredientInstances, shelfSpace.getName());
 		
 		for (ObjectInstance ingredientInstance : ingredientInstances) {
 			if (state.getObject(ingredientInstance.getName()) == null) {
-				state.addObject(ingredientInstance);
+				state = state.appendObject(ingredientInstance);
 			}
 		}
 		
 		for (ObjectInstance containerInstance : ingredientsAndContainers) {
 			if (state.getObject(containerInstance.getName()) == null) {
 				ContainerFactory.changeContainerSpace(containerInstance, shelfSpace.getName());
-				state.addObject(containerInstance);
+				state = state.appendObject(containerInstance);
 			}
 		}
 		
-		state.addObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human", null));
+		state = state.appendObject(AgentFactory.getNewHumanAgentObjectInstance(domain, "human", stateHashFactory.getObjectHashFactory()));
 		//state.addObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "shelf", null, null));
 		
 		return state;
@@ -192,7 +195,7 @@ public class BasicKitchen implements DomainGenerator {
 		}
 
 		this.currentState = action.performAction(this.currentState, params);
-		this.removeEmptyIngredientContainers(this.currentState);
+		this.currentState = this.removeEmptyIngredientContainers(this.currentState);
 		StateHashTuple newTuple = this.stateHashFactory.hashState(this.currentState);
 		
 		if (previousTuple.hashCode() == newTuple.hashCode()) {
@@ -207,14 +210,15 @@ public class BasicKitchen implements DomainGenerator {
 		return BakingActionResult.success();
 	}
 	
-	protected void removeEmptyIngredientContainers(State state) {
+	protected State removeEmptyIngredientContainers(State state) {
 		List<ObjectInstance> containers = new ArrayList<ObjectInstance>(state.getObjectsOfTrueClass(ContainerFactory.ClassName));
 		for (ObjectInstance container : containers) {
 			ObjectInstance currentContainer = state.getObject(container.getName());
 			if (ContainerFactory.getContentNames(currentContainer).size() == 0) {
-				state.removeObject(currentContainer);
+				state = state.remove(currentContainer);
 			}
 		}
+		return state;
 	}
 	
 	public boolean getIsSuccess() {
