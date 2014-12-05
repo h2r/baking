@@ -228,12 +228,15 @@ public class RecipeScheduling {
 		
 		Map<String, List<GroundedAction>> actionLists = new HashMap<String, List<GroundedAction>>();
 		for (Recipe recipe : recipes) {
-			List<KitchenSubdomain> policyDomains = AgentHelper.generateRTDPPolicies(recipe, domain, state, rewardFunction, hashingFactory);
-			List<GroundedAction> actionList = AgentHelper.generateRecipeActionSequence(state, policyDomains);
+			while (true) {
+				List<KitchenSubdomain> policyDomains = AgentHelper.generateRTDPPolicies(recipe, domain, state, rewardFunction, hashingFactory);
+				List<GroundedAction> actionList = AgentHelper.generateRecipeActionSequence(state, policyDomains);
+			
 			for (GroundedAction action : actionList) {
 				System.out.println(action.toString());
 			}
 			actionLists.put(recipe.toString(), actionList);
+			}
 		}
 		Map<String, List<Double>> factorLookup = new HashMap<String, List<Double>>();
 		factorLookup.put("same", Arrays.asList(1.0, 1.0));

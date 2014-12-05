@@ -8,7 +8,7 @@ import java.util.Set;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
-import edu.brown.cs.h2r.baking.IngredientRecipe;
+import burlap.oomdp.core.StateBuilder;
 import edu.brown.cs.h2r.baking.Knowledgebase.Knowledgebase;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
@@ -66,14 +66,14 @@ public class MoveAction extends BakingAction {
 	
 	@Override
 	protected State performActionHelper(State state, String[] params) {
-		super.performActionHelper(state, params);
+		StateBuilder builder = new StateBuilder(state);
+		this.addAgentToOccupiedList(state, builder, params[0]);
 		ObjectInstance containerInstance = state.getObject(params[1]);
 		ObjectInstance spaceInstance = state.getObject(params[2]);
-		state = move (state, containerInstance, spaceInstance);
-		return state;
+		return move (state, builder, containerInstance, spaceInstance);
 	}
 	
-	private static State move(State state, ObjectInstance containerInstance, ObjectInstance spaceInstance) {
+	private static State move(State state, StateBuilder builder, ObjectInstance containerInstance, ObjectInstance spaceInstance) {
 		String oldSpace = ContainerFactory.getSpaceName(containerInstance);
 		ObjectInstance oldSpaceObject = state.getObject(oldSpace);
 		
@@ -81,22 +81,22 @@ public class MoveAction extends BakingAction {
 		ObjectInstance newSpace = SpaceFactory.addContainer(spaceInstance, containerInstance);
 		ObjectInstance newOldSpace = SpaceFactory.removeContainer(oldSpaceObject, containerInstance);
 		
-		state = state.replaceAllObjects(
+		builder.replaceAll(
 				Arrays.asList(containerInstance, spaceInstance, oldSpaceObject),
 				Arrays.asList(newContainer, newSpace, newOldSpace));
 		
 		if (SpaceFactory.getOnOff(spaceInstance)) {
 			if (SpaceFactory.isBaking(spaceInstance)) {
-				state = MoveAction.movingToBakingSpace(state, spaceInstance, containerInstance);
+				builder = MoveAction.movingToBakingSpace(state, builder, spaceInstance, containerInstance);
 			}
 			if (SpaceFactory.isHeating(spaceInstance)) {
-				state = MoveAction.movingToHeatingSpace(state, spaceInstance, containerInstance);
+				return MoveAction.movingToHeatingSpace(builder.toState(), spaceInstance, containerInstance);
 			}
 		}
-		return state;
+		return builder.toState();
 	}
 	
-	private static State movingToBakingSpace(State state, ObjectInstance spaceInstance, ObjectInstance containerInstance) {
+	private static StateBuilder movingToBakingSpace(State state, StateBuilder builder, ObjectInstance spaceInstance, ObjectInstance containerInstance) {
 		if (!ContainerFactory.isEmptyContainer(containerInstance) && ContainerFactory.isBakingContainer(containerInstance)) {
 			Set<String> names = ContainerFactory.getContentNames(containerInstance);
 			List<ObjectInstance> newObjects = new ArrayList<ObjectInstance>();
@@ -110,9 +110,9 @@ public class MoveAction extends BakingAction {
 				newObjects.add(newIng);
 			}
 			
-			state = state.replaceAllObjects(oldObjects, newObjects);
+			builder.replaceAll(oldObjects, newObjects);
 		}
-		return state;
+		return builder;
 	}
 	
 	private static State movingToHeatingSpace(State state, ObjectInstance spaceInstance, ObjectInstance containerInstance) {

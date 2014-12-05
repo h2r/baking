@@ -12,6 +12,7 @@ import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
+import burlap.oomdp.core.StateBuilder;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.Knowledgebase.Knowledgebase;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
@@ -117,15 +118,16 @@ public class MixAction extends BakingAction {
 
 	@Override
 	protected State performActionHelper(State state, String[] params) {
-		super.performActionHelper(state, params);
+		StateBuilder builder = new StateBuilder(state);
+		this.addAgentToOccupiedList(state, builder, params[0]);
 		ObjectInstance containerInstance = state.getObject(params[1]);
 		ObjectInstance toolInstance = state.getObject(params[2]);
 		ObjectInstance newTool = ToolFactory.changeUsed(toolInstance);
 		state = state.replaceObject(toolInstance, newTool);
-		return this.mix(state, containerInstance, toolInstance);
+		return this.mix(state, builder, containerInstance, toolInstance);
 	}
 	
-	private State mix(State state, ObjectInstance container, ObjectInstance tool)
+	private State mix(State state, StateBuilder builder, ObjectInstance container, ObjectInstance tool)
 	{	
 		ObjectClass complexIngredientClass = this.domain.getObjectClass(IngredientFactory.ClassNameComplex);
 		Set<String> contents = ContainerFactory.getContentNames(container);
@@ -144,14 +146,14 @@ public class MixAction extends BakingAction {
 			if (newCombinations.size() > 1) {
 				System.err.println("This combination was found in more than one recipe, unsure how to resolve ambiguity");
 			}
-			return this.makeSwappedIngredient(state, domain, container, newCombinations, objects);
+			return this.makeSwappedIngredient(state, builder, domain, container, newCombinations, objects);
 		}
 		
-		return makeArbitraryIngredient(state, container,
+		return makeArbitraryIngredient(state, builder, container,
 				complexIngredientClass, contents, objects);
 	}
 
-	private State makeArbitraryIngredient(State state,
+	private State makeArbitraryIngredient(State state, StateBuilder builder,
 			ObjectInstance container, ObjectClass complexIngredientClass,
 			Set<String> contents, Set<ObjectInstance> objects) {
 		
@@ -215,7 +217,7 @@ public class MixAction extends BakingAction {
 	}
 	
 	
-	public State makeSwappedIngredient(State state, Domain domain, ObjectInstance container, 
+	public State makeSwappedIngredient(State state, StateBuilder builder, Domain domain, ObjectInstance container, 
 			List<IngredientRecipe> combinations, Collection<ObjectInstance> combinedIngredients) {
 		IngredientRecipe newIngredient = combinations.get(0);
 		
@@ -234,9 +236,9 @@ public class MixAction extends BakingAction {
 		}
 		ObjectInstance newContainer = ContainerFactory.removeContents(container);
 		newContainer = ContainerFactory.addIngredient(newContainer, newIng.getName());
-		state = state.replaceObject(container, newContainer);
-		state = state.removeAll(objectsToRemove);
-		state = state.appendAllObjects(hiddenCopies);
+		builder.replace(container, newContainer);
+		builder.removeAll(objectsToRemove);
+		builder.addAll(hiddenCopies);
 		
 		ContainerFactory.addIngredient(newContainer, newIng.getName());
 		newIng = IngredientFactory.changeIngredientContainer(newIng, container.getName());
@@ -247,13 +249,12 @@ public class MixAction extends BakingAction {
 			newIng = IngredientFactory.bakeIngredient(newIng);
 		} else if (SpaceFactory.isHeating(receivingSpace) && SpaceFactory.getOnOff(receivingSpace)) {
 			//IngredientFactory.heatIngredient(newIng);
-			Knowledgebase.heatContainer(state, container);
+			state = Knowledgebase.heatContainer(builder.toState(), container);
+			builder = new StateBuilder(state);
 		}
+		builder.add(newIng);
 		
-		state = state.appendObject(newIng);
-		
-		
-		return state;
+		return builder.toState();
 	}
 	
 	/*

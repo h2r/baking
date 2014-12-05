@@ -101,13 +101,14 @@ public class PourAction extends BakingAction {
 	
 	@Override
 	protected State performActionHelper(State state, String[] params) {
-		super.performActionHelper(state, params);
+		StateBuilder builder = new StateBuilder(state);
+		this.addAgentToOccupiedList(state, builder, params[0]);
 		ObjectInstance pouringContainer = state.getObject(params[1]);
 		ObjectInstance receivingContainer = state.getObject(params[2]);
-		return pour(state, pouringContainer, receivingContainer);
+		return pour(state, builder, pouringContainer, receivingContainer);
 	}
 	
-	private State pour(State state, ObjectInstance pouringContainer, ObjectInstance receivingContainer)
+	private State pour(State state, StateBuilder builder, ObjectInstance pouringContainer, ObjectInstance receivingContainer)
 	{
 		State newState = state;
 		ObjectInstance receivingSpace = state.getObject(ContainerFactory.getSpaceName(receivingContainer));
@@ -115,7 +116,7 @@ public class PourAction extends BakingAction {
 		if (SpaceFactory.isHeating(receivingSpace)) {
 			newState = PourAction.pourIntoHeating(state, pouringContainer, receivingContainer, receivingSpace);
 		} else {
-			newState = PourAction.pourIntoWorking(state, pouringContainer, receivingContainer);
+			newState = PourAction.pourIntoWorking(state, builder, pouringContainer, receivingContainer);
 		}
 		
 		//if (ContainerFactory.isPouringContainer(pouringContainer) && !ContainerFactory.isReceivingContainer(pouringContainer)) {
@@ -150,7 +151,7 @@ public class PourAction extends BakingAction {
 		return state;
 	}
 	
-	private static State pourIntoWorking(State state, ObjectInstance pouringContainer, 
+	private static State pourIntoWorking(State state, StateBuilder builder, ObjectInstance pouringContainer, 
 			ObjectInstance receivingContainer) {
 		StateBuilder stateBuilder = new StateBuilder(state);
 		Set<String> ingredients = ContainerFactory.getContentNames(pouringContainer);

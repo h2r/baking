@@ -8,6 +8,7 @@ import java.util.Set;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
+import burlap.oomdp.core.StateBuilder;
 import burlap.oomdp.core.TransitionProbability;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.ActionObserver;
@@ -156,7 +157,7 @@ public abstract class BakingAction extends Action {
 	}
 	@Override
 	protected State performActionHelper(State state, String[] params) {
-		return this.addAgentToOccupiedList(state, params[0]);
+		return this.addAgentToOccupiedList(state, new StateBuilder(state), params[0]).toState();
 	}
 	
 	protected boolean canAgentGo(State state, String[] params) {
@@ -193,13 +194,13 @@ public abstract class BakingAction extends Action {
 		return true;
 	}
 	
-	protected State addAgentToOccupiedList(State state, String agentName) {
+	protected StateBuilder addAgentToOccupiedList(State state, StateBuilder stateBuilder, String agentName) {
 		List<ObjectInstance> makeSpanObjects = state.getObjectsOfTrueClass(MakeSpanFactory.ClassName);
 		if (!makeSpanObjects.isEmpty()) {
 			ObjectInstance newMakeSpan = MakeSpanFactory.occupyAgent(makeSpanObjects.get(0), agentName);
-			state = state.replaceObject(makeSpanObjects.get(0), newMakeSpan);
+			stateBuilder.replace(makeSpanObjects.get(0), newMakeSpan);
 		}		
-		return state;
+		return stateBuilder;
 	}
 	
 }
