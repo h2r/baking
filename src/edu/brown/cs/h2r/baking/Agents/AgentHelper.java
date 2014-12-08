@@ -185,7 +185,7 @@ public class AgentHelper {
 		// RTDP planner that also uses affordances to trim action space during the Bellman update
 		planner = new BellmanAffordanceRTDP(domain, rf, recipeTerminalFunction, gamma, hashingFactory, vInit, 
 				numRollouts, maxDelta, maxDepth, affController);
-		planner.toggleDebugPrinting(true);
+		planner.toggleDebugPrinting(false);
 		planner.planFromState(currentState);
 		
 		// Create a Q-greedy policy from the planner
