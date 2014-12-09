@@ -77,8 +77,8 @@ public class SpaceFactory {
 	}
 	
 	public static ObjectInstance getNewObjectInstance(ObjectClass spaceClass, String name, 
-			int attributes, List<String> containers, String agent, ObjectHashFactory hashingFactory) {
-		ObjectInstance newInstance = new ObjectInstance(spaceClass, name, hashingFactory);
+			int attributes, List<String> containers, String agent) {
+		ObjectInstance newInstance = new ObjectInstance(spaceClass, name);
 		newInstance = changeAttributes(newInstance, attributes);
 		newInstance = newInstance.changeValue(SpaceFactory.attributeOnOff, 0);
 		if (agent == null) {
@@ -90,46 +90,46 @@ public class SpaceFactory {
 		return newInstance;
 	}
 	
-	public static ObjectInstance getNewObjectInstance(Domain domain, String name,int attributes, List<String> containers, String agent, ObjectHashFactory hashingFactory) {
+	public static ObjectInstance getNewObjectInstance(Domain domain, String name,int attributes, List<String> containers, String agent) {
 		return SpaceFactory.getNewObjectInstance(
-				domain.getObjectClass(SpaceFactory.ClassName), name, attributes,containers, agent, hashingFactory);
+				domain.getObjectClass(SpaceFactory.ClassName), name, attributes,containers, agent);
 	}
 	
 	
 	
 	public static ObjectInstance getNewWorkingSpaceObjectInstance(ObjectClass spaceClass, 
 			String name, List<String> containers, String agent, ObjectHashFactory hashingFactory) {
-		return SpaceFactory.getNewObjectInstance(spaceClass, name, SpaceFactory.WORKING, containers, agent, hashingFactory);
+		return SpaceFactory.getNewObjectInstance(spaceClass, name, SpaceFactory.WORKING, containers, agent);
 	}
 	
 	public static ObjectInstance getNewWorkingSpaceObjectInstance(Domain domain, 
-			String name, List<String> containers, String agent, ObjectHashFactory hashingFactory) {
+			String name, List<String> containers, String agent) {
 		return SpaceFactory.getNewObjectInstance(
-				SpaceFactory.createObjectClass(domain), name, SpaceFactory.WORKING, containers, agent, hashingFactory);
+				SpaceFactory.createObjectClass(domain), name, SpaceFactory.WORKING, containers, agent);
 	}
 	
 	public static ObjectInstance getNewHeatingSpaceObjectInstance(ObjectClass spaceClass, 
 			String name, List<String> containers, String agent, ObjectHashFactory hashingFactory) {
-		return SpaceFactory.getNewObjectInstance(spaceClass, name, SpaceFactory.HEATING | SpaceFactory.SWITCHABLE, containers, agent, hashingFactory);
+		return SpaceFactory.getNewObjectInstance(spaceClass, name, SpaceFactory.HEATING | SpaceFactory.SWITCHABLE, containers, agent);
 	}
 	
 	public static ObjectInstance getNewHeatingSpaceObjectInstance(Domain domain, 
-			String name, List<String> containers, String agent, ObjectHashFactory hashingFactory) {
+			String name, List<String> containers, String agent) {
 		return SpaceFactory.getNewObjectInstance(
-				domain.getObjectClass(SpaceFactory.ClassName), name, SpaceFactory.HEATING | SpaceFactory.SWITCHABLE, containers, agent, hashingFactory);
+				domain.getObjectClass(SpaceFactory.ClassName), name, SpaceFactory.HEATING | SpaceFactory.SWITCHABLE, containers, agent);
 	}
 	
 	public static ObjectInstance getNewBakingSpaceObjectInstance(ObjectClass spaceClass, 
-			String name, List<String> containers, String agent, ObjectHashFactory hashingFactory) {
+			String name, List<String> containers, String agent) {
 		return SpaceFactory.getNewObjectInstance(spaceClass, name, SpaceFactory.BAKING|SpaceFactory.SWITCHABLE, 
-				containers, agent, hashingFactory);
+				containers, agent);
 	}
 
 	public static ObjectInstance getNewBakingSpaceObjectInstance(Domain domain, 
-			String name, List<String> containers, String agent, ObjectHashFactory hashingFactory) {
+			String name, List<String> containers, String agent) {
 		return SpaceFactory.getNewObjectInstance(
 				domain.getObjectClass(SpaceFactory.ClassName), name, SpaceFactory.BAKING|SpaceFactory.SWITCHABLE, 
-				containers, agent, hashingFactory);
+				containers, agent);
 	}
 	
 	public static ObjectInstance addContainer(ObjectInstance space, ObjectInstance container) {
@@ -147,14 +147,14 @@ public class SpaceFactory {
 	public static ObjectInstance getNewCleaningSpaceObjectInstance(ObjectClass spaceClass, 
 			String name, List<String> containers, String agent, ObjectHashFactory hashingFactory) {
 		return SpaceFactory.getNewObjectInstance(spaceClass, name, SpaceFactory.CLEANING|SpaceFactory.SWITCHABLE, 
-				containers, agent, hashingFactory);
+				containers, agent);
 	}
 
 	public static ObjectInstance getNewCleaningSpaceObjectInstance(Domain domain, 
 			String name, List<String> containers, String agent, ObjectHashFactory hashingFactory) {
 		return SpaceFactory.getNewObjectInstance(
 				domain.getObjectClass(SpaceFactory.ClassName), name, SpaceFactory.CLEANING|SpaceFactory.SWITCHABLE, 
-				containers, agent, hashingFactory);
+				containers, agent);
 	}
 	
 	public static ObjectInstance removeContainer(ObjectInstance space, ObjectInstance container) {

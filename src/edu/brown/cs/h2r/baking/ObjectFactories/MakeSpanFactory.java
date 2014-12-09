@@ -42,7 +42,7 @@ public class MakeSpanFactory {
 	}
 	
 	public static ObjectInstance getNewObjectInstance(ObjectClass agentClass, String name, int agentCount, ObjectHashFactory hashingFactory) {
-		ObjectInstance newInstance = new ObjectInstance(agentClass, name, hashingFactory);
+		ObjectInstance newInstance = new ObjectInstance(agentClass, name);
 		return newInstance.changeValue(MakeSpanFactory.attributeAgentCount, agentCount);
 	}
 	

@@ -182,7 +182,7 @@ public class MixAction extends BakingAction {
 		ObjectInstance newIngredient = 
 				IngredientFactory.getNewComplexIngredientObjectInstance(complexIngredientClass, 
 						Integer.toString(rando.nextInt()), Recipe.NO_ATTRIBUTES, false, container.getName(),
-						null, null, traits, new TreeSet<String>(), new TreeSet<String>(), contents, container.getHashTuple().getHashingFactory());
+						null, null, traits, new TreeSet<String>(), new TreeSet<String>(), contents);
 		
 		// Remove objects from state, add in their hidden copies.
 		List<ObjectInstance> objectsToAdd = new ArrayList<ObjectInstance>(hidden_copies.size());
@@ -224,7 +224,7 @@ public class MixAction extends BakingAction {
 		//get the actual traits from the trait map
 		Set<String> ings = ContainerFactory.getContentNames(container);
 		ObjectInstance newIng = 
-				IngredientFactory.getNewComplexIngredientObjectInstance(domain, newIngredient, true, container.getName(), container.getHashTuple().getHashingFactory());
+				IngredientFactory.getNewComplexIngredientObjectInstance(domain, newIngredient, true, container.getName());
 		
 		// Make the hidden Copies
 		List<ObjectInstance> objectsToRemove = new ArrayList<ObjectInstance>(ings.size());

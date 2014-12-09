@@ -84,7 +84,7 @@ public class Baxter implements Agent {
 	{
 		State beginningState = new State(state);
 		List<ObjectInstance> ingredients = 
-				Baxter.knowledgebase.getPotentialIngredientObjectInstanceList(this.domain, this.recipe.topLevelIngredient, null);
+				Baxter.knowledgebase.getPotentialIngredientObjectInstanceList(this.domain, this.recipe.topLevelIngredient);
 	
 		// Find actionable subgoals
 		List<BakingSubgoal> activeSubgoals = this.getActiveSubgoalsInState(beginningState, recipe.getSubgoals());

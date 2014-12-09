@@ -102,7 +102,7 @@ public abstract class Recipe {
 		{
 			ObjectInstance container = 
 					ContainerFactory.getNewIngredientContainerObjectInstance(
-							containerClass, ingredient.getName() + "_bowl", ingredient.getName(), containerSpace, ingredient.getHashTuple().getHashingFactory());
+							containerClass, ingredient.getName() + "_bowl", ingredient.getName(), containerSpace);
 			ObjectInstance newIngredient = IngredientFactory.changeIngredientContainer(ingredient, container.getName());
 			containersAndIngredients.add(container);
 			containersAndIngredients.add(newIngredient);

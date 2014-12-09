@@ -114,11 +114,11 @@ public class BaxterKitchen {
 		//objects.add(MakeSpanFactory.getNewObjectInstance(domain, "make_span", 2));
 		
 		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2", "baking_dish"/*, "melting_pot"*/);
-		ObjectInstance counterSpace = SpaceFactory.getNewWorkingSpaceObjectInstance(domain, SpaceFactory.SPACE_COUNTER, containers, "human", null);
+		ObjectInstance counterSpace = SpaceFactory.getNewWorkingSpaceObjectInstance(domain, SpaceFactory.SPACE_COUNTER, containers, "human");
 		//objects.add(counterSpace);
 		//objects.add(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, SpaceFactory.SPACE_ROBOT, containers, "baxter"));
 
-		objects.add(ContainerFactory.getNewBakingContainerObjectInstance(domain, "baking_dish", null, SpaceFactory.SPACE_COUNTER, null));
+		objects.add(ContainerFactory.getNewBakingContainerObjectInstance(domain, "baking_dish", null, SpaceFactory.SPACE_COUNTER));
 		//state.addObject(ContainerFactory.getNewHeatingContainerObjectInstance(domain, "melting_pot", null, SpaceFactory.SPACE_COUNTER));
 		//objects.add(SpaceFactory.getNewBakingSpaceObjectInstance(domain, SpaceFactory.SPACE_OVEN, null, ""));
 		//objects.add(SpaceFactory.getNewCleaningSpaceObjectInstance(domain, SpaceFactory.SPACE_SINK, null, "baxter"));
@@ -127,12 +127,12 @@ public class BaxterKitchen {
 		//objects.add(ToolFactory.getNewSimpleToolObjectInstance(domain, "spoon","", "", SpaceFactory.SPACE_ROBOT));
 		
 		for (String container : containers) { 
-			objects.add(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, SpaceFactory.SPACE_COUNTER, null));
+			objects.add(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, SpaceFactory.SPACE_COUNTER));
 		}
 		
 		// Out of all the ingredients in our kitchen, plan over only those that might be useful!
 		Knowledgebase knowledgebase = Knowledgebase.getKnowledgebase(domain);
-		this.allIngredients = knowledgebase.getRecipeObjectInstanceList(domain, null, recipe);
+		this.allIngredients = knowledgebase.getRecipeObjectInstanceList(domain, recipe);
 		//knowledgebase.addTools(domain, state, SpaceFactory.SPACE_COUNTER);
 	
 		ObjectClass containerClass = domain.getObjectClass(ContainerFactory.ClassName);		

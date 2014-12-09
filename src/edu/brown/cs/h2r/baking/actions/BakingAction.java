@@ -197,8 +197,9 @@ public abstract class BakingAction extends Action {
 	protected StateBuilder addAgentToOccupiedList(State state, StateBuilder stateBuilder, String agentName) {
 		List<ObjectInstance> makeSpanObjects = state.getObjectsOfTrueClass(MakeSpanFactory.ClassName);
 		if (!makeSpanObjects.isEmpty()) {
-			ObjectInstance newMakeSpan = MakeSpanFactory.occupyAgent(makeSpanObjects.get(0), agentName);
-			stateBuilder.replace(makeSpanObjects.get(0), newMakeSpan);
+			ObjectInstance makeSpan = makeSpanObjects.get(0);
+			ObjectInstance newMakeSpan = MakeSpanFactory.occupyAgent(makeSpan, agentName);
+			stateBuilder.replace(makeSpan, newMakeSpan);
 		}		
 		return stateBuilder;
 	}

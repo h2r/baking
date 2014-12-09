@@ -25,7 +25,7 @@ public class AgentFactory {
 	}
 	
 	public static ObjectInstance getNewObjectInstance(ObjectClass agentClass, String name, ObjectHashFactory hashingFactory, Boolean robot) {
-		ObjectInstance newInstance = new ObjectInstance(agentClass, name, hashingFactory);
+		ObjectInstance newInstance = new ObjectInstance(agentClass, name);
 		return newInstance.changeValue(AgentFactory.attributeRobot, robot ? 1 : 0);
 	}
 	

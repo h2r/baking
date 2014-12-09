@@ -99,31 +99,31 @@ public class BasicKitchen implements DomainGenerator {
 		
 		List<String> mixingContainers = Arrays.asList("Large_Bowl");
 		for (String container : mixingContainers) { 
-			state = state.appendObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, SpaceFactory.SPACE_COUNTER, stateHashFactory.getObjectHashFactory()));
+			state = state.appendObject(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, SpaceFactory.SPACE_COUNTER));
 		}
 		
 		List<String> heatingContainers = Arrays.asList("Large_Pot", "Large_Saucepan");
 		for (String container : heatingContainers) { 
-			state = state.appendObject(ContainerFactory.getNewHeatingContainerObjectInstance(domain, container, null, SpaceFactory.SPACE_COUNTER, stateHashFactory.getObjectHashFactory()));
+			state = state.appendObject(ContainerFactory.getNewHeatingContainerObjectInstance(domain, container, null, SpaceFactory.SPACE_COUNTER));
 		}
 		
 		List<String> bakingContainers = Arrays.asList("Baking_Dish");
 		for (String container : bakingContainers) { 
-			state = state.appendObject(ContainerFactory.getNewBakingContainerObjectInstance(domain, container, null, SpaceFactory.SPACE_COUNTER, stateHashFactory.getObjectHashFactory()));
+			state = state.appendObject(ContainerFactory.getNewBakingContainerObjectInstance(domain, container, null, SpaceFactory.SPACE_COUNTER));
 		}
 		
 		List<String> containers = new ArrayList<String>();
 		containers.addAll(mixingContainers);
 		containers.addAll(heatingContainers);
 		containers.addAll(bakingContainers);
-		state = state.appendObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, SpaceFactory.SPACE_COUNTER, containers, "human",  stateHashFactory.getObjectHashFactory()));
+		state = state.appendObject(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, SpaceFactory.SPACE_COUNTER, containers, "human"));
 		//state.addObject(SpaceFactory.getNewObjectInstance(domain, "shelf", SpaceFactory.NO_ATTRIBUTES, null, ""));
 		
 		ObjectClass containerClass = domain.getObjectClass(ContainerFactory.ClassName);		
 		ObjectInstance shelfSpace = state.getObject(SpaceFactory.SPACE_COUNTER);
 		
 		List<ObjectInstance> ingredientInstances = 
-				knowledgebase.getRecipeObjectInstanceList(domain, stateHashFactory.getObjectHashFactory(), recipe);
+				knowledgebase.getRecipeObjectInstanceList(domain, recipe);
 		
 		List<ObjectInstance> ingredientsAndContainers = 
 				Recipe.getContainersAndIngredients(containerClass, ingredientInstances, shelfSpace.getName());

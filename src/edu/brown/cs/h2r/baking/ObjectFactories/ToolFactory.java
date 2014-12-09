@@ -64,14 +64,14 @@ public class ToolFactory {
 	}
 	
 	public static ObjectInstance getNewObjectInstance(Domain domain, String name, 
-			String trait, String attribute, String containerSpace, ObjectHashFactory hashingFactory) {
+			String trait, String attribute, String containerSpace) {
 		ObjectClass oc = domain.getObjectClass(ToolFactory.ClassName);
-		return getNewObjectInstance(oc, name, trait, attribute, containerSpace, hashingFactory);
+		return getNewObjectInstance(oc, name, trait, attribute, containerSpace);
 	}
 	
 	private static ObjectInstance getNewObjectInstance(ObjectClass toolClass, String name, 
-			String trait, String attribute, String containerSpace, ObjectHashFactory hashingFactory) {
-		ObjectInstance newInstance = new ObjectInstance(toolClass, name, hashingFactory);
+			String trait, String attribute, String containerSpace) {
+		ObjectInstance newInstance = new ObjectInstance(toolClass, name);
 		newInstance = newInstance.appendRelationalTarget(ToolFactory.attributeToolTrait, trait);
 		newInstance = newInstance.appendRelationalTarget(ToolFactory.attributeToolAttribute, attribute);
 		newInstance = newInstance.changeValue(ToolFactory.attributeCanCarry, false);	
@@ -85,14 +85,14 @@ public class ToolFactory {
 	}
 	
 	public static ObjectInstance getNewSimpleToolObjectInstance(Domain domain, String name, 
-			String trait, String attribute, String containerSpace, ObjectHashFactory hashingFactory) {
-		return getNewObjectInstance(domain, name, trait, attribute, containerSpace, hashingFactory);
+			String trait, String attribute, String containerSpace) {
+		return getNewObjectInstance(domain, name, trait, attribute, containerSpace);
 	}
 	
 	public static ObjectInstance getNewCarryingToolObjectInstance(Domain domain, String name, 
 			String trait, String attribute, String containerSpace, Collection<String> include,
-			Collection<String> exclude, ObjectHashFactory hashingFactory) {
-		ObjectInstance tool = getNewObjectInstance(domain, name, trait, attribute, containerSpace, hashingFactory);
+			Collection<String> exclude) {
+		ObjectInstance tool = getNewObjectInstance(domain, name, trait, attribute, containerSpace);
 		tool = tool.changeValue(ToolFactory.attributeCanCarry, true);
 		tool = tool.appendAllRelationTargets(ToolFactory.attributeInclude, include);
 		tool = tool.appendAllRelationTargets(ToolFactory.attributeExclude, exclude);
@@ -241,7 +241,7 @@ public class ToolFactory {
 		Set<String> contents = ToolFactory.getContents(tool);
 		String spaceName = ToolFactory.getSpaceName(tool);
 		ObjectInstance fakeContainer = ContainerFactory.getNewFakeToolContainerObjectInstance(domain, 
-				ToolFactory.fakeContainerName, contents, spaceName, tool.getHashTuple().getHashingFactory());
+				ToolFactory.fakeContainerName, contents, spaceName);
 		state = state.appendObject(fakeContainer);
 		PourAction pour = (PourAction)domain.getAction(PourAction.className);
 		

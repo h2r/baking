@@ -56,13 +56,13 @@ public class TestIngredientRecipe {
 		List<ObjectInstance> objectsToAdd = new ArrayList<ObjectInstance>();
 		objectsToAdd.add(AgentFactory.getNewHumanAgentObjectInstance(domain, "human", objectHashingFactory));
 		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2");
-		objectsToAdd.add(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter", containers, "human", objectHashingFactory));
+		objectsToAdd.add(SpaceFactory.getNewWorkingSpaceObjectInstance(domain, "counter", containers, "human"));
 
 		for (String container : containers) { 
-			objectsToAdd.add(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "counter", objectHashingFactory));
+			objectsToAdd.add(ContainerFactory.getNewMixingContainerObjectInstance(domain, container, null, "counter"));
 		}
 		
-		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(domain, topLevelIngredient, objectHashingFactory);
+		allIngredients = knowledgebase.getPotentialIngredientObjectInstanceList(domain, topLevelIngredient);
 		ObjectClass containerClass = domain.getObjectClass(ContainerFactory.ClassName);		
 		ObjectInstance counterSpace = state.getObject("counter");
 

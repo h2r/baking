@@ -140,7 +140,7 @@ public class Knowledgebase {
 		}
 	}
 	
-	public List<ObjectInstance> getTools(Domain domain, String space, ObjectHashFactory hashingFactory) {
+	public List<ObjectInstance> getTools(Domain domain, String space) {
 		
 		List<ObjectInstance> toolsToAdd = new ArrayList<ObjectInstance>();
 		for (Entry<String, BakingInformation> entry : this.toolMap.entrySet()) {
@@ -169,9 +169,9 @@ public class Knowledgebase {
 			if (transportable) {
 				
 				tool = ToolFactory.getNewCarryingToolObjectInstance(domain, name, toolTrait, toolAttribute,
-						space,includes, excludes, hashingFactory);
+						space,includes, excludes);
 			} else {
-				tool = ToolFactory.getNewSimpleToolObjectInstance(domain, name, toolTrait, toolAttribute, space, hashingFactory);
+				tool = ToolFactory.getNewSimpleToolObjectInstance(domain, name, toolTrait, toolAttribute, space);
 			}
 			toolsToAdd.add(tool);
 		}
@@ -189,33 +189,33 @@ public class Knowledgebase {
 		return this.allIngredients.get(name);
 	}
 	
-	public List<ObjectInstance> getAllIngredientObjectInstanceList(Domain domain, ObjectHashFactory hashingFactory) {
+	public List<ObjectInstance> getAllIngredientObjectInstanceList(Domain domain) {
 		List<ObjectInstance> ingredientObjects = new ArrayList<ObjectInstance>();
 		List<IngredientRecipe> ingredients = this.getIngredientList();
 		for (IngredientRecipe ing : ingredients) {
 			ObjectClass oc = ing.isSimple() ? 
 					domain.getObjectClass(IngredientFactory.ClassNameSimple) : 
 						domain.getObjectClass(IngredientFactory.ClassNameComplex);
-			ObjectInstance obj = IngredientFactory.getNewIngredientInstance(ing, ing.getFullName(), oc, hashingFactory);
+			ObjectInstance obj = IngredientFactory.getNewIngredientInstance(ing, ing.getFullName(), oc);
 			ingredientObjects.add(obj);
 		}
 		return ingredientObjects;
 	}
 	
-	public List<ObjectInstance> getRecipeObjectInstanceList(Domain domain, ObjectHashFactory hashingFactory, Recipe recipe) {
+	public List<ObjectInstance> getRecipeObjectInstanceList(Domain domain, Recipe recipe) {
 		List<ObjectInstance> objs = new ArrayList<ObjectInstance>();
 		for (BakingSubgoal sg : recipe.getSubgoals()) {
 			IngredientRecipe ing = sg.getIngredient();
-			objs.addAll(this.getPotentialIngredientObjectInstanceList(domain, ing, hashingFactory));
+			objs.addAll(this.getPotentialIngredientObjectInstanceList(domain, ing));
 		}
 		return objs;
 	}
-	public List<ObjectInstance> getPotentialIngredientObjectInstanceList(Domain domain, IngredientRecipe tlIngredient, ObjectHashFactory hashingFactory) {
+	public List<ObjectInstance> getPotentialIngredientObjectInstanceList(Domain domain, IngredientRecipe tlIngredient) {
 		List<ObjectInstance> ingredientObjects = new ArrayList<ObjectInstance>();
 		List<IngredientRecipe> ingredients = this.getPotentialIngredientList(domain, tlIngredient);
 		for (IngredientRecipe ing : ingredients) {
 			ObjectClass oc = ing.isSimple() ? domain.getObjectClass(IngredientFactory.ClassNameSimple) : domain.getObjectClass(IngredientFactory.ClassNameComplex);
-			ObjectInstance obj = IngredientFactory.getNewIngredientInstance(ing, ing.getFullName(), oc, hashingFactory);
+			ObjectInstance obj = IngredientFactory.getNewIngredientInstance(ing, ing.getFullName(), oc);
 			obj = IngredientFactory.clearBooleanAttributes(obj);
 			obj = IngredientFactory.clearToolAttributes(obj);
 			ingredientObjects.add(obj);
