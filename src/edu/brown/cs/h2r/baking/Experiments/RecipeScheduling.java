@@ -95,7 +95,7 @@ public class RecipeScheduling {
 		return domain;
 	}
 	
-	private static State generateInitialState(Domain generalDomain, List<Recipe> recipes, Agent agent1, Agent agent2) {
+	public static State generateInitialState(Domain generalDomain, List<Recipe> recipes, Agent agent1, Agent agent2) {
 		ObjectHashFactory objectHashingFactory = hashingFactory.getObjectHashFactory();
 		List<ObjectInstance> objects = new ArrayList<ObjectInstance>();
 		objects.add(agent1.getAgentObject());
