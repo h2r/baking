@@ -228,16 +228,25 @@ public class RecipeScheduling {
 		
 		Map<String, List<GroundedAction>> actionLists = new HashMap<String, List<GroundedAction>>();
 		for (Recipe recipe : recipes) {
-			while (true) {
+			
+			
+			for (int i = 0; i < 5; i++) {
+				long start = System.nanoTime();
+				
 				List<KitchenSubdomain> policyDomains = AgentHelper.generateRTDPPolicies(recipe, domain, state, rewardFunction, hashingFactory);
 				List<GroundedAction> actionList = AgentHelper.generateRecipeActionSequence(state, policyDomains);
+				long end = System.nanoTime();
+				System.out.println("recipe scheduling, " + (end - start) / 1000000000.0);
 			
-			for (GroundedAction action : actionList) {
+			/*for (GroundedAction action : actionList) {
 				System.out.println(action.toString());
-			}
+			}*/
 			actionLists.put(recipe.toString(), actionList);
 			}
+			
+			
 		}
+		
 		Map<String, List<Double>> factorLookup = new HashMap<String, List<Double>>();
 		factorLookup.put("same", Arrays.asList(1.0, 1.0));
 		factorLookup.put("slow", Arrays.asList(0.5, 2.0));
@@ -253,15 +262,18 @@ public class RecipeScheduling {
 			
 				for (Map.Entry<String, List<GroundedAction>> entry : actionLists.entrySet()) {
 					List<GroundedAction> actionList = entry.getValue();
-					Workflow workflow = Workflow.buildWorkflow(state, actionList);
-					Map<String, Map<Workflow.Node, Double>> actionTimeLookup = RecipeScheduling.buildActionTimeLookup(workflow, 2, factorEntry.getValue());
-					
-					for (Scheduler scheduler : schedulers) {
-						
-						List<AssignedWorkflow> assignments = scheduler.schedule(workflow, actionTimeLookup);
-						double time = SchedulingHelper.computeSequenceTime(assignments);
-						System.out.println(scheduler.getClass().getSimpleName() + ", " + factorEntry.getKey() + ", " + entry.getKey() + ", " + time);
+					for (int j = 0; j < 1; j++) {
+						Workflow workflow = Workflow.buildWorkflow(state, actionList);
+						Map<String, Map<Workflow.Node, Double>> actionTimeLookup = RecipeScheduling.buildActionTimeLookup(workflow, 2, factorEntry.getValue());
+						/*
+						for (Scheduler scheduler : schedulers) {
+							
+							List<AssignedWorkflow> assignments = scheduler.schedule(workflow, actionTimeLookup);
+							double time = SchedulingHelper.computeSequenceTime(assignments);
+							System.out.println(scheduler.getClass().getSimpleName() + ", " + factorEntry.getKey() + ", " + entry.getKey() + ", " + time);
+						}*/
 					}
+					
 				}
 			}
 		}
