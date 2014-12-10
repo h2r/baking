@@ -74,6 +74,11 @@ public class Baxter implements Agent {
 		return null;
 	}
 	
+	@Override
+	public AbstractGroundedAction getActionWithScheduler(State state, List<String> agents) {
+		return this.getAction(state);
+	}
+	
 	public boolean canPerformActionInState(GroundedAction action, State state) {
 		String[] params = action.params;
 		params[0] = Baxter.agentClass;

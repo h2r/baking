@@ -8,6 +8,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.GroundedAction;
 import edu.brown.cs.h2r.baking.Scheduling.Workflow.Node;
@@ -47,12 +48,11 @@ public class Workflow implements Iterable<Node> {
 		return result;
 	}
 	
-	
-	public static Workflow buildWorkflow(State state, List<GroundedAction> actions) {
+	public static Workflow buildWorkflow(State state, List<AbstractGroundedAction> actions) {
 		Workflow workflow = new Workflow(state);
 		
 		for (int i = 0; i < actions.size(); i++) {
-			GroundedAction action = actions.get(i);
+			GroundedAction action = (GroundedAction)actions.get(i);
 			Node node = new Node(i, action);
 			List<Integer> dependencies = Workflow.getDependencies(action, workflow);
 			
@@ -248,6 +248,10 @@ public class Workflow implements Iterable<Node> {
 		
 		public boolean isAvailable(Set<Node> accomplishedNodes) {
 			return this.parents.isEmpty() || accomplishedNodes.containsAll(this.parents);
+		}
+		
+		public GroundedAction getAction() {
+			return new GroundedAction(this.action.action, this.action.params.clone());
 		}
 		
 		private int maxDegree() {

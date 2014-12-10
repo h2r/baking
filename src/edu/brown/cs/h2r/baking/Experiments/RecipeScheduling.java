@@ -11,6 +11,7 @@ import java.util.Random;
 import burlap.behavior.statehashing.NameDependentStateHashFactory;
 import burlap.behavior.statehashing.ObjectHashFactory;
 import burlap.behavior.statehashing.StateHashFactory;
+import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
@@ -34,6 +35,7 @@ import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.Scheduling.AssignedWorkflow;
 import edu.brown.cs.h2r.baking.Scheduling.AssignedWorkflow.ActionTime;
+import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
 import edu.brown.cs.h2r.baking.Scheduling.ExhaustiveScheduler;
 import edu.brown.cs.h2r.baking.Scheduling.GreedyScheduler;
 import edu.brown.cs.h2r.baking.Scheduling.RandomScheduler;
@@ -218,8 +220,11 @@ public class RecipeScheduling {
 		
 		Knowledgebase knowledgebase = Knowledgebase.getKnowledgebase(domain);
 		knowledgebase.initKnowledgebase(recipes);
+		Map<String, Double> factors = new HashMap<String, Double>();
+		factors.put("human", 1.0);
 		
-		Human human = new Human(domain);
+		ActionTimeGenerator timeGenerator = new ActionTimeGenerator(factors);
+		Human human = new Human(domain, timeGenerator);
 		State state = RecipeScheduling.generateInitialState(domain, recipes, human, null);
 		ResetAction reset = (ResetAction)domain.getAction(ResetAction.className);
 		
@@ -262,8 +267,10 @@ public class RecipeScheduling {
 			
 				for (Map.Entry<String, List<GroundedAction>> entry : actionLists.entrySet()) {
 					List<GroundedAction> actionList = entry.getValue();
+					List<AbstractGroundedAction> abstractActionList = new ArrayList<AbstractGroundedAction>(actionList.size());
+					for (GroundedAction action : actionList) { abstractActionList.add(action); }
 					for (int j = 0; j < 1; j++) {
-						Workflow workflow = Workflow.buildWorkflow(state, actionList);
+						Workflow workflow = Workflow.buildWorkflow(state, abstractActionList);
 						Map<String, Map<Workflow.Node, Double>> actionTimeLookup = RecipeScheduling.buildActionTimeLookup(workflow, 2, factorEntry.getValue());
 						/*
 						for (Scheduler scheduler : schedulers) {

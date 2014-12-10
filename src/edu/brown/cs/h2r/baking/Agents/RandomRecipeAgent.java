@@ -16,11 +16,12 @@ import edu.brown.cs.h2r.baking.RecipeAgentSpecificMakeSpanRewardFunction;
 import edu.brown.cs.h2r.baking.Experiments.KitchenSubdomain;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
+import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
 
 public class RandomRecipeAgent extends Human implements Agent {
 	private final Domain domain;
-	public RandomRecipeAgent(Domain domain) {
-		super(domain);
+	public RandomRecipeAgent(Domain domain, ActionTimeGenerator timeGenerator) {
+		super(domain, timeGenerator);
 		this.domain = domain;
 	}
 	@Override
@@ -38,7 +39,6 @@ public class RandomRecipeAgent extends Human implements Agent {
 	public void setInitialState(State state) {
 		super.setInitialState(state);
 		super.chooseNewRecipe();
-		
 	}
 
 }

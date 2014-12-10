@@ -14,15 +14,12 @@ import edu.brown.cs.h2r.baking.Scheduling.Workflow.Node;
 public class GreedyScheduler implements Scheduler {
 
 	@Override
-	public List<AssignedWorkflow> schedule(Workflow workflow,
-			Map<String, Map<Node, Double>> actionTimeLookup) {
+	public List<AssignedWorkflow> schedule(Workflow workflow, List<String> agents,
+			ActionTimeGenerator actionTimeLookup) {
 		
 		// The scheduled assignments we are returning
 		List<AssignedWorkflow> assignedWorkflows = new ArrayList<AssignedWorkflow>();
-		
-		// Need a list of the agents
-		List<String> agents = new ArrayList<String>(actionTimeLookup.keySet());
-		
+				
 		// Create the new workflow specific to the agents
 		for (String agent : agents) {
 			AssignedWorkflow assignedWorkflow = new AssignedWorkflow(agent);
@@ -32,7 +29,7 @@ public class GreedyScheduler implements Scheduler {
 		return this.schedule(workflow, actionTimeLookup, assignedWorkflows, new HashSet<Workflow.Node>());
 	}
 	
-	public List<AssignedWorkflow> schedule(Workflow workflow, Map<String, Map<Node, Double>> actionTimeLookup, 
+	public List<AssignedWorkflow> schedule(Workflow workflow, ActionTimeGenerator actionTimeLookup, 
 			List<AssignedWorkflow> assignedWorkflows, Set<Workflow.Node> visitedNodes ) {
 		
 		
@@ -53,7 +50,7 @@ public class GreedyScheduler implements Scheduler {
 			double bestActionTime = 0.0;
 			for (int i = 0; i < bufferedWorkflows.size(); i++) {
 				AssignedWorkflow bufferedWorkflow = bufferedWorkflows.get(i);
-				double actionTime = actionTimeLookup.get(bufferedWorkflow.getId()).get(node);
+				double actionTime = actionTimeLookup.get(node.getAction());
 				double anticipatedTime = bufferedWorkflow.time() + actionTime;
 				
 				if (anticipatedTime < bestTime) {

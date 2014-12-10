@@ -10,6 +10,7 @@ import java.util.Random;
 
 import edu.brown.cs.h2r.baking.Scheduling.AssignedWorkflow;
 import edu.brown.cs.h2r.baking.Scheduling.AssignedWorkflow.ActionTime;
+import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
 import edu.brown.cs.h2r.baking.Scheduling.ExhaustiveScheduler;
 import edu.brown.cs.h2r.baking.Scheduling.GreedyScheduler;
 import edu.brown.cs.h2r.baking.Scheduling.RandomScheduler;
@@ -108,21 +109,25 @@ public class SchedulingComparison {
 		/*for (Map.Entry<String, Map<Workflow.Node, Double>> entry : actionTimeLookup.entrySet()) {
 			System.out.println("Workflow time for " + entry.getKey() + ": " + SchedulingComparison.getAgentsSoloTime(workflow, entry.getValue()));
 		}*/
+		Map<String, Double> factors = new HashMap<String, Double>();
+		factors.put("human", 1.0);
 		
+		ActionTimeGenerator timeGenerator = new ActionTimeGenerator(factors);
 		List<Integer> connectedness = Arrays.asList(60, 40, 20);
 		Collections.shuffle(connectedness);
 		for (Integer edges : connectedness) {
 			for (int i = 0; i < numTries; i++) {
 				double sum = 0.0;
+				
 				for (Scheduler scheduler : schedulers) {
 					Workflow workflow = SchedulingComparison.buildSortedWorkflow(20, edges);
-					Map<String, Map<Workflow.Node, Double>> actionTimeLookup = SchedulingComparison.buildActionTimeLookup(workflow, 2);
 					
-					List<AssignedWorkflow> assignments = scheduler.schedule(workflow, actionTimeLookup);
+					List<AssignedWorkflow> assignments = scheduler.schedule(workflow, Arrays.asList("human", "friend"), timeGenerator);
 					//SchedulingComparison.verifyAssignments(workflow, assignments);
 					double time = SchedulingHelper.computeSequenceTime(assignments);
 					System.out.println(scheduler.getClass().getSimpleName() + ", " + edges + ": " + time);
 				}
+				timeGenerator.clear();
 				
 			}
 		}

@@ -57,5 +57,10 @@ public class RandomActionAgent implements Agent {
 		}
 		return null;
 	}
+	
+	@Override
+	public AbstractGroundedAction getActionWithScheduler(State state, List<String> agents) {
+		return this.getAction(state);
+	}
 
 }

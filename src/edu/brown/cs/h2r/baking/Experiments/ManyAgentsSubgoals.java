@@ -35,6 +35,7 @@ import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ToolFactory;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
+import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
 import edu.brown.cs.h2r.baking.actions.GreaseAction;
 import edu.brown.cs.h2r.baking.actions.MixAction;
 import edu.brown.cs.h2r.baking.actions.MoveAction;
@@ -415,8 +416,11 @@ public class ManyAgentsSubgoals {
 		List<Recipe> recipes = AgentHelper.recipes(generalDomain);
 		Knowledgebase knowledgebase = Knowledgebase.getKnowledgebase(generalDomain);
 		knowledgebase.initKnowledgebase(recipes);
+		Map<String, Double> factors = new HashMap<String, Double>();
+		factors.put("human", 1.0);
 		
-		Human human = new Human(generalDomain);
+		ActionTimeGenerator timeGenerator = new ActionTimeGenerator(factors);
+		Human human = new Human(generalDomain, timeGenerator);
 		
 		/*for (Recipe recipe : recipes) {
 			//System.out.println("Testing recipe " + recipe.toString());
@@ -430,9 +434,9 @@ public class ManyAgentsSubgoals {
 		
 		List<Agent> agents = Arrays.asList(
 				(Agent)new RandomActionAgent(generalDomain),
-				(Agent)new RandomRecipeAgent(generalDomain),
-				(Agent)new Human(generalDomain, "friend"),
-				(Agent)new AdaptiveByFlow(generalDomain)
+				(Agent)new RandomRecipeAgent(generalDomain, timeGenerator),
+				(Agent)new Human(generalDomain, "friend", timeGenerator),
+				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator)
 				);
 		System.out.println("Agent, Successes, Trials, Average reward, average successful reward");
 		ResetAction reset = (ResetAction)generalDomain.getAction(ResetAction.className);
@@ -470,7 +474,7 @@ public class ManyAgentsSubgoals {
 				
 				human = humanAgents.get(agentName);
 				if (human == null) {
-					human = new Human(generalDomain);
+					human = new Human(generalDomain, timeGenerator);
 					human.setInitialState(startingState);
 					reset.setState(startingState);
 					
@@ -487,6 +491,7 @@ public class ManyAgentsSubgoals {
 				result = ManyAgentsSubgoals.evaluateAgent(human, agent, startingState);
 				System.out.println(agent.getAgentName() + ", " +  result.toString());
 			}
+			timeGenerator.clear();
 		}	
 	}
 }
