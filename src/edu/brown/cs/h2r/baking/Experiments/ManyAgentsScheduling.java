@@ -170,7 +170,7 @@ public class ManyAgentsScheduling {
 		
 		if (firstTime > 0.0) {
 			State nextState = firstAction.executeIn(state);
-			System.out.println("Executing action " + firstAction.toString());
+			//System.out.println("Executing action " + firstAction.toString());
 			if (nextState.equals(state)) {
 				//System.out.println("Action had no effect");
 			}
@@ -183,7 +183,7 @@ public class ManyAgentsScheduling {
 		
 		if (secondTime > 0.0 && secondTime == firstTime) {
 			State nextState = secondAction.executeIn(state);
-			System.out.println("Executing action " + secondAction.toString());
+			//System.out.println("Executing action " + secondAction.toString());
 			
 			if (nextState.equals(state)) {
 				//System.out.println("Action had no effect");
@@ -251,9 +251,9 @@ public class ManyAgentsScheduling {
 					////System.out.println("\nEvaluating how partner would complete recipe");
 					//TestManyAgents.evaluateHumanAlone(otherHuman, newState);
 					////System.out.println("");
-					partnerAction = ManyAgentsScheduling.getActionAndWait(otherHuman, newState);
+					partnerAction = otherHuman.getActionWithScheduler(newState, agents);
 				} else {
-					partnerAction = ManyAgentsScheduling.getActionAndWait(partner, currentState);
+					partnerAction = partner.getActionWithScheduler(currentState, agents);
 					if (partnerAction == null) {
 						//partnerAction = TestManyAgents.getActionAndWait(partner, currentState);
 					}

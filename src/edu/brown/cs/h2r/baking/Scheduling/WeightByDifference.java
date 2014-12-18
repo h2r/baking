@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import edu.brown.cs.h2r.baking.Scheduling.Workflow.Node;
 
@@ -37,6 +38,11 @@ public class WeightByDifference extends HeuristicScheduler {
 		}
 		
 		return weights;
+	}
+	
+	public List<AssignedWorkflow> finishSchedule(Workflow workflow, ActionTimeGenerator actionTimeLookup, 
+			List<AssignedWorkflow> assignedWorkflows, Set<Workflow.Node> visitedNodes) {
+		return assignedWorkflows;
 	}
 	
 	private List<Double> maxValue(Map<String, Double> times) {

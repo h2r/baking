@@ -28,7 +28,7 @@ public class AdaptiveByFlow extends AdaptiveAgent implements Agent {
 	
 	@Override
 	protected void init() {
-		this.prediction = new PolicyPrediction(this.subdomains, 0);
+		this.prediction = new PolicyPrediction(this.subdomains);
 	}
 	
 	@Override

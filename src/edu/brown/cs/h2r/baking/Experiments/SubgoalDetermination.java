@@ -221,7 +221,7 @@ public class SubgoalDetermination {
 			for (int k = 0; k < testDomains.size(); k++) {
 				for (int depthType = 0; depthType < 3; depthType++) {
 					List<Double> successRate = new ArrayList<Double>();
-					PolicyPrediction prediction = new PolicyPrediction(policyDomains, depthType);			
+					PolicyPrediction prediction = new PolicyPrediction(policyDomains);			
 					for (int depth = 1; depth < 5; depth++) {	
 						int numSuccess = 0;
 						int numEstimateSuccesses = 0;

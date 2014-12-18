@@ -1,8 +1,11 @@
 package edu.brown.cs.h2r.baking.Agents;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import burlap.behavior.singleagent.Policy;
 import burlap.behavior.statehashing.NameDependentStateHashFactory;
@@ -13,12 +16,14 @@ import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
+import burlap.parallel.Parallel;
+import burlap.parallel.Parallel.ForEachCallable;
 import edu.brown.cs.h2r.baking.Experiments.KitchenSubdomain;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.Prediction.PolicyProbability;
 import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
 import edu.brown.cs.h2r.baking.Scheduling.AssignedWorkflow;
-import edu.brown.cs.h2r.baking.Scheduling.ExhaustiveScheduler;
+import edu.brown.cs.h2r.baking.Scheduling.ExhaustiveStarScheduler;
 import edu.brown.cs.h2r.baking.Scheduling.Scheduler;
 import edu.brown.cs.h2r.baking.Scheduling.Workflow;
 import edu.brown.cs.h2r.baking.actions.ResetAction;
@@ -95,53 +100,86 @@ public abstract class AdaptiveAgent implements Agent {
 	@Override
 	public AbstractGroundedAction getActionWithScheduler(State state, List<String> agents) {
 		List<PolicyProbability> policyDistribution = this.getPolicyDistribution(state);
+		
 		if (policyDistribution == null) {
 			return null;
 		}
+		for (PolicyProbability policy : policyDistribution) {
+			//System.out.println(policy.toString());
+		}
 		this.updateBeliefDistribution(policyDistribution);
-		
+		List<PolicyProbability> nonZero = this.trimDistribution(policyDistribution);
+		for (PolicyProbability policy : nonZero) {
+			//System.out.println(policy.toString());
+		}
 		// For every policy, generate a list of actions for this state
-		List<List<AbstractGroundedAction>> actionLists = this.generateActionLists(state, policyDistribution);
+		List<List<AbstractGroundedAction>> actionLists = this.generateActionLists(state, nonZero);
 		
 		// Create workflows graphs from the actionLists 
-		List<Workflow> workflows = this.generateWorkflows(state, actionLists);
+		List<Workflow> workflows = AdaptiveAgent.generateWorkflows(state, actionLists);
 		
 		// Get the available actions for each workflow
-		List<Workflow.Node> availableActions = this.getAvailableActions(workflows);
+		List<GroundedAction> availableActions = this.getAvailableActions(workflows);
 		
-		// For every availabel action, generate a new list of actions, that have to be taken to accomodate the available action
-		List<List<List<AbstractGroundedAction>>> adjustedActionLists = 
-				this.correctActionLists(state, availableActions, policyDistribution);
-		
-		// For each adjusted action list, create the associated adjusted workflow
-		List<List<Workflow>> adjustedWorkflows = this.generateAllWorkflows(state, adjustedActionLists);
-		
-		// For each workflow, create the optimal assignments
-		List<List<List<AssignedWorkflow>>> assignedWorkflows = this.assignAllWorkflows(state, agents, adjustedWorkflows);
-		
-		// For each assignment, compute how long each assignment would take
-		List<List<Double>> expectedCompletionTimes = this.generateExpectedCompletionTimes(assignedWorkflows);
-		
-		// Weight the completion time by the belief in the policy
-		List<Double> bestCompletionTimes = this.getWeightedCompletionTimes(expectedCompletionTimes, policyDistribution);
-		
-		return this.findBestAction(availableActions, bestCompletionTimes);
+		ChooseHelpfulActionCallable callable = new ChooseHelpfulActionCallable(state, agents, policyDistribution, this.timeGenerator);
+		List<Double> completionTimes = Parallel.ForEach(availableActions, callable);
+		return this.findBestAction(availableActions, completionTimes);
 	}
 	
+	
+
+	private static Double expectedTimeOfTakingAction(State state,
+			List<String> agents, List<PolicyProbability> policyDistribution,
+			GroundedAction action, ActionTimeGenerator timeGenerator) {
+		
+		State newState = action.executeIn(state);
+		
+		// For every available action, generate a new list of actions, that have to be taken to accomodate the available action
+		List<List<AbstractGroundedAction>> adjustedActionLists = 
+				AdaptiveAgent.correctActionLists(newState, policyDistribution);
+		
+		// For each adjusted action list, create the associated adjusted workflow
+		List<Workflow> adjustedWorkflows = AdaptiveAgent.generateWorkflows(state, adjustedActionLists);
+		
+		// For each workflow, create the optimal assignments
+		List<List<AssignedWorkflow>> assignedWorkflows = AdaptiveAgent.assignAllWorkflows(state, agents, adjustedWorkflows, timeGenerator);
+		
+		// For each assignment, compute how long each assignment would take
+		List<Double> expectedCompletionTimes = AdaptiveAgent.generateExpectedCompletionTimes(assignedWorkflows);
+		
+		// Weight the completion time by the belief in the policy
+		return AdaptiveAgent.getWeightedCompletionTimes(expectedCompletionTimes, policyDistribution);
+	}
+	
+	protected List<PolicyProbability> trimDistribution(List<PolicyProbability> distribution) {
+		List<PolicyProbability> trimmed = new ArrayList<PolicyProbability>(distribution.size());
+		for (PolicyProbability policy : distribution) {
+			if (policy.getProbability() > 0.0) {
+				trimmed.add(policy);
+			}
+		}
+		return trimmed;
+	}
 	protected List<List<AbstractGroundedAction>> generateActionLists(State state, List<PolicyProbability> policies) {
 		List<List<AbstractGroundedAction>> actionLists = new ArrayList<List<AbstractGroundedAction>>();
 		
 		for (PolicyProbability policyProb : policies) {
-			List<GroundedAction> groundedActions = new ArrayList<GroundedAction>();
-			AgentHelper.generateActionSequence(policyProb.getPolicyDomain(), state, groundedActions);
-			List<AbstractGroundedAction> abstractActions = new ArrayList<AbstractGroundedAction>();
-			for (GroundedAction ga : groundedActions) abstractActions.add((AbstractGroundedAction)ga);
-			actionLists.add(abstractActions);
+			if (policyProb.getProbability() > 0.0) {
+				List<GroundedAction> groundedActions = new ArrayList<GroundedAction>();
+				AgentHelper.generateActionSequence(policyProb.getPolicyDomain(), state, groundedActions);
+				List<AbstractGroundedAction> abstractActions = new ArrayList<AbstractGroundedAction>(groundedActions.size());
+				for (GroundedAction ga : groundedActions) abstractActions.add((AbstractGroundedAction)ga);
+				actionLists.add(abstractActions);
+			} else {
+				actionLists.add(new ArrayList<AbstractGroundedAction>());
+			}
+			
+			
 		}
 		return actionLists;
 	}
 	
-	protected List<Workflow> generateWorkflows(State state, List<List<AbstractGroundedAction>> actionLists) {
+	protected static List<Workflow> generateWorkflows(State state, List<List<AbstractGroundedAction>> actionLists) {
 		List<Workflow> workflows = new ArrayList<Workflow>();
 		for (List<AbstractGroundedAction> list : actionLists) {
 			Workflow workflow = Workflow.buildWorkflow(state, list);
@@ -151,57 +189,35 @@ public abstract class AdaptiveAgent implements Agent {
 		return workflows;
 	}
 	
-	protected List<List<Workflow>> generateAllWorkflows(State state, List<List<List<AbstractGroundedAction>>> allActionLists) {
-		List<List<Workflow>> allWorkflows = new ArrayList<List<Workflow>>(allActionLists.size());
-		for (List<List<AbstractGroundedAction>> actionLists : allActionLists) {
-			allWorkflows.add(this.generateWorkflows(state, actionLists));
+	protected static List<List<AssignedWorkflow>> assignAllWorkflows(State state, List<String> agents, List<Workflow> workflows, ActionTimeGenerator timeGenerator) {
+		Scheduler exhaustive = new ExhaustiveStarScheduler();
+		List<List<AssignedWorkflow>> assignments = new ArrayList<List<AssignedWorkflow>>(workflows.size());
+		for (Workflow workflow : workflows) {
+			assignments.add(exhaustive.schedule(workflow, agents, timeGenerator));
 		}
-		return allWorkflows;
+		return assignments;
 	}
 	
-	protected List<List<List<AssignedWorkflow>>> assignAllWorkflows(State state, List<String> agents, List<List<Workflow>> allWorkflows) {
-		List<List<List<AssignedWorkflow>>> allAssignments = new ArrayList<List<List<AssignedWorkflow>>>(allWorkflows.size());
-		Scheduler exhaustive = new ExhaustiveScheduler(5);
-		for (List<Workflow> workflows : allWorkflows) {
-			List<List<AssignedWorkflow>> assignments = new ArrayList<List<AssignedWorkflow>>(workflows.size());
-			for (Workflow workflow : workflows) {
-				assignments.add(exhaustive.schedule(workflow, agents, this.timeGenerator));
+	protected static List<Double> generateExpectedCompletionTimes(List<List<AssignedWorkflow>> allAssignments) {
+		List<Double> expectedCompletionTimes = new ArrayList<Double>(allAssignments.size());
+		for (List<AssignedWorkflow> assignments : allAssignments) {
+			Double longestTime = 0.0;
+			for (AssignedWorkflow workflow : assignments) {
+				longestTime = Math.max(longestTime, workflow.time());
 			}
-			allAssignments.add(assignments);
+			expectedCompletionTimes.add(longestTime);
 		}
-		
-		return allAssignments;
+		return expectedCompletionTimes;
 	}
 	
-	protected List<List<Double>> generateExpectedCompletionTimes(List<List<List<AssignedWorkflow>>> allAssignedWorkflows) {
-		List<List<Double>> allExpectedCompletionTimes = new ArrayList<List<Double>>(allAssignedWorkflows.size());
-		for (List<List<AssignedWorkflow>> allAssignments : allAssignedWorkflows) {
-			List<Double> expectedCompletionTimes = new ArrayList<Double>(allAssignments.size());
-			for (List<AssignedWorkflow> assignments : allAssignments) {
-				Double longestTime = 0.0;
-				for (AssignedWorkflow workflow : assignments) {
-					longestTime = Math.max(longestTime, workflow.time());
-				}
-				expectedCompletionTimes.add(longestTime);
-			}
-			allExpectedCompletionTimes.add(expectedCompletionTimes);
+	protected static Double getWeightedCompletionTimes(List<Double> expectedTimes, List<PolicyProbability> policyDistribution) {
+		double weightedTime = 0.0;
+		for (int i = 0; i < expectedTimes.size(); i++) {
+			double time = expectedTimes.get(i);
+			PolicyProbability policy = policyDistribution.get(i);
+			weightedTime += time * policy.getProbability();
 		}
-		return allExpectedCompletionTimes;
-	}
-	
-	protected List<Double> getWeightedCompletionTimes(List<List<Double>> expectedCompletionTimes, List<PolicyProbability> policyDistribution) {
-		List<Double> weightedCompletionTimes = new ArrayList<Double>(expectedCompletionTimes.size());
-		
-		for (List<Double> expectedTimes : expectedCompletionTimes) {
-			double weightedTime = 0.0;
-			for (int i = 0; i < expectedTimes.size(); i++) {
-				double time = expectedTimes.get(i);
-				PolicyProbability policy = policyDistribution.get(i);
-				weightedTime += time * policy.getProbability();
-			}
-			weightedCompletionTimes.add(weightedTime);
-		}
-		return weightedCompletionTimes;
+		return weightedTime;
 	}
 	
 	protected List<List<Double>> getBestCompletionTimes(List<List<List<Double>>> allCompletionTimes) {
@@ -221,51 +237,58 @@ public abstract class AdaptiveAgent implements Agent {
 	
 	}
 	
-	protected List<Workflow.Node> getAvailableActions(List<Workflow> workflows) {
+	protected List<GroundedAction> getAvailableActions(List<Workflow> workflows) {
 		
-		List<Workflow.Node> availableActions = new ArrayList<Workflow.Node>();
+		Set<GroundedAction> availableActions = new HashSet<GroundedAction>();
 		for (Workflow workflow : workflows) {
-			availableActions.addAll(workflow.getReadyNodes());
-		}
-		
-		return availableActions;
-	}
-	
-	protected List<List<List<AbstractGroundedAction>>> correctActionLists(State state,
-			List<Workflow.Node> availableActions, List<PolicyProbability> policies) {
-		
-		List<List<List<AbstractGroundedAction>>> correctedActionLists = 
-				new ArrayList<List<List<AbstractGroundedAction>>>(availableActions.size());
-	
-		for (Workflow.Node node : availableActions) {
-			AbstractGroundedAction action = node.getAction();
-			State newState = action.executeIn(state);
-			List<List<AbstractGroundedAction>> actionLists = new ArrayList<List<AbstractGroundedAction>>(policies.size());
-			
-			for (PolicyProbability policyProb : policies) {
-				List<GroundedAction> actions = new ArrayList<GroundedAction>();
-				AgentHelper.generateActionSequence(policyProb.getPolicyDomain(), newState, actions);
-				List<AbstractGroundedAction> abstractActions = new ArrayList<AbstractGroundedAction>(actions.size());
-				
-				for (GroundedAction ga : actions) abstractActions.add((AbstractGroundedAction)ga);
-				actionLists.add(abstractActions);	
+			for (Workflow.Node node : workflow.getReadyNodes()) {
+				availableActions.add(node.getAction());
 			}
-			correctedActionLists.add(actionLists);
 		}
 		
-		return correctedActionLists;
+		return new ArrayList<GroundedAction>(availableActions);
+	}
+	
+	protected List<State> executeActions(State state, Collection<GroundedAction> actions) {
+		List<State> states = new ArrayList<State>(actions.size());
+		for (GroundedAction action : actions) {
+			states.add(action.executeIn(state));
+		}
+		return states;
+	}
+	
+	// Generates States x policies 2D array of Action sequences
+	protected static List<List<AbstractGroundedAction>> correctActionLists(State state, List<PolicyProbability> policies) {
+		
+		List<GroundedAction> actions = new ArrayList<GroundedAction>();
+		
+		List<List<AbstractGroundedAction>> actionLists = new ArrayList<List<AbstractGroundedAction>>(policies.size());
+		
+		for (PolicyProbability policyProb : policies) {
+			KitchenSubdomain policy = policyProb.getPolicyDomain();
+			
+			actions.clear();
+			AgentHelper.generateActionSequence(policy, state, actions);
+			
+			List<AbstractGroundedAction> abstractActions = new ArrayList<AbstractGroundedAction>(actions.size());
+			for (GroundedAction ga : actions) abstractActions.add((AbstractGroundedAction)ga);
+			
+			actionLists.add(abstractActions);
+		}
+		
+		return actionLists;
 		
 	}
 	
 	
-	protected AbstractGroundedAction findBestAction(List<Workflow.Node> availableNodes, List<Double> expectedCompletionTimes) {
+	protected AbstractGroundedAction findBestAction(List<GroundedAction> availableNodes, List<Double> expectedCompletionTimes) {
 		double bestTime = Double.MAX_VALUE;
 		AbstractGroundedAction bestAction = null;
 		for (int i = 0; i < availableNodes.size(); i++) {
 			double time = expectedCompletionTimes.get(i);
 			if (time < bestTime) {
 				bestTime = time;
-				bestAction = availableNodes.get(i).getAction();
+				bestAction = availableNodes.get(i);
 			}
 		}
 
@@ -323,5 +346,37 @@ public abstract class AdaptiveAgent implements Agent {
 	}
 	
 	protected abstract double getTransitionProbability(Policy from, Policy to);
+	
+	private static class ChooseHelpfulActionCallable extends ForEachCallable<GroundedAction, Double> {
+		private State state;
+		private List<String> agents;
+		private List<PolicyProbability> distribution;
+		private GroundedAction item;
+		private ActionTimeGenerator timeGenerator;
+		
+		public ChooseHelpfulActionCallable(State state,
+			List<String> agents, List<PolicyProbability> policyDistribution, ActionTimeGenerator timeGenerator) {
+			this.state = state;
+			this.agents = agents;
+			this.distribution = policyDistribution;
+			this.timeGenerator = timeGenerator;
+		}
+		public ChooseHelpfulActionCallable(ChooseHelpfulActionCallable base, GroundedAction item) {
+			this.state = base.state;
+			this.agents = base.agents;
+			this.distribution = base.distribution;
+			this.item = item;
+			this.timeGenerator = base.timeGenerator;
+		}
+		@Override
+		public Double call() throws Exception {
+			return AdaptiveAgent.expectedTimeOfTakingAction(state, agents, distribution, item, timeGenerator);
+		}
+		@Override
+		public ForEachCallable<GroundedAction, Double> init(
+				GroundedAction current) {
+			return new ChooseHelpfulActionCallable(this, current);
+		}
+	}
 	
 }

@@ -1,6 +1,8 @@
 package edu.brown.cs.h2r.baking.Scheduling;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -10,23 +12,59 @@ import edu.brown.cs.h2r.baking.Scheduling.AssignedWorkflow.ActionTime;
 public class AssignedWorkflow implements Iterable<ActionTime> {
 	private final String agent;
 	private final List<ActionTime> actionTimes;
+	private final List<Workflow.Node> nodes; 
 	private double time;
 	
 	public AssignedWorkflow(String agent) {
 		this.agent = agent;
 		this.actionTimes = new ArrayList<ActionTime>();
+		this.nodes = new ArrayList<Workflow.Node>();
 		this.time = 0;
 	}
 	
 	public AssignedWorkflow(AssignedWorkflow other) {
 		this.agent = other.agent;
 		this.actionTimes = new ArrayList<ActionTime>(other.actionTimes);
+		List<Workflow.Node> nodes = new ArrayList<Workflow.Node>(this.actionTimes.size());
+		for (ActionTime actionTime : this.actionTimes) nodes.add(actionTime.node);
+		this.nodes = Collections.unmodifiableList(nodes);
 		this.time = other.time();
 	}
 	
 	public AssignedWorkflow(String agent, List<Workflow.Node> assignedActions, List<Double> times) {
 		this.agent = agent;
 		this.actionTimes = this.buildActionTimes(assignedActions, times);
+		
+		List<Workflow.Node> nodes = new ArrayList<Workflow.Node>(this.actionTimes.size());
+		for (ActionTime actionTime : this.actionTimes) nodes.add(actionTime.node);
+		this.nodes = Collections.unmodifiableList(nodes);
+		
+	}
+	
+	@Override 
+	public boolean equals(Object other) {
+		if (this == other) {
+			return true;
+		}
+		
+		if (!(other instanceof AssignedWorkflow)) {
+			return false;
+		}
+		
+		AssignedWorkflow workflow = (AssignedWorkflow)other;
+		
+		if (actionTimes.size() != workflow.actionTimes.size()) {
+			return false;
+		}
+		
+		Iterator<ActionTime> thisIt = this.iterator();
+		Iterator<ActionTime> otherIt = workflow.iterator();
+		while (thisIt.hasNext() && otherIt.hasNext()) {
+			if (!thisIt.next().equals(otherIt.next())) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	public Iterator<ActionTime> iterator() {
@@ -74,6 +112,10 @@ public class AssignedWorkflow implements Iterable<ActionTime> {
 			}
 		}
 		return null;
+	}
+	
+	public List<Workflow.Node> nodes() { 
+		return this.nodes;
 	}
 	
 	public List<Workflow.Node> nodes(double time) { 
@@ -170,6 +212,18 @@ public class AssignedWorkflow implements Iterable<ActionTime> {
 		
 		public Double getTime() {
 			return this.time;
+		}
+		
+		@Override
+		public boolean equals(Object other) {
+			if (this == other) {
+				return true;
+			}
+			if (!(other instanceof ActionTime)) {
+				return false;
+			}
+			ActionTime otherTime = (ActionTime)other;
+			return (this.time == otherTime.time && this.node.equals(otherTime.node));
 		}
 		
 		@Override

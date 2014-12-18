@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import edu.brown.cs.h2r.baking.Scheduling.Workflow.Node;
 
@@ -36,6 +37,11 @@ public class WeightByShortest extends HeuristicScheduler {
 		}
 		
 		return weights;
+	}
+	
+	public List<AssignedWorkflow> finishSchedule(Workflow workflow, ActionTimeGenerator actionTimeLookup, 
+			List<AssignedWorkflow> assignedWorkflows, Set<Workflow.Node> visitedNodes) {
+		return assignedWorkflows;
 	}
 	
 

@@ -26,24 +26,35 @@ public class GreedyScheduler implements Scheduler {
 			assignedWorkflows.add(assignedWorkflow);
 		}
 				
-		return this.schedule(workflow, actionTimeLookup, assignedWorkflows, new HashSet<Workflow.Node>());
+		return this.finishSchedule(workflow, actionTimeLookup, assignedWorkflows, new HashSet<Workflow.Node>());
 	}
 	
-	public List<AssignedWorkflow> schedule(Workflow workflow, ActionTimeGenerator actionTimeLookup, 
+	public List<AssignedWorkflow> finishSchedule(Workflow workflow, ActionTimeGenerator actionTimeLookup, 
 			List<AssignedWorkflow> assignedWorkflows, Set<Workflow.Node> visitedNodes ) {
 		
-		
 		// Iterate through all the workflow nodes in dependency order
+		double currentTime = 0.0;
+		
+		List<ConditionalIterator> workflowIterators = new ArrayList<ConditionalIterator>();
+		List<AssignedWorkflow> bufferedWorkflows = new ArrayList<AssignedWorkflow>();
+		
+		// Iterate through assignments, and setup initial lists
+		int size = 0;
+		for (AssignedWorkflow assignedWorkflow : assignedWorkflows) {
+			bufferedWorkflows.add(new AssignedWorkflow(assignedWorkflow.getId()));
+			workflowIterators.add((ConditionalIterator)assignedWorkflow.iterator());
+			size += workflow.size();
+		}
+		
 		for (Workflow.Node node : workflow) {
 			if (!visitedNodes.add(node)){
 				continue;
 			}
 			
-			// Copy the assigned workflows for our hypothetical additions
-			List<AssignedWorkflow> copied = SchedulingHelper.copy(assignedWorkflows);
-			
 			// 
-			List<AssignedWorkflow> bufferedWorkflows = SchedulingHelper.getBufferedWorkflows(copied);
+			currentTime = 
+					SchedulingHelper.updateBufferedWorkflows(assignedWorkflows, workflowIterators, 
+							bufferedWorkflows, visitedNodes, currentTime);
 			
 			int bestChoice = 0;
 			double bestTime = Double.MAX_VALUE;

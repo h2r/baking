@@ -82,6 +82,15 @@ public class Workflow implements Iterable<Node> {
 		return dependencies;
 	}
 	
+	public Node get(String actionName) {
+		for (Node node : this.actions){ 
+			if (node.getAction().toString().equals(actionName)) {
+				return node;
+			}
+		}
+		return null;
+	}
+	
 	public State getStartState() {
 		return this.startState;
 	}
@@ -164,6 +173,16 @@ public class Workflow implements Iterable<Node> {
 		return nodes;
 	}
 	
+	public List<Node> notVisitedNodes(Set<Workflow.Node>visitedNodes ) {
+		List<Node> nodes = new ArrayList<Node>(this.actions.size());
+		for (Workflow.Node node : this.actions) {
+			if (!visitedNodes.contains(node)) {
+				nodes.add(node);
+			}
+		}
+		return nodes;
+	}
+	
 	public void insert(int position, Node node) {
 		position = Math.min(this.actions.size(), position);
 		this.actions.set(position, node);
@@ -224,7 +243,7 @@ public class Workflow implements Iterable<Node> {
 		
 		public Node(int id) {
 			this.id = id;
-			this.action = null;
+			this.action = new GroundedAction(null, new String[]{"agent", Integer.toString(this.id)});
 			this.degree = 0;
 			this.parents = new HashSet<Node>();
 			this.children = new HashSet<Node>();
@@ -248,6 +267,10 @@ public class Workflow implements Iterable<Node> {
 		
 		public boolean isAvailable(Set<Node> accomplishedNodes) {
 			return this.parents.isEmpty() || accomplishedNodes.containsAll(this.parents);
+		}
+		
+		public void setAgent(String agent) {
+			this.action.params[0] = agent;
 		}
 		
 		public GroundedAction getAction() {
@@ -336,7 +359,7 @@ public class Workflow implements Iterable<Node> {
 				return false;
 			}
 			Node otherNode = (Node)other;
-			return otherNode.id == this.id;
+			return (otherNode.id == this.id && this.action.params.equals(otherNode.action.params));
 		}
 		
 		@Override
