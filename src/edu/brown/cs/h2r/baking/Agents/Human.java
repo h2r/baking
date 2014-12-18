@@ -254,27 +254,6 @@ public class Human implements Agent {
 		
 		return actions;
 	}
-	
-	private Map<String, Map<Workflow.Node, Double>> buildActionTimeLookup(Workflow workflow) {
-		Map<String, Map<Workflow.Node, Double>> actionTimeLookup = new HashMap<String, Map<Workflow.Node, Double>>();
-		
-		for (Workflow.Node node : workflow) {
-			GroundedAction action = node.getAction();
-			String agent = action.params[0];
-			
-			Map<Workflow.Node, Double> agentTimeLookup = actionTimeLookup.get(agent);
-			if (agentTimeLookup == null) {
-				agentTimeLookup = new HashMap<Workflow.Node, Double>();
-				actionTimeLookup.put(agent, agentTimeLookup);
-			}
-			
-			Double time = ManyAgentsScheduling.getActionTime(action);
-			agentTimeLookup.put(node, time);
-		}
-		
-		return actionTimeLookup;
-		
-	}
 
 	private List<ActionProb> getAllowableActions(State state) {
 		RTDP planner = this.currentSubgoal.getPlanner();

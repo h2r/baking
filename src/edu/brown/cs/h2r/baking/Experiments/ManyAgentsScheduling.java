@@ -48,7 +48,6 @@ import edu.brown.cs.h2r.baking.actions.UseAction;
 public class ManyAgentsScheduling {
 	private static Random rando = new Random();
 	private static StateHashFactory hashingFactory = new NameDependentStateHashFactory();
-	public static Map<String, Double> actionTimeLookup = new HashMap<String, Double>();
 	public static Domain generateGeneralDomain() {
 		Domain domain = new SADomain();
 		domain.addObjectClass(ContainerFactory.createObjectClass(domain));
@@ -129,32 +128,21 @@ public class ManyAgentsScheduling {
 		return new State(objects);
 	}
 	
-	public static double getActionTime(AbstractGroundedAction action,  Map<String, Double> lastActionTimes ) {
+	public static double getActionTime(GroundedAction action,  Map<String, Double> lastActionTimes, ActionTimeGenerator timeGenerator ) {
 		if (action == null) {
 			return -1.0;
 		}
-		double time = ManyAgentsScheduling.getActionTime(action);
-		GroundedAction groundedAction = (GroundedAction)action;
-		return time + lastActionTimes.get(groundedAction.params[0]);
-	}
-	
-	public static double getActionTime(AbstractGroundedAction action) {
-		String actionString = action.toString();
-		Double time = actionTimeLookup.get(actionString);
-		if (time == null) {
-			time = rando.nextDouble();
-			actionTimeLookup.put(actionString, time);
-		}
-		return time;
+		double time = timeGenerator.get(action);
+		return time + lastActionTimes.get(action.params[0]);
 	}
 	
 	private static State performActions(State state, AbstractGroundedAction action1, AbstractGroundedAction action2, Map<String, Double> lastActionTimes, 
-			List<State> statePair, List<AbstractGroundedAction> actionPair) {
+			List<State> statePair, List<AbstractGroundedAction> actionPair, ActionTimeGenerator timeGenerator) {
 		
 		statePair.clear();
 		actionPair.clear();
-		double action1Time = ManyAgentsScheduling.getActionTime(action1, lastActionTimes);
-		double action2Time = ManyAgentsScheduling.getActionTime(action2, lastActionTimes);
+		double action1Time = ManyAgentsScheduling.getActionTime((GroundedAction)action1, lastActionTimes, timeGenerator);
+		double action2Time = ManyAgentsScheduling.getActionTime((GroundedAction)action2, lastActionTimes, timeGenerator);
 		
 		if (action1Time < 0.0 && action2Time < 0.0) {
 			System.err.println("No valid actions");
@@ -198,6 +186,14 @@ public class ManyAgentsScheduling {
 		return state;
 	}
 	
+	private static double sequenceTime(List<AbstractGroundedAction> actions, ActionTimeGenerator timeGenerator) {
+		double time = 0.0;
+		for (AbstractGroundedAction action : actions) {
+			time += timeGenerator.get((GroundedAction)action);
+		}
+		return time;
+	}
+	
 	private static double longestTime(Map<String, Double> lastActionTimes) {
 		double maxTime = 0.0;
 		for (Map.Entry<String, Double> entry : lastActionTimes.entrySet()) {
@@ -206,7 +202,7 @@ public class ManyAgentsScheduling {
 		return maxTime;
 	}
 	
-	private static EvaluationResult evaluateAgent(Human human, Agent partner, State startingState) {
+	private static EvaluationResult evaluateAgent(Human human, Agent partner, State startingState, ActionTimeGenerator timeGenerator) {
 		List<AbstractGroundedAction> actionSequence = new ArrayList<AbstractGroundedAction>();
 		List<State> stateSequence = new ArrayList<State>();
 		boolean finished = false;
@@ -262,7 +258,7 @@ public class ManyAgentsScheduling {
 			
 			
 			
-			currentState = ManyAgentsScheduling.performActions(currentState, humanAction, partnerAction, actionMap, statePair, actionPair);
+			currentState = ManyAgentsScheduling.performActions(currentState, humanAction, partnerAction, actionMap, statePair, actionPair, timeGenerator);
 			if (actionPair.contains(humanAction)) {
 				humanAction = null;
 			}
@@ -333,7 +329,7 @@ public class ManyAgentsScheduling {
 		return false;
 	}
 	
-	private static EvaluationResult evaluateHumanAlone(Human human, State startingState) {
+	private static EvaluationResult evaluateHumanAlone(Human human, State startingState, ActionTimeGenerator timeGenerator) {
 		
 		List<AbstractGroundedAction> actionSequence = new ArrayList<AbstractGroundedAction>();
 		List<State> stateSequence = new ArrayList<State>();
@@ -347,33 +343,21 @@ public class ManyAgentsScheduling {
 		while (!finished) {
 			AbstractGroundedAction humanAction = human.getAction(currentState);
 			if (humanAction == null) {
-				//System.err.println("Human chose to do nothing");
 				break;
 			}
 			
-			GroundedAction groundedAction = (GroundedAction)humanAction;
-			if (groundedAction.action instanceof ResetAction) {
-				//System.err.println("Human resetting state");
-			}
-			
-			currentState = ManyAgentsScheduling.performActions(currentState, humanAction, null, lastActionTime, statePair, actionPair);
+			currentState = ManyAgentsScheduling.performActions(currentState, humanAction, null, lastActionTime, statePair, actionPair, timeGenerator);
 			stateSequence.addAll(statePair);
 			actionSequence.addAll(actionPair);
 			
 			finished = human.isFinished(currentState);
 		}
 		
-		if (human.isSuccess(currentState)) {
-			//System.out.println("Recipe was a success");
-		} else {
-			//System.err.println("Recipe was a failure");
-		}
-		double score = human.getCostActions(actionSequence, stateSequence);
+		double score = ManyAgentsScheduling.sequenceTime(actionSequence, timeGenerator);
 		return new EvaluationResult(score, human.isSuccess(currentState));
 	}
 	
-	private static EvaluationResult evaluateHuman(Domain generalDomain, Human human, int numTrials) {
-		double score = 0.0;
+	private static EvaluationResult evaluateHuman(Domain generalDomain, Human human, ActionTimeGenerator timeGenerator, int numTrials) {
 		EvaluationResult result = new EvaluationResult();
 		for (int i = 0; i < numTrials; i++) {
 			List<Recipe> recipes = AgentHelper.recipes(generalDomain);
@@ -384,30 +368,11 @@ public class ManyAgentsScheduling {
 			
 			//System.out.println("Trial: " + i);
 			human.chooseNewRecipe();
-			result.incrementResult(ManyAgentsScheduling.evaluateHumanAlone(human, startingState));
+			result.incrementResult(ManyAgentsScheduling.evaluateHumanAlone(human, startingState, timeGenerator));
 		}
 		return result;
 		//System.out.println("Human alone: " + result.toString());
 		
-	}
-	
-	private static AbstractGroundedAction getActionAndWait(final Agent agent, final State state) {
-		return agent.getAction(state);
-		/*
-		ExecutorService executor = Executors.newFixedThreadPool(2); 
-		AbstractGroundedAction action = null;
-		final Future<AbstractGroundedAction> handler = executor.submit(new Callable<AbstractGroundedAction>(){
-			@Override
-			public AbstractGroundedAction call() throws Exception {
-				return agent.getAction(state);
-			}});
-		try {
-			action =  handler.get(10000, TimeUnit.MILLISECONDS);
-		} catch (InterruptedException | ExecutionException | TimeoutException e) {
-			//System.err.println("Waiting for agent's action timed out");
-		}
-		executor.shutdownNow();
-		return action;*/
 	}
 	
 	public static class EvaluationResult {
@@ -519,7 +484,7 @@ public class ManyAgentsScheduling {
 		
 			EvaluationResult result;
 		for (int i = 0; i < numTrials; i++) {
-			//System.out.println("solo" + ", " +  ManyAgentsScheduling.evaluateHuman(generalDomain, human, 1).toString());
+			System.out.println("solo" + ", " +  ManyAgentsScheduling.evaluateHuman(generalDomain, human, timeGenerator, 1).toString());
 			
 			Collections.shuffle(agents);
 			
@@ -527,16 +492,13 @@ public class ManyAgentsScheduling {
 			
 				human = new Human(generalDomain, timeGenerator);
 				
-				
 				State startingState = ManyAgentsScheduling.generateInitialState(generalDomain, recipes, human, agent);
 				reset.setState(startingState);
 				
 				human.setInitialState(startingState);
 				agent.setInitialState(startingState);
 				
-				
-				//System.out.println("Trial: " + i);
-				result = ManyAgentsScheduling.evaluateAgent(human, agent, startingState);
+				result = ManyAgentsScheduling.evaluateAgent(human, agent, startingState, timeGenerator);
 				System.out.println(agent.getAgentName() + ", " +  result.toString());
 			}
 			timeGenerator.clear();
