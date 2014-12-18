@@ -2,9 +2,7 @@ package edu.brown.cs.h2r.baking.Agents;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 import burlap.behavior.singleagent.Policy;
@@ -22,14 +20,13 @@ import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 import edu.brown.cs.h2r.baking.RecipeTerminalFunction;
 import edu.brown.cs.h2r.baking.Experiments.KitchenSubdomain;
-import edu.brown.cs.h2r.baking.Experiments.ManyAgentsScheduling;
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
 import edu.brown.cs.h2r.baking.Scheduling.AssignedWorkflow;
 import edu.brown.cs.h2r.baking.Scheduling.AssignedWorkflow.ActionTime;
-import edu.brown.cs.h2r.baking.Scheduling.ExhaustiveScheduler;
+import edu.brown.cs.h2r.baking.Scheduling.ExhaustiveStarScheduler;
 import edu.brown.cs.h2r.baking.Scheduling.Scheduler;
 import edu.brown.cs.h2r.baking.Scheduling.Workflow;
 import edu.brown.cs.h2r.baking.actions.ResetAction;
@@ -55,7 +52,7 @@ public class Human implements Agent {
 	private List<KitchenSubdomain> allKitchenSubdomains;
 	private TerminalFunction isFailure;
 	private Domain generalDomain;
-	private final Scheduler scheduler = new ExhaustiveScheduler(5);
+	private final Scheduler scheduler = new ExhaustiveStarScheduler();
 	private final ActionTimeGenerator timeGenerator;
 	public Human(Domain generalDomain, ActionTimeGenerator timeGenerator) {
 		this.generalDomain = generalDomain;
