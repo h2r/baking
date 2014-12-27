@@ -8,28 +8,28 @@ import java.util.Map;
 import java.util.Set;
 
 import burlap.oomdp.singleagent.GroundedAction;
-import edu.brown.cs.h2r.baking.Scheduling.AssignedWorkflow.ActionTime;
+import edu.brown.cs.h2r.baking.Scheduling.Assignment.ActionTime;
 import edu.brown.cs.h2r.baking.Scheduling.Workflow.Node;
 
 public abstract class HeuristicScheduler implements Scheduler {
 
 	@Override
-	public List<AssignedWorkflow> schedule(Workflow workflow, List<String> agents,
+	public List<Assignment> schedule(Workflow workflow, List<String> agents,
 			ActionTimeGenerator actionTimeLookup) {
-		Map<String, AssignedWorkflow> assignedWorkflows = new HashMap<String, AssignedWorkflow>();
+		Map<String, Assignment> assignedWorkflows = new HashMap<String, Assignment>();
 		for (String agent : agents) {
-			AssignedWorkflow assignedWorkflow = new AssignedWorkflow(agent);
+			Assignment assignedWorkflow = new Assignment(agent);
 			assignedWorkflows.put(agent, assignedWorkflow);
 		}
 		
 		boolean keepGoing = true;
 		int previousSize = 0;
 		this.assignActions(workflow, actionTimeLookup, assignedWorkflows, agents);
-		return new ArrayList<AssignedWorkflow>(assignedWorkflows.values());
+		return new ArrayList<Assignment>(assignedWorkflows.values());
 	}
 
 	private void assignActions(Workflow workflow, ActionTimeGenerator actionTimeLookup, 
-			Map<String, AssignedWorkflow> assignments, List<String> agents) {
+			Map<String, Assignment> assignments, List<String> agents) {
 		
 		Set<Workflow.Node> visitedNodes  = new HashSet<Workflow.Node>();
 		while (visitedNodes.size() != workflow.size()) {
@@ -48,7 +48,7 @@ public abstract class HeuristicScheduler implements Scheduler {
 	}
 
 	private void addBestAction(ActionTimeGenerator actionTimeLookup,
-			Map<String, AssignedWorkflow> assignments,
+			Map<String, Assignment> assignments,
 			Set<Workflow.Node> visitedNodes,
 			Map<Workflow.Node, Map<String, Double>> heuristics) {
 		
@@ -75,7 +75,7 @@ public abstract class HeuristicScheduler implements Scheduler {
 			}
 		}
 		
-		assignments.get(bestAgent).addAction(bestAction, bestTime);
+		assignments.get(bestAgent).add(bestAction, bestTime);
 		visitedNodes.add(bestAction);
 	}
 
@@ -99,14 +99,14 @@ public abstract class HeuristicScheduler implements Scheduler {
 	
 
 	
-	protected Map<String, AssignedWorkflow> getBuffered(List<AssignedWorkflow> assignments) {
-		Map<String, AssignedWorkflow> buffered = new HashMap<String, AssignedWorkflow>();
-		for (AssignedWorkflow workflow : assignments) {
+	protected Map<String, Assignment> getBuffered(List<Assignment> assignments) {
+		Map<String, Assignment> buffered = new HashMap<String, Assignment>();
+		for (Assignment workflow : assignments) {
 			buffered.put(workflow.getId(), workflow);
 		}
 		return buffered;
 	}
 	
 	protected abstract Map<Workflow.Node, Map<String, Double>> getWeights(Map<Workflow.Node, Map<String, Double>> times, 
-			Map<String, AssignedWorkflow> assignments);
+			Map<String, Assignment> assignments);
 }

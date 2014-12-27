@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Set;
 
 public interface Scheduler {
-	List<AssignedWorkflow> schedule(Workflow workflow, List<String> agents, ActionTimeGenerator  timeGenerator);
-	List<AssignedWorkflow> finishSchedule(Workflow workflow, ActionTimeGenerator actionTimeLookup, 
-			List<AssignedWorkflow> assignedWorkflows, Set<Workflow.Node> visitedNodes);
+	List<Assignment> schedule(Workflow workflow, List<String> agents, ActionTimeGenerator  timeGenerator);
+	List<Assignment> finishSchedule(Workflow workflow, ActionTimeGenerator actionTimeLookup, 
+			List<Assignment> assignedWorkflows, BufferedAssignments bufferedAssignments, Set<Workflow.Node> visitedNodes);
 }

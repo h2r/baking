@@ -9,23 +9,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import edu.brown.cs.h2r.baking.Scheduling.AssignedWorkflow.ActionTime;
-import edu.brown.cs.h2r.baking.Scheduling.AssignedWorkflow.ConditionalIterator;
+import edu.brown.cs.h2r.baking.Scheduling.Assignment.ActionTime;
+import edu.brown.cs.h2r.baking.Scheduling.Assignment.AssignmentIterator;
 
 public class SchedulingHelper {
 
-	public static List<AssignedWorkflow> getBufferedWorkflows(Collection<AssignedWorkflow> assignedWorkflows) {
+	public static List<Assignment> getBufferedWorkflows(Collection<Assignment> assignedWorkflows) {
 		// The workflows buffered with required waits
-		List<AssignedWorkflow> bufferedWorkflows = new ArrayList<AssignedWorkflow>();
+		List<Assignment> bufferedWorkflows = new ArrayList<Assignment>();
 		
 		// List of iterators into the assignments
-		List<ConditionalIterator> workflowIterators = new ArrayList<ConditionalIterator>();
+		List<AssignmentIterator> workflowIterators = new ArrayList<AssignmentIterator>();
 		
 		// Iterate through assignments, and setup initial lists
 		int size = 0;
-		for (AssignedWorkflow workflow : assignedWorkflows) {
-			bufferedWorkflows.add(new AssignedWorkflow(workflow.getId()));
-			workflowIterators.add((ConditionalIterator)workflow.iterator());
+		for (Assignment workflow : assignedWorkflows) {
+			bufferedWorkflows.add(new Assignment(workflow.getId()));
+			workflowIterators.add((AssignmentIterator)workflow.iterator());
 			size += workflow.size();
 		}
 		
@@ -38,7 +38,7 @@ public class SchedulingHelper {
 		// A list of all nodes visited by the current time
 		int defaultSize = (int)((double)size / 0.5) + 1;
 		Set<Workflow.Node> futureVisitedNodes = new HashSet<Workflow.Node>(2 * defaultSize, 0.5f); 
-		List<AssignedWorkflow> updatedWorkflows = new ArrayList<AssignedWorkflow>();
+		List<Assignment> updatedWorkflows = new ArrayList<Assignment>();
 		while(keepGoing) {
 			// Set initially to false
 			keepGoing = false;
@@ -58,7 +58,7 @@ public class SchedulingHelper {
 			
 			boolean haveMoreElements = false;
 			// Keep going if any iterator has another element
-			for (ConditionalIterator it : workflowIterators) {
+			for (AssignmentIterator it : workflowIterators) {
 				haveMoreElements |= it.hasNext();
 			}
 			if (haveMoreElements) {
@@ -66,10 +66,10 @@ public class SchedulingHelper {
 			}
 		}
 		
-		Iterator<AssignedWorkflow> iterator = assignedWorkflows.iterator();
+		Iterator<Assignment> iterator = assignedWorkflows.iterator();
 		for (int i = 0; i < bufferedWorkflows.size(); i++) {
-			AssignedWorkflow assignedWorkflow = iterator.next();
-			AssignedWorkflow bufferedWorkflow = bufferedWorkflows.get(i);
+			Assignment assignedWorkflow = iterator.next();
+			Assignment bufferedWorkflow = bufferedWorkflows.get(i);
 			if (assignedWorkflow.realSize() != bufferedWorkflow.realSize()) {
 				System.err.println("Not all assigned actions were copied");
 			
@@ -79,17 +79,19 @@ public class SchedulingHelper {
 		return bufferedWorkflows;
 	}
 	
-	public static double updateBufferedWorkflows(Collection<AssignedWorkflow> assignedWorkflows, List<ConditionalIterator> workflowIterators,
-			List<AssignedWorkflow> bufferedWorkflows, Set<Workflow.Node> visitedNodes, double currentTime) {
+	
+	public static double updateBufferedWorkflows(Collection<Assignment> assignedWorkflows, List<AssignmentIterator> workflowIterators,
+			List<Assignment> bufferedWorkflows, Set<Workflow.Node> visitedNodes, double currentTime) {
 		// flag to check if we need to continue looping
 		boolean keepGoing =  true;
+		int numTimesCalled = 0;
 		
 		// A list of all nodes visited by the current time
-		List<AssignedWorkflow> updatedWorkflows = new ArrayList<AssignedWorkflow>();
+		List<Assignment> updatedWorkflows = new ArrayList<Assignment>();
 		while(keepGoing) {
 			// Set initially to false
 			keepGoing = false;
-			
+			numTimesCalled++;
 			boolean assignedWorkflowChanges = addFeasibleActions(
 					assignedWorkflows, bufferedWorkflows, workflowIterators,
 					currentTime, visitedNodes, updatedWorkflows);
@@ -105,7 +107,7 @@ public class SchedulingHelper {
 			
 			boolean haveMoreElements = false;
 			// Keep going if any iterator has another element
-			for (ConditionalIterator it : workflowIterators) {
+			for (AssignmentIterator it : workflowIterators) {
 				haveMoreElements |= it.hasNext();
 			}
 			if (haveMoreElements) {
@@ -113,26 +115,28 @@ public class SchedulingHelper {
 			}
 		}
 		
-		Iterator<AssignedWorkflow> iterator = assignedWorkflows.iterator();
+		Iterator<Assignment> iterator = assignedWorkflows.iterator();
 		for (int i = 0; i < bufferedWorkflows.size(); i++) {
-			AssignedWorkflow assignedWorkflow = iterator.next();
-			AssignedWorkflow bufferedWorkflow = bufferedWorkflows.get(i);
+			Assignment assignedWorkflow = iterator.next();
+			Assignment bufferedWorkflow = bufferedWorkflows.get(i);
 			if (assignedWorkflow.realSize() != bufferedWorkflow.realSize()) {
 				System.err.println("Not all assigned actions were copied");
 			
 			}
 		
 		}
-		
+		if (numTimesCalled > 1) {
+			System.out.println("Number times called, " + numTimesCalled + ", " + visitedNodes.size());
+		}
 		return currentTime;
 	}
 
-	private static double getNextTime(List<AssignedWorkflow> bufferedWorkflows,
-			List<ConditionalIterator> workflowIterators, double currentTime,
-			List<AssignedWorkflow> updatedWorkflows) {
+	private static double getNextTime(List<Assignment> bufferedWorkflows,
+			List<AssignmentIterator> workflowIterators, double currentTime,
+			List<Assignment> updatedWorkflows) {
 		double nextAvailableTime = Double.MAX_VALUE;
 		// Iterate through the buffered workflows
-		for (AssignedWorkflow workflow : bufferedWorkflows) {
+		for (Assignment workflow : bufferedWorkflows) {
 			
 			// Get the earliest time this workflow will be available
 			nextAvailableTime = Math.min(nextAvailableTime, workflow.time());
@@ -149,7 +153,7 @@ public class SchedulingHelper {
 			nextTime = Double.MAX_VALUE;
 			
 			// Iterate through the buffered workflows
-			for (AssignedWorkflow workflow : updatedWorkflows) {
+			for (Assignment workflow : updatedWorkflows) {
 				
 				// Get the time after the current time when something new happens
 				Double time = workflow.nextTime(currentTime);
@@ -166,8 +170,8 @@ public class SchedulingHelper {
 			
 			// Iterate through the workflows and tell them to wait if they aren't busy
 			for (int i = 0; i < bufferedWorkflows.size(); i++) {
-				AssignedWorkflow bufferedWorkflow = bufferedWorkflows.get(i);
-				ConditionalIterator it = workflowIterators.get(i);
+				Assignment bufferedWorkflow = bufferedWorkflows.get(i);
+				AssignmentIterator it = workflowIterators.get(i);
 				
 				// Only tell them to wait if there is another action they could do after this
 				if (it.hasNext()) {
@@ -181,26 +185,26 @@ public class SchedulingHelper {
 	}
 
 	private static boolean addFeasibleActions(
-			Collection<AssignedWorkflow> assignedWorkflows,
-			List<AssignedWorkflow> bufferedWorkflows,
-			List<ConditionalIterator> workflowIterators, double currentTime,
+			Collection<Assignment> assignedWorkflows,
+			List<Assignment> bufferedWorkflows,
+			List<AssignmentIterator> workflowIterators, double currentTime,
 			Set<Workflow.Node> futureVisitedNodes,
-			List<AssignedWorkflow> updatedWorkflows) {
+			List<Assignment> updatedWorkflows) {
 		
 		updatedWorkflows.clear();
 		int size = 0;
-		for (AssignedWorkflow workflow : bufferedWorkflows) size += workflow.size();
+		for (Assignment workflow : bufferedWorkflows) size += workflow.size();
 		// Clear visited nodes, and add in all that would have been completed by the current time
 		List<Workflow.Node> visitedNodes = new ArrayList<Workflow.Node>(size);
 		
-		for (AssignedWorkflow workflow : bufferedWorkflows) {
+		for (Assignment workflow : bufferedWorkflows) {
 			visitedNodes.addAll(workflow.nodes(currentTime));
 		}
 		boolean assignedWorkflowChanges = false;
 		// Iterate through all assignments
-		Iterator<AssignedWorkflow> iterator = assignedWorkflows.iterator();
+		Iterator<Assignment> iterator = assignedWorkflows.iterator();
 		for (int i = 0; i < assignedWorkflows.size(); i++) {
-			AssignedWorkflow assignedWorkflow = iterator.next();
+			Assignment assignedWorkflow = iterator.next();
 			futureVisitedNodes.clear();
 			futureVisitedNodes.addAll(visitedNodes);
 			
@@ -213,11 +217,11 @@ public class SchedulingHelper {
 	}
 
 	private static boolean addAllAvailableNodes(
-			AssignedWorkflow workflow,
-			AssignedWorkflow bufferedWorkflow,
-			ConditionalIterator it,
+			Assignment workflow,
+			Assignment bufferedWorkflow,
+			AssignmentIterator it,
 			Set<Workflow.Node> futureVisitedNodes,
-			List<AssignedWorkflow> updatedWorkflows,
+			List<Assignment> updatedWorkflows,
 			boolean assignedWorkflowChanges, int index) {
 		
 		// Create list of visited nodes that includes those that we add here
@@ -234,8 +238,8 @@ public class SchedulingHelper {
 
 	private static boolean addAvailableNodes(
 			Set<Workflow.Node> futureVisitedNodes,
-			List<AssignedWorkflow> updatedWorkflows, boolean addOnce,
-			AssignedWorkflow bufferedWorkflow, ConditionalIterator it) {
+			List<Assignment> updatedWorkflows, boolean addOnce,
+			Assignment bufferedWorkflow, AssignmentIterator it) {
 		
 		// Get item
 		ActionTime item = it.next();
@@ -244,7 +248,7 @@ public class SchedulingHelper {
 		futureVisitedNodes.add(item.getNode());
 		
 		// Add this item to the buffered workflow
-		bufferedWorkflow.add(item);
+		bufferedWorkflow.add(item.getNode(), item.getTime());
 		if (!addOnce) {
 			updatedWorkflows.add(bufferedWorkflow);
 			addOnce = true;
@@ -253,32 +257,70 @@ public class SchedulingHelper {
 		return addOnce;
 	}
 	
-	public static List<AssignedWorkflow> copy(List<AssignedWorkflow> other) {
-		List<AssignedWorkflow> copyOf = new ArrayList<AssignedWorkflow>(other.size());
-		for (AssignedWorkflow workflow : other) {
-			copyOf.add(new AssignedWorkflow(workflow));
+	public static List<Assignment> copy(List<Assignment> other) {
+		List<Assignment> copyOf = new ArrayList<Assignment>(other.size());
+		for (Assignment workflow : other) {
+			copyOf.add(new Assignment(workflow));
 		}
 		return copyOf;
 	}
 	
-	public static Map<String, AssignedWorkflow> copyMap(Map<String, AssignedWorkflow> other) {
-		Map<String, AssignedWorkflow> copyOf = new HashMap<String, AssignedWorkflow>();
-		for (Map.Entry<String, AssignedWorkflow> entry : other.entrySet()) {
-			copyOf.put(entry.getKey(), new AssignedWorkflow(entry.getValue()));
+	public static Map<String, Assignment> copyMap(Map<String, Assignment> other) {
+		Map<String, Assignment> copyOf = new HashMap<String, Assignment>();
+		for (Map.Entry<String, Assignment> entry : other.entrySet()) {
+			copyOf.put(entry.getKey(), new Assignment(entry.getValue()));
 		}
 		return copyOf;
 	}
 	
-	public static double computeSequenceTime(Collection<AssignedWorkflow> assignedWorkflows) {
-		List<AssignedWorkflow> bufferedWorkflows = SchedulingHelper.getBufferedWorkflows(assignedWorkflows);
-		return SchedulingHelper.getLongestAssignment(bufferedWorkflows);
-	}
-	
-	public static double getLongestAssignment(List<AssignedWorkflow> bufferedWorkflows) {
+	public static double getLongestAssignment(List<Assignment> bufferedWorkflows) {
 		double maxTime = 0.0;
-		for (AssignedWorkflow workflow : bufferedWorkflows) {
+		for (Assignment workflow : bufferedWorkflows) {
 			maxTime = Math.max(maxTime, workflow.time());
 		}
 		return maxTime;
+	}
+	
+	public static void addActionToBuffered(List<Assignment> bufferedWorkflows, ActionTime action, String agent) {
+		Assignment agentsWorkflow = null;
+		for (Assignment workflow : bufferedWorkflows) {
+			if (workflow.getId().equals(agent)) {
+				agentsWorkflow = workflow;
+			}
+		}
+		if (agentsWorkflow == null) {
+			return;
+		}
+		
+		double time = SchedulingHelper.getTimeNodeIsAvailable(bufferedWorkflows, action.getNode(), agentsWorkflow.time());
+		if (time > agentsWorkflow.time()) {
+			agentsWorkflow.add(null, time - agentsWorkflow.time());
+		}
+		agentsWorkflow.add(action.getNode(), action.getTime());
+	}
+	
+	public static double getTimeNodeIsAvailable(List<Assignment> bufferedWorkflows, Workflow.Node node, double seed) {
+		Set<Workflow.Node> completed = new HashSet<Workflow.Node>();
+		double currentTime = seed;
+		for (Assignment workflow : bufferedWorkflows) {
+			completed.addAll(workflow.nodes(currentTime));
+		}
+		
+		while (!node.isAvailable(completed)) {
+			for (Assignment workflow : bufferedWorkflows) {
+				completed.addAll(workflow.nodes(currentTime));
+			}
+			double nextTime = Double.MAX_VALUE;
+			for (Assignment workflow : bufferedWorkflows) {
+				Double time = workflow.nextTime(currentTime);
+				if (time != null && time > currentTime && time < nextTime) {
+					nextTime = time;
+				}
+			}
+			currentTime = nextTime;
+		}
+		
+		return currentTime;
+		
 	}
 }

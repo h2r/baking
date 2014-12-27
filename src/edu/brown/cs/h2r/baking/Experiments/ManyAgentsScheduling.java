@@ -468,10 +468,10 @@ public class ManyAgentsScheduling {
 		
 		
 		
-		List<Agent> agents = Arrays.asList(
+		List<Agent> agents = Arrays.asList(/*
 				(Agent)new RandomActionAgent(generalDomain),
-				(Agent)new RandomRecipeAgent(generalDomain, timeGenerator),
-				(Agent)new Human(generalDomain, "friend", timeGenerator),
+				(Agent)new RandomRecipeAgent(generalDomain, timeGenerator),*/
+				//(Agent)new Human(generalDomain, "friend", timeGenerator)//,
 				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator)
 				);
 		System.out.println("Agent, Successes, Trials, Average reward, average successful reward");
@@ -484,7 +484,7 @@ public class ManyAgentsScheduling {
 		
 			EvaluationResult result;
 		for (int i = 0; i < numTrials; i++) {
-			System.out.println("solo" + ", " +  ManyAgentsScheduling.evaluateHuman(generalDomain, human, timeGenerator, 1).toString());
+			//System.out.println("solo" + ", " +  ManyAgentsScheduling.evaluateHuman(generalDomain, human, timeGenerator, 1).toString());
 			
 			Collections.shuffle(agents);
 			

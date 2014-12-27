@@ -24,8 +24,8 @@ import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
-import edu.brown.cs.h2r.baking.Scheduling.AssignedWorkflow;
-import edu.brown.cs.h2r.baking.Scheduling.AssignedWorkflow.ActionTime;
+import edu.brown.cs.h2r.baking.Scheduling.Assignment;
+import edu.brown.cs.h2r.baking.Scheduling.Assignment.ActionTime;
 import edu.brown.cs.h2r.baking.Scheduling.ExhaustiveStarScheduler;
 import edu.brown.cs.h2r.baking.Scheduling.Scheduler;
 import edu.brown.cs.h2r.baking.Scheduling.Workflow;
@@ -203,8 +203,8 @@ public class Human implements Agent {
 		
 		List<AbstractGroundedAction> actions = this.generateActionList(state);
 		Workflow workflow = Workflow.buildWorkflow(state, actions);
-		List<AssignedWorkflow> assignments = this.scheduler.schedule(workflow, agents, this.timeGenerator);
-		for (AssignedWorkflow assignment : assignments) {
+		List<Assignment> assignments = this.scheduler.schedule(workflow, agents, this.timeGenerator);
+		for (Assignment assignment : assignments) {
 			if (assignment.getId().equals(this.getAgentName())) {
 				for (ActionTime actionTime : assignment) {
 					return actionTime.getNode().getAction();
@@ -218,11 +218,12 @@ public class Human implements Agent {
 	private List<AbstractGroundedAction> generateActionList(State state) {
 		List<AbstractGroundedAction> actions = new ArrayList<AbstractGroundedAction>();
 		boolean isFinished = false;
+		List<KitchenSubdomain> kitchenSubdomains = new ArrayList<KitchenSubdomain>(this.kitchenSubdomains);
 		while(!isFinished) {
 			if (this.currentSubgoal == null) {
 				this.chooseNewSubgoal(state);
 			} else if (this.currentSubgoal.getSubgoal().goalCompleted(state)) {
-				this.kitchenSubdomains.remove(this.currentSubgoal);
+				kitchenSubdomains.remove(this.currentSubgoal);
 				this.chooseNewSubgoal(state);
 			}
 			if (this.currentSubgoal == null) {
@@ -240,7 +241,7 @@ public class Human implements Agent {
 			this.normalizeActionDistribution(allowableActions);
 			AbstractGroundedAction action = this.getActionFromPolicyDistribution(allowableActions);
 			if (action == null) {
-				this.kitchenSubdomains.remove(this.currentSubgoal);
+				kitchenSubdomains.remove(this.currentSubgoal);
 				this.chooseNewSubgoal(state);
 			} else {
 				state = action.executeIn(state);

@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import edu.brown.cs.h2r.baking.Scheduling.AssignedWorkflow.ActionTime;
+import edu.brown.cs.h2r.baking.Scheduling.Assignment.ActionTime;
 import edu.brown.cs.h2r.baking.Scheduling.Workflow.Node;
 
 public class ExhaustiveScheduler implements Scheduler {
@@ -22,12 +22,12 @@ public class ExhaustiveScheduler implements Scheduler {
 	}
 
 	@Override
-	public List<AssignedWorkflow> schedule(Workflow workflow, List<String> agents,
+	public List<Assignment> schedule(Workflow workflow, List<String> agents,
 			ActionTimeGenerator actionTimeLookup) {
-		Map<String, AssignedWorkflow> assignedWorkflows = new HashMap<String, AssignedWorkflow>();
+		Map<String, Assignment> assignedWorkflows = new HashMap<String, Assignment>();
 		
 		for (String agent : agents) {
-			AssignedWorkflow assignedWorkflow = new AssignedWorkflow(agent);
+			Assignment assignedWorkflow = new Assignment(agent);
 			assignedWorkflows.put(agent, assignedWorkflow);
 		}
 		int previousSize = 0;
@@ -35,19 +35,19 @@ public class ExhaustiveScheduler implements Scheduler {
 			this.assignActions(workflow, actionTimeLookup, assignedWorkflows, new HashSet<Workflow.Node>(), this.maxDepth);
 			
 			previousSize = 0;
-			for (AssignedWorkflow assignedWorkflow : assignedWorkflows.values()) {
+			for (Assignment assignedWorkflow : assignedWorkflows.values()) {
 				previousSize += assignedWorkflow.size();
 			}
 		}
 		
-		return new ArrayList<AssignedWorkflow>(assignedWorkflows.values());
+		return new ArrayList<Assignment>(assignedWorkflows.values());
 	}
 	
-	public List<AssignedWorkflow> finishSchedule(Workflow workflow, ActionTimeGenerator actionTimeLookup, 
-			List<AssignedWorkflow> assignedWorkflows, Set<Workflow.Node> visitedNodes) {
+	public List<Assignment> finishSchedule(Workflow workflow, ActionTimeGenerator actionTimeLookup, 
+			List<Assignment> assignedWorkflows, BufferedAssignments bufferedWorkflows, Set<Workflow.Node> visitedNodes) {
 		
-		Map<String, AssignedWorkflow> assignedWorkflowMap = new HashMap<String, AssignedWorkflow>();
-		for (AssignedWorkflow assignedWorkflow : assignedWorkflows) {
+		Map<String, Assignment> assignedWorkflowMap = new HashMap<String, Assignment>();
+		for (Assignment assignedWorkflow : assignedWorkflows) {
 			assignedWorkflowMap.put(assignedWorkflow.getId(), assignedWorkflow);
 		}
 		int previousSize = 0;
@@ -55,26 +55,27 @@ public class ExhaustiveScheduler implements Scheduler {
 			this.assignActions(workflow, actionTimeLookup, assignedWorkflowMap, new HashSet<Workflow.Node>(), this.maxDepth);
 			
 			previousSize = 0;
-			for (AssignedWorkflow assignedWorkflow : assignedWorkflowMap.values()) {
+			for (Assignment assignedWorkflow : assignedWorkflowMap.values()) {
 				previousSize += assignedWorkflow.size();
 			}
 		}
 		
-		return new ArrayList<AssignedWorkflow>(assignedWorkflowMap.values());
+		return new ArrayList<Assignment>(assignedWorkflowMap.values());
 	}
 	
 	private double assignActions(Workflow workflow, ActionTimeGenerator actionTimeLookup, 
-			Map<String, AssignedWorkflow> assignments, Set<Workflow.Node> visitedNodes, int depth ) {
+			Map<String, Assignment> assignments, Set<Workflow.Node> visitedNodes, int depth ) {
 		if (visitedNodes.size() == workflow.size()) {
-			return SchedulingHelper.computeSequenceTime(new ArrayList<AssignedWorkflow>(assignments.values()));
+			return new BufferedAssignments(assignments.values()).time();
 		}
 		if (depth == 0) {
 			GreedyScheduler greedyScheduler = new GreedyScheduler();
-			List<AssignedWorkflow> assignedWorkflows = new ArrayList<AssignedWorkflow>(assignments.values());
-			greedyScheduler.finishSchedule(workflow, actionTimeLookup, assignedWorkflows, visitedNodes);
-			return SchedulingHelper.computeSequenceTime(assignedWorkflows);
+			List<Assignment> assignedWorkflows = new ArrayList<Assignment>(assignments.values());
+			BufferedAssignments buffered = new BufferedAssignments(assignedWorkflows);
+			greedyScheduler.finishSchedule(workflow, actionTimeLookup, assignedWorkflows, buffered, visitedNodes);
+			return buffered.time();
 		}
-		for (AssignedWorkflow assignedWorkflow : assignments.values()) {
+		for (Assignment assignedWorkflow : assignments.values()) {
 			for (ActionTime actionTime : assignedWorkflow) {
 				visitedNodes.add(actionTime.getNode());
 			}
@@ -92,11 +93,11 @@ public class ExhaustiveScheduler implements Scheduler {
 			Set<Workflow.Node> futureVisitedNodes = new HashSet<Workflow.Node>(visitedNodes);
 			futureVisitedNodes.add(node);
 			
-			for (Map.Entry<String, AssignedWorkflow> entry : assignments.entrySet()) {
-				Map<String, AssignedWorkflow> copied = SchedulingHelper.copyMap(assignments);
+			for (Map.Entry<String, Assignment> entry : assignments.entrySet()) {
+				Map<String, Assignment> copied = SchedulingHelper.copyMap(assignments);
 				String agent = entry.getKey();
 				double time = actionTimeLookup.get(node.getAction());
-				copied.get(agent).addAction(node, time);
+				copied.get(agent).add(node, time);
 				double sequenceTime = this.assignActions(workflow, actionTimeLookup, copied, futureVisitedNodes, depth - 1);
 				if (sequenceTime < bestTime) {
 					bestTime = sequenceTime;
@@ -107,7 +108,7 @@ public class ExhaustiveScheduler implements Scheduler {
 			}
 			
 		}
-		assignments.get(bestAgent).addAction(bestNode, bestActionTime);
+		assignments.get(bestAgent).add(bestNode, bestActionTime);
 		return bestTime;
 	}
 	
