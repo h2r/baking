@@ -34,15 +34,15 @@ if len(argv) > 1:
             agent = line[0]
             if agent not in data.keys():
                 data[agent] = dict()
-	    result = line[1].split(':')
-	    edges = result[0]
+	    edges = line[1]
 	    if edges not in data[agent].keys():
 		    data[agent][edges] = []
-            data[agent][edges].append(float(result[1]))
+            data[agent][edges].append(float(line[3]))
 	    
 
     print("Agent, Edges, Average time")
     for agent, data_by_edges in data.iteritems():
 	    for edges, line in data_by_edges.iteritems():
 		    #print(str(line))
-		    print(str(agent) + ", " + str(edges) + ", " + str(numpy.mean(line)) + ", " + str(numpy.std(line, ddof=1)))
+                    interval = 1.96 * numpy.std(line, ddof=1) / math.sqrt(len(line))
+		    print(str(agent) + ", " + str(edges) + ", " + str(numpy.mean(line)) + ", " + str(interval))
