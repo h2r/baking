@@ -12,14 +12,14 @@ public class WeightByShortest extends HeuristicScheduler {
 
 	@Override
 	protected Map<Node, Map<String, Double>> getWeights(
-			Map<Node, Map<String, Double>> times, Map<String, AssignedWorkflow> assignments) {
+			Map<Node, Map<String, Double>> times, Map<String, Assignment> assignments) {
 		Map<Node, Map<String, Double>> weights = new HashMap<Node, Map<String, Double>>();
 		
-		List<AssignedWorkflow> assignedWorkflows = new ArrayList<AssignedWorkflow>(assignments.values());
-		List<AssignedWorkflow> bufferedWorkflows = SchedulingHelper.getBufferedWorkflows(assignedWorkflows);
-		double baseTime = SchedulingHelper.getLongestAssignment(bufferedWorkflows);
+		List<Assignment> assignedWorkflows = new ArrayList<Assignment>(assignments.values());
+		BufferedAssignments bufferedAssignments = new BufferedAssignments(assignedWorkflows);
+		double baseTime = bufferedAssignments.time();
 		
-		Map<String, AssignedWorkflow> bufferedMap = this.getBuffered(bufferedWorkflows);
+		Map<String, Assignment> bufferedMap = bufferedAssignments.getAssignmentMap();
 		
 		for(Map.Entry<Node, Map<String,Double>> entry : times.entrySet()) {
 			Map<String, Double> agentTimes = entry.getValue();
@@ -39,8 +39,8 @@ public class WeightByShortest extends HeuristicScheduler {
 		return weights;
 	}
 	
-	public List<AssignedWorkflow> finishSchedule(Workflow workflow, ActionTimeGenerator actionTimeLookup, 
-			List<AssignedWorkflow> assignedWorkflows, Set<Workflow.Node> visitedNodes) {
+	public List<Assignment> finishSchedule(Workflow workflow, ActionTimeGenerator actionTimeLookup, 
+			List<Assignment> assignedWorkflows, BufferedAssignments bufferedWorkflows, Set<Workflow.Node> visitedNodes) {
 		return assignedWorkflows;
 	}
 	

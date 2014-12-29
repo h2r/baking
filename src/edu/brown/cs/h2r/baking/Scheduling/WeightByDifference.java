@@ -12,7 +12,7 @@ import edu.brown.cs.h2r.baking.Scheduling.Workflow.Node;
 public class WeightByDifference extends HeuristicScheduler {
 	@Override
 	protected Map<Node, Map<String, Double>> getWeights(
-			Map<Node, Map<String, Double>> times, Map<String, AssignedWorkflow> assignments) {
+			Map<Node, Map<String, Double>> times, Map<String, Assignment> assignments) {
 		Map<Node, Map<String, Double>> weights = new HashMap<Node, Map<String, Double>>();
 		
 		for(Map.Entry<Node, Map<String,Double>> entry : times.entrySet()) {
@@ -40,8 +40,8 @@ public class WeightByDifference extends HeuristicScheduler {
 		return weights;
 	}
 	
-	public List<AssignedWorkflow> finishSchedule(Workflow workflow, ActionTimeGenerator actionTimeLookup, 
-			List<AssignedWorkflow> assignedWorkflows, Set<Workflow.Node> visitedNodes) {
+	public List<Assignment> finishSchedule(Workflow workflow, ActionTimeGenerator actionTimeLookup, 
+			List<Assignment> assignedWorkflows, BufferedAssignments bufferedWorkflows, Set<Workflow.Node> visitedNodes) {
 		return assignedWorkflows;
 	}
 	

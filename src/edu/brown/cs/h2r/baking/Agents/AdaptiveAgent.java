@@ -22,7 +22,7 @@ import edu.brown.cs.h2r.baking.Experiments.KitchenSubdomain;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.Prediction.PolicyProbability;
 import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
-import edu.brown.cs.h2r.baking.Scheduling.AssignedWorkflow;
+import edu.brown.cs.h2r.baking.Scheduling.Assignment;
 import edu.brown.cs.h2r.baking.Scheduling.ExhaustiveStarScheduler;
 import edu.brown.cs.h2r.baking.Scheduling.Scheduler;
 import edu.brown.cs.h2r.baking.Scheduling.Workflow;
@@ -142,7 +142,7 @@ public abstract class AdaptiveAgent implements Agent {
 		List<Workflow> adjustedWorkflows = AdaptiveAgent.generateWorkflows(state, adjustedActionLists);
 		
 		// For each workflow, create the optimal assignments
-		List<List<AssignedWorkflow>> assignedWorkflows = AdaptiveAgent.assignAllWorkflows(state, agents, adjustedWorkflows, timeGenerator);
+		List<List<Assignment>> assignedWorkflows = AdaptiveAgent.assignAllWorkflows(state, agents, adjustedWorkflows, timeGenerator);
 		
 		// For each assignment, compute how long each assignment would take
 		List<Double> expectedCompletionTimes = AdaptiveAgent.generateExpectedCompletionTimes(assignedWorkflows);
@@ -189,20 +189,20 @@ public abstract class AdaptiveAgent implements Agent {
 		return workflows;
 	}
 	
-	protected static List<List<AssignedWorkflow>> assignAllWorkflows(State state, List<String> agents, List<Workflow> workflows, ActionTimeGenerator timeGenerator) {
+	protected static List<List<Assignment>> assignAllWorkflows(State state, List<String> agents, List<Workflow> workflows, ActionTimeGenerator timeGenerator) {
 		Scheduler exhaustive = new ExhaustiveStarScheduler();
-		List<List<AssignedWorkflow>> assignments = new ArrayList<List<AssignedWorkflow>>(workflows.size());
+		List<List<Assignment>> assignments = new ArrayList<List<Assignment>>(workflows.size());
 		for (Workflow workflow : workflows) {
 			assignments.add(exhaustive.schedule(workflow, agents, timeGenerator));
 		}
 		return assignments;
 	}
 	
-	protected static List<Double> generateExpectedCompletionTimes(List<List<AssignedWorkflow>> allAssignments) {
+	protected static List<Double> generateExpectedCompletionTimes(List<List<Assignment>> allAssignments) {
 		List<Double> expectedCompletionTimes = new ArrayList<Double>(allAssignments.size());
-		for (List<AssignedWorkflow> assignments : allAssignments) {
+		for (List<Assignment> assignments : allAssignments) {
 			Double longestTime = 0.0;
-			for (AssignedWorkflow workflow : assignments) {
+			for (Assignment workflow : assignments) {
 				longestTime = Math.max(longestTime, workflow.time());
 			}
 			expectedCompletionTimes.add(longestTime);

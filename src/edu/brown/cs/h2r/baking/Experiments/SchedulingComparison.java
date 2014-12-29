@@ -4,18 +4,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
-import edu.brown.cs.h2r.baking.Scheduling.AssignedWorkflow;
-import edu.brown.cs.h2r.baking.Scheduling.AssignedWorkflow.ActionTime;
+import edu.brown.cs.h2r.baking.Scheduling.Assignment;
+import edu.brown.cs.h2r.baking.Scheduling.Assignment.ActionTime;
+import edu.brown.cs.h2r.baking.Scheduling.BufferedAssignments;
 import edu.brown.cs.h2r.baking.Scheduling.ExhaustiveStarScheduler;
 import edu.brown.cs.h2r.baking.Scheduling.GreedyScheduler;
 import edu.brown.cs.h2r.baking.Scheduling.RandomScheduler;
 import edu.brown.cs.h2r.baking.Scheduling.Scheduler;
-import edu.brown.cs.h2r.baking.Scheduling.SchedulingHelper;
 import edu.brown.cs.h2r.baking.Scheduling.WeightByDifference;
 import edu.brown.cs.h2r.baking.Scheduling.WeightByShortest;
 import edu.brown.cs.h2r.baking.Scheduling.Workflow;
@@ -68,26 +70,27 @@ public class SchedulingComparison {
 		return sum;
 	}
 	
-	public static boolean verifyAssignments(Workflow workflow, List<AssignedWorkflow> assignedWorkflows) {
+	public static boolean verifyAssignments(Workflow workflow, List<Assignment> assignedWorkflows) {
 		int size = 0;
-		for (AssignedWorkflow assignedWorkflow : assignedWorkflows) {
-			size += assignedWorkflow.size();
-			for (ActionTime time : assignedWorkflow) {
-				int duration = (int)(time.getTime() * 10);
-				String label = (time.getNode() == null ) ? "." : time.getNode().toString();
-				int length = duration * 3;
-				length = Math.max(1, length);
-				if (length > 0) {
-					label = String.format("%" + length + "s", label);
-					System.out.print(label.replace(' ', '.'));
+		Set<Workflow.Node> visited = new HashSet<Workflow.Node>();  
+		for (Assignment assignment : assignedWorkflows) {
+			size += assignment.size();
+			visited.clear();
+			for (Assignment assignment2 : assignedWorkflows) {
+				if (assignment != assignment2) {
+					visited.addAll(assignment2.nodes());
 				}
-				
 			}
-			System.out.print("\n");
+			for (ActionTime action : assignment) {
+				if (!action.getNode().isAvailable(visited)) {
+					System.err.println("This set of assignments is impossible to finish");
+					return false;
+				}
+				visited.add(action.getNode());
+			}
 		}
-		System.out.println("\n\n");
-		
-		
+		BufferedAssignments buffered = new BufferedAssignments(assignedWorkflows);
+		System.out.println(buffered.visualString());
 		
 		if (size != workflow.size()) {
 			System.err.println(Integer.toString(size) + " actions were assigned. Should be " + workflow.size());
@@ -95,14 +98,25 @@ public class SchedulingComparison {
 		}
 		return true;
 	}
-	public static void main(String argv[]) {
+	private static boolean verifySortedWorkflow(Workflow workflow) {
+		Set<Workflow.Node> visited = new HashSet<Workflow.Node>(workflow.size() * 2);
+		for (Workflow.Node node : workflow) {
+			if (!node.isAvailable(visited)) {
+				return false;
+			}
+			visited.add(node);
+		}
+		return true;
+		
+	}
+	
+	public static void main(String argv[]) throws InterruptedException {
 		List<Scheduler> schedulers = Arrays.asList(
-				new RandomScheduler(),
-				new GreedyScheduler()/*,
-				new WeightByShortest(),
-				new WeightByDifference()*/,
-				new ExhaustiveStarScheduler()/*,
-				new ExhaustiveScheduler()*/
+				//new RandomScheduler(),
+				//(Scheduler)(new GreedyScheduler()),
+				//new WeightByShortest(),
+				//new WeightByDifference(),
+				(Scheduler)(new ExhaustiveStarScheduler())
 				);
 		
 		int numTries = 100;
@@ -115,21 +129,35 @@ public class SchedulingComparison {
 		ActionTimeGenerator timeGenerator = new ActionTimeGenerator(factors);
 		List<Integer> connectedness = Arrays.asList(60, 40, 20);
 		Collections.shuffle(connectedness);
+		
 		for (Integer edges : connectedness) {
 			for (int i = 0; i < numTries; i++) {
-				double sum = 0.0;
+				Workflow workflow = SchedulingComparison.buildSortedWorkflow(20, edges);
 				
 				for (Scheduler scheduler : schedulers) {
-					Workflow workflow = SchedulingComparison.buildSortedWorkflow(20, edges);
+					List<Assignment> assignments;
+					workflow = SchedulingComparison.buildSortedWorkflow(20, edges);
 					
-					List<AssignedWorkflow> assignments = scheduler.schedule(workflow, Arrays.asList("human", "friend"), timeGenerator);
-					SchedulingComparison.verifyAssignments(workflow, assignments);
-					double time = SchedulingHelper.computeSequenceTime(assignments);
-					System.out.println(scheduler.getClass().getSimpleName() + ", " + edges + ": " + time);
+					while(true) {
+					/*if (!SchedulingComparison.verifySortedWorkflow(workflow)) {
+						System.err.println("Workflow is not actually sorted");
+					}*/
+					assignments = scheduler.schedule(workflow, Arrays.asList("human", "friend"), timeGenerator);
+					
+					/*if (!SchedulingComparison.verifyAssignments(workflow, assignments)) {
+						System.err.println("Error with assignments");
+					}*/
+					}
+					//double time = new BufferedAssignments(assignments).time();
+					//System.out.println(scheduler.getClass().getSimpleName() + ", " + edges + ": " + time);
+					
 				}
 				timeGenerator.clear();
-				
+				System.out.println("\n\n");
 			}
 		}
+		
 	}
+
+	
 }

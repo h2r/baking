@@ -33,8 +33,8 @@ import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ToolFactory;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
-import edu.brown.cs.h2r.baking.Scheduling.AssignedWorkflow;
-import edu.brown.cs.h2r.baking.Scheduling.AssignedWorkflow.ActionTime;
+import edu.brown.cs.h2r.baking.Scheduling.Assignment;
+import edu.brown.cs.h2r.baking.Scheduling.Assignment.ActionTime;
 import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
 import edu.brown.cs.h2r.baking.Scheduling.ExhaustiveScheduler;
 import edu.brown.cs.h2r.baking.Scheduling.GreedyScheduler;
@@ -173,9 +173,9 @@ public class RecipeScheduling {
 		return sum;
 	}
 	
-	public static boolean verifyAssignments(Workflow workflow, List<AssignedWorkflow> assignedWorkflows) {
+	public static boolean verifyAssignments(Workflow workflow, List<Assignment> assignedWorkflows) {
 		int size = 0;
-		for (AssignedWorkflow assignedWorkflow : assignedWorkflows) {
+		for (Assignment assignedWorkflow : assignedWorkflows) {
 			size += assignedWorkflow.size();
 			for (ActionTime time : assignedWorkflow) {
 				int duration = (int)(time.getTime() * 10);

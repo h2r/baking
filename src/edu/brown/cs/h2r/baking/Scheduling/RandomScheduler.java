@@ -11,11 +11,11 @@ public class RandomScheduler implements Scheduler {
 	Random random = new Random();
 	
 	@Override
-	public List<AssignedWorkflow> schedule(Workflow workflow,
+	public List<Assignment> schedule(Workflow workflow,
 			List<String> agents, ActionTimeGenerator timeGenerator) {
-		List<AssignedWorkflow> assignedWorkflows = new ArrayList<AssignedWorkflow>();
+		List<Assignment> assignedWorkflows = new ArrayList<Assignment>();
 		for (String agent : agents) {
-			AssignedWorkflow assignedWorkflow = new AssignedWorkflow(agent);
+			Assignment assignedWorkflow = new Assignment(agent);
 			assignedWorkflows.add(assignedWorkflow);
 		}
 		
@@ -25,24 +25,26 @@ public class RandomScheduler implements Scheduler {
 			GroundedAction ga = node.getAction();
 			ga.params[0] = agent;
 			double time = timeGenerator.get(ga);
-			assignedWorkflows.get(choice).addAction(node, time);
+			assignedWorkflows.get(choice).add(node, time);
 		}
 		
 		return assignedWorkflows;
 	}
 	
-	public List<AssignedWorkflow> finishSchedule(Workflow workflow, ActionTimeGenerator actionTimeLookup, 
-			List<AssignedWorkflow> assignedWorkflows, Set<Workflow.Node> visitedNodes) {
+	public List<Assignment> finishSchedule(Workflow workflow, ActionTimeGenerator actionTimeLookup, 
+			List<Assignment> assignedWorkflows, BufferedAssignments bufferedWorkflows, Set<Workflow.Node> visitedNodes) {
 
 		for (Workflow.Node node : workflow) {
 			int choice = random.nextInt(assignedWorkflows.size());
-			AssignedWorkflow assignedWorkflow = assignedWorkflows.get(choice);
+			Assignment assignedWorkflow = assignedWorkflows.get(choice);
 			GroundedAction ga = node.getAction();
 			ga.params[0] = assignedWorkflow.getId();
 			double time = actionTimeLookup.get(ga);
-			assignedWorkflow.addAction(node, time);
+			assignedWorkflow.add(node, time);
 		}
 		
 		return assignedWorkflows;
 	}
+	
+	
 }
