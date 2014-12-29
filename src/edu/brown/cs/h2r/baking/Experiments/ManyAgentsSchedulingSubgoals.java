@@ -36,6 +36,7 @@ import edu.brown.cs.h2r.baking.ObjectFactories.ToolFactory;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
+import edu.brown.cs.h2r.baking.Scheduling.SchedulingHelper;
 import edu.brown.cs.h2r.baking.Scheduling.Workflow;
 import edu.brown.cs.h2r.baking.actions.GreaseAction;
 import edu.brown.cs.h2r.baking.actions.MixAction;
@@ -158,7 +159,7 @@ public class ManyAgentsSchedulingSubgoals {
 		
 		if (firstTime > 0.0) {
 			State nextState = firstAction.executeIn(state);
-			System.out.println("Executing action " + firstAction.toString());
+			//System.out.println("Executing action " + firstAction.toString());
 			if (nextState.equals(state)) {
 				//System.out.println("Action had no effect");
 			}
@@ -171,7 +172,7 @@ public class ManyAgentsSchedulingSubgoals {
 		
 		if (secondTime > 0.0 && secondTime == firstTime) {
 			State nextState = secondAction.executeIn(state);
-			System.out.println("Executing action " + secondAction.toString());
+			//System.out.println("Executing action " + secondAction.toString());
 			
 			if (nextState.equals(state)) {
 				//System.out.println("Action had no effect");
@@ -271,8 +272,8 @@ public class ManyAgentsSchedulingSubgoals {
 			stateSequence.addAll(statePair);
 			actionSequence.addAll(actionPair);
 			boolean isRepeating = checkIfRepeating(stateSequence);
-			isSuccess = human.isSuccess(currentState);
-			double reward = ManyAgentsSchedulingSubgoals.longestTime(actionMap);
+			isSuccess = human.isSubgoalFinished(currentState);
+			double reward = SchedulingHelper.computeSequenceTime(startingState, actionSequence, timeGenerator);
 			finished = isSuccess || reward > 1000.0;
 			
 			/*if (human.isSubgoalFinished(currentState)) {
@@ -297,7 +298,7 @@ public class ManyAgentsSchedulingSubgoals {
 				break;
 			}
 		}
-		double reward = ManyAgentsSchedulingSubgoals.longestTime(actionMap);
+		double reward = SchedulingHelper.computeSequenceTime(startingState, actionSequence, timeGenerator);
 		return new EvaluationResult(reward, isSuccess);
 	}
 	

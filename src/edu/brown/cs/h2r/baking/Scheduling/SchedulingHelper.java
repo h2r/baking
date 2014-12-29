@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import burlap.oomdp.core.AbstractGroundedAction;
+import burlap.oomdp.core.State;
+import burlap.oomdp.singleagent.GroundedAction;
 import edu.brown.cs.h2r.baking.Scheduling.Assignment.ActionTime;
 import edu.brown.cs.h2r.baking.Scheduling.Assignment.AssignmentIterator;
 
@@ -322,5 +325,26 @@ public class SchedulingHelper {
 		
 		return currentTime;
 		
+	}
+
+
+	public static double computeSequenceTime( State state,
+			List<AbstractGroundedAction> actionSequence, ActionTimeGenerator timeGenerator) {
+		Workflow workflow = Workflow.buildWorkflow(state, actionSequence);
+		Map<String, Assignment> sortedActions = new HashMap<String, Assignment>();
+		for (Workflow.Node node : workflow) {
+			GroundedAction ga = node.getAction();
+			String agent = ga.params[0];
+			Assignment assignment = sortedActions.get(agent);
+			if (assignment == null) {
+				assignment = new Assignment(agent);
+				sortedActions.put(agent, assignment);
+			}
+			double time = timeGenerator.get(ga);
+			assignment.add(node, time);
+		}
+		BufferedAssignments buffered = new BufferedAssignments(sortedActions.values());
+		
+		return buffered.time();
 	}
 }
