@@ -36,6 +36,7 @@ import edu.brown.cs.h2r.baking.ObjectFactories.ToolFactory;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
+import edu.brown.cs.h2r.baking.Scheduling.SchedulingHelper;
 import edu.brown.cs.h2r.baking.Scheduling.Workflow;
 import edu.brown.cs.h2r.baking.actions.GreaseAction;
 import edu.brown.cs.h2r.baking.actions.MixAction;
@@ -271,8 +272,8 @@ public class ManyAgentsScheduling {
 			stateSequence.addAll(statePair);
 			actionSequence.addAll(actionPair);
 			boolean isRepeating = checkIfRepeating(stateSequence);
-			isSuccess = human.isSubgoalFinished(currentState);
-			double reward = ManyAgentsScheduling.longestTime(actionMap);
+			isSuccess = human.isFinished(currentState);
+			double reward = SchedulingHelper.computeSequenceTime(startingState, actionSequence, timeGenerator);
 			finished = isSuccess || reward > 1000.0;
 			
 			/*if (human.isSubgoalFinished(currentState)) {
@@ -297,7 +298,7 @@ public class ManyAgentsScheduling {
 				break;
 			}
 		}
-		double reward = ManyAgentsScheduling.longestTime(actionMap);
+		double reward = SchedulingHelper.computeSequenceTime(startingState, actionSequence, timeGenerator);
 		return new EvaluationResult(reward, isSuccess);
 	}
 	
@@ -489,7 +490,7 @@ public class ManyAgentsScheduling {
 			Collections.shuffle(agents);
 			
 			for (Agent agent : agents) {
-			
+				System.out.print(agent.getAgentName());
 				human = new Human(generalDomain, timeGenerator);
 				
 				State startingState = ManyAgentsScheduling.generateInitialState(generalDomain, recipes, human, agent);
@@ -499,7 +500,7 @@ public class ManyAgentsScheduling {
 				agent.setInitialState(startingState);
 				
 				result = ManyAgentsScheduling.evaluateAgent(human, agent, startingState, timeGenerator);
-				System.out.println(agent.getAgentName() + ", " +  result.toString());
+				System.out.println(", " +  result.toString());
 			}
 			timeGenerator.clear();
 		}	

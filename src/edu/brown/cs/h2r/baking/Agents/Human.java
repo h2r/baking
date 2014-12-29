@@ -197,7 +197,8 @@ public class Human implements Agent {
 	}
 	
 	public AbstractGroundedAction getActionWithScheduler(State state, List<String> agents) {
-		if (this.isSuccess(state)) {
+		return this.getAction(state);
+		/*if (this.isSuccess(state)) {
 			return null;
 		}
 		
@@ -212,7 +213,7 @@ public class Human implements Agent {
 			}
 		}
 		
-		return null;
+		return null;*/
 	}
 	
 	private List<AbstractGroundedAction> generateActionList(State state) {
