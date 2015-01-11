@@ -75,7 +75,7 @@ public class Baxter implements Agent {
 	}
 	
 	@Override
-	public AbstractGroundedAction getActionWithScheduler(State state, List<String> agents) {
+	public AbstractGroundedAction getActionWithScheduler(State state, List<String> agents, boolean finishRecipe) {
 		return this.getAction(state);
 	}
 	

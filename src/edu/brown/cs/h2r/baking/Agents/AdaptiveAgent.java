@@ -19,9 +19,11 @@ import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.parallel.Parallel;
 import burlap.parallel.Parallel.ForEachCallable;
+import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.Experiments.KitchenSubdomain;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.Prediction.PolicyProbability;
+import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
 import edu.brown.cs.h2r.baking.Scheduling.Assignment;
 import edu.brown.cs.h2r.baking.Scheduling.ExhaustiveStarScheduler;
@@ -99,7 +101,7 @@ public abstract class AdaptiveAgent implements Agent {
 	}
 	
 	@Override
-	public AbstractGroundedAction getActionWithScheduler(State state, List<String> agents) {
+	public AbstractGroundedAction getActionWithScheduler(State state, List<String> agents, boolean finishRecipe) {
 		List<PolicyProbability> policyDistribution = this.getPolicyDistribution(state);
 		
 		if (policyDistribution == null) {
@@ -116,7 +118,7 @@ public abstract class AdaptiveAgent implements Agent {
 			System.out.println(policy.toString());
 		}*/
 		// For every policy, generate a list of actions for this state
-		List<List<AbstractGroundedAction>> actionLists = this.generateActionLists(state, nonZero);
+		List<List<AbstractGroundedAction>> actionLists = this.generateActionLists(state, nonZero, finishRecipe);
 		
 		// Create workflows graphs from the actionLists 
 		List<Workflow> workflows = AdaptiveAgent.generateWorkflows(state, actionLists);
@@ -128,7 +130,7 @@ public abstract class AdaptiveAgent implements Agent {
 		for (GroundedAction action : availableActions) {
 			System.out.println("\t" + action.toString());
 		}*/
-		ChooseHelpfulActionCallable callable = new ChooseHelpfulActionCallable(state, agents, nonZero, this.timeGenerator);
+		ChooseHelpfulActionCallable callable = new ChooseHelpfulActionCallable(state, agents, nonZero, this.subdomains, this.timeGenerator, finishRecipe);
 		List<Double> completionTimes = Parallel.ForEach(availableActions, callable);
 		return this.findBestAction(availableActions, completionTimes);
 	}
@@ -136,14 +138,14 @@ public abstract class AdaptiveAgent implements Agent {
 	
 
 	private static Double expectedTimeOfTakingAction(State state,
-			List<String> agents, List<PolicyProbability> policyDistribution,
-			GroundedAction action, ActionTimeGenerator timeGenerator) {
+			List<String> agents, List<PolicyProbability> policyDistribution, List<KitchenSubdomain> subdomains,
+			GroundedAction action, ActionTimeGenerator timeGenerator, boolean finishRecipe) {
 		
 		State newState = action.executeIn(state);
 		
 		// For every available action, generate a new list of actions, that have to be taken to accomodate the available action
 		List<List<AbstractGroundedAction>> adjustedActionLists = 
-				AdaptiveAgent.correctActionLists(newState, policyDistribution);
+				AdaptiveAgent.correctActionLists(newState, policyDistribution, subdomains, finishRecipe);
 		
 		// For each adjusted action list, create the associated adjusted workflow
 		List<Workflow> adjustedWorkflows = AdaptiveAgent.generateWorkflows(state, adjustedActionLists);
@@ -167,16 +169,16 @@ public abstract class AdaptiveAgent implements Agent {
 		}
 		return trimmed;
 	}
-	protected List<List<AbstractGroundedAction>> generateActionLists(State state, List<PolicyProbability> policies) {
+	protected List<List<AbstractGroundedAction>> generateActionLists(State state, List<PolicyProbability> policies, boolean finishRecipe) {
 		List<List<AbstractGroundedAction>> actionLists = new ArrayList<List<AbstractGroundedAction>>();
-		
+		List<KitchenSubdomain> subdomains = new ArrayList<KitchenSubdomain>(this.subdomains);
 		for (PolicyProbability policyProb : policies) {
 			//System.out.println(policyProb.getPolicyDomain().toString());
 			if (policyProb.getProbability() > 0.0) {
 				KitchenSubdomain policy = policyProb.getPolicyDomain();
 				List<GroundedAction> groundedActions = new ArrayList<GroundedAction>();
-				List<State> states = new ArrayList<State>();
-				State result = AgentHelper.generateActionSequence(policy, state, rewardFunction, groundedActions);
+				List<KitchenSubdomain> remainingSubgoals = AdaptiveAgent.getRemainingSubgoals(policy, subdomains, state);
+				State result = AgentHelper.generateActionSequence(policy, remainingSubgoals, state, rewardFunction, groundedActions, finishRecipe);
 				List<AbstractGroundedAction> abstractActions = new ArrayList<AbstractGroundedAction>(groundedActions.size());
 				TerminalFunction tf = policy.getTerminalFunction();
 				if (tf.isTerminal(result)) {
@@ -196,6 +198,42 @@ public abstract class AdaptiveAgent implements Agent {
 		}
 		//System.out.println("");
 		return actionLists;
+	}
+	
+	protected static List<KitchenSubdomain> getRemainingSubgoals(KitchenSubdomain policyDomain, List<KitchenSubdomain> allSubdomains, State state) {
+		BakingSubgoal current = policyDomain.getSubgoal();
+		Recipe currentRecipe = policyDomain.getRecipe();
+		List<BakingSubgoal> subgoals = currentRecipe.getSubgoals();
+		subgoals.remove(current);
+		Set<BakingSubgoal> toRemove = new HashSet<BakingSubgoal>(subgoals.size() * 2);
+		toRemove.addAll(current.getPreconditions());
+		for (BakingSubgoal subgoal : subgoals) {
+			if (subgoal.goalCompleted(state)) {
+				toRemove.add(subgoal);
+			}
+		}
+		Set<BakingSubgoal> queue = new HashSet<BakingSubgoal>(toRemove);
+		while (!queue.isEmpty()) {
+			BakingSubgoal subgoal = queue.iterator().next();
+			for (BakingSubgoal condition : subgoal.getPreconditions()) {
+				if (toRemove.add(condition)) {
+					queue.add(condition);
+				}
+			}
+		}
+		
+		
+		List<KitchenSubdomain> remaining = new ArrayList<KitchenSubdomain>(allSubdomains.size());
+		for (KitchenSubdomain subdomain : allSubdomains) {
+			if (subdomain.getRecipe().equals(currentRecipe) && !toRemove.contains(subdomain.getSubgoal())) {
+				remaining.add(subdomain);
+			}
+		}
+		
+		return remaining;
+		
+		
+		
 	}
 	
 	protected static List<Workflow> generateWorkflows(State state, List<List<AbstractGroundedAction>> actionLists) {
@@ -287,7 +325,7 @@ public abstract class AdaptiveAgent implements Agent {
 	}
 	
 	// Generates States x policies 2D array of Action sequences
-	protected static List<List<AbstractGroundedAction>> correctActionLists(State state, List<PolicyProbability> policies) {
+	protected static List<List<AbstractGroundedAction>> correctActionLists(State state, List<PolicyProbability> policies, List<KitchenSubdomain> subdomains, boolean finishRecipe) {
 		
 		List<GroundedAction> actions = new ArrayList<GroundedAction>();
 		
@@ -297,7 +335,8 @@ public abstract class AdaptiveAgent implements Agent {
 			KitchenSubdomain policy = policyProb.getPolicyDomain();
 			
 			actions.clear();
-			AgentHelper.generateActionSequence(policy, state, rewardFunction, actions);
+			List<KitchenSubdomain> remainingSubgoals = AdaptiveAgent.getRemainingSubgoals(policy, subdomains, state);
+			AgentHelper.generateActionSequence(policy, remainingSubgoals, state, rewardFunction, actions, finishRecipe);
 			
 			List<AbstractGroundedAction> abstractActions = new ArrayList<AbstractGroundedAction>(actions.size());
 			for (GroundedAction ga : actions) abstractActions.add((AbstractGroundedAction)ga);
@@ -380,15 +419,20 @@ public abstract class AdaptiveAgent implements Agent {
 		private State state;
 		private List<String> agents;
 		private List<PolicyProbability> distribution;
+		private List<KitchenSubdomain> subdomains;
 		private GroundedAction item;
 		private ActionTimeGenerator timeGenerator;
+		private boolean finishRecipe;
+		
 		
 		public ChooseHelpfulActionCallable(State state,
-			List<String> agents, List<PolicyProbability> policyDistribution, ActionTimeGenerator timeGenerator) {
+			List<String> agents, List<PolicyProbability> policyDistribution, List<KitchenSubdomain> subdomains, ActionTimeGenerator timeGenerator, boolean finishRecipe) {
 			this.state = state;
 			this.agents = agents;
 			this.distribution = policyDistribution;
 			this.timeGenerator = timeGenerator;
+			this.finishRecipe = finishRecipe;
+			this.subdomains = new ArrayList<KitchenSubdomain>(subdomains);
 		}
 		public ChooseHelpfulActionCallable(ChooseHelpfulActionCallable base, GroundedAction item) {
 			this.state = base.state;
@@ -396,10 +440,12 @@ public abstract class AdaptiveAgent implements Agent {
 			this.distribution = base.distribution;
 			this.item = item;
 			this.timeGenerator = base.timeGenerator;
+			this.finishRecipe = base.finishRecipe;
+			this.subdomains = base.subdomains;
 		}
 		@Override
 		public Double call() throws Exception {
-			return AdaptiveAgent.expectedTimeOfTakingAction(state, agents, distribution, item, timeGenerator);
+			return AdaptiveAgent.expectedTimeOfTakingAction(state, agents, distribution, this.subdomains, item, timeGenerator, finishRecipe);
 		}
 		@Override
 		public ForEachCallable<GroundedAction, Double> init(

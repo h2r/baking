@@ -13,5 +13,5 @@ public interface Agent {
 	ObjectInstance getAgentObject();
 	void setInitialState(State state);
 	AbstractGroundedAction getAction(State state);
-	AbstractGroundedAction getActionWithScheduler(State state, List<String> agents);
+	AbstractGroundedAction getActionWithScheduler(State state, List<String> agents, boolean finishRecipe);
 }

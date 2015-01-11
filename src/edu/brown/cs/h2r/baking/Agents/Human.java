@@ -197,7 +197,7 @@ public class Human implements Agent {
 		return action;
 	}
 	
-	public AbstractGroundedAction getActionWithScheduler(State state, List<String> agents) {
+	public AbstractGroundedAction getActionWithScheduler(State state, List<String> agents, boolean finishRecipe) {
 		return this.getAction(state);
 		/*if (this.isSuccess(state)) {
 			return null;

@@ -217,7 +217,7 @@ public class ManyAgentsSchedulingSubgoals {
 					if (human.isSuccess(currentState)) {
 					}
 					else {
-						humanAction = human.getActionWithScheduler(currentState, agents);
+						humanAction = human.getActionWithScheduler(currentState, agents, false);
 					}
 					break;
 				}
@@ -230,9 +230,9 @@ public class ManyAgentsSchedulingSubgoals {
 					////System.out.println("\nEvaluating how partner would complete recipe");
 					//TestManyAgents.evaluateHumanAlone(otherHuman, newState);
 					////System.out.println("");
-					partnerAction = otherHuman.getActionWithScheduler(newState, agents);
+					partnerAction = otherHuman.getActionWithScheduler(newState, agents, false);
 				} else {
-					partnerAction = partner.getActionWithScheduler(currentState, agents);
+					partnerAction = partner.getActionWithScheduler(currentState, agents, false);
 					if (partnerAction == null) {
 						//partnerAction = TestManyAgents.getActionAndWait(partner, currentState);
 					}

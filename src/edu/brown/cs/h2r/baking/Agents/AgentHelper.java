@@ -94,9 +94,8 @@ public class AgentHelper {
 		return policyDomains;
 	}
 	
-	public static State generateActionSequence(KitchenSubdomain policyDomain, State startingState, RewardFunction rf, List<GroundedAction> actions) {
+	public static State generateActionSequence(KitchenSubdomain policyDomain, List<KitchenSubdomain> remainingSubgoals, State startingState, RewardFunction rf, List<GroundedAction> actions, boolean finishRecipe) {
 			BakingSubgoal subgoal = policyDomain.getSubgoal();
-			Domain domain = policyDomain.getDomain();
 			Policy policy = policyDomain.getPolicy();
 			
 			TerminalFunction recipeTerminalFunction = new RecipeTerminalFunction(subgoal.getGoal());
@@ -109,17 +108,28 @@ public class AgentHelper {
 			}
 			System.out.println("");
 			*/
-			
 			actions.addAll(episodeAnalysis.actionSequence);
-			return episodeAnalysis.stateSequence.get(episodeAnalysis.stateSequence.size() - 1);
+			if (finishRecipe) {
+				State nextState = episodeAnalysis.stateSequence.get(episodeAnalysis.stateSequence.size() - 1);
+				
+				List<GroundedAction> remainingActions = AgentHelper.generateRecipeActionSequence(nextState, rf, remainingSubgoals);
+				actions.addAll(remainingActions);
+			}
+			return AgentHelper.generateFinalState(startingState, actions);
+	}
+	
+	public static State generateFinalState(State start, List<GroundedAction> actions) {
+		State next = start;
+		for (GroundedAction action : actions) {
+			next = action.executeIn(next);
+		}
+		return next;
 	}
 	
 	public static List<GroundedAction> generateRecipeActionSequence(State startState, RewardFunction rf, List<KitchenSubdomain> policyDomains) {
 		List<GroundedAction> actions = new ArrayList<GroundedAction>();
 		State currentState = startState;
-		for (KitchenSubdomain policyDomain : policyDomains) {
-			currentState = AgentHelper.generateActionSequence(policyDomain, currentState, rf, actions);
-		}
+		AgentHelper.generateActionSequence(policyDomains.get(0), policyDomains, currentState, rf, actions, true);
 		return actions;
 	}
 	
@@ -218,6 +228,7 @@ public class AgentHelper {
 			System.err.println("Last state is not terminal");
 		}
 	}
+	
 	
 	public static Domain setSubgoal(Domain domain, BakingSubgoal subgoal) {
 		IngredientRecipe ingredient = subgoal.getIngredient();
