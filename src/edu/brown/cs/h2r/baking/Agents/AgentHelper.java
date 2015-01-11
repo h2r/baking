@@ -94,29 +94,31 @@ public class AgentHelper {
 		return policyDomains;
 	}
 	
-	public static State generateActionSequence(KitchenSubdomain policyDomain, State startingState, List<GroundedAction> actions) {
+	public static State generateActionSequence(KitchenSubdomain policyDomain, State startingState, RewardFunction rf, List<GroundedAction> actions) {
 			BakingSubgoal subgoal = policyDomain.getSubgoal();
 			Domain domain = policyDomain.getDomain();
 			Policy policy = policyDomain.getPolicy();
 			
 			TerminalFunction recipeTerminalFunction = new RecipeTerminalFunction(subgoal.getGoal());
-			RewardFunction rf = new RecipeAgentSpecificMakeSpanRewardFunction("human");
-			EpisodeAnalysis episodeAnalysis = policy.evaluateBehavior(startingState, rf, recipeTerminalFunction,100);
-			
-			
+			policyDomain.getPlanner().planFromState(startingState);
+			EpisodeAnalysis episodeAnalysis = policy.evaluateBehavior(startingState, rf, recipeTerminalFunction, 100);
+			/*
+			System.out.println("Action list for " + policyDomain.toString());
 			for (GroundedAction action : episodeAnalysis.actionSequence) {
-				//System.out.println("\t" + action.actionName() + " " + Arrays.toString(action.params) );
+				System.out.println("\t" + action.actionName() + " " + Arrays.toString(action.params) );
 			}
+			System.out.println("");
+			*/
 			
 			actions.addAll(episodeAnalysis.actionSequence);
 			return episodeAnalysis.stateSequence.get(episodeAnalysis.stateSequence.size() - 1);
 	}
 	
-	public static List<GroundedAction> generateRecipeActionSequence(State startState, List<KitchenSubdomain> policyDomains) {
+	public static List<GroundedAction> generateRecipeActionSequence(State startState, RewardFunction rf, List<KitchenSubdomain> policyDomains) {
 		List<GroundedAction> actions = new ArrayList<GroundedAction>();
 		State currentState = startState;
 		for (KitchenSubdomain policyDomain : policyDomains) {
-			currentState = AgentHelper.generateActionSequence(policyDomain, currentState, actions);
+			currentState = AgentHelper.generateActionSequence(policyDomain, currentState, rf, actions);
 		}
 		return actions;
 	}
@@ -191,7 +193,30 @@ public class AgentHelper {
 		// Create a Q-greedy policy from the planner
 		p = new AffordanceGreedyQPolicy(affController, (QComputablePlanner)planner);
 
+		//AgentHelper.printPlan(subgoal, p, currentState, rf, recipeTerminalFunction);
+		
+		
 		return KitchenSubdomain.makeSubdomain(domain, recipe, subgoal, startingState, p, planner);
+	}
+	
+	private static void printPlan(BakingSubgoal subgoal, Policy policy, State state, RewardFunction rf, TerminalFunction tf) {
+		EpisodeAnalysis ea = policy.evaluateBehavior(state, rf, tf, 100);
+		if (ea.getDiscountedReturn(1.0) < -5) {
+			System.err.println("Reward too much");
+			EpisodeAnalysis ea2 = policy.evaluateBehavior(state, rf, tf, 100);
+			if (ea.getDiscountedReturn(1.0) != ea2.getDiscountedReturn(1.0)) {
+				System.err.println("Rewards not equal");
+				ea = ea2;
+			}
+		}
+		System.out.println("Action sequence for " + subgoal.toString());
+		for (AbstractGroundedAction action : ea.actionSequence) {
+			System.out.println("\t" + action.toString());
+		}
+		State lastState = ea.stateSequence.get(ea.stateSequence.size() - 1);
+		if (!tf.isTerminal(lastState)) {
+			System.err.println("Last state is not terminal");
+		}
 	}
 	
 	public static Domain setSubgoal(Domain domain, BakingSubgoal subgoal) {

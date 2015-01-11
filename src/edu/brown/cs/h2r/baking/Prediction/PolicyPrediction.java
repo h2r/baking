@@ -268,7 +268,7 @@ public class PolicyPrediction {
 		
 		String name = subdomain.toString();
 		if (name.equals("brownies - wet_ingredients")) {
-			System.out.println("");
+			//System.out.println("");
 		}
 		int currentDepth = 1;
 		Map<StateHashTuple, Map<KitchenSubdomain, Double>> flowMap = new HashMap<StateHashTuple, Map<KitchenSubdomain, Double>>();
@@ -332,7 +332,7 @@ public class PolicyPrediction {
 			}
 		}
 		if (shouldBePositive && probability == 0.0) {
-			System.out.print("");
+			//System.out.print("");
 		}
 		return probability;
 	}
@@ -550,7 +550,7 @@ public class PolicyPrediction {
 				/*
 				if (policy.toString().equals("brownies - dry_ingredients")) {
 					if (otherPolicy.toString().equals(policy.toString())) {
-						System.out.print("");
+						//System.out.print("");
 					}
 				}*/
 				

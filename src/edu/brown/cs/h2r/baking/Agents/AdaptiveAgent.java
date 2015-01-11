@@ -14,6 +14,7 @@ import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
+import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.parallel.Parallel;
@@ -109,9 +110,11 @@ public abstract class AdaptiveAgent implements Agent {
 		}
 		this.updateBeliefDistribution(policyDistribution);
 		List<PolicyProbability> nonZero = this.trimDistribution(policyDistribution);
+		
+		/*
 		for (PolicyProbability policy : nonZero) {
-			//System.out.println(policy.toString());
-		}
+			System.out.println(policy.toString());
+		}*/
 		// For every policy, generate a list of actions for this state
 		List<List<AbstractGroundedAction>> actionLists = this.generateActionLists(state, nonZero);
 		
@@ -119,9 +122,13 @@ public abstract class AdaptiveAgent implements Agent {
 		List<Workflow> workflows = AdaptiveAgent.generateWorkflows(state, actionLists);
 		
 		// Get the available actions for each workflow
-		List<GroundedAction> availableActions = this.getAvailableActions(workflows);
-		
-		ChooseHelpfulActionCallable callable = new ChooseHelpfulActionCallable(state, agents, policyDistribution, this.timeGenerator);
+		List<GroundedAction> availableActions = this.getAvailableActions(workflows, state);
+		/*
+		System.out.println("Possible actions to take:");
+		for (GroundedAction action : availableActions) {
+			System.out.println("\t" + action.toString());
+		}*/
+		ChooseHelpfulActionCallable callable = new ChooseHelpfulActionCallable(state, agents, nonZero, this.timeGenerator);
 		List<Double> completionTimes = Parallel.ForEach(availableActions, callable);
 		return this.findBestAction(availableActions, completionTimes);
 	}
@@ -164,11 +171,22 @@ public abstract class AdaptiveAgent implements Agent {
 		List<List<AbstractGroundedAction>> actionLists = new ArrayList<List<AbstractGroundedAction>>();
 		
 		for (PolicyProbability policyProb : policies) {
+			//System.out.println(policyProb.getPolicyDomain().toString());
 			if (policyProb.getProbability() > 0.0) {
+				KitchenSubdomain policy = policyProb.getPolicyDomain();
 				List<GroundedAction> groundedActions = new ArrayList<GroundedAction>();
-				AgentHelper.generateActionSequence(policyProb.getPolicyDomain(), state, groundedActions);
+				List<State> states = new ArrayList<State>();
+				State result = AgentHelper.generateActionSequence(policy, state, rewardFunction, groundedActions);
 				List<AbstractGroundedAction> abstractActions = new ArrayList<AbstractGroundedAction>(groundedActions.size());
-				for (GroundedAction ga : groundedActions) abstractActions.add((AbstractGroundedAction)ga);
+				TerminalFunction tf = policy.getTerminalFunction();
+				if (tf.isTerminal(result)) {
+					for (GroundedAction ga : groundedActions) {
+						//System.out.println("\t" + ga.toString());
+						abstractActions.add((AbstractGroundedAction)ga);
+					}
+				} else {
+					//System.out.println("Policy didn't generate a good plan");
+				}
 				actionLists.add(abstractActions);
 			} else {
 				actionLists.add(new ArrayList<AbstractGroundedAction>());
@@ -176,6 +194,7 @@ public abstract class AdaptiveAgent implements Agent {
 			
 			
 		}
+		//System.out.println("");
 		return actionLists;
 	}
 	
@@ -237,16 +256,26 @@ public abstract class AdaptiveAgent implements Agent {
 	
 	}
 	
-	protected List<GroundedAction> getAvailableActions(List<Workflow> workflows) {
+	protected List<GroundedAction> getAvailableActions(List<Workflow> workflows, State state) {
 		
 		Set<GroundedAction> availableActions = new HashSet<GroundedAction>();
 		for (Workflow workflow : workflows) {
 			for (Workflow.Node node : workflow.getReadyNodes()) {
-				availableActions.add(node.getAction());
+				//System.out.println("\t" + node.toString() + ": " + node.getAction().toString());
+				GroundedAction action = node.getAction();
+				GroundedAction copy = (GroundedAction)action.copy();
+				copy.params = action.params.clone();
+				copy.params[0] = this.getAgentName();
+				//System.out.println("\t\t" + copy.toString());
+				if (copy.action.applicableInState(state, copy.params)) {
+					availableActions.add(copy);
+				}
 			}
+			//System.out.println("");
 		}
 		
-		return new ArrayList<GroundedAction>(availableActions);
+		List<GroundedAction> possibleActions = new ArrayList<GroundedAction>(availableActions);
+		return possibleActions;
 	}
 	
 	protected List<State> executeActions(State state, Collection<GroundedAction> actions) {
@@ -268,7 +297,7 @@ public abstract class AdaptiveAgent implements Agent {
 			KitchenSubdomain policy = policyProb.getPolicyDomain();
 			
 			actions.clear();
-			AgentHelper.generateActionSequence(policy, state, actions);
+			AgentHelper.generateActionSequence(policy, state, rewardFunction, actions);
 			
 			List<AbstractGroundedAction> abstractActions = new ArrayList<AbstractGroundedAction>(actions.size());
 			for (GroundedAction ga : actions) abstractActions.add((AbstractGroundedAction)ga);

@@ -239,7 +239,7 @@ public class RecipeScheduling {
 				long start = System.nanoTime();
 				
 				List<KitchenSubdomain> policyDomains = AgentHelper.generateRTDPPolicies(recipe, domain, state, rewardFunction, hashingFactory);
-				List<GroundedAction> actionList = AgentHelper.generateRecipeActionSequence(state, policyDomains);
+				List<GroundedAction> actionList = AgentHelper.generateRecipeActionSequence(state, rewardFunction, policyDomains);
 				long end = System.nanoTime();
 				System.out.println("recipe scheduling, " + (end - start) / 1000000000.0);
 			

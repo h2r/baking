@@ -175,6 +175,7 @@ public class Human implements Agent {
 			this.chooseNewSubgoal(state);
 		}
 		if (this.currentSubgoal == null) {
+			this.setRecipe(this.currentRecipe);
 			return new GroundedAction(this.generalDomain.getAction("reset"), new String[] {"human"});
 		}
 		

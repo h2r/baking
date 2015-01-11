@@ -37,7 +37,6 @@ import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
 import edu.brown.cs.h2r.baking.Scheduling.SchedulingHelper;
-import edu.brown.cs.h2r.baking.Scheduling.Workflow;
 import edu.brown.cs.h2r.baking.actions.GreaseAction;
 import edu.brown.cs.h2r.baking.actions.MixAction;
 import edu.brown.cs.h2r.baking.actions.MoveAction;
@@ -47,7 +46,6 @@ import edu.brown.cs.h2r.baking.actions.SwitchAction;
 import edu.brown.cs.h2r.baking.actions.UseAction;
 
 public class ManyAgentsScheduling {
-	private static Random rando = new Random();
 	private static StateHashFactory hashingFactory = new NameDependentStateHashFactory();
 	public static Domain generateGeneralDomain() {
 		Domain domain = new SADomain();
@@ -185,22 +183,6 @@ public class ManyAgentsScheduling {
 		}
 		
 		return state;
-	}
-	
-	private static double sequenceTime(List<AbstractGroundedAction> actions, ActionTimeGenerator timeGenerator) {
-		double time = 0.0;
-		for (AbstractGroundedAction action : actions) {
-			time += timeGenerator.get((GroundedAction)action);
-		}
-		return time;
-	}
-	
-	private static double longestTime(Map<String, Double> lastActionTimes) {
-		double maxTime = 0.0;
-		for (Map.Entry<String, Double> entry : lastActionTimes.entrySet()) {
-			maxTime = Math.max(maxTime, entry.getValue());
-		}
-		return maxTime;
 	}
 	
 	private static EvaluationResult evaluateAgent(Human human, Agent partner, State startingState, ActionTimeGenerator timeGenerator) {
@@ -354,7 +336,7 @@ public class ManyAgentsScheduling {
 			finished = human.isFinished(currentState);
 		}
 		
-		double score = ManyAgentsScheduling.sequenceTime(actionSequence, timeGenerator);
+		double score = SchedulingHelper.computeSequenceTime(startingState, actionSequence, timeGenerator);
 		return new EvaluationResult(score, human.isSuccess(currentState));
 	}
 	
@@ -421,17 +403,6 @@ public class ManyAgentsScheduling {
 			double averageSuccessScore = (this.numberSuccesses == 0) ? 0.0 : this.successScore / this.numberSuccesses;
 			return "" + this.numberSuccesses + ", " + this.numberTrials + ", " + this.score / this.numberTrials + ", " + averageSuccessScore;
 		}
-	}
-	
-	public static Map<Workflow.Node, Double> buildActionTimeLookup(Workflow workflow, double factor) {
-		Random random = new Random();
-		Map<Workflow.Node, Double> times = new HashMap<Workflow.Node, Double>();
-		
-		for (Workflow.Node node : workflow) {
-			times.put(node, factor * random.nextDouble());
-		}
-		
-		return times;
 	}
 	
 	public static void main(String[] args) {

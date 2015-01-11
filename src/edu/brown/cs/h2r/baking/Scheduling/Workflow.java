@@ -156,7 +156,7 @@ public class Workflow implements Iterable<Node> {
 	public List<Node> getReadyNodes() {
 		List<Node> nodes = new ArrayList<Node>();
 		for (Node node : this.actions) {
-			if (node.degree() == 0) {
+			if (node.parents.size() == 0) {
 				nodes.add(node);
 			}
 		}
