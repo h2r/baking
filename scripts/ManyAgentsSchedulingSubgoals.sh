@@ -3,7 +3,7 @@ TIMESTAMP=$(date +"%m_%d_%y__%M_%k")
 #echo $TIMESTAMP
 
 
-DIRECTORY="$HOME/results/many_agents_scheduling_subgoals$_{JOB_ID:-$TIMESTAMP}"
+DIRECTORY="$HOME/results/many_agents_scheduling_subgoals_${JOB_ID:-$TIMESTAMP}"
 ERR_DIRECTORY="$HOME/errors/many_agents_scheduling_subgoals_${JOB_ID:-$TIMESTAMP}"
 #echo $DIRECTORY
 mkdir -p $DIRECTORY
