@@ -443,7 +443,7 @@ public class ManyAgentsScheduling {
 		List<Agent> agents = Arrays.asList(
 				(Agent)new RandomActionAgent(generalDomain),
 				(Agent)new RandomRecipeAgent(generalDomain, timeGenerator),
-				(Agent)new Human(generalDomain, "friend", timeGenerator),
+				(Agent)new Human(generalDomain, "partner", timeGenerator),
 				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator)
 				);
 		System.out.println("Agent, Successes, Trials, Average reward, average successful reward");
@@ -461,7 +461,7 @@ public class ManyAgentsScheduling {
 			Collections.shuffle(agents);
 			
 			for (Agent agent : agents) {
-				System.out.print(agent.getAgentName());
+				System.out.print(agent.getClass().getSimpleName());
 				human = new Human(generalDomain, timeGenerator);
 				
 				State startingState = ManyAgentsScheduling.generateInitialState(generalDomain, recipes, human, agent);

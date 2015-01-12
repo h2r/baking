@@ -135,7 +135,7 @@ public class AdaptiveByFlow extends AdaptiveAgent implements Agent {
 	}
 
 	public final String getAgentName() {
-		return "AdaptiveByFlow";
+		return "partner";
 	}
 	
 	@Override

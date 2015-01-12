@@ -32,7 +32,7 @@ public class RandomRecipeAgent extends Human implements Agent {
 
 	@Override
 	public String getAgentName() {
-		return "Random Recipe";
+		return "partner";
 	}
 
 	@Override

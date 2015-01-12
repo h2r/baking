@@ -27,7 +27,7 @@ public class RandomActionAgent implements Agent {
 
 	@Override
 	public String getAgentName() {
-		return "Random Action";
+		return "partner";
 	}
 
 	@Override

@@ -157,7 +157,7 @@ public class ManyAgentsSchedulingSubgoals {
 		
 		if (firstTime > 0.0) {
 			State nextState = firstAction.executeIn(state);
-			//\\System.out.println("First agent executing action " + firstAction.toString());
+			System.out.println("First agent executing action " + firstAction.toString());
 			if (nextState.equals(state)) {
 				//System.out.println("Action had no effect");
 			}
@@ -170,7 +170,7 @@ public class ManyAgentsSchedulingSubgoals {
 		
 		if (secondTime > 0.0 && secondTime == firstTime) {
 			State nextState = secondAction.executeIn(state);
-			//System.out.println("Second agent executing action " + secondAction.toString());
+			System.out.println("Second agent executing action " + secondAction.toString());
 			
 			if (nextState.equals(state)) {
 				//System.out.println("Action had no effect");
@@ -471,7 +471,7 @@ public class ManyAgentsSchedulingSubgoals {
 				agent.setInitialState(startingState);
 				
 				result = ManyAgentsSchedulingSubgoals.evaluateAgent(human, agent, startingState, timeGenerator);
-				System.out.println(agent.getAgentName() + ", " +  result.toString());
+				System.out.println(agent.getClass().getSimpleName() + ", " +  result.toString());
 			}
 			System.out.println("");
 			timeGenerator.clear();
