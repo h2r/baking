@@ -136,10 +136,11 @@ public class ManyAgentsSchedulingSubgoals {
 	}
 	
 	private static State performActions(State state, AbstractGroundedAction action1, AbstractGroundedAction action2, Map<String, Double> lastActionTimes, 
-			List<State> statePair, List<AbstractGroundedAction> actionPair, ActionTimeGenerator timeGenerator) {
+			List<State> statePair, List<AbstractGroundedAction> actionPair, List<Double> timesPair, ActionTimeGenerator timeGenerator) {
 		
 		statePair.clear();
 		actionPair.clear();
+		timesPair.clear();
 		double action1Time = ManyAgentsSchedulingSubgoals.getActionTime((GroundedAction)action1, lastActionTimes, timeGenerator);
 		double action2Time = ManyAgentsSchedulingSubgoals.getActionTime((GroundedAction)action2, lastActionTimes, timeGenerator);
 		
@@ -164,6 +165,7 @@ public class ManyAgentsSchedulingSubgoals {
 			state = nextState;
 			statePair.add(state);
 			actionPair.add(firstAction);
+			timesPair.add(firstTime);
 			GroundedAction groundedAction = (GroundedAction)firstAction;
 			lastActionTimes.put(groundedAction.params[0], firstTime);
 		}
@@ -178,6 +180,7 @@ public class ManyAgentsSchedulingSubgoals {
 			state = nextState;
 			statePair.add(state);
 			actionPair.add(firstAction);
+			timesPair.add(secondTime);
 			GroundedAction groundedAction = (GroundedAction)secondAction;
 			lastActionTimes.put(groundedAction.params[0], secondTime);
 		}
@@ -187,12 +190,15 @@ public class ManyAgentsSchedulingSubgoals {
 	
 	private static EvaluationResult evaluateAgent(Human human, Agent partner, State startingState, ActionTimeGenerator timeGenerator) {
 		List<AbstractGroundedAction> actionSequence = new ArrayList<AbstractGroundedAction>();
+		List<Double> actionTimes = new ArrayList<Double>();
+		
 		List<State> stateSequence = new ArrayList<State>();
 		boolean finished = false;
 		State currentState = startingState;
 		stateSequence.add(currentState);
 		List<State> statePair = new ArrayList<State>();
 		List<AbstractGroundedAction> actionPair = new ArrayList<AbstractGroundedAction>();
+		List<Double> timesPair = new ArrayList<Double>();
 		human.chooseNewRecipe();
 		Human otherHuman = null;
 		
@@ -241,7 +247,7 @@ public class ManyAgentsSchedulingSubgoals {
 			
 			
 			
-			currentState = ManyAgentsSchedulingSubgoals.performActions(currentState, humanAction, partnerAction, actionMap, statePair, actionPair, timeGenerator);
+			currentState = ManyAgentsSchedulingSubgoals.performActions(currentState, humanAction, partnerAction, actionMap, statePair, actionPair, timesPair, timeGenerator);
 			if (actionPair.contains(humanAction)) {
 				humanAction = null;
 			}
@@ -253,9 +259,12 @@ public class ManyAgentsSchedulingSubgoals {
 			
 			stateSequence.addAll(statePair);
 			actionSequence.addAll(actionPair);
+			actionTimes.addAll(timesPair);
 			boolean isRepeating = checkIfRepeating(stateSequence);
 			isSuccess = human.isSubgoalFinished(currentState);
-			double reward = SchedulingHelper.computeSequenceTime(startingState, actionSequence, timeGenerator);
+			double reward = Collections.max(actionTimes);
+			
+			//double reward = SchedulingHelper.computeSequenceTime(startingState, actionSequence, timeGenerator);
 			finished = isSuccess || reward > 1000.0;
 			
 			/*if (human.isSubgoalFinished(currentState)) {
@@ -280,7 +289,9 @@ public class ManyAgentsSchedulingSubgoals {
 				break;
 			}
 		}
-		double reward = SchedulingHelper.computeSequenceTime(startingState, actionSequence, timeGenerator);
+		
+		double reward = Collections.max(actionTimes);
+		//double reward = SchedulingHelper.computeSequenceTime(startingState, actionSequence, timeGenerator);
 		return new EvaluationResult(reward, isSuccess);
 	}
 	
@@ -319,8 +330,9 @@ public class ManyAgentsSchedulingSubgoals {
 		boolean finished = false;
 		State currentState = startingState;
 		stateSequence.add(currentState);
-		List<State> statePair = new ArrayList<State>();
-		List<AbstractGroundedAction> actionPair = new ArrayList<AbstractGroundedAction>();
+		List<State> statePair = new ArrayList<State>(1);
+		List<Double> timesPair = new ArrayList<Double>(1);
+		List<AbstractGroundedAction> actionPair = new ArrayList<AbstractGroundedAction>(1);
 		Map<String, Double> lastActionTime = new HashMap<String, Double>();
 		lastActionTime.put(human.getAgentName(), 0.0);
 		while (!finished) {
@@ -329,14 +341,14 @@ public class ManyAgentsSchedulingSubgoals {
 				break;
 			}
 			
-			currentState = ManyAgentsSchedulingSubgoals.performActions(currentState, humanAction, null, lastActionTime, statePair, actionPair, timeGenerator);
+			currentState = ManyAgentsSchedulingSubgoals.performActions(currentState, humanAction, null, lastActionTime, statePair, actionPair, timesPair, timeGenerator);
 			stateSequence.addAll(statePair);
 			actionSequence.addAll(actionPair);
 			
 			finished = human.isSubgoalFinished(currentState);
 		}
 		
-		double score = SchedulingHelper.computeSequenceTime(startingState, actionSequence, timeGenerator);
+		double score = timesPair.get(0);
 		return new EvaluationResult(score, human.isSubgoalFinished(currentState));
 	}
 	

@@ -332,6 +332,7 @@ public class SchedulingHelper {
 			List<AbstractGroundedAction> actionSequence, ActionTimeGenerator timeGenerator) {
 		Workflow workflow = Workflow.buildWorkflow(state, actionSequence);
 		Map<String, Assignment> sortedActions = new HashMap<String, Assignment>();
+		
 		for (Workflow.Node node : workflow) {
 			GroundedAction ga = node.getAction();
 			String agent = ga.params[0];
