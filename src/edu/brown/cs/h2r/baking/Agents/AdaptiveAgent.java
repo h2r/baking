@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -178,7 +179,7 @@ public abstract class AdaptiveAgent implements Agent {
 				KitchenSubdomain policy = policyProb.getPolicyDomain();
 				List<GroundedAction> groundedActions = new ArrayList<GroundedAction>();
 				List<KitchenSubdomain> remainingSubgoals = AdaptiveAgent.getRemainingSubgoals(policy, subdomains, state);
-				State result = AgentHelper.generateActionSequence(policy, remainingSubgoals, state, rewardFunction, groundedActions, finishRecipe);
+				State result = AgentHelper.generateActionSequence(remainingSubgoals, state, rewardFunction, groundedActions, finishRecipe);
 				List<AbstractGroundedAction> abstractActions = new ArrayList<AbstractGroundedAction>(groundedActions.size());
 				TerminalFunction tf = policy.getTerminalFunction();
 				if (tf.isTerminal(result)) {
@@ -204,7 +205,6 @@ public abstract class AdaptiveAgent implements Agent {
 		BakingSubgoal current = policyDomain.getSubgoal();
 		Recipe currentRecipe = policyDomain.getRecipe();
 		List<BakingSubgoal> subgoals = currentRecipe.getSubgoals();
-		subgoals.remove(current);
 		Set<BakingSubgoal> toRemove = new HashSet<BakingSubgoal>(subgoals.size() * 2);
 		toRemove.addAll(current.getPreconditions());
 		for (BakingSubgoal subgoal : subgoals) {
@@ -214,7 +214,9 @@ public abstract class AdaptiveAgent implements Agent {
 		}
 		Set<BakingSubgoal> queue = new HashSet<BakingSubgoal>(toRemove);
 		while (!queue.isEmpty()) {
-			BakingSubgoal subgoal = queue.iterator().next();
+			Iterator<BakingSubgoal> iterator = queue.iterator();
+			BakingSubgoal subgoal = iterator.next();
+			iterator.remove();
 			for (BakingSubgoal condition : subgoal.getPreconditions()) {
 				if (toRemove.add(condition)) {
 					queue.add(condition);
@@ -336,7 +338,7 @@ public abstract class AdaptiveAgent implements Agent {
 			
 			actions.clear();
 			List<KitchenSubdomain> remainingSubgoals = AdaptiveAgent.getRemainingSubgoals(policy, subdomains, state);
-			AgentHelper.generateActionSequence(policy, remainingSubgoals, state, rewardFunction, actions, finishRecipe);
+			AgentHelper.generateActionSequence(remainingSubgoals, state, rewardFunction, actions, finishRecipe);
 			
 			List<AbstractGroundedAction> abstractActions = new ArrayList<AbstractGroundedAction>(actions.size());
 			for (GroundedAction ga : actions) abstractActions.add((AbstractGroundedAction)ga);

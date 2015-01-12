@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -94,29 +95,52 @@ public class AgentHelper {
 		return policyDomains;
 	}
 	
-	public static State generateActionSequence(KitchenSubdomain policyDomain, List<KitchenSubdomain> remainingSubgoals, State startingState, RewardFunction rf, List<GroundedAction> actions, boolean finishRecipe) {
-			BakingSubgoal subgoal = policyDomain.getSubgoal();
-			Policy policy = policyDomain.getPolicy();
+	public static State generateActionSequence(List<KitchenSubdomain> remainingSubgoals, State startingState, RewardFunction rf, List<GroundedAction> actions, boolean finishRecipe) {
+		Set<KitchenSubdomain> active = new HashSet<KitchenSubdomain>();
+		Set<KitchenSubdomain> completed = new HashSet<KitchenSubdomain>();
+		
+		for (KitchenSubdomain subdomain : remainingSubgoals) {
+			if (subdomain.getSubgoal().allPreconditionsCompleted(startingState)) {
+				active.add(subdomain);
+			}
+		}
+		
+		State nextState = startingState;
+		while (!active.isEmpty()) {
+			Iterator<KitchenSubdomain> iterator = active.iterator();
+			KitchenSubdomain current = iterator.next();
+			iterator.remove();
+			nextState = AgentHelper.generateActionSequence(current, nextState, rf, actions);
+			completed.add(current);
 			
-			TerminalFunction recipeTerminalFunction = new RecipeTerminalFunction(subgoal.getGoal());
-			policyDomain.getPlanner().planFromState(startingState);
-			EpisodeAnalysis episodeAnalysis = policy.evaluateBehavior(startingState, rf, recipeTerminalFunction, 100);
-			/*
-			System.out.println("Action list for " + policyDomain.toString());
-			for (GroundedAction action : episodeAnalysis.actionSequence) {
-				System.out.println("\t" + action.actionName() + " " + Arrays.toString(action.params) );
+			for (KitchenSubdomain subdomain : remainingSubgoals) {
+				if (subdomain.getSubgoal().allPreconditionsCompleted(startingState) && !completed.contains(subdomain)) {
+					active.add(subdomain);
+				}
 			}
-			System.out.println("");
-			*/
-			actions.addAll(episodeAnalysis.actionSequence);
-			if (finishRecipe) {
-				State nextState = episodeAnalysis.stateSequence.get(episodeAnalysis.stateSequence.size() - 1);
-				
-				List<GroundedAction> remainingActions = AgentHelper.generateRecipeActionSequence(nextState, rf, remainingSubgoals);
-				actions.addAll(remainingActions);
-			}
-			return AgentHelper.generateFinalState(startingState, actions);
+		}
+		
+		return AgentHelper.generateFinalState(startingState, actions);
 	}
+	
+	public static State generateActionSequence(KitchenSubdomain policyDomain, State startingState, RewardFunction rf, List<GroundedAction> actions) {
+		BakingSubgoal subgoal = policyDomain.getSubgoal();
+		Policy policy = policyDomain.getPolicy();
+		
+		TerminalFunction recipeTerminalFunction = new RecipeTerminalFunction(subgoal.getGoal());
+		policyDomain.getPlanner().planFromState(startingState);
+		EpisodeAnalysis episodeAnalysis = policy.evaluateBehavior(startingState, rf, recipeTerminalFunction, 100);
+		/*
+		System.out.println("Action list for " + policyDomain.toString());
+		for (GroundedAction action : episodeAnalysis.actionSequence) {
+			System.out.println("\t" + action.actionName() + " " + Arrays.toString(action.params) );
+		}
+		System.out.println("");
+		*/
+		actions.addAll(episodeAnalysis.actionSequence);
+		
+		return AgentHelper.generateFinalState(startingState, actions);
+}
 	
 	public static State generateFinalState(State start, List<GroundedAction> actions) {
 		State next = start;
@@ -129,7 +153,7 @@ public class AgentHelper {
 	public static List<GroundedAction> generateRecipeActionSequence(State startState, RewardFunction rf, List<KitchenSubdomain> policyDomains) {
 		List<GroundedAction> actions = new ArrayList<GroundedAction>();
 		State currentState = startState;
-		AgentHelper.generateActionSequence(policyDomains.get(0), policyDomains, currentState, rf, actions, true);
+		AgentHelper.generateActionSequence(policyDomains, currentState, rf, actions, true);
 		return actions;
 	}
 	

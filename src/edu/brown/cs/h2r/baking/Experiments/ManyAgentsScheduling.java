@@ -157,7 +157,7 @@ public class ManyAgentsScheduling {
 		
 		if (firstTime > 0.0) {
 			State nextState = firstAction.executeIn(state);
-			//System.out.println("Executing action " + firstAction.toString());
+			//System.out.println("First executing action " + firstAction.toString());
 			if (nextState.equals(state)) {
 				//System.out.println("Action had no effect");
 			}
@@ -170,7 +170,7 @@ public class ManyAgentsScheduling {
 		
 		if (secondTime > 0.0 && secondTime == firstTime) {
 			State nextState = secondAction.executeIn(state);
-			//System.out.println("Executing action " + secondAction.toString());
+			//System.out.println("Second executing action " + secondAction.toString());
 			
 			if (nextState.equals(state)) {
 				//System.out.println("Action had no effect");
@@ -441,10 +441,10 @@ public class ManyAgentsScheduling {
 		
 		
 		List<Agent> agents = Arrays.asList(
-				(Agent)new RandomActionAgent(generalDomain),
+				/*(Agent)new RandomActionAgent(generalDomain),
 				(Agent)new RandomRecipeAgent(generalDomain, timeGenerator),
 				(Agent)new Human(generalDomain, "friend", timeGenerator),
-				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator)
+				*/(Agent)new AdaptiveByFlow(generalDomain, timeGenerator)
 				);
 		System.out.println("Agent, Successes, Trials, Average reward, average successful reward");
 		ResetAction reset = (ResetAction)generalDomain.getAction(ResetAction.className);

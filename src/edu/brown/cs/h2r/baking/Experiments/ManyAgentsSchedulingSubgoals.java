@@ -157,7 +157,7 @@ public class ManyAgentsSchedulingSubgoals {
 		
 		if (firstTime > 0.0) {
 			State nextState = firstAction.executeIn(state);
-			//System.out.println("First agent executing action " + firstAction.toString());
+			//\\System.out.println("First agent executing action " + firstAction.toString());
 			if (nextState.equals(state)) {
 				//System.out.println("Action had no effect");
 			}
