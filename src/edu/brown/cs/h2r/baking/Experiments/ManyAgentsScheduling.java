@@ -441,10 +441,10 @@ public class ManyAgentsScheduling {
 		
 		
 		List<Agent> agents = Arrays.asList(
-				/*(Agent)new RandomActionAgent(generalDomain),
+				(Agent)new RandomActionAgent(generalDomain),
 				(Agent)new RandomRecipeAgent(generalDomain, timeGenerator),
 				(Agent)new Human(generalDomain, "friend", timeGenerator),
-				*/(Agent)new AdaptiveByFlow(generalDomain, timeGenerator)
+				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator)
 				);
 		System.out.println("Agent, Successes, Trials, Average reward, average successful reward");
 		ResetAction reset = (ResetAction)generalDomain.getAction(ResetAction.className);
