@@ -7,9 +7,9 @@ import numpy
 
 if len(argv) > 1:
     directories = argv[1:]
+    data = dict()
     for directory in directories:
         files = glob(directory + "/*.csv")
-        data = dict()
         for filename in files:
             print("Processing file " + filename)
             file = open(filename, 'rb')
