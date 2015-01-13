@@ -45,7 +45,7 @@ import edu.brown.cs.h2r.baking.actions.ResetAction;
 import edu.brown.cs.h2r.baking.actions.SwitchAction;
 import edu.brown.cs.h2r.baking.actions.UseAction;
 
-public class ManyAgentsScheduling {
+public class ManyAgentsSchedulingRealData {
 	private static StateHashFactory hashingFactory = new NameDependentStateHashFactory();
 	public static Domain generateGeneralDomain() {
 		Domain domain = new SADomain();
@@ -141,8 +141,8 @@ public class ManyAgentsScheduling {
 		statePair.clear();
 		actionPair.clear();
 		timesPair.clear();
-		double action1Time = ManyAgentsScheduling.getActionTime((GroundedAction)action1, lastActionTimes, timeGenerator);
-		double action2Time = ManyAgentsScheduling.getActionTime((GroundedAction)action2, lastActionTimes, timeGenerator);
+		double action1Time = ManyAgentsSchedulingRealData.getActionTime((GroundedAction)action1, lastActionTimes, timeGenerator);
+		double action2Time = ManyAgentsSchedulingRealData.getActionTime((GroundedAction)action2, lastActionTimes, timeGenerator);
 		
 		if (action1Time < 0.0 && action2Time < 0.0) {
 			System.err.println("No valid actions");
@@ -246,7 +246,7 @@ public class ManyAgentsScheduling {
 			
 			
 			
-			currentState = ManyAgentsScheduling.performActions(currentState, humanAction, partnerAction, actionMap, statePair, actionPair, timesPair, timeGenerator);
+			currentState = ManyAgentsSchedulingRealData.performActions(currentState, humanAction, partnerAction, actionMap, statePair, actionPair, timesPair, timeGenerator);
 			if (actionPair.contains(humanAction)) {
 				humanAction = null;
 			}
@@ -339,7 +339,7 @@ public class ManyAgentsScheduling {
 				break;
 			}
 			
-			currentState = ManyAgentsScheduling.performActions(currentState, humanAction, null, lastActionTime, statePair, actionPair, timesPair, timeGenerator);
+			currentState = ManyAgentsSchedulingRealData.performActions(currentState, humanAction, null, lastActionTime, statePair, actionPair, timesPair, timeGenerator);
 			stateSequence.addAll(statePair);
 			actionSequence.addAll(actionPair);
 			
@@ -356,13 +356,13 @@ public class ManyAgentsScheduling {
 		for (int i = 0; i < numTrials; i++) {
 			List<Recipe> recipes = AgentHelper.recipes(generalDomain);
 			
-			State startingState = ManyAgentsScheduling.generateInitialState(generalDomain, recipes, human, null);
+			State startingState = ManyAgentsSchedulingRealData.generateInitialState(generalDomain, recipes, human, null);
 			human.setInitialState(startingState);
 			
 			
 			//System.out.println("Trial: " + i);
 			human.chooseNewRecipe();
-			result.incrementResult(ManyAgentsScheduling.evaluateHumanAlone(human, startingState, timeGenerator));
+			result.incrementResult(ManyAgentsSchedulingRealData.evaluateHumanAlone(human, startingState, timeGenerator));
 		}
 		return result;
 		//System.out.println("Human alone: " + result.toString());
@@ -429,7 +429,7 @@ public class ManyAgentsScheduling {
 			System.exit(0);
 		}	*/
 		
-		Domain generalDomain = ManyAgentsScheduling.generateGeneralDomain(); 
+		Domain generalDomain = ManyAgentsSchedulingRealData.generateGeneralDomain(); 
 		
 		List<Recipe> recipes = AgentHelper.recipes(generalDomain);
 		Knowledgebase knowledgebase = Knowledgebase.getKnowledgebase(generalDomain);
@@ -437,10 +437,10 @@ public class ManyAgentsScheduling {
 		Map<String, Double> factors = new HashMap<String, Double>();
 		factors.put("human", 1.0);
 		
-		ActionTimeGenerator timeGenerator = new ActionTimeGenerator(factors);
+		ActionTimeGenerator timeGenerator = new ActionTimeGenerator(true);
 		Human human = new Human(generalDomain, timeGenerator);
 		
-		State state = ManyAgentsScheduling.generateInitialState(generalDomain, recipes, human, null);
+		State state = ManyAgentsSchedulingRealData.generateInitialState(generalDomain, recipes, human, null);
 		/*for (Recipe recipe : recipes) {
 			//System.out.println("Testing recipe " + recipe.toString());
 			ExperimentHelper.testRecipeExecution(generalDomain, state, recipe);
@@ -467,7 +467,7 @@ public class ManyAgentsScheduling {
 		
 			EvaluationResult result;
 		for (int i = 0; i < numTrials; i++) {
-			System.out.println("solo" + ", " +  ManyAgentsScheduling.evaluateHuman(generalDomain, human, timeGenerator, 1).toString());
+			System.out.println("solo" + ", " +  ManyAgentsSchedulingRealData.evaluateHuman(generalDomain, human, timeGenerator, 1).toString());
 			
 			Collections.shuffle(agents);
 			
@@ -475,13 +475,13 @@ public class ManyAgentsScheduling {
 				System.out.print(agent.getClass().getSimpleName());
 				human = new Human(generalDomain, timeGenerator);
 				
-				State startingState = ManyAgentsScheduling.generateInitialState(generalDomain, recipes, human, agent);
+				State startingState = ManyAgentsSchedulingRealData.generateInitialState(generalDomain, recipes, human, agent);
 				reset.setState(startingState);
 				
 				human.setInitialState(startingState);
 				agent.setInitialState(startingState);
 				
-				result = ManyAgentsScheduling.evaluateAgent(human, agent, startingState, timeGenerator);
+				result = ManyAgentsSchedulingRealData.evaluateAgent(human, agent, startingState, timeGenerator);
 				System.out.println(", " +  result.toString());
 			}
 			timeGenerator.clear();

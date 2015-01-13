@@ -45,7 +45,7 @@ import edu.brown.cs.h2r.baking.actions.ResetAction;
 import edu.brown.cs.h2r.baking.actions.SwitchAction;
 import edu.brown.cs.h2r.baking.actions.UseAction;
 
-public class ManyAgentsScheduling {
+public class ManyAgentsSchedulingSubgoalsRealdata {
 	private static StateHashFactory hashingFactory = new NameDependentStateHashFactory();
 	public static Domain generateGeneralDomain() {
 		Domain domain = new SADomain();
@@ -141,8 +141,8 @@ public class ManyAgentsScheduling {
 		statePair.clear();
 		actionPair.clear();
 		timesPair.clear();
-		double action1Time = ManyAgentsScheduling.getActionTime((GroundedAction)action1, lastActionTimes, timeGenerator);
-		double action2Time = ManyAgentsScheduling.getActionTime((GroundedAction)action2, lastActionTimes, timeGenerator);
+		double action1Time = ManyAgentsSchedulingSubgoalsRealdata.getActionTime((GroundedAction)action1, lastActionTimes, timeGenerator);
+		double action2Time = ManyAgentsSchedulingSubgoalsRealdata.getActionTime((GroundedAction)action2, lastActionTimes, timeGenerator);
 		
 		if (action1Time < 0.0 && action2Time < 0.0) {
 			System.err.println("No valid actions");
@@ -158,7 +158,7 @@ public class ManyAgentsScheduling {
 		
 		if (firstTime > 0.0) {
 			State nextState = firstAction.executeIn(state);
-			//System.out.println("First executing action " + firstAction.toString());
+			//System.out.println("First agent executing action " + firstAction.toString());
 			if (nextState.equals(state)) {
 				//System.out.println("Action had no effect");
 			}
@@ -172,7 +172,7 @@ public class ManyAgentsScheduling {
 		
 		if (secondTime > 0.0 && secondTime == firstTime) {
 			State nextState = secondAction.executeIn(state);
-			//System.out.println("Second executing action " + secondAction.toString());
+			//System.out.println("Second agent executing action " + secondAction.toString());
 			
 			if (nextState.equals(state)) {
 				//System.out.println("Action had no effect");
@@ -190,14 +190,15 @@ public class ManyAgentsScheduling {
 	
 	private static EvaluationResult evaluateAgent(Human human, Agent partner, State startingState, ActionTimeGenerator timeGenerator) {
 		List<AbstractGroundedAction> actionSequence = new ArrayList<AbstractGroundedAction>();
+		List<Double> actionTimes = new ArrayList<Double>();
+		
 		List<State> stateSequence = new ArrayList<State>();
 		boolean finished = false;
 		State currentState = startingState;
 		stateSequence.add(currentState);
-		List<State> statePair = new ArrayList<State>(2);
-		List<AbstractGroundedAction> actionPair = new ArrayList<AbstractGroundedAction>(2);
-		List<Double> timesPair = new ArrayList<Double>(2);
-		List<Double> actionTimes = new ArrayList<Double>();
+		List<State> statePair = new ArrayList<State>();
+		List<AbstractGroundedAction> actionPair = new ArrayList<AbstractGroundedAction>();
+		List<Double> timesPair = new ArrayList<Double>();
 		human.chooseNewRecipe();
 		Human otherHuman = null;
 		
@@ -222,7 +223,7 @@ public class ManyAgentsScheduling {
 					if (human.isSuccess(currentState)) {
 					}
 					else {
-						humanAction = human.getActionWithScheduler(currentState, agents, true);
+						humanAction = human.getActionWithScheduler(currentState, agents, false);
 					}
 					break;
 				}
@@ -235,9 +236,9 @@ public class ManyAgentsScheduling {
 					////System.out.println("\nEvaluating how partner would complete recipe");
 					//TestManyAgents.evaluateHumanAlone(otherHuman, newState);
 					////System.out.println("");
-					partnerAction = otherHuman.getActionWithScheduler(newState, agents, true);
+					partnerAction = otherHuman.getActionWithScheduler(newState, agents, false);
 				} else {
-					partnerAction = partner.getActionWithScheduler(currentState, agents, true);
+					partnerAction = partner.getActionWithScheduler(currentState, agents, false);
 					if (partnerAction == null) {
 						//partnerAction = TestManyAgents.getActionAndWait(partner, currentState);
 					}
@@ -246,7 +247,7 @@ public class ManyAgentsScheduling {
 			
 			
 			
-			currentState = ManyAgentsScheduling.performActions(currentState, humanAction, partnerAction, actionMap, statePair, actionPair, timesPair, timeGenerator);
+			currentState = ManyAgentsSchedulingSubgoalsRealdata.performActions(currentState, humanAction, partnerAction, actionMap, statePair, actionPair, timesPair, timeGenerator);
 			if (actionPair.contains(humanAction)) {
 				humanAction = null;
 			}
@@ -260,8 +261,9 @@ public class ManyAgentsScheduling {
 			actionSequence.addAll(actionPair);
 			actionTimes.addAll(timesPair);
 			boolean isRepeating = checkIfRepeating(stateSequence);
-			isSuccess = human.isFinished(currentState);
+			isSuccess = human.isSubgoalFinished(currentState);
 			double reward = Collections.max(actionTimes);
+			
 			//double reward = SchedulingHelper.computeSequenceTime(startingState, actionSequence, timeGenerator);
 			finished = isSuccess || reward > 1000.0;
 			
@@ -329,8 +331,8 @@ public class ManyAgentsScheduling {
 		State currentState = startingState;
 		stateSequence.add(currentState);
 		List<State> statePair = new ArrayList<State>(1);
-		List<AbstractGroundedAction> actionPair = new ArrayList<AbstractGroundedAction>(1);
 		List<Double> timesPair = new ArrayList<Double>(1);
+		List<AbstractGroundedAction> actionPair = new ArrayList<AbstractGroundedAction>(1);
 		Map<String, Double> lastActionTime = new HashMap<String, Double>();
 		lastActionTime.put(human.getAgentName(), 0.0);
 		while (!finished) {
@@ -339,16 +341,15 @@ public class ManyAgentsScheduling {
 				break;
 			}
 			
-			currentState = ManyAgentsScheduling.performActions(currentState, humanAction, null, lastActionTime, statePair, actionPair, timesPair, timeGenerator);
+			currentState = ManyAgentsSchedulingSubgoalsRealdata.performActions(currentState, humanAction, null, lastActionTime, statePair, actionPair, timesPair, timeGenerator);
 			stateSequence.addAll(statePair);
 			actionSequence.addAll(actionPair);
 			
-			finished = human.isFinished(currentState);
+			finished = human.isSubgoalFinished(currentState);
 		}
 		
 		double score = timesPair.get(0);
-		//double score = SchedulingHelper.computeSequenceTime(startingState, actionSequence, timeGenerator);
-		return new EvaluationResult(score, human.isSuccess(currentState));
+		return new EvaluationResult(score, human.isSubgoalFinished(currentState));
 	}
 	
 	private static EvaluationResult evaluateHuman(Domain generalDomain, Human human, ActionTimeGenerator timeGenerator, int numTrials) {
@@ -356,13 +357,13 @@ public class ManyAgentsScheduling {
 		for (int i = 0; i < numTrials; i++) {
 			List<Recipe> recipes = AgentHelper.recipes(generalDomain);
 			
-			State startingState = ManyAgentsScheduling.generateInitialState(generalDomain, recipes, human, null);
+			State startingState = ManyAgentsSchedulingSubgoalsRealdata.generateInitialState(generalDomain, recipes, human, null);
 			human.setInitialState(startingState);
 			
 			
 			//System.out.println("Trial: " + i);
 			human.chooseNewRecipe();
-			result.incrementResult(ManyAgentsScheduling.evaluateHumanAlone(human, startingState, timeGenerator));
+			result.incrementResult(ManyAgentsSchedulingSubgoalsRealdata.evaluateHumanAlone(human, startingState, timeGenerator));
 		}
 		return result;
 		//System.out.println("Human alone: " + result.toString());
@@ -429,7 +430,7 @@ public class ManyAgentsScheduling {
 			System.exit(0);
 		}	*/
 		
-		Domain generalDomain = ManyAgentsScheduling.generateGeneralDomain(); 
+		Domain generalDomain = ManyAgentsSchedulingSubgoalsRealdata.generateGeneralDomain(); 
 		
 		List<Recipe> recipes = AgentHelper.recipes(generalDomain);
 		Knowledgebase knowledgebase = Knowledgebase.getKnowledgebase(generalDomain);
@@ -437,10 +438,10 @@ public class ManyAgentsScheduling {
 		Map<String, Double> factors = new HashMap<String, Double>();
 		factors.put("human", 1.0);
 		
-		ActionTimeGenerator timeGenerator = new ActionTimeGenerator(factors);
+		ActionTimeGenerator timeGenerator = new ActionTimeGenerator(true);
 		Human human = new Human(generalDomain, timeGenerator);
 		
-		State state = ManyAgentsScheduling.generateInitialState(generalDomain, recipes, human, null);
+		State state = ManyAgentsSchedulingSubgoalsRealdata.generateInitialState(generalDomain, recipes, human, null);
 		/*for (Recipe recipe : recipes) {
 			//System.out.println("Testing recipe " + recipe.toString());
 			ExperimentHelper.testRecipeExecution(generalDomain, state, recipe);
@@ -454,7 +455,7 @@ public class ManyAgentsScheduling {
 		List<Agent> agents = Arrays.asList(
 				(Agent)new RandomActionAgent(generalDomain),
 				(Agent)new RandomRecipeAgent(generalDomain, timeGenerator),
-				(Agent)new Human(generalDomain, "partner", timeGenerator),
+				(Agent)new Human(generalDomain, "friend", timeGenerator),
 				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator)
 				);
 		System.out.println("Agent, Successes, Trials, Average reward, average successful reward");
@@ -467,23 +468,24 @@ public class ManyAgentsScheduling {
 		
 			EvaluationResult result;
 		for (int i = 0; i < numTrials; i++) {
-			System.out.println("solo" + ", " +  ManyAgentsScheduling.evaluateHuman(generalDomain, human, timeGenerator, 1).toString());
+			System.out.println("solo" + ", " +  ManyAgentsSchedulingSubgoalsRealdata.evaluateHuman(generalDomain, human, timeGenerator, 1).toString());
 			
 			Collections.shuffle(agents);
 			
 			for (Agent agent : agents) {
-				System.out.print(agent.getClass().getSimpleName());
+			
 				human = new Human(generalDomain, timeGenerator);
 				
-				State startingState = ManyAgentsScheduling.generateInitialState(generalDomain, recipes, human, agent);
+				State startingState = ManyAgentsSchedulingSubgoalsRealdata.generateInitialState(generalDomain, recipes, human, agent);
 				reset.setState(startingState);
 				
 				human.setInitialState(startingState);
 				agent.setInitialState(startingState);
 				
-				result = ManyAgentsScheduling.evaluateAgent(human, agent, startingState, timeGenerator);
-				System.out.println(", " +  result.toString());
+				result = ManyAgentsSchedulingSubgoalsRealdata.evaluateAgent(human, agent, startingState, timeGenerator);
+				System.out.println(agent.getClass().getSimpleName() + ", " +  result.toString());
 			}
+			System.out.println("");
 			timeGenerator.clear();
 		}	
 	}
