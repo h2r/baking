@@ -153,7 +153,7 @@ public class SimulationHelper {
 		
 		if (firstTime > 0.0) {
 			State nextState = firstAction.executeIn(state);
-			//System.out.println("First executing action " + firstAction.toString() + ", " + firstTime);
+			System.out.println("First executing action " + firstAction.toString() + ", " + firstTime);
 			if (nextState.equals(state)) {
 				//System.out.println("Action had no effect");
 			}
@@ -167,7 +167,7 @@ public class SimulationHelper {
 		
 		if (secondTime > 0.0 && secondTime == firstTime) {
 			State nextState = secondAction.executeIn(state);
-			//System.out.println("Second executing action " + secondAction.toString() + ", " + secondTime);
+			System.out.println("Second executing action " + secondAction.toString() + ", " + secondTime);
 			
 			if (nextState.equals(state)) {
 				//System.out.println("Action had no effect");
@@ -204,7 +204,9 @@ public class SimulationHelper {
 		
 		if ((partner instanceof Human) && !(partner instanceof RandomRecipeAgent)) {
 			otherHuman = (Human)partner;
+			human.initialSubgoal(startingState);
 			otherHuman.setRecipe(human.getCurrentRecipe());
+			otherHuman.setSubgoal(human.getCurrentSubgoal());
 		}
 		boolean isSuccess = false;
 		partner.addObservation(currentState);
@@ -212,7 +214,7 @@ public class SimulationHelper {
 		while (!finished) {
 			
 			if (humanAction == null) {
-				humanAction = human.getAction(currentState);
+				humanAction = human.getActionWithScheduler(currentState, agents, !onlySubgoals);
 				if (humanAction == null) {
 					if (human.isSuccess(currentState)) {
 					}

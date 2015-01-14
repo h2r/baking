@@ -83,6 +83,13 @@ public class Assignment implements Iterable<ActionTime> {
 		return new AssignmentIterator(this.nodes, this.times);
 	}
 	
+	public Workflow.Node first() {
+		if (this.size() == 0) {
+			return null;
+		}
+		return this.nodes.get(0);
+	}
+	
 	public void add(Workflow.Node node, double time) {
 		this.nodes.add(node);
 		this.times.add(time);

@@ -32,7 +32,7 @@ import edu.brown.cs.h2r.baking.Scheduling.Workflow;
 import edu.brown.cs.h2r.baking.actions.ResetAction;
 
 public class Human implements Agent {
-	private final static RewardFunction rewardFunction = new RewardFunction() {
+	protected final static RewardFunction rewardFunction = new RewardFunction() {
 
 		@Override
 		public double reward(State s, GroundedAction a, State sprime) {
@@ -47,13 +47,13 @@ public class Human implements Agent {
 	private final String name;
 	
 	private Recipe currentRecipe;
-	private KitchenSubdomain currentSubgoal;
+	protected KitchenSubdomain currentSubgoal;
 	private List<KitchenSubdomain> kitchenSubdomains;
 	private List<KitchenSubdomain> allKitchenSubdomains;
 	private TerminalFunction isFailure;
 	private Domain generalDomain;
 	private final Scheduler scheduler = new ExhaustiveStarScheduler();
-	private final ActionTimeGenerator timeGenerator;
+	protected final ActionTimeGenerator timeGenerator;
 	public Human(Domain generalDomain, ActionTimeGenerator timeGenerator) {
 		this.generalDomain = generalDomain;
 		this.name = "human";
@@ -87,7 +87,8 @@ public class Human implements Agent {
 	public void setRecipe(Recipe recipe) {
 		this.currentRecipe = recipe;
 		this.currentSubgoal = null;
-		this.kitchenSubdomains = AgentHelper.generateRTDPPolicies(this.currentRecipe, this.generalDomain, this.startingState, Human.rewardFunction, Human.hashingFactory);
+		this.allKitchenSubdomains = AgentHelper.generateRTDPPolicies(this.currentRecipe, this.generalDomain, this.startingState, Human.rewardFunction, Human.hashingFactory);
+		this.setKitchenSubdomains(new ArrayList<KitchenSubdomain>(this.allKitchenSubdomains));
 	}
 	
 	public void setSubgoal(String subgoalName) {
@@ -121,13 +122,10 @@ public class Human implements Agent {
 		return this.currentSubgoal.getStartState();
 	}
 	
-	private void chooseNewSubgoal(State state) {
-		if (this.startingState.equals(state)) {
-			this.setRecipe(this.currentRecipe);
-		}
+	public void initialSubgoal(State state) {
 		List<KitchenSubdomain> activeSubgoals = new ArrayList<KitchenSubdomain>();
 		
-		for (KitchenSubdomain subdomain : this.kitchenSubdomains) {
+		for (KitchenSubdomain subdomain : this.getKitchenSubdomains()) {
 			if (subdomain.getSubgoal().allPreconditionsCompleted(state) && 
 					!subdomain.getSubgoal().goalCompleted(state)) {
 				activeSubgoals.add(subdomain);
@@ -146,11 +144,34 @@ public class Human implements Agent {
 		this.isFailure = new RecipeTerminalFunction(isFailure);
 		
 		this.generalDomain = AgentHelper.setSubgoal(this.generalDomain, this.currentSubgoal.getSubgoal());
-		//System.out.println(this.getAgentName() + " switches to task: " + this.currentSubgoal.toString());
-		
 	}
 	
-	
+	protected void chooseNewSubgoal(State state) {
+		if (this.startingState.equals(state)) {
+			this.setRecipe(this.currentRecipe);
+		}
+		List<KitchenSubdomain> activeSubgoals = new ArrayList<KitchenSubdomain>();
+		
+		for (KitchenSubdomain subdomain : this.getKitchenSubdomains()) {
+			if (subdomain.getSubgoal().allPreconditionsCompleted(state) && 
+					!subdomain.getSubgoal().goalCompleted(state)) {
+				activeSubgoals.add(subdomain);
+				
+			}
+		}
+		
+		Collections.shuffle(activeSubgoals);
+		this.currentSubgoal = (activeSubgoals.size() == 0) ? null : activeSubgoals.get(0);
+		if (this.currentSubgoal == null) {
+			return;
+		}
+		
+		final PropositionalFunction isSuccess = this.currentSubgoal.getSubgoal().getGoal();
+		final PropositionalFunction isFailure = this.currentSubgoal.getDomain().getPropFunction(AffordanceCreator.BOTCHED_PF);
+		this.isFailure = new RecipeTerminalFunction(isFailure);
+		
+		this.generalDomain = AgentHelper.setSubgoal(this.generalDomain, this.currentSubgoal.getSubgoal());
+	}
 	
 	@Override
 	public void addObservation(State state) {
@@ -171,7 +192,7 @@ public class Human implements Agent {
 		if (this.currentSubgoal == null) {
 			this.chooseNewSubgoal(state);
 		} else if (this.currentSubgoal.getSubgoal().goalCompleted(state)) {
-			this.kitchenSubdomains.remove(this.currentSubgoal);
+			this.getKitchenSubdomains().remove(this.currentSubgoal);
 			this.chooseNewSubgoal(state);
 		}
 		if (this.currentSubgoal == null) {
@@ -220,7 +241,7 @@ public class Human implements Agent {
 	private List<AbstractGroundedAction> generateActionList(State state) {
 		List<AbstractGroundedAction> actions = new ArrayList<AbstractGroundedAction>();
 		boolean isFinished = false;
-		List<KitchenSubdomain> kitchenSubdomains = new ArrayList<KitchenSubdomain>(this.kitchenSubdomains);
+		List<KitchenSubdomain> kitchenSubdomains = new ArrayList<KitchenSubdomain>(this.getKitchenSubdomains());
 		while(!isFinished) {
 			if (this.currentSubgoal == null) {
 				this.chooseNewSubgoal(state);
@@ -297,7 +318,7 @@ public class Human implements Agent {
 		
 		boolean isFailure = (this.isFailure == null) ? false : this.isFailure.isTerminal(state);
 		boolean isGoalComplete = (this.currentSubgoal == null) ? false : this.currentSubgoal.getSubgoal().goalCompleted(state);
-		boolean areGoalsCompleted = this.kitchenSubdomains.size() == 1;
+		boolean areGoalsCompleted = this.getKitchenSubdomains().size() == 1;
 		return (isFailure || (isGoalComplete && areGoalsCompleted)); 
 	}
 	
@@ -325,7 +346,7 @@ public class Human implements Agent {
 	public void buildAllSubdomains() {
 		this.allKitchenSubdomains = AgentHelper.generateAllRTDPPolicies(this.generalDomain, this.startingState, 
 				AgentHelper.recipes(generalDomain), Human.rewardFunction, Human.hashingFactory);
-		this.kitchenSubdomains = new ArrayList<KitchenSubdomain>(this.allKitchenSubdomains);
+		this.setKitchenSubdomains(new ArrayList<KitchenSubdomain>(this.allKitchenSubdomains));
 	}
 	
 	public State getNewStartingState() {
@@ -338,5 +359,13 @@ public class Human implements Agent {
 		this.currentSubgoal = currentSubdomain;
 		this.currentRecipe = currentSubdomain.getRecipe();
 		return this.currentSubgoal.getStartState();
+	}
+
+	protected List<KitchenSubdomain> getKitchenSubdomains() {
+		return kitchenSubdomains;
+	}
+
+	private void setKitchenSubdomains(List<KitchenSubdomain> kitchenSubdomains) {
+		this.kitchenSubdomains = kitchenSubdomains;
 	}
 }
