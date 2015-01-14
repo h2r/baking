@@ -415,6 +415,7 @@ public class SimulationHelper {
 	public static void run(int numTrials, Domain generalDomain, StateHashFactory hashingFactory,
 			List<Recipe> recipes, ActionTimeGenerator timeGenerator,
 			Human human, List<Agent> agents, ResetAction reset, int choice, boolean subgoalsOnly) {
+		
 		SimulationHelper.EvaluationResult result;
 		for (int i = 0; i < numTrials; i++) {
 			if (choice == agents.size()) {

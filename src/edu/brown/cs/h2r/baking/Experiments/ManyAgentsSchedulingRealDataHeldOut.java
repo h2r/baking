@@ -53,6 +53,7 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 		
 		int numTrials = 20;
 		int trialId = new Random().nextInt();
+		trialId = Math.abs(trialId);
 		if (args.length == 1) {
 			trialId = Integer.parseInt(args[0]);
 		} /*else {
