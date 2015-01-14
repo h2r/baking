@@ -341,7 +341,7 @@ public class SchedulingHelper {
 				assignment = new Assignment(agent);
 				sortedActions.put(agent, assignment);
 			}
-			double time = timeGenerator.get(ga);
+			double time = timeGenerator.get(ga, false);
 			assignment.add(node, time);
 		}
 		BufferedAssignments buffered = new BufferedAssignments(sortedActions.values());

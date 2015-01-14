@@ -59,7 +59,7 @@ public abstract class AdaptiveAgent implements Agent {
 	
 	@Override
 	public ObjectInstance getAgentObject() {
-		return AgentFactory.getNewHumanAgentObjectInstance(this.domain, this.getAgentName(), this.hashingFactory.getObjectHashFactory());
+		return AgentFactory.getNewHumanAgentObjectInstance(this.domain, this.getAgentName(), AdaptiveAgent.hashingFactory.getObjectHashFactory());
 	}
 	
 	@Override

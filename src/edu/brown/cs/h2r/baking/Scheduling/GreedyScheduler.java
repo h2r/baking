@@ -63,7 +63,7 @@ public class GreedyScheduler implements Scheduler {
 				String agent = assignment.getId();
 				GroundedAction action = node.getAction();
 				action.params[0] = agent;
-				double actionTime = actionTimeLookup.get(node.getAction());
+				double actionTime = actionTimeLookup.get(node.getAction(), false);
 				
 				double anticipatedTime = 
 						bufferedAssignments.getTimeAssigningNodeToAgent(node, actionTime, agent);

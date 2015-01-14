@@ -70,7 +70,7 @@ public abstract class HeuristicScheduler implements Scheduler {
 					bestAction = node;
 					GroundedAction ga = node.getAction();
 					ga.params[0] = agent;
-					bestTime = actionTimeLookup.get(ga);
+					bestTime = actionTimeLookup.get(ga, false);
 				}
 			}
 		}
@@ -90,7 +90,7 @@ public abstract class HeuristicScheduler implements Scheduler {
 			for (String agent : agents) {
 				GroundedAction ga = node.getAction();
 				ga.params[0] = agent;
-				Double time = actionTimeLookup.get(ga);
+				Double time = actionTimeLookup.get(ga, false);
 				agentMap.put(agent, time);
 			}
 		}

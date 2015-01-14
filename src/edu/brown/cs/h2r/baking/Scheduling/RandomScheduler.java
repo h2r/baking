@@ -24,7 +24,7 @@ public class RandomScheduler implements Scheduler {
 			String agent = agents.get(choice);
 			GroundedAction ga = node.getAction();
 			ga.params[0] = agent;
-			double time = timeGenerator.get(ga);
+			double time = timeGenerator.get(ga, false);
 			assignedWorkflows.get(choice).add(node, time);
 		}
 		
@@ -39,7 +39,7 @@ public class RandomScheduler implements Scheduler {
 			Assignment assignedWorkflow = assignedWorkflows.get(choice);
 			GroundedAction ga = node.getAction();
 			ga.params[0] = assignedWorkflow.getId();
-			double time = actionTimeLookup.get(ga);
+			double time = actionTimeLookup.get(ga, false);
 			assignedWorkflow.add(node, time);
 		}
 		

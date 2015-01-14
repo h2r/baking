@@ -45,16 +45,18 @@ import edu.brown.cs.h2r.baking.actions.ResetAction;
 import edu.brown.cs.h2r.baking.actions.SwitchAction;
 import edu.brown.cs.h2r.baking.actions.UseAction;
 
-public class ManyAgentsSchedulingSubgoalsRealdata {
+public class ManyAgentsSchedulingSubgoalsRealdataHeldout {
 	private static StateHashFactory hashingFactory = new NameDependentStateHashFactory();
+	
 	
 	public static void main(String[] args) {
 		
-		int numTrials = 20;
+		int numTrials = 1;
 		int trialId = new Random().nextInt();
+		trialId = Math.abs(trialId);
 		if (args.length == 1) {
 			trialId = Integer.parseInt(args[0]);
-		} /* else {
+		} /*else {
 			System.err.println("Args provided: "  + Arrays.toString(args));
 			System.err.println("Usage TestManyAgents numTrials trialId");
 			System.exit(0);
@@ -68,7 +70,7 @@ public class ManyAgentsSchedulingSubgoalsRealdata {
 		Map<String, Double> factors = new HashMap<String, Double>();
 		factors.put("human", 1.0);
 		
-		ActionTimeGenerator timeGenerator = new ActionTimeGenerator(true, false);
+		ActionTimeGenerator timeGenerator = new ActionTimeGenerator(true, true);
 		Human human = new Human(generalDomain, timeGenerator);
 		
 		State state = SimulationHelper.generateInitialState(generalDomain, hashingFactory, recipes, human, null);
@@ -94,9 +96,12 @@ public class ManyAgentsSchedulingSubgoalsRealdata {
 		
 		
 			//System.out.println("Agent: " + agent.getAgentName());
-		//Agent agent = agents.get(3);
 		int choice = trialId % (agents.size() + 1);
+		
 		SimulationHelper.run(numTrials, generalDomain, hashingFactory, recipes, timeGenerator, human, agents,
 				reset, choice, true);	
 	}
+
+
+	
 }

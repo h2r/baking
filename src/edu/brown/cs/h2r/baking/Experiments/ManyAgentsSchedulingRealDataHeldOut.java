@@ -45,8 +45,9 @@ import edu.brown.cs.h2r.baking.actions.ResetAction;
 import edu.brown.cs.h2r.baking.actions.SwitchAction;
 import edu.brown.cs.h2r.baking.actions.UseAction;
 
-public class ManyAgentsSchedulingSubgoalsRealdata {
+public class ManyAgentsSchedulingRealDataHeldOut {
 	private static StateHashFactory hashingFactory = new NameDependentStateHashFactory();
+	
 	
 	public static void main(String[] args) {
 		
@@ -54,7 +55,7 @@ public class ManyAgentsSchedulingSubgoalsRealdata {
 		int trialId = new Random().nextInt();
 		if (args.length == 1) {
 			trialId = Integer.parseInt(args[0]);
-		} /* else {
+		} /*else {
 			System.err.println("Args provided: "  + Arrays.toString(args));
 			System.err.println("Usage TestManyAgents numTrials trialId");
 			System.exit(0);
@@ -68,7 +69,7 @@ public class ManyAgentsSchedulingSubgoalsRealdata {
 		Map<String, Double> factors = new HashMap<String, Double>();
 		factors.put("human", 1.0);
 		
-		ActionTimeGenerator timeGenerator = new ActionTimeGenerator(true, false);
+		ActionTimeGenerator timeGenerator = new ActionTimeGenerator(true, true);
 		Human human = new Human(generalDomain, timeGenerator);
 		
 		State state = SimulationHelper.generateInitialState(generalDomain, hashingFactory, recipes, human, null);
@@ -85,7 +86,7 @@ public class ManyAgentsSchedulingSubgoalsRealdata {
 		List<Agent> agents = Arrays.asList(
 				(Agent)new RandomActionAgent(generalDomain),
 				(Agent)new RandomRecipeAgent(generalDomain, timeGenerator),
-				(Agent)new Human(generalDomain, "friend", timeGenerator),
+				(Agent)new Human(generalDomain, "partner", timeGenerator),
 				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator)
 				);
 		System.out.println("Agent, Successes, Trials, Average reward, average successful reward");
@@ -97,6 +98,6 @@ public class ManyAgentsSchedulingSubgoalsRealdata {
 		//Agent agent = agents.get(3);
 		int choice = trialId % (agents.size() + 1);
 		SimulationHelper.run(numTrials, generalDomain, hashingFactory, recipes, timeGenerator, human, agents,
-				reset, choice, true);	
+				reset, choice, false);	
 	}
 }

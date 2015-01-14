@@ -89,7 +89,7 @@ public class ExhaustiveStarScheduler implements Scheduler {
 				for (String agent : agents){
 					GroundedAction ga = action.getAction();
 					ga.params[0] = agent;
-					double time = actionTimeLookup.get(ga);
+					double time = actionTimeLookup.get(ga, false);
 					ActionTime actionTime = new ActionTime(action, time);
 					AssignmentNode newNode = new AssignmentNode(node, agent, actionTime);
 					if (openQueue.containsInstance(newNode) == null && !newNode.equals(node)) {

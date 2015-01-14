@@ -96,7 +96,7 @@ public class ExhaustiveScheduler implements Scheduler {
 			for (Map.Entry<String, Assignment> entry : assignments.entrySet()) {
 				Map<String, Assignment> copied = SchedulingHelper.copyMap(assignments);
 				String agent = entry.getKey();
-				double time = actionTimeLookup.get(node.getAction());
+				double time = actionTimeLookup.get(node.getAction(), false);
 				copied.get(agent).add(node, time);
 				double sequenceTime = this.assignActions(workflow, actionTimeLookup, copied, futureVisitedNodes, depth - 1);
 				if (sequenceTime < bestTime) {
