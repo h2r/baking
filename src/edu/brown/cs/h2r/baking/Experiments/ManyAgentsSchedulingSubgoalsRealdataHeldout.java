@@ -28,7 +28,7 @@ public class ManyAgentsSchedulingSubgoalsRealdataHeldout {
 	
 	public static void main(String[] args) {
 		
-		int numTrials = 5;
+		int numTrials = 1;
 		int trialId = new Random().nextInt();
 		trialId = Math.abs(trialId);
 		if (args.length == 1) {
