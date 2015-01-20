@@ -223,7 +223,22 @@ public class PolicyPrediction {
 				new PolicyProbabilityCallable(this.policies, fromStateTuple, goalCondition, maxDepth, 
 						actualName, hashFactory, depthType);
 		
-		List<PolicyProbability> result = Parallel.ForEach(this.policies, (ForEachCallable<KitchenSubdomain, PolicyProbability>)runnable);
+		List<PolicyProbability> result = new ArrayList<PolicyProbability>();
+		for(KitchenSubdomain policy : this.policies) {
+			PolicyProbability prob;
+			try {
+				prob = getPolicyProbability(policy, this.policies, fromStateTuple, goalCondition,
+						maxDepth, actualName, hashingFactory, depthType);
+				result.add(prob);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		}
+		
+		
+		//List<PolicyProbability> result = Parallel.ForEach(this.policies, (ForEachCallable<KitchenSubdomain, PolicyProbability>)runnable);
 		
 		double sumProbability = 0.0;
 		for (PolicyProbability policyProb : result) {
