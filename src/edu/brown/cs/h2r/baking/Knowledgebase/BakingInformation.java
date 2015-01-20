@@ -18,6 +18,7 @@ public class BakingInformation extends LinkedHashMap<String, Object> {
 	public static final String ingredientTraits = "traits";
 	public static final String ingredientToolTraits = "toolTraits";
 	public static final String ingredientHeatingInformation = "heatingInformation";
+	public static final String prepTraits = "prepTraits";
 	
 	public static final String combinationTraits = "traits";
 	public static final String combinationPossibleCombinations = "possibleCombinations";

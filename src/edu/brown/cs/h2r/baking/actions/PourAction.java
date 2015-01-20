@@ -151,9 +151,8 @@ public class PourAction extends BakingAction {
 		return state;
 	}
 	
-	private static State pourIntoWorking(State state, StateBuilder builder, ObjectInstance pouringContainer, 
+	private static State pourIntoWorking(State state, StateBuilder stateBuilder, ObjectInstance pouringContainer, 
 			ObjectInstance receivingContainer) {
-		StateBuilder stateBuilder = new StateBuilder(state);
 		Set<String> ingredients = ContainerFactory.getContentNames(pouringContainer);
 		ObjectInstance newReceiving = ContainerFactory.addIngredients(receivingContainer, ingredients);
 		stateBuilder.replace(receivingContainer, newReceiving);

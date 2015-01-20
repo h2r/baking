@@ -1,16 +1,17 @@
 package edu.brown.cs.h2r.baking.PropositionalFunctions;
 
 import java.util.List;
+import java.util.Map;
 
-import edu.brown.cs.h2r.baking.BakingSubgoal;
-import edu.brown.cs.h2r.baking.IngredientRecipe;
-import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
-import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
-import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
-import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
+import burlap.parallel.Parallel.V;
+import edu.brown.cs.h2r.baking.BakingSubgoal;
+import edu.brown.cs.h2r.baking.IngredientRecipe;
+import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
+import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 
 public class AllowSwitching extends BakingPropositionalFunction {
 	public AllowSwitching(String name, Domain domain, IngredientRecipe ingredient) {
@@ -60,6 +61,7 @@ public class AllowSwitching extends BakingPropositionalFunction {
 			}
 		}
 		List<IngredientRecipe> contents = this.topLevelIngredient.getContents();
+		Map<String, IngredientRecipe> traits = this.topLevelIngredient.getNecessaryTraits();
 		for (IngredientRecipe ing : contents) {
 			if (ing.getHeated()) {
 				ObjectInstance obj = state.getObject(ing.getFullName());
@@ -68,6 +70,12 @@ public class AllowSwitching extends BakingPropositionalFunction {
 						return true;
 					}
 				}
+			}
+		}
+		for (Map.Entry<String, IngredientRecipe> entry : traits.entrySet()) {
+			IngredientRecipe trait = entry.getValue();
+			if (trait.getHeated()) {
+				return true;
 			}
 		}
 		return false;

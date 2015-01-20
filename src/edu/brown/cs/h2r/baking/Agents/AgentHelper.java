@@ -16,6 +16,7 @@ import burlap.behavior.singleagent.Policy;
 import burlap.behavior.singleagent.planning.QComputablePlanner;
 import burlap.behavior.singleagent.planning.commonpolicies.AffordanceGreedyQPolicy;
 import burlap.behavior.singleagent.planning.stochastic.rtdp.AffordanceRTDP;
+import burlap.behavior.statehashing.NameDependentStateHashFactory;
 import burlap.behavior.statehashing.StateHashFactory;
 import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.Domain;
@@ -25,18 +26,26 @@ import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.SADomain;
+import burlap.parallel.Parallel;
+import burlap.parallel.Parallel.ForEachCallable;
 import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.BellmanAffordanceRTDP;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
-import edu.brown.cs.h2r.baking.RecipeAgentSpecificMakeSpanRewardFunction;
 import edu.brown.cs.h2r.baking.RecipeTerminalFunction;
 import edu.brown.cs.h2r.baking.Experiments.ExperimentHelper;
 import edu.brown.cs.h2r.baking.Experiments.KitchenSubdomain;
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
 import edu.brown.cs.h2r.baking.Recipes.Brownies;
+import edu.brown.cs.h2r.baking.Recipes.CerealWithMilk;
+import edu.brown.cs.h2r.baking.Recipes.ChocolateChipCookies;
+import edu.brown.cs.h2r.baking.Recipes.CoffeeWithMilk;
+import edu.brown.cs.h2r.baking.Recipes.CranberryWalnutCookies;
+import edu.brown.cs.h2r.baking.Recipes.FriedEgg;
+import edu.brown.cs.h2r.baking.Recipes.Pancake;
 import edu.brown.cs.h2r.baking.Recipes.PeanutButterCookies;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
+import edu.brown.cs.h2r.baking.Recipes.ScrambledEgg;
 
 public class AgentHelper {
 	public static final Map<String, Map<GroundedAction, Double>> actionTimes = new HashMap<String, Map<GroundedAction, Double>>();
@@ -76,23 +85,43 @@ public class AgentHelper {
 	}
 	public static List<Recipe> recipes(Domain domain) {
 		return Arrays.asList(
-				(Recipe)Brownies.getRecipe(domain)/*, 
-				new CucumberSalad(), 
-				new DeviledEggs(), 
-				new MashedPotatoes(),
-				new MoltenLavaCake()*/,
-				PeanutButterCookies.getRecipe(domain));
+				CoffeeWithMilk.getRecipe(domain),
+				CerealWithMilk.getRecipe(domain),
+				Pancake.getRecipe(domain),
+				FriedEgg.getRecipe(domain),
+				ScrambledEgg.getRecipe(domain)//,
+				//Brownies.getRecipe(domain), 
+				//ChocolateChipCookies.getRecipe(domain), 
+				//CranberryWalnutCookies.getRecipe(domain), 
+				//MoltenLavaCake.getRecipe(domain),
+				//(Recipe)PeanutButterCookies.getRecipe(domain)
+				);
 	}
 	
-	public static List<KitchenSubdomain> generateAllRTDPPolicies(Domain generalDomain, State startingState, List<Recipe> recipes, RewardFunction rf, StateHashFactory hashingFactory) {
-		List<KitchenSubdomain> policyDomains = new ArrayList<KitchenSubdomain>();
+	public static List<KitchenSubdomain> generateAllRTDPPoliciesParallel(Domain generalDomain, State startingState, List<Recipe> recipes, RewardFunction rf, StateHashFactory hashingFactory) {
 		
-		for (int i = 0; i < recipes.size(); i++) {
+		ForEachCallable<Recipe, List<KitchenSubdomain>> callable = new RecipePlanningCallable(generalDomain, startingState, rf, hashingFactory);
+		List<List<KitchenSubdomain>> policyDomains = Parallel.ForEach(recipes, callable);
+		List<KitchenSubdomain> flattened = new ArrayList<KitchenSubdomain>();
+		for (List<KitchenSubdomain> list : policyDomains) flattened.addAll(list);
+		return flattened;
+		/*for (int i = 0; i < recipes.size(); i++) {
 			Recipe recipe = recipes.get(i);
 			policyDomains.addAll(AgentHelper.generateRTDPPolicies(recipe, generalDomain, startingState, rf, hashingFactory));
+		}*/
+		
+		//return policyDomains;
+	}
+	
+public static List<KitchenSubdomain> generateAllRTDPPolicies(Domain generalDomain, State startingState, List<Recipe> recipes, RewardFunction rf, StateHashFactory hashingFactory) {
+		
+		List<KitchenSubdomain> flattened = new ArrayList<KitchenSubdomain>();
+		for (int i = 0; i < recipes.size(); i++) {
+			Recipe recipe = recipes.get(i);
+			flattened.addAll(AgentHelper.generateRTDPPolicies(recipe, generalDomain, startingState, rf, hashingFactory));
 		}
 		
-		return policyDomains;
+		return flattened;
 	}
 	
 	public static State generateActionSequence(List<KitchenSubdomain> remainingSubgoals, State startingState, RewardFunction rf, List<GroundedAction> actions, boolean finishRecipe) {
@@ -208,7 +237,7 @@ public class AgentHelper {
 		
 		TerminalFunction recipeTerminalFunction = new RecipeTerminalFunction(isSuccess);
 		
-		int numRollouts = 500; // RTDP
+		int numRollouts = 1000; // RTDP
 		int maxDepth = 10; // RTDP
 		double vInit = 0;
 		double maxDelta = .01;
@@ -267,5 +296,43 @@ public class AgentHelper {
 		}
 		
 		return new SADomain(newDomain, newPropFunctions);
+	}
+	public static class RecipePlanningCallable extends ForEachCallable<Recipe, List<KitchenSubdomain>> {
+		
+		Domain generalDomain;
+		State startingState;
+		Recipe recipe;
+		RewardFunction rf;
+		StateHashFactory hashingFactory;
+		public RecipePlanningCallable(Domain generalDomain, State startingState, RewardFunction rf, StateHashFactory hashingFactory) {
+			this.generalDomain = generalDomain;
+			this.startingState = startingState;
+			this.rf = rf;
+			this.hashingFactory = hashingFactory;
+		}
+		
+		public RecipePlanningCallable(RecipePlanningCallable base, Recipe recipe) {
+			this.generalDomain = base.generalDomain;
+			this.startingState = base.startingState;
+			this.rf = base.rf;
+			this.hashingFactory = new NameDependentStateHashFactory((NameDependentStateHashFactory)base.hashingFactory);
+			this.recipe = recipe;
+		}
+		
+		@Override
+		public List<KitchenSubdomain> call() throws Exception {
+			long start = System.nanoTime();
+			List<KitchenSubdomain> res = AgentHelper.generateRTDPPolicies(this.recipe, this.generalDomain, this.startingState, this.rf, this.hashingFactory);
+			long end = System.nanoTime();
+			System.out.println("Time " + this.recipe.toString() + " - " + ((double)(end - start)) / 1000000000.0);
+			return res;
+		}
+
+		@Override
+		public ForEachCallable<Recipe, List<KitchenSubdomain>> init(
+				Recipe current) {
+			return new RecipePlanningCallable(this, current);
+		}
+		
 	}
 }

@@ -1,6 +1,7 @@
 package edu.brown.cs.h2r.baking.PropositionalFunctions;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import burlap.oomdp.core.Domain;
@@ -89,6 +90,7 @@ public class AllowMoving extends BakingPropositionalFunction {
 			}
 		} else {
 			List<IngredientRecipe> ingredientContents = this.topLevelIngredient.getContents();
+			Map<String, IngredientRecipe> necessaryTraits = this.topLevelIngredient.getNecessaryTraits();
 			for (IngredientRecipe ing : ingredientContents) {
 				String name = ing.getFullName();
 				ObjectInstance obj = state.getObject(name);
@@ -98,6 +100,12 @@ public class AllowMoving extends BakingPropositionalFunction {
 							return true;
 						}
 					}
+				}
+			}
+			for (Map.Entry<String, IngredientRecipe> entry : necessaryTraits.entrySet()) {
+				IngredientRecipe ing  = entry.getValue();
+				if (ing.getHeated()) {
+					return true;
 				}
 			}
 		}

@@ -47,19 +47,21 @@ public class AllowPouring extends BakingPropositionalFunction {
 
 		}
 		
+		int pouringNumber = ContainerFactory.getAttributeNumber(pouringContainer);
+		int receivingNumber = ContainerFactory.getAttributeNumber(receivingContainer);
 		// Avoid useless pouring back and forth!
-		//if (ContainerFactory.isReceivingContainer(pouringContainer) && 
-		//		ContainerFactory.isMixingContainer(receivingContainer) && ContainerFactory.isEmptyContainer(receivingContainer)) {
-		//	return false;
-		//}
+		if (pouringNumber == receivingNumber && ContainerFactory.isEmptyContainer(receivingContainer)) {
+			return false;
+		}
+		
+		
+		
 		
 		boolean simpleIngredientSubgoal = false;
 		// Get what our subgoal is looking for and make copies
-		List<IngredientRecipe> necessaryIngs = new ArrayList<IngredientRecipe>(); 
-		necessaryIngs.addAll(this.topLevelIngredient.getContents());
-		
-		AbstractMap<String, IngredientRecipe> necessaryTraits = new HashMap<String, IngredientRecipe>();
-		necessaryTraits.putAll(this.topLevelIngredient.getNecessaryTraits());
+		List<IngredientRecipe> necessaryIngs = new ArrayList<IngredientRecipe>(this.topLevelIngredient.getContents()); 
+		necessaryIngs.add(this.topLevelIngredient);
+		AbstractMap<String, IngredientRecipe> necessaryTraits = new HashMap<String, IngredientRecipe>(this.topLevelIngredient.getNecessaryTraits());
 		
 		// simple ingredient subgoal!
 		if (necessaryIngs.isEmpty() && necessaryTraits.isEmpty()) {
@@ -67,17 +69,14 @@ public class AllowPouring extends BakingPropositionalFunction {
 			necessaryIngs.add(this.topLevelIngredient);
 		}
 		
-		// Look to see what  ingredients we have already fulfilled in our bowl
-		Set<ObjectInstance> receivingContents = new HashSet<ObjectInstance>();
-		Set<String> contentNames = ContainerFactory.getConstituentSwappedContentNames(receivingContainer, state);
-		for (String contentName : contentNames) {
-			ObjectInstance obj = state.getObject(contentName);
-			receivingContents.add(obj);
-		}
+		
+		
+		
+		
 		// Check that everything in our bowl is either a necessary ingredient or a trait
 		// ingredient for our current subgoal.
 		if (!simpleIngredientSubgoal) {
-			if (!AllowPouring.allIngredientsNecessary(necessaryIngs, receivingContents, necessaryTraits)) {
+			if (!AllowPouring.allIngredientsNecessary(state, necessaryIngs, receivingContainer, necessaryTraits)) {
 				return false;
 			}
 		}
@@ -87,9 +86,55 @@ public class AllowPouring extends BakingPropositionalFunction {
 				necessaryTraits)) {
 			return false;
 		}
+		if (!simpleIngredientSubgoal) {
+			if (this.checkIfBetterOptionsExist(state, pouringContainer, receivingContainer,
+					necessaryIngs, necessaryTraits)) {
+				return false;
+			}
+		}
 		
 		// Ingredient we are pouring and those in the bowl we're pouring into are all pertinent
 		// to our current subgoal and therefore this pour action will get us closer to our goal!
+		return true;
+	}
+	
+	private boolean checkIfBetterOptionsExist(State state, ObjectInstance pouringContainer, ObjectInstance receivingContainer,
+			List<IngredientRecipe> necessaryIngs, 
+			AbstractMap<String, IngredientRecipe> necessaryTraits) {
+		if (!ContainerFactory.getContentNames(receivingContainer).isEmpty()) {
+			return false;
+		}
+		List<ObjectInstance> containers = state.getObjectsOfTrueClass(ContainerFactory.ClassName);
+		List<ObjectInstance> validContainers = new ArrayList<ObjectInstance>(containers.size());
+		for (ObjectInstance object : containers) {
+			if (this.checkIfValidContainer(state, object, pouringContainer, receivingContainer, 
+					necessaryIngs, necessaryTraits)) {
+				validContainers.add(object);
+			}
+		}
+		
+		return !validContainers.isEmpty();
+	}
+	
+	private boolean checkIfValidContainer(State state, ObjectInstance container, ObjectInstance pouringContainer, ObjectInstance receivingContainer,
+			List<IngredientRecipe> necessaryIngs, 
+			AbstractMap<String, IngredientRecipe> necessaryTraits) {
+		if (container == pouringContainer || container == receivingContainer) {
+			return false;
+		}
+		if (!ContainerFactory.isReceivingContainer(container)) {
+			return false;
+		}
+		if (!this.pouringNecessaryIngredients(state, pouringContainer, container, necessaryIngs, necessaryTraits)) {
+			return false;
+		}
+		if (ContainerFactory.getContentNames(container).isEmpty()) {
+			return false;
+		}
+		if (!AllowPouring.allIngredientsNecessary(state, necessaryIngs, container, necessaryTraits)) {
+			return false;
+		}
+		
 		return true;
 	}
 	
@@ -209,13 +254,23 @@ public class AllowPouring extends BakingPropositionalFunction {
 		return false;
 	}
 	
-	private static boolean allIngredientsNecessary(List<IngredientRecipe> necessaryIngs, Set<ObjectInstance> 
-		receivingContents, AbstractMap<String, IngredientRecipe> necessaryTraits) {
+	private static boolean allIngredientsNecessary(State state, List<IngredientRecipe> necessaryIngs, ObjectInstance receivingContainer, 
+			AbstractMap<String, IngredientRecipe> necessaryTraits) {
+		
+		// Look to see what  ingredients we have already fulfilled in our bowl
+		Set<ObjectInstance> receivingContents = new HashSet<ObjectInstance>();
+		Set<String> contentNames = ContainerFactory.getConstituentSwappedContentNames(receivingContainer, state);
+		for (String contentName : contentNames) {
+			ObjectInstance obj = state.getObject(contentName);
+			receivingContents.add(obj);
+		}
+				
 		for (ObjectInstance ingObject : receivingContents) {
 			String contentName = ingObject.getName();
+			
 			IngredientRecipe match = null;
 			for (IngredientRecipe ing : necessaryIngs) {
-				if (ing.getFullName().equals(contentName)) {
+				if (ing.getFullName().equals(contentName) || ing.isMatching(ingObject, state)) {
 					match = ing;
 					break;
 				}
@@ -333,7 +388,7 @@ public class AllowPouring extends BakingPropositionalFunction {
 					// Conversely, if we're pouring into a heating/baking container, then we definitely
 					// want the correct tool attributes, but not necessarily the correct regular attributes
 					// since the ingredient might be about to be baked or heated.
-					if (ContainerFactory.isMixingContainer(receivingContainer)) {
+					if (!ContainerFactory.isBakingContainer(receivingContainer) && !ContainerFactory.isHeatingContainer(receivingContainer)) {
 						return necessaryTraits.get(trait).attributesMatch(ingObject);
 					} else {
 						return necessaryTraits.get(trait).toolAttributesMatch(ingObject);

@@ -17,6 +17,7 @@ import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.SADomain;
+import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.Agents.Agent;
 import edu.brown.cs.h2r.baking.Agents.AgentHelper;
 import edu.brown.cs.h2r.baking.Agents.Human;
@@ -36,6 +37,7 @@ import edu.brown.cs.h2r.baking.actions.GreaseAction;
 import edu.brown.cs.h2r.baking.actions.MixAction;
 import edu.brown.cs.h2r.baking.actions.MoveAction;
 import edu.brown.cs.h2r.baking.actions.PourAction;
+import edu.brown.cs.h2r.baking.actions.PreparationAction;
 import edu.brown.cs.h2r.baking.actions.ResetAction;
 import edu.brown.cs.h2r.baking.actions.SwitchAction;
 import edu.brown.cs.h2r.baking.actions.UseAction;
@@ -57,11 +59,11 @@ public class SimulationHelper {
 		Action mix = new MixAction(domain);
 		Action pour = new PourAction(domain);
 		Action move = new MoveAction(domain);
-		Action grease = new GreaseAction(domain);
+		//Action grease = new GreaseAction(domain);
 		Action aSwitch = new SwitchAction(domain);
-		Action use = new UseAction(domain);
+		//Action use = new UseAction(domain);
 		Action resetAction = new ResetAction(domain);
-		
+		//Action prepareAction = new PreparationAction(domain);
 		
 		
 		// To the failed propFunction, add in all subgoals for a recipe that are based on an ingredient.
@@ -85,7 +87,7 @@ public class SimulationHelper {
 		ObjectInstance makeSpan = MakeSpanFactory.getNewObjectInstance(generalDomain, "makespan", 2, objectHashingFactory);
 		objects.add(makeSpan);
 		
-		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2", "mixing_bowl_3", "baking_dish", "melting_pot");
+		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2", "mixing_bowl_3");
 		ObjectInstance counterSpace = SpaceFactory.getNewWorkingSpaceObjectInstance(generalDomain, SpaceFactory.SPACE_COUNTER, containers, "human", objectHashingFactory);
 		objects.add(counterSpace);
 		
@@ -93,7 +95,9 @@ public class SimulationHelper {
 		objects.add(ToolFactory.getNewSimpleToolObjectInstance(generalDomain, "spoon","", "", SpaceFactory.SPACE_COUNTER, objectHashingFactory));
 		
 		objects.add(ContainerFactory.getNewBakingContainerObjectInstance(generalDomain, "baking_dish", null, SpaceFactory.SPACE_COUNTER, objectHashingFactory));
-		objects.add(ContainerFactory.getNewHeatingContainerObjectInstance(generalDomain, "melting_pot", null, SpaceFactory.SPACE_COUNTER, objectHashingFactory));
+		ObjectInstance pan = ContainerFactory.getNewHeatingContainerObjectInstance(generalDomain, "frying_pan", null, SpaceFactory.SPACE_COUNTER, objectHashingFactory);
+		
+		objects.add(pan);
 		objects.add(SpaceFactory.getNewBakingSpaceObjectInstance(generalDomain, SpaceFactory.SPACE_OVEN, null, "", objectHashingFactory));
 		objects.add(SpaceFactory.getNewHeatingSpaceObjectInstance(generalDomain, SpaceFactory.SPACE_STOVE, null, "", objectHashingFactory));
 		//objects.add(ContainerFactory.getNewTrashContainerObjectInstance(generalDomain, "trash", SpaceFactory.SPACE_COUNTER, objectHashingFactory));
@@ -113,6 +117,21 @@ public class SimulationHelper {
 			tools.addAll(knowledgebase.getTools(generalDomain, SpaceFactory.SPACE_COUNTER, objectHashingFactory));
 		}
 		
+		/*
+		ObjectClass oc = ingredients.get(0).getObjectClass();
+		IngredientRecipe wholeEggs = knowledgebase.getIngredient("whole_eggs");
+		ObjectInstance wholeEggsObject = IngredientFactory.getNewIngredientInstance(wholeEggs, wholeEggs.getFullName(), oc, hashingFactory.getObjectHashFactory());
+		int index = -1;
+		for (int i = 0; i < ingredients.size(); i++) {
+			ObjectInstance ingredient = ingredients.get(i);
+			if (ingredient.getName().equals("eggs")) {
+				index = i;
+				break;
+			}
+		}
+		if (index >= 0) {
+			ingredients.set(index, wholeEggsObject);
+		}*/
 	
 		ObjectClass containerClass = generalDomain.getObjectClass(ContainerFactory.ClassName);		
 		

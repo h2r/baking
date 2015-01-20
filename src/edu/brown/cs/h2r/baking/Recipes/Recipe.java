@@ -111,8 +111,9 @@ public abstract class Recipe {
 	}
 	
 	public Boolean isSuccess(State state) {
-		List<ObjectInstance> objects = state.getObjectsOfTrueClass(IngredientFactory.ClassNameSimple);
-		objects.addAll(state.getObjectsOfTrueClass(IngredientFactory.ClassNameComplex));
+		String desiredClass = (this.topLevelIngredient.isSimple()) ? 
+				IngredientFactory.ClassNameSimple : IngredientFactory.ClassNameComplex;
+		List<ObjectInstance> objects = state.getObjectsOfTrueClass(desiredClass);
 		for (ObjectInstance object : objects) {
 			if (this.isSuccess(state, object)) {
 				return true;

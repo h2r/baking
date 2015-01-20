@@ -14,6 +14,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import burlap.behavior.singleagent.Policy;
 import burlap.behavior.singleagent.Policy.ActionProb;
 import burlap.behavior.singleagent.planning.StateConditionTest;
+import burlap.behavior.singleagent.planning.stochastic.rtdp.AffordanceRTDP;
 import burlap.behavior.statehashing.NameDependentStateHashFactory;
 import burlap.behavior.statehashing.StateHashFactory;
 import burlap.behavior.statehashing.StateHashTuple;
@@ -228,6 +229,9 @@ public class PolicyPrediction {
 		for (PolicyProbability policyProb : result) {
 			sumProbability += policyProb.getProbability();
 		}
+		if (sumProbability == 0.0) {
+			System.err.println("No valid policies found");
+		}
 		
 		List<PolicyProbability> normalizedDistribution = new ArrayList<PolicyProbability>(distribution.size());
 		
@@ -265,7 +269,8 @@ public class PolicyPrediction {
 			StateHashFactory hashingFactory, int depthType) throws InterruptedException {
 		
 		State fromState = fromStateTuple.getState();
-		
+		AffordanceRTDP planner = subdomain.getPlanner();
+		planner.planFromState(fromStateTuple.getState());
 		String name = subdomain.toString();
 		if (name.equals("brownies - wet_ingredients")) {
 			//System.out.println("");

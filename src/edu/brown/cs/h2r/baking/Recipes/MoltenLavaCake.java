@@ -15,10 +15,20 @@ import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.SpaceOn;
 
 public class MoltenLavaCake extends Recipe {
-	public MoltenLavaCake(Domain domain) {
+	private static MoltenLavaCake singleton = null;
+	
+	private MoltenLavaCake(Domain domain) {
 		super(domain);
 		this.recipeName = "molten lava cake";
 	}
+	
+	public static MoltenLavaCake getRecipe(Domain domain) {
+		if (MoltenLavaCake.singleton == null) {
+			MoltenLavaCake.singleton = new MoltenLavaCake(domain);
+		}
+		return MoltenLavaCake.singleton;
+	}
+	
 	
 	protected IngredientRecipe createTopLevelIngredient() {
 		List<IngredientRecipe> ingredientList = new ArrayList<IngredientRecipe>();
@@ -44,14 +54,14 @@ public class MoltenLavaCake extends Recipe {
 		List<IngredientRecipe> ingredientList3 = new ArrayList<IngredientRecipe>();
 		ingredientList3.add(batter);
 		ingredientList3.add(knowledgebase.getIngredient("eggs"));
-		ingredientList3.add(knowledgebase.getIngredient("egg_yolks"));
+		//ingredientList3.add(knowledgebase.getIngredient("egg_yolks"));
 		IngredientRecipe unflavoredBatter = new IngredientRecipe("unflavored_batter", Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, ingredientList3);
 		this.subgoalIngredients.put(unflavoredBatter.getSimpleName(), unflavoredBatter);
 		
 		List<IngredientRecipe> ingredientList4 = new ArrayList<IngredientRecipe>();
 		ingredientList4.add(unflavoredBatter);
 		ingredientList4.add(knowledgebase.getIngredient("vanilla"));
-		ingredientList4.add(knowledgebase.getIngredient("orange_liqueur"));
+		//ingredientList4.add(knowledgebase.getIngredient("orange_liqueur"));
 		IngredientRecipe cake = new IngredientRecipe("molten_lava_cake", Recipe.BAKED, this, Recipe.SWAPPED, ingredientList4);
 		
 		this.subgoalIngredients.put(cake.getSimpleName(), cake);
@@ -64,14 +74,14 @@ public class MoltenLavaCake extends Recipe {
 		BakingSubgoal sg1 = new BakingSubgoal(pf1, this.topLevelIngredient);
 		subgoals.add(sg1);
 		
-		BakingPropositionalFunction pf2 = new ContainerGreased(AffordanceCreator.CONTAINERGREASED_PF, domain, this.topLevelIngredient);
-		BakingSubgoal sg2 = new BakingSubgoal(pf2, this.topLevelIngredient);
-		subgoals.add(sg2);
+		//BakingPropositionalFunction pf2 = new ContainerGreased(AffordanceCreator.CONTAINERGREASED_PF, domain, this.topLevelIngredient);
+		//BakingSubgoal sg2 = new BakingSubgoal(pf2, this.topLevelIngredient);
+		//subgoals.add(sg2);
 
 		BakingPropositionalFunction pf3 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("melted_stuff"));
 		BakingSubgoal sg3 = new BakingSubgoal(pf3, this.subgoalIngredients.get("melted_stuff"));
 		sg3 = sg3.addPrecondition(sg1);
-		sg3 = sg3.addPrecondition(sg2);
+		//sg3 = sg3.addPrecondition(sg2);
 		subgoals.add(sg3);
 		
 		BakingPropositionalFunction pf4 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("batter"));

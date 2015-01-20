@@ -34,21 +34,22 @@ public class Knowledgebase {
 	
 	private AbstractMap<String, ArrayList<Set<String>>> combinationMap;
 	private AbstractMap<String, IngredientRecipe> allIngredients;
-	private AbstractMap<String, Set<String>> traitMap, toolTraitMap, combinationTraitMap;
+	private AbstractMap<String, Set<String>> traitMap, toolTraitMap, combinationTraitMap, prepTraitMap;
 	private AbstractMap<String, BakingInformation> toolMap;
 	private List<Recipe> recipes;
 	
-	private Map<Set<IngredientRecipe>, IngredientRecipe> recipeCombinationLookup;
+	private Map<Set<IngredientRecipe>, List<IngredientRecipe>> recipeCombinationLookup;
 	private BakingParser parser;
 	private Knowledgebase(Domain domain) {
 		this.parser = new BakingParser();
 		this.traitMap = new HashMap<String, Set<String>>();
 		this.toolTraitMap = new HashMap<String, Set<String>>();
+		this.prepTraitMap = new HashMap<String, Set<String>>();
 		this.allIngredients = new HashMap<String, IngredientRecipe>();
 		this.generateAllIngredients();
 		this.combinationTraitMap = new HashMap<String, Set<String>>();
 		this.combinationMap = new HashMap<String, ArrayList<Set<String>>>();
-		this.recipeCombinationLookup = new HashMap<Set<IngredientRecipe>, IngredientRecipe>();
+		this.recipeCombinationLookup = new HashMap<Set<IngredientRecipe>, List<IngredientRecipe>>();
 		this.generateCombinations();
 		this.toolMap = parser.getToolMap();
 		this.domain = domain;
@@ -68,7 +69,12 @@ public class Knowledgebase {
 		List<Set<IngredientRecipe>> combinations = this.generateAllCombinations(subIngredients);
 		
 		for (Set<IngredientRecipe> combination : combinations) {
-			this.recipeCombinationLookup.put(combination, ingredient);
+			List<IngredientRecipe> list = this.recipeCombinationLookup.get(combination);
+			if (list == null) {
+				list = new ArrayList<IngredientRecipe>();
+				this.recipeCombinationLookup.put(combination, list);
+			}
+			list.add(ingredient);
 		}
 		
 		for (List<IngredientRecipe> list : subIngredients) {
@@ -78,6 +84,10 @@ public class Knowledgebase {
 				}
 			}
 		}
+	}
+	
+	public static Knowledgebase getKnowledgebase() {
+		return Knowledgebase.singleton;
 	}
 	
 	public static Knowledgebase getKnowledgebase(Domain domain) {
@@ -94,27 +104,36 @@ public class Knowledgebase {
 			BakingInformation info = entry.getValue();
 			List<String> traits = null;
 			List<String> toolTraits = null;
+			List<String> prepTraits = null;
 			String heatingInfo = null;
 			try {
 				traits = info.getListOfString(BakingInformation.ingredientTraits);
 				toolTraits = info.getListOfString(BakingInformation.ingredientToolTraits);
 				heatingInfo = info.getString(BakingInformation.ingredientHeatingInformation);
+				prepTraits = info.getListOfString(BakingInformation.prepTraits);
 			} catch (BakingCastException e) {
 				e.printStackTrace();
 			}
 			if (traits != null) {
 				ing.addTraits(traits);
+				this.traitMap.put(name, new HashSet<String>(traits));
+				
 			}
 			if (toolTraits != null) {
 				ing.addToolTraits(toolTraits);
+				this.toolTraitMap.put(name, new HashSet<String>(toolTraits));
+				
 			}
 			if (heatingInfo != null) {
 				ing.addHeatingInformation(heatingInfo);
 			}
+			if (prepTraits != null) {
+				ing.addPrepTraits(prepTraits);
+				this.prepTraitMap.put(name, new HashSet<String>(prepTraits));
+			}
 			
 			this.allIngredients.put(name, ing);
-			this.traitMap.put(name, new HashSet<String>(traits));
-			this.toolTraitMap.put(name, new HashSet<String>(toolTraits));
+			
 		}
 	}
 	
@@ -186,7 +205,11 @@ public class Knowledgebase {
 	}
 	
 	public IngredientRecipe getIngredient(String name) {
-		return this.allIngredients.get(name);
+		IngredientRecipe ingredient = this.allIngredients.get(name);
+		if (ingredient == null) {
+			return null;
+		}
+		return new IngredientRecipe(ingredient);
 	}
 	
 	public List<ObjectInstance> getAllIngredientObjectInstanceList(Domain domain, ObjectHashFactory hashingFactory) {
@@ -270,8 +293,14 @@ public class Knowledgebase {
 		Set<String> necessaryTraits = ingredient.getNecessaryTraits().keySet();
 		for (String trait : necessaryTraits) {
 			List<IngredientRecipe> traitMatches = this.findIngredientWithTraits(trait);
-			ingredientMatches.add(traitMatches);
+			List<IngredientRecipe> correctedMatches = new ArrayList<IngredientRecipe>(traitMatches.size());
+			for (IngredientRecipe traitMatch : traitMatches) {
+				IngredientRecipe corrected = traitMatch.getCopyWithNewAttributes(traitMatch.getAttributeNumber());
+				correctedMatches.add(corrected);
+			}
+			ingredientMatches.add(correctedMatches);
 		}
+		
 		return ingredientMatches;
 	}
 
@@ -463,9 +492,35 @@ public class Knowledgebase {
 		
 		// Iterate through all combinations, and check if those combinations generate anything
 		for (Set<IngredientRecipe> combination : allCombinations) {
-			IngredientRecipe generatedCombo = this.recipeCombinationLookup.get(combination);
-			if (generatedCombo != null) {
-				generatedCombinations.add(generatedCombo);
+			List<IngredientRecipe> generatedCombos = this.recipeCombinationLookup.get(combination);
+			if (generatedCombos != null) {
+				generatedCombinations.addAll(generatedCombos);
+			}
+		}
+		
+		if (generatedCombinations.isEmpty()) {
+			Set<IngredientRecipe> allItems = new HashSet<IngredientRecipe>();
+			for (Set<IngredientRecipe> combination : allCombinations) {
+				allItems.addAll(combination);
+			}
+			
+			Set<IngredientRecipe> allEntries = new HashSet<IngredientRecipe>();
+			for (Set<IngredientRecipe> combination : this.recipeCombinationLookup.keySet()) {
+				allEntries.addAll(combination);
+			}
+			
+			for (IngredientRecipe lhs : allItems) {
+				for (IngredientRecipe rhs : allEntries) {
+					if (lhs.equals(rhs) && lhs.hashCode() != rhs.hashCode()) {
+						System.err.println("Inconsistent hashing");
+						System.err.println("lhs: " + lhs.getFullName());
+						System.err.println("rhs: " + rhs.getFullName());
+						
+					} else if (!lhs.equals(rhs) && lhs.getFullName().equals(rhs.getFullName())) {
+						//System.err.println("Suspicious comparison");
+						//boolean result = lhs.equals(rhs);
+					}
+				}
 			}
 		}
 		
@@ -478,12 +533,21 @@ public class Knowledgebase {
 	private List<IngredientRecipe> getMatchingIngredientRecipes(ObjectInstance object, State state) {
 		Set<IngredientRecipe> ingredientMatches = new HashSet<IngredientRecipe>();
 		
+		//If there is one that matches by name
+		IngredientRecipe matchedByName = this.allIngredients.get(object.getName());
+		if (matchedByName != null) {
+			ingredientMatches.add(matchedByName);
+		}
+
+		//Otherwise need to get potential matches
 		for (IngredientRecipe ingredient : this.allIngredients.values()) {
 			if (ingredient.isMatching(object, state)) {
 				ingredientMatches.add(ingredient);
 			}
 		}
 		
+		
+		// Check recipes for complex ingredients
 		for (Recipe recipe : this.recipes) { 
 			this.getMatchingIngredientRecipes(object, state, recipe.topLevelIngredient, ingredientMatches);
 		}
@@ -493,13 +557,11 @@ public class Knowledgebase {
 	
 	// Finds possible matches, recursive edition
 	private void getMatchingIngredientRecipes(ObjectInstance object, State state, IngredientRecipe ingredient, Set<IngredientRecipe> matching) {
-		if (ingredient.isMatching(object, state)) {
+		if (ingredient.isMatching(object, state) || ingredient.isTraitMatching(object, state)) {
 			matching.add(ingredient);
 		} else if (ingredient.isSimple()){
 			return;
 		} else {
-			List<IngredientRecipe> contents = ingredient.getContents();
-			
 			for (IngredientRecipe subIngredient : ingredient.getContents()) {
 				this.getMatchingIngredientRecipes(object, state, subIngredient, matching);
 			}
@@ -521,17 +583,14 @@ public class Knowledgebase {
 			copiedCombinations.clear();
 			
 			// Clear previous list, and fill this one with n copies of the current generatedCombinations
-			for (int i = 0; i < list.size(); i++) {
-				copiedCombinations.add(new ArrayList<Set<IngredientRecipe>>(generatedCombinations));
-			}
-			
-			// For each item in this ingredient list, add it to one of the combinations that we just copied
-			for (int i = 0; i < list.size(); i++) {
-				IngredientRecipe ingredient = list.get(i);
-				List<Set<IngredientRecipe>> copiedCombination = copiedCombinations.get(i);
-				for (Set<IngredientRecipe> combination : copiedCombination) {
-					combination.add(ingredient);
+			for (IngredientRecipe ingredient : list) {
+				List<Set<IngredientRecipe>> copiedCombination = new ArrayList<Set<IngredientRecipe>>(generatedCombinations.size());
+				for (Set<IngredientRecipe> set : generatedCombinations) {
+					Set<IngredientRecipe> copied = new HashSet<IngredientRecipe>(set);
+					copied.add(ingredient);
+					copiedCombination.add(copied);
 				}
+				copiedCombinations.add(copiedCombination);
 			}
 			
 			// Clear the current generated combinations

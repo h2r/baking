@@ -119,7 +119,7 @@ public class ContainerFactory {
 	public static ObjectInstance getNewHeatingContainerObjectInstance(Domain domain, 
 			String name, List<String> contents, String containerSpace, ObjectHashFactory hashingFactory) {
 		return ContainerFactory.getNewObjectInstance(domain.getObjectClass(ContainerFactory.ClassName), 
-				name, ContainerFactory.HEATING|ContainerFactory.RECEIVING|ContainerFactory.POURING, 
+				name, ContainerFactory.HEATING|ContainerFactory.RECEIVING|ContainerFactory.POURING|ContainerFactory.MIXING, 
 				contents, containerSpace, hashingFactory);
 	}
 	
@@ -211,8 +211,7 @@ public class ContainerFactory {
 	}
 
 	public static Set<String> getContentNames(ObjectInstance container) {
-		Set<String> names = container.getAllRelationalTargets(ContainerFactory.attributeContains);
-		return new HashSet<String>(names);
+		return container.getAllRelationalTargets(ContainerFactory.attributeContains);
 	}
 	
 	public static String getSpaceName(ObjectInstance container) {
@@ -267,6 +266,15 @@ public class ContainerFactory {
 		object = object.changeValue(ContainerFactory.attributePouring, (attributes & ContainerFactory.POURING) != 0);
 		object = object.changeValue(ContainerFactory.attributeUsed, false);
 		return object;
+	}
+	
+	public static int getAttributeNumber(ObjectInstance object) {
+		boolean baking = object.getBooleanValue(ContainerFactory.attributeBaking);
+		boolean mixing = object.getBooleanValue(ContainerFactory.attributeMixing);
+		boolean heating = object.getBooleanValue(ContainerFactory.attributeHeating);
+		boolean receiving = object.getBooleanValue(ContainerFactory.attributeReceiving);
+		boolean pouring = object.getBooleanValue(ContainerFactory.attributePouring);
+		return ContainerFactory.generateAttributeNumber(baking, mixing, heating, receiving, pouring);
 	}
 	
 	public static int generateAttributeNumber(Boolean baking, Boolean mixing, Boolean heating, Boolean receiving, Boolean pouring) {

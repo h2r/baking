@@ -5,10 +5,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
+import edu.brown.cs.h2r.baking.Knowledgebase.Knowledgebase;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 
@@ -25,6 +28,8 @@ public class IngredientRecipe {
 	private Set<String> traits;
 	private Set<String> toolTraits;
 	private Set<String> toolAttributes;
+	private Set<String> prepTraits;
+	
 	private String heatingInformation;
 	private String heatedState;
 	private String name;
@@ -43,6 +48,8 @@ public class IngredientRecipe {
 		this.traits = new HashSet<String>();
 		this.toolTraits = new HashSet<String>();
 		this.toolAttributes = new HashSet<String>();
+		this.prepTraits = new HashSet<String>();
+		this.necessaryTraits = new HashMap<String, IngredientRecipe>();
 		this.recipe = recipe;
 	}
 	
@@ -65,13 +72,33 @@ public class IngredientRecipe {
 		this.necessaryTraits = new HashMap<String, IngredientRecipe>();
 		this.toolTraits = new HashSet<String>();
 		this.toolAttributes = new HashSet<String>();
+		this.prepTraits = new HashSet<String>();
 		this.recipe = recipe;
+	}
+	
+	public IngredientRecipe(IngredientRecipe other) {
+		this.name = other.name;
+		this.setAttributes(other.getAttributeNumber());
+		this.recipeBaked = other.recipeBaked;
+		this.recipeHeated = other.recipeHeated;
+		if (other.contents != null)
+		this.contents = (other.contents == null) ? null : new ArrayList<IngredientRecipe>(other.contents);
+		this.swapped = other.swapped;
+		this.useCount = other.useCount;
+		this.heatingInformation = other.heatingInformation;
+		this.heatedState = other.heatedState;
+		this.traits = new HashSet<String>(other.traits);
+		this.necessaryTraits = new HashMap<String, IngredientRecipe>(other.necessaryTraits);
+		this.toolTraits = new HashSet<String>(other.toolTraits);
+		this.toolAttributes = new HashSet<String>(other.toolAttributes);
+		this.prepTraits = new HashSet<String>(other.prepTraits);
+		this.recipe = other.recipe;
 	}
 	
 	//Copy Constructor
 	public IngredientRecipe(String name, int attributes, Recipe recipe, boolean recipeBaked, boolean recipeHeated, List<IngredientRecipe> contents,
 			boolean swapped, int useCount, String heatingInfo, String heatedState, Set<String> traits, AbstractMap<String, 
-			IngredientRecipe> necessaryTraits, Set<String> toolTraits, Set<String> toolAttributes) {
+			IngredientRecipe> necessaryTraits, Set<String> toolTraits, Set<String> toolAttributes, Set<String> prepTraits) {
 		this.name = name;
 		this.setAttributes(attributes);
 		this.recipeBaked = recipeBaked;
@@ -93,6 +120,7 @@ public class IngredientRecipe {
 		this.necessaryTraits = new HashMap<String, IngredientRecipe>(necessaryTraits);
 		this.toolTraits = new HashSet<String>(toolTraits);
 		this.toolAttributes = new HashSet<String>(toolAttributes);
+		this.prepTraits = new HashSet<String>(prepTraits);
 		this.recipe = recipe;
 	}
 	
@@ -106,6 +134,10 @@ public class IngredientRecipe {
 			return this.contents == null || this.contents.size() == 0;
 		}
 		return false;
+	}
+	
+	public void setMixed() {
+		this.mixed = true;
 	}
 	
 	public Boolean getMixed () {
@@ -175,12 +207,19 @@ public class IngredientRecipe {
 		this.toolAttributes.addAll(attributes);
 	}
 	
+	public void addPrepTraits(Collection<String> traits) {
+		this.prepTraits.addAll(traits);
+	}
 	public boolean hasToolTrait(String trait) {
 		return this.toolTraits.contains(trait);
 	}
 	
 	public boolean hasToolAttribute(String attribute) {
 		return this.toolAttributes.contains(attribute);
+	}
+	
+	public boolean hasPrepTraits(String trait) {
+		return this.prepTraits.contains(trait);
 	}
 
 	public boolean hasTraits() {
@@ -482,9 +521,31 @@ public class IngredientRecipe {
 		AbstractMap<String, IngredientRecipe> necessaryTraits = this.getNecessaryTraits();
 		Set<String> toolTraits = this.getToolTraits();
 		Set<String> toolAttributes = this.getToolAttributes();
+		Set<String> prepTraits = this.getPrepTraits();
 		
 		return new IngredientRecipe(newName, attributes, this.recipe, recipeBaked, recipeHeated, contents,
-				swapped, useCount, heatingInfo, heatedState, traits, necessaryTraits, toolTraits, toolAttributes);
+				swapped, useCount, heatingInfo, heatedState, traits, necessaryTraits, toolTraits, toolAttributes, prepTraits);
+	}
+	
+	public IngredientRecipe getCopyWithNewAttributes(int attributes) {
+		String name = this.getSimpleName();
+		boolean recipeBaked = this.getRecipeBaked();
+		boolean recipeHeated = this.getRecipeHeated();
+		List<IngredientRecipe> contents = this.getContents();
+		boolean swapped = this.getSwapped();
+		int useCount = this.getUseCount();
+		String heatingInfo = this.getHeatingInfo();
+		String heatedState = this.getHeatedState();
+		Set<String> traits = this.getTraits();
+		AbstractMap<String, IngredientRecipe> necessaryTraits = this.getNecessaryTraits();
+		Set<String> toolTraits = this.getToolTraits();
+		Set<String> toolAttributes = this.getToolAttributes();
+		Set<String> prepTraits = this.getPrepTraits();
+		
+		IngredientRecipe other = new IngredientRecipe(name, attributes, this.recipe, recipeBaked, recipeHeated, contents,
+				swapped, useCount, heatingInfo, heatedState, traits, necessaryTraits, toolTraits, toolAttributes, prepTraits);
+		
+		return other;
 	}
 	
 	public boolean objectHasExtraAttribute(ObjectInstance object) {
@@ -547,7 +608,59 @@ public class IngredientRecipe {
 		// Now we check the subIngredients
 		Set<String> contentNames = IngredientFactory.getContentsForIngredient(object);
 		List<IngredientRecipe> subIngredients = new ArrayList<IngredientRecipe>(this.getContents());
+		List<IngredientRecipe> matchedSubIngredients = new ArrayList<IngredientRecipe>();
+		for (IngredientRecipe subIngredient : subIngredients) {
+			String name = subIngredient.toString();
+			if (contentNames.remove(name)) {
+				ObjectInstance ingredient = state.getObject(name);
+				if(!subIngredient.isMatching(ingredient, state)) {
+					return false;
+				} else {
+					matchedSubIngredients.add(subIngredient);
+				}
+			}
+		}
+		subIngredients.removeAll(matchedSubIngredients);
+		for (IngredientRecipe subIngredient : subIngredients) {
+			boolean matched = false;
+			String matchedName = null;
+			for (String name : contentNames) {
+				ObjectInstance ingredient = state.getObject(name);
+				if(subIngredient.isMatching(ingredient, state)) {
+					matchedSubIngredients.add(subIngredient);
+					matched = true;
+					matchedName = name;
+				}
+			}
+			if (!matched) {
+				return false;
+			}
+			contentNames.remove(matchedName);
+		}
+		Knowledgebase knowledgebase = Knowledgebase.getKnowledgebase();
+		Map<String, IngredientRecipe> necessaryTraits = new HashMap<String, IngredientRecipe>(this.necessaryTraits);
+		if (contentNames.size() > necessaryTraits.size()) {
+			return false;
+		}
+		for (String name : contentNames) {
+			IngredientRecipe ingredient = knowledgebase.getIngredient(name);
+			if (ingredient == null) {
+				continue;
+			}
+			for (String trait : ingredient.getTraits()) {
+				IngredientRecipe matching = necessaryTraits.remove(trait);
+				if (matching == null) {
+					continue;
+				}
+				ObjectInstance ingredientObject = state.getObject(name);
+				if (!matching.isTraitMatching(ingredientObject, state)) {
+					return false;
+				}
+			}
+			
+		}
 		
+		return necessaryTraits.isEmpty();/*
 		// For each item contained within the object
 		for (String subIngredientName : contentNames) {
 			
@@ -580,6 +693,88 @@ public class IngredientRecipe {
 		}
 		
 		
+		return true;*/
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.getFullName(), this.getAttributeNumber(), this.traits, this.necessaryTraits, this.toolTraits, this.toolAttributes, this.prepTraits );
+	}
+	
+	@Override
+	public boolean equals(Object other) {
+		if (this == other) {
+			return true;
+		}
+		
+		if (!(other instanceof IngredientRecipe)) {
+			return false;
+		}
+		IngredientRecipe otherIngredient = (IngredientRecipe)other;
+		
+		if (!this.getFullName().equals(otherIngredient.getFullName())) {
+			return false;
+		}
+		
+		if (this.getAttributeNumber() != otherIngredient.getAttributeNumber()) {
+			return false;
+		}
+		
+		if ((this.traits == null) != (otherIngredient.traits == null)) {
+			return false;
+		}
+		
+		if (!this.traits.equals(otherIngredient.traits)){ 
+			return false;
+		}
+		
+		if ((this.necessaryTraits == null) != (otherIngredient.necessaryTraits == null)) {
+			return false;
+		}
+		if (!this.necessaryTraits.equals(otherIngredient.necessaryTraits)){ 
+			return false;
+		}
+		
+		if ((this.toolTraits == null) != (otherIngredient.toolTraits == null)) {
+			return false;
+		}
+		
+		if (!this.toolTraits.equals(otherIngredient.toolTraits)){ 
+			return false;
+		}
+		
+		if ((this.toolAttributes == null) != (otherIngredient.toolAttributes == null)) {
+			return false;
+		}
+		
+		if (!this.toolAttributes.equals(otherIngredient.toolAttributes)){ 
+			return false;
+		}
+		
+		if ((this.prepTraits == null) != (otherIngredient.prepTraits == null)) {
+			return false;
+		}
+		
+		if (!this.prepTraits.equals(otherIngredient.prepTraits)){ 
+			return false;
+		}
+		
 		return true;
+	}
+	
+	public boolean isTraitMatching(ObjectInstance object, State state) {
+		
+		// If the attributes don't match, then not there yet
+		if (!this.attributesMatch(object)) {
+			return false;
+		}
+		
+		Set<String> objectTraits = IngredientFactory.getTraits(object);
+		return (objectTraits.contains(this.getSimpleName()));
+
+	}
+
+	public Set<String> getPrepTraits() {
+		return this.prepTraits;
 	}
 }

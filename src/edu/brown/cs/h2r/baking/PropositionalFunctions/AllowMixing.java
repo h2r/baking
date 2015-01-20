@@ -47,7 +47,7 @@ public class AllowMixing extends BakingPropositionalFunction {
 			ObjectInstance ingObj = state.getObject(name);
 			IngredientRecipe ingredient = null;
 			for (IngredientRecipe i : this.topLevelIngredient.getContents()) {
-				if (i.getFullName().equals(name)) {
+				if (i.getFullName().equals(name) || i.isMatching(ingObj, state)) {
 					ingredient = i;
 					break;
 				}
@@ -63,9 +63,6 @@ public class AllowMixing extends BakingPropositionalFunction {
 				if (ingredient == null) {
 					return false;
 				}
-			}
-			if (!ingredient.getFullName().equals(ingObj.getName())) {
-				return false;
 			}
 		}
 		

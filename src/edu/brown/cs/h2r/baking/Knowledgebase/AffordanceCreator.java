@@ -22,6 +22,7 @@ import edu.brown.cs.h2r.baking.PropositionalFunctions.AllowHanding;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.AllowMixing;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.AllowMoving;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.AllowPouring;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.AllowPrepare;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.AllowReset;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.AllowSwitching;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.AllowUsingTool;
@@ -33,6 +34,7 @@ import edu.brown.cs.h2r.baking.actions.GreaseAction;
 import edu.brown.cs.h2r.baking.actions.MixAction;
 import edu.brown.cs.h2r.baking.actions.MoveAction;
 import edu.brown.cs.h2r.baking.actions.PourAction;
+import edu.brown.cs.h2r.baking.actions.PreparationAction;
 import edu.brown.cs.h2r.baking.actions.ResetAction;
 import edu.brown.cs.h2r.baking.actions.SwitchAction;
 import edu.brown.cs.h2r.baking.actions.UseAction;
@@ -51,6 +53,8 @@ public class AffordanceCreator {
 	public static final String BOTCHED_PF = "botched";
 	public static final String SPACEON_PF = "spaceOnPF";
 	public static final String RESET_PF = "resetPF";
+	public static final String PREPARE_PF = "preparePF";
+	
 	public static final String CONTAINERGREASED_PF = "containerGreasedPF";
 	public static final String CONTAINERS_CLEANED_PF = "containerCleanedPF";
 	
@@ -76,6 +80,8 @@ public class AffordanceCreator {
 		final PropositionalFunction allowUsing = new AllowUsingTool(AffordanceCreator.USE_PF, domain, ingredient);
 		final PropositionalFunction allowHanding = new AllowHanding(AffordanceCreator.HAND_PF, domain, ingredient);
 		final PropositionalFunction allowReset = new AllowReset(AffordanceCreator.RESET_PF, domain, ingredient);
+		final PropositionalFunction allowPrepare = new AllowPrepare(AffordanceCreator.PREPARE_PF, domain, ingredient);
+		
 		//final PropositionalFunction allowPeeling = new AllowPeeling(AffordanceCreator.PEEL_PF, domain, ingredient);
 		final PropositionalFunction isSuccess = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, ingredient);
 		final PropositionalFunction isFailure = new RecipeBotched(AffordanceCreator.BOTCHED_PF, domain, ingredient);
@@ -175,6 +181,8 @@ public class AffordanceCreator {
 				return AffordanceCreator.SWITCH_PF;
 			case ResetAction.className:
 				return AffordanceCreator.RESET_PF;
+			case PreparationAction.className:
+				return AffordanceCreator.PREPARE_PF;
 			default:
 				System.err.println("Action " + actionName + " has no PF associated with it!");
 				System.exit(0);

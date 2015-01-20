@@ -131,8 +131,15 @@ public class MixAction extends BakingAction {
 	{	
 		ObjectClass complexIngredientClass = this.domain.getObjectClass(IngredientFactory.ClassNameComplex);
 		Set<String> contents = ContainerFactory.getContentNames(container);
-		if (contents.size() < 2) {
+		
+		if (contents.isEmpty()) {
 			return state;
+		}
+		
+		if (contents.size() < 2) {
+			ObjectInstance ingredient = state.getObject(contents.iterator().next()); 
+			ObjectInstance mixed = IngredientFactory.mixIngredient(ingredient);
+			return state.replaceObject(ingredient, mixed);
 		}
 		
 		// get all of the objects for contents of container
@@ -142,15 +149,11 @@ public class MixAction extends BakingAction {
 		}
 		
 		List<IngredientRecipe> newCombinations = this.knowledgebase.checkCombination(objects, state);
-		if (newCombinations.size() != 0) {
-			if (newCombinations.size() > 1) {
-				System.err.println("This combination was found in more than one recipe, unsure how to resolve ambiguity");
-			}
+		if (!newCombinations.isEmpty()) {
 			return this.makeSwappedIngredient(state, builder, domain, container, newCombinations, objects);
 		}
 		
-		return makeArbitraryIngredient(state, builder, container,
-				complexIngredientClass, contents, objects);
+		return makeArbitraryIngredient(state, builder, container, complexIngredientClass, contents, objects);
 	}
 
 	private State makeArbitraryIngredient(State state, StateBuilder builder,
@@ -210,7 +213,8 @@ public class MixAction extends BakingAction {
 		if (SpaceFactory.isBaking(receivingSpace) && SpaceFactory.getOnOff(receivingSpace)) {
 			newIngredient = IngredientFactory.bakeIngredient(newIngredient);
 		} else if (SpaceFactory.isHeating(receivingSpace) && SpaceFactory.getOnOff(receivingSpace)) {
-			newIngredient = IngredientFactory.heatIngredient(newIngredient);
+			state = state.appendObject(newIngredient);
+			return Knowledgebase.heatContainer(state, container);
 		}
 		
 		return state.appendObject(newIngredient);
@@ -224,7 +228,7 @@ public class MixAction extends BakingAction {
 		//get the actual traits from the trait map
 		Set<String> ings = ContainerFactory.getContentNames(container);
 		ObjectInstance newIng = 
-				IngredientFactory.getNewComplexIngredientObjectInstance(domain, newIngredient, true, container.getName(), container.getHashTuple().getHashingFactory());
+				IngredientFactory.getNewComplexIngredientObjectInstance(domain, newIngredient, Recipe.NO_ATTRIBUTES, ings, true, container.getName(), container.getHashTuple().getHashingFactory());
 		
 		// Make the hidden Copies
 		List<ObjectInstance> objectsToRemove = new ArrayList<ObjectInstance>(ings.size());
@@ -248,9 +252,7 @@ public class MixAction extends BakingAction {
 		if (SpaceFactory.isBaking(receivingSpace) && SpaceFactory.getOnOff(receivingSpace)) {
 			newIng = IngredientFactory.bakeIngredient(newIng);
 		} else if (SpaceFactory.isHeating(receivingSpace) && SpaceFactory.getOnOff(receivingSpace)) {
-			//IngredientFactory.heatIngredient(newIng);
-			state = Knowledgebase.heatContainer(builder.toState(), container);
-			builder = new StateBuilder(state);
+			newIng = IngredientFactory.heatIngredient(newIng);
 		}
 		builder.add(newIng);
 		

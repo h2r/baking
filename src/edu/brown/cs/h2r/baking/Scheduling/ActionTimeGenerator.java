@@ -103,6 +103,9 @@ public class ActionTimeGenerator {
 		if (!action.params[0].equals("human")) {
 			return null;
 		}
+		if (this.humanParsedTimes == null) {
+			return null;
+		}
 		
 		String choice = this.realDataChoice.get(action.toString());
 		String actionName = action.actionName();

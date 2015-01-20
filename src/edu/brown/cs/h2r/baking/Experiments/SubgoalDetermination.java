@@ -209,7 +209,7 @@ public class SubgoalDetermination {
 			}
 			
 		};
-		List<KitchenSubdomain> policyDomains = AgentHelper.generateAllRTDPPolicies(domain, state, recipes, rf, hashingFactory);
+		List<KitchenSubdomain> policyDomains = AgentHelper.generateAllRTDPPoliciesParallel(domain, state, recipes, rf, hashingFactory);
 		List<KitchenSubdomain> testDomains = new ArrayList<KitchenSubdomain>(policyDomains);
 		Random rando = new Random();
 		
@@ -259,6 +259,10 @@ public class SubgoalDetermination {
 						}
 						Collections.shuffle(bestPolicies, rando);
 						if (bestPolicies.size() > 1) {
+							/*for (KitchenSubdomain policy : bestPolicies) {
+								System.out.println("\t" + policy.toString() + ": " + maxProb);
+							}*/
+							
 							numRandomGuesses++;
 						}
 						KitchenSubdomain choice = bestPolicies.get(0);

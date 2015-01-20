@@ -3,12 +3,17 @@ package edu.brown.cs.h2r.baking.Experiments;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
+import burlap.behavior.affordances.AffordancesController;
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.Policy;
+import burlap.behavior.singleagent.planning.stochastic.rtdp.AffordanceRTDP;
+import burlap.debugtools.DPrint;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.GroundedProp;
 import burlap.oomdp.core.ObjectInstance;
@@ -192,34 +197,96 @@ public class ExperimentHelper {
 		return null;
 	}
 	
-	public static State takeAction(Domain domain, State state, String actionName, String ...params ) {
-		Action action = domain.getAction(actionName);
-		GroundedAction groundedAction = new GroundedAction(action, params);
-		BakingActionResult result = ((BakingAction)action).checkActionIsApplicableInState(state, params);
+	public static State takeAction(Domain domain, State state, GroundedAction action ) {
+		
+		BakingActionResult result = ((BakingAction)action.action).checkActionIsApplicableInState(state, action.params);
 		if (!result.getIsSuccess()) {
 			System.err.println(result.getWhyFailed());
 		}
 		
-		return groundedAction.executeIn(state);
+		return action.executeIn(state);
 	}
 	
-	public static void testRecipeExecution(Domain domain, State state, Recipe recipe) {
+	private static List<List<ObjectInstance>> getChangedObjects(State old, State newState) {
+		List<ObjectInstance> removedObjects = new ArrayList<ObjectInstance>();
+		List<ObjectInstance> addedObjects = new ArrayList<ObjectInstance>();
+		
+		List<ObjectInstance> oldObjects = old.getAllObjects();
+		List<ObjectInstance> newObjects = newState.getAllObjects();
+		
+		for (ObjectInstance oldObject : oldObjects) {
+			Integer index =  newObjects.indexOf(oldObject);
+			ObjectInstance replacement = (index >= 0) ? newObjects.get(index) : null;
+			if (replacement == null || !oldObject.valueEquals(replacement)) {
+				removedObjects.add(oldObject);
+			}
+		}
+		
+		for (ObjectInstance newObject : newObjects) {
+			Integer index =  oldObjects.indexOf(newObject);
+			ObjectInstance replacement = (index >= 0) ? oldObjects.get(index) : null;
+			
+			if (replacement == null || !newObject.valueEquals(replacement)) {
+				addedObjects.add(newObject);
+			}
+		}
+		
+		return Arrays.asList(removedObjects, addedObjects);
+	}
+	
+	public static void testRecipeExecution(Domain domain, State state, Recipe recipe,
+			boolean printActionResults, boolean printStateDiffs, boolean printPreconditions) {
+		int actionResults = 41;
+		int stateDiffs = 42;
+		int preconds = 43;
+		DPrint.toggleCode(actionResults, printActionResults);
+		DPrint.toggleCode(stateDiffs, printStateDiffs);
+		DPrint.toggleCode(preconds, printPreconditions);
 		RecipeActionParameters recipeParams = new RecipeActionParameters(domain);
 		List<String[]> actionParams = recipeParams.getRecipeParams(recipe.getRecipeName());
 		List<BakingSubgoal> subgoals = recipe.getSubgoals();
 		Map<String, Boolean> previousValues = new HashMap<String, Boolean>();
+		Set<BakingSubgoal> completedSubgoals = new HashSet<BakingSubgoal>();
 		for (String[] params : actionParams) {
-			System.out.println(Arrays.toString(params));
+			DPrint.cl(actionResults, Arrays.toString(params));
 			State previousState = state.copy();
 			if (params[0].equals("mix")) {
 				//System.out.print("");
 			}
+			Action action = domain.getAction(params[0]);			
+			GroundedAction groundedAction = new GroundedAction(action, Arrays.copyOfRange(params, 1, params.length));
 			
-			state = takeAction(domain, state, params[0], Arrays.copyOfRange(params, 1, params.length));
+			boolean oneRecommended = 
+					checkSubgoalRecommendations(domain, state, actionResults, subgoals, completedSubgoals, groundedAction);
+			if (!oneRecommended) {
+				System.err.println("No subgoal recommended this action");
+				oneRecommended = checkSubgoalRecommendations(domain, state, actionResults, subgoals, completedSubgoals, groundedAction);
+			}
+			
+			state = takeAction(domain, state, groundedAction);
+			List<List<ObjectInstance>> changedObjects = ExperimentHelper.getChangedObjects(previousState, state);
+			
 			String successString = (previousState.equals(state)) ? "failure":"success";
-			System.out.println("Action was a " + successString);
+			DPrint.cl(actionResults, "Action was a " + successString);
 			//System.out.println("Recipe failure " + recipe.isFailure(state));
-			System.out.println("Recipe success " + recipe.isSuccess(state));
+			DPrint.cl(actionResults, "Recipe success " + recipe.isSuccess(state));
+			List<ObjectInstance> removedObjects = changedObjects.get(0);
+			List<ObjectInstance> addedObjects = changedObjects.get(1);
+			
+			DPrint.cl(stateDiffs, "Removed");
+			for (ObjectInstance object : removedObjects) {
+				String oldStr = object.toString();
+				oldStr = oldStr.replace("\n", "\n\t");
+				DPrint.cl(stateDiffs, oldStr);
+			}
+			
+			DPrint.cl(stateDiffs, "Added");
+			for (ObjectInstance object : addedObjects) {
+				String oldStr = object.toString();
+				oldStr = oldStr.replace("\n", "\n\t");
+				DPrint.cl(stateDiffs, oldStr);
+			}
+			
 			for (BakingSubgoal subgoal : subgoals) {
 				
 				
@@ -236,9 +303,12 @@ public class ExperimentHelper {
 					Boolean currentValue = prop.isTrue(state);
 					Boolean previousValue = previousValues.get(subgoalString);
 					if (previousValue == null || previousValue != currentValue) {
-						System.out.println("    " + subgoalString + ": " + currentValue);
+						DPrint.cl(actionResults, "    " + subgoalString + ": " + currentValue);
 					}
 					previousValues.put(subgoalString, currentValue);
+					if (currentValue) {
+						completedSubgoals.add(subgoal);
+					}
 				}
 				
 				for (BakingSubgoal precondition : preconditions) {
@@ -250,14 +320,41 @@ public class ExperimentHelper {
 						Boolean currentValue = prop.isTrue(state);
 						Boolean previousValue = previousValues.get(preconditionString);
 						if (previousValue == null || previousValue != currentValue) {
-							System.out.println("      " + preconditionString + ": " + currentValue);
+							DPrint.cl(preconds, "      " + preconditionString + ": " + currentValue);
 						}
 						previousValues.put(preconditionString, currentValue);
 					}
 				}
 				
 			}
+			
+			
 		}
+		System.out.println("Recipe success " + recipe.isSuccess(state));
+	}
+
+	private static boolean checkSubgoalRecommendations(Domain domain,
+			State state, int actionResults, List<BakingSubgoal> subgoals,
+			Set<BakingSubgoal> completedSubgoals, GroundedAction groundedAction) {
+		
+		List<BakingSubgoal> recommendingSubgoals = new ArrayList<BakingSubgoal>();
+		for (BakingSubgoal subgoal : subgoals) {
+			if (completedSubgoals.contains(subgoal)) {
+				continue;
+			}
+			domain = AgentHelper.setSubgoal(domain, subgoal);
+			AffordanceCreator theCreator = new AffordanceCreator(domain, state, subgoal.getIngredient());
+			AffordancesController affController = theCreator.getAffController();
+			Boolean recommended = affController.isActionRecommendedInState(state, groundedAction);
+			if (recommended) {
+				recommendingSubgoals.add(subgoal);
+			}
+		}
+		DPrint.cl(actionResults, "Recommending subgoals");
+		for (BakingSubgoal subgoal : recommendingSubgoals) {
+			DPrint.cl(actionResults, "\t" + subgoal.toString());
+		}
+		return !recommendingSubgoals.isEmpty();
 	}
 
 	public static State getEndState(KitchenSubdomain policyDomain) {
@@ -277,6 +374,25 @@ public class ExperimentHelper {
 		}
 		
 		return episodeAnalysis.getState(episodeAnalysis.stateSequence.size() - 1);
+		
+	}
+	
+	public static void printPlan(KitchenSubdomain policyDomain, RewardFunction rf) {
+		BakingSubgoal subgoal = policyDomain.getSubgoal();
+		Domain domain = policyDomain.getDomain();
+		Policy policy = policyDomain.getPolicy();
+		AffordanceRTDP planner = policyDomain.getPlanner();
+		State startingState = policyDomain.getStartState();
+		PropositionalFunction isFailure = domain.getPropFunction(AffordanceCreator.BOTCHED_PF);
+		
+		TerminalFunction recipeTerminalFunction = new RecipeTerminalFunction(subgoal.getGoal(), isFailure);
+		planner.planFromState(startingState);
+		EpisodeAnalysis episodeAnalysis = policy.evaluateBehavior(startingState, rf, recipeTerminalFunction,100);
+		
+		System.out.println(policyDomain.toString());
+		for (GroundedAction action : episodeAnalysis.actionSequence) {
+			System.out.println("\t" + action.actionName() + " " + Arrays.toString(action.params) );
+		}
 		
 	}
 }

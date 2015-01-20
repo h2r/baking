@@ -54,6 +54,9 @@ public class ResetAction extends BakingAction {
 	@Override
 	protected State performActionHelper(State state, String[] params) {
 		super.performActionHelper(state, params);
+		if (this.resetState == null) {
+			throw new RuntimeException("Reset state has not been set");
+		}
 		return this.resetState;
 	}
 }

@@ -148,7 +148,7 @@ public class Human implements Agent {
 	
 	protected void chooseNewSubgoal(State state) {
 		if (this.startingState.equals(state)) {
-			this.setRecipe(this.currentRecipe);
+			this.kitchenSubdomains = new ArrayList<KitchenSubdomain>(this.allKitchenSubdomains);
 		}
 		List<KitchenSubdomain> activeSubgoals = new ArrayList<KitchenSubdomain>();
 		

@@ -245,7 +245,7 @@ public class TestIngredientRecipe {
 	
 	@Test
 	public void testMoltenLavaCake() {
-		topLevelIngredient = new MoltenLavaCake(domain).topLevelIngredient;
+		topLevelIngredient = MoltenLavaCake.getRecipe(domain).topLevelIngredient;
 		this.setUp();
 		swappedIngredientList = Arrays.asList("melted_stuff", "batter", "unflavored_batter", "molten_lava_cake");
 		constituentNecessaryTraits = Arrays.asList("flour", "sugar");
