@@ -123,6 +123,33 @@ public static List<KitchenSubdomain> generateAllRTDPPolicies(Domain generalDomai
 		
 		return flattened;
 	}
+
+public static State generateActionSequence(KitchenSubdomain currentSubgoal, List<KitchenSubdomain> remainingSubgoals, State startingState, RewardFunction rf, List<GroundedAction> actions, boolean finishRecipe) {
+	Set<KitchenSubdomain> active = new HashSet<KitchenSubdomain>();
+	Set<KitchenSubdomain> completed = new HashSet<KitchenSubdomain>();
+	
+	active.add(currentSubgoal);
+	
+	State nextState = startingState;
+	while (!active.isEmpty()) {
+		Iterator<KitchenSubdomain> iterator = active.iterator();
+		KitchenSubdomain current = iterator.next();
+		iterator.remove();
+		nextState = AgentHelper.generateActionSequence(current, nextState, rf, actions);
+		completed.add(current);
+		if (!finishRecipe){
+			break;
+		}
+		
+		for (KitchenSubdomain subdomain : remainingSubgoals) {
+			if (subdomain.getSubgoal().allPreconditionsCompleted(startingState) && !completed.contains(subdomain)) {
+				active.add(subdomain);
+			}
+		}
+	}
+	
+	return AgentHelper.generateFinalState(startingState, actions);
+}
 	
 	public static State generateActionSequence(List<KitchenSubdomain> remainingSubgoals, State startingState, RewardFunction rf, List<GroundedAction> actions, boolean finishRecipe) {
 		Set<KitchenSubdomain> active = new HashSet<KitchenSubdomain>();

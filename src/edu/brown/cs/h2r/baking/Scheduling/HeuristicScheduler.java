@@ -18,7 +18,7 @@ public abstract class HeuristicScheduler implements Scheduler {
 			ActionTimeGenerator actionTimeLookup) {
 		Map<String, Assignment> assignedWorkflows = new HashMap<String, Assignment>();
 		for (String agent : agents) {
-			Assignment assignedWorkflow = new Assignment(agent);
+			Assignment assignedWorkflow = new Assignment(agent, actionTimeLookup);
 			assignedWorkflows.put(agent, assignedWorkflow);
 		}
 		
@@ -75,7 +75,7 @@ public abstract class HeuristicScheduler implements Scheduler {
 			}
 		}
 		
-		assignments.get(bestAgent).add(bestAction, bestTime);
+		assignments.get(bestAgent).add(bestAction);
 		visitedNodes.add(bestAction);
 	}
 

@@ -20,6 +20,7 @@ import burlap.oomdp.singleagent.SADomain;
 import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.Agents.Agent;
 import edu.brown.cs.h2r.baking.Agents.AgentHelper;
+import edu.brown.cs.h2r.baking.Agents.Expert;
 import edu.brown.cs.h2r.baking.Agents.Human;
 import edu.brown.cs.h2r.baking.Agents.RandomRecipeAgent;
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
@@ -114,7 +115,7 @@ public class SimulationHelper {
 		for (int i = 0;i < recipes.size(); i++) {
 			Recipe recipe = recipes.get(i);
 			ingredients.addAll(knowledgebase.getRecipeObjectInstanceList(generalDomain, objectHashingFactory, recipe));
-			tools.addAll(knowledgebase.getTools(generalDomain, SpaceFactory.SPACE_COUNTER, objectHashingFactory));
+			//tools.addAll(knowledgebase.getTools(generalDomain, SpaceFactory.SPACE_COUNTER, objectHashingFactory));
 		}
 		
 		/*
@@ -202,7 +203,8 @@ public class SimulationHelper {
 		return state;
 	}
 	
-	public static EvaluationResult evaluateAgent(Human human, Agent partner, State startingState, ActionTimeGenerator timeGenerator, boolean onlySubgoals) {
+	public static EvaluationResult evaluateAgent(Human human, Agent partner, State startingState, 
+			ActionTimeGenerator timeGenerator, boolean onlySubgoals) {
 		List<AbstractGroundedAction> actionSequence = new ArrayList<AbstractGroundedAction>();
 		List<State> stateSequence = new ArrayList<State>();
 		boolean finished = false;
@@ -214,18 +216,24 @@ public class SimulationHelper {
 		List<Double> actionTimes = new ArrayList<Double>();
 		human.chooseNewRecipe();
 		Human otherHuman = null;
-		
+		Expert humanExpert = null, otherExpert = null;
 		Map<String, Double> actionMap = new HashMap<String, Double>();
 		actionMap.put(human.getAgentName(), 0.0);
 		actionMap.put(partner.getAgentName(), 0.0);
 		
 		List<String> agents = Arrays.asList(human.getAgentName(), partner.getAgentName());
 		
+		if (human instanceof Expert) {
+			humanExpert = (Expert)human;
+		}
 		if ((partner instanceof Human) && !(partner instanceof RandomRecipeAgent)) {
 			otherHuman = (Human)partner;
 			human.initialSubgoal(startingState);
 			otherHuman.setRecipe(human.getCurrentRecipe());
 			otherHuman.setSubgoal(human.getCurrentSubgoal());
+			if (otherHuman instanceof Expert) {
+				otherExpert = (Expert)otherHuman;
+			}
 		}
 		boolean isSuccess = false;
 		partner.addObservation(currentState);
@@ -233,25 +241,29 @@ public class SimulationHelper {
 		while (!finished) {
 			
 			if (humanAction == null) {
-				humanAction = human.getActionWithScheduler(currentState, agents, !onlySubgoals);
+				if (humanExpert != null) {
+					humanAction = humanExpert.getActionWithScheduler(currentState, agents, !onlySubgoals, (GroundedAction)partnerAction);
+				} else {
+					humanAction = human.getActionWithScheduler(currentState, agents, !onlySubgoals);
+				}
 				if (humanAction == null) {
-					if (human.isSuccess(currentState)) {
-					}
-					else {
-						humanAction = human.getActionWithScheduler(currentState, agents, !onlySubgoals);
-					}
 					break;
 				}
 			}
 			
 			if (partnerAction == null) {
 				if (otherHuman != null) {
-					State newState = humanAction.executeIn(currentState);
-					
-					////System.out.println("\nEvaluating how partner would complete recipe");
-					//TestManyAgents.evaluateHumanAlone(otherHuman, newState);
-					////System.out.println("");
-					partnerAction = otherHuman.getActionWithScheduler(newState, agents, !onlySubgoals);
+					if (!startingState.equals(currentState)) {
+						if (otherExpert != null) {
+							partnerAction = otherExpert.getActionWithScheduler(currentState, agents, !onlySubgoals, (GroundedAction)humanAction);
+							if (partnerAction != null && !partnerAction.params[0].equals(partner.getAgentName())) {
+								throw new RuntimeException("Partner can't choose this action");
+							}
+						} else {
+							State newState = humanAction.executeIn(currentState);
+							partnerAction = otherHuman.getActionWithScheduler(newState, agents, !onlySubgoals);
+						}
+					}
 				} else {
 					partnerAction = partner.getActionWithScheduler(currentState, agents, !onlySubgoals);
 					if (partnerAction == null) {
@@ -260,6 +272,13 @@ public class SimulationHelper {
 				}
 			}
 			
+			if (humanAction != null && !humanAction.params[0].equals(human.getAgentName())) {
+				throw new RuntimeException("Human can't choose this action");
+			}
+			
+			if (partnerAction != null && !partnerAction.params[0].equals(partner.getAgentName())) {
+				throw new RuntimeException("Partner can't choose this action");
+			}
 			
 			
 			currentState = SimulationHelper.performActions(currentState, humanAction, partnerAction, actionMap, statePair, actionPair, timesPair, timeGenerator);
@@ -447,7 +466,7 @@ public class SimulationHelper {
 			//for (Agent agent : agents) {
 			Agent agent = agents.get(choice);
 			
-			human = new Human(generalDomain, timeGenerator);
+			human = new Expert(generalDomain, "human", timeGenerator);
 			
 			State startingState = SimulationHelper.generateInitialState(generalDomain, hashingFactory, recipes, human, agent);
 			reset.setState(startingState);

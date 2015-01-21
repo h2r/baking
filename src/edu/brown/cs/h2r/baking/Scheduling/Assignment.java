@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 
+import burlap.oomdp.singleagent.GroundedAction;
 import edu.brown.cs.h2r.baking.Scheduling.Assignment.ActionTime;
 import edu.brown.cs.h2r.baking.Scheduling.Workflow.Node;
 
@@ -15,6 +16,7 @@ public class Assignment implements Iterable<ActionTime> {
 	private final List<Double> times;
 	private final List<Double> completionTimes;
 	private final List<Workflow.Node> nodes; 
+	private final ActionTimeGenerator timeGenerator;
 	private double time;
 	
 	@Override
@@ -22,12 +24,13 @@ public class Assignment implements Iterable<ActionTime> {
 		return nodes.toString();
 	}
 	
-	public Assignment(String agent) {
+	public Assignment(String agent, ActionTimeGenerator timeGenerator) {
 		this.agent = agent;
 		this.nodes = new ArrayList<Workflow.Node>();
 		this.time = 0;
 		this.times = new ArrayList<Double>();
 		this.completionTimes = new ArrayList<Double>();
+		this.timeGenerator = timeGenerator;
 	}
 	
 	public Assignment(Assignment other) {
@@ -36,11 +39,23 @@ public class Assignment implements Iterable<ActionTime> {
 		this.time = other.time;
 		this.times = new ArrayList<Double>(other.times);
 		this.completionTimes = new ArrayList<Double>(other.completionTimes);
+		this.timeGenerator = other.timeGenerator;
 	}
 	
-	public Assignment(String agent, List<Workflow.Node> assignedActions, List<Double> times) {
+	public Assignment(String agent, List<Workflow.Node> assignedActions,  ActionTimeGenerator timeGenerator ) {
 		this.agent = agent;
 		this.nodes = Collections.unmodifiableList(assignedActions);
+		this.timeGenerator = timeGenerator;
+		List<Double> times = new ArrayList<Double>(this.nodes.size());
+		for (Workflow.Node node : this.nodes) {
+			GroundedAction ga = node.getAction();
+			ga.params[0] = this.agent;
+			double time = timeGenerator.get(ga, false);
+			times.add(time);
+		}
+		
+		
+		
 		this.times = Collections.unmodifiableList(times);
 		double sum = 0.0;
 		List<Double> completionTimes = new ArrayList<Double>(times.size());
@@ -90,7 +105,10 @@ public class Assignment implements Iterable<ActionTime> {
 		return this.nodes.get(0);
 	}
 	
-	public void add(Workflow.Node node, double time) {
+	public void add(Workflow.Node node) {
+		GroundedAction ga = node.getAction();
+		ga.params[0] = this.agent;
+		double time = this.timeGenerator.get(ga, false);
 		this.nodes.add(node);
 		this.times.add(time);
 		this.time += time;
@@ -99,6 +117,10 @@ public class Assignment implements Iterable<ActionTime> {
 	
 	public String getId() {
 		return this.agent;
+	}
+	
+	public ActionTimeGenerator getTimeGenerator() {
+		return this.timeGenerator;
 	}
 	
 	public boolean contains(Node node) {
@@ -162,9 +184,14 @@ public class Assignment implements Iterable<ActionTime> {
 		return this.nodes.subList(begin, end);
 	}
 	
-	public boolean waitUntil(double time) {
-		if (this.time < time) {
-			this.add(null, time - this.time);
+	public boolean waitUntil(double endTime) {
+		if (this.time < endTime) {
+			double waitTime = endTime - this.time;
+			
+			this.nodes.add(null);
+			this.times.add(waitTime);
+			this.time += waitTime;
+			this.completionTimes.add(this.time);
 			return true;
 		}
 		return false;

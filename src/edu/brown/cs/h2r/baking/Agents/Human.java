@@ -44,7 +44,7 @@ public class Human implements Agent {
 	
 	private final static StateHashFactory hashingFactory = new NameDependentStateHashFactory();
 	private State startingState;
-	private final String name;
+	protected final String name;
 	
 	private Recipe currentRecipe;
 	protected KitchenSubdomain currentSubgoal;

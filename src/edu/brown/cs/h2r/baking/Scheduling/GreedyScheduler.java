@@ -21,7 +21,7 @@ public class GreedyScheduler implements Scheduler {
 				
 		// Create the new workflow specific to the agents
 		for (String agent : agents) {
-			Assignment assignedWorkflow = new Assignment(agent);
+			Assignment assignedWorkflow = new Assignment(agent, actionTimeLookup);
 			assignedWorkflows.add(assignedWorkflow);
 		}
 				
@@ -61,9 +61,10 @@ public class GreedyScheduler implements Scheduler {
 			for (int i = 0; i < assignedWorkflows.size(); i++) {
 				Assignment assignment = assignedWorkflows.get(i);
 				String agent = assignment.getId();
+				GroundedAction ga = node.getAction();
+				ga.params[0] = agent;
 				GroundedAction action = node.getAction();
-				action.params[0] = agent;
-				double actionTime = actionTimeLookup.get(node.getAction(), false);
+				double actionTime = actionTimeLookup.get(action, false);
 				
 				double anticipatedTime = 
 						bufferedAssignments.getTimeAssigningNodeToAgent(node, actionTime, agent);
@@ -77,8 +78,8 @@ public class GreedyScheduler implements Scheduler {
 			}
 			
 			//Add the action to the assignment that would finish this job the soonest
-			assignedWorkflows.get(bestChoice).add(node, bestActionTime);
-			bufferedAssignments.add(node, bestActionTime, bestAgent);
+			assignedWorkflows.get(bestChoice).add(node);
+			bufferedAssignments.add(node, bestAgent);
 		}
 		
 		return assignedWorkflows;

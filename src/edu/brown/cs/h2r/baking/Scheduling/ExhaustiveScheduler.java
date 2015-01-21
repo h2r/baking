@@ -27,7 +27,7 @@ public class ExhaustiveScheduler implements Scheduler {
 		Map<String, Assignment> assignedWorkflows = new HashMap<String, Assignment>();
 		
 		for (String agent : agents) {
-			Assignment assignedWorkflow = new Assignment(agent);
+			Assignment assignedWorkflow = new Assignment(agent, actionTimeLookup);
 			assignedWorkflows.put(agent, assignedWorkflow);
 		}
 		int previousSize = 0;
@@ -97,7 +97,7 @@ public class ExhaustiveScheduler implements Scheduler {
 				Map<String, Assignment> copied = SchedulingHelper.copyMap(assignments);
 				String agent = entry.getKey();
 				double time = actionTimeLookup.get(node.getAction(), false);
-				copied.get(agent).add(node, time);
+				copied.get(agent).add(node);
 				double sequenceTime = this.assignActions(workflow, actionTimeLookup, copied, futureVisitedNodes, depth - 1);
 				if (sequenceTime < bestTime) {
 					bestTime = sequenceTime;
@@ -108,7 +108,7 @@ public class ExhaustiveScheduler implements Scheduler {
 			}
 			
 		}
-		assignments.get(bestAgent).add(bestNode, bestActionTime);
+		assignments.get(bestAgent).add(bestNode);
 		return bestTime;
 	}
 	

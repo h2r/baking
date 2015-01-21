@@ -15,17 +15,13 @@ public class RandomScheduler implements Scheduler {
 			List<String> agents, ActionTimeGenerator timeGenerator) {
 		List<Assignment> assignedWorkflows = new ArrayList<Assignment>();
 		for (String agent : agents) {
-			Assignment assignedWorkflow = new Assignment(agent);
+			Assignment assignedWorkflow = new Assignment(agent, timeGenerator);
 			assignedWorkflows.add(assignedWorkflow);
 		}
 		
 		for (Workflow.Node node : workflow) {
 			int choice = random.nextInt(agents.size());
-			String agent = agents.get(choice);
-			GroundedAction ga = node.getAction();
-			ga.params[0] = agent;
-			double time = timeGenerator.get(ga, false);
-			assignedWorkflows.get(choice).add(node, time);
+			assignedWorkflows.get(choice).add(node);
 		}
 		
 		return assignedWorkflows;
@@ -37,10 +33,7 @@ public class RandomScheduler implements Scheduler {
 		for (Workflow.Node node : workflow) {
 			int choice = random.nextInt(assignedWorkflows.size());
 			Assignment assignedWorkflow = assignedWorkflows.get(choice);
-			GroundedAction ga = node.getAction();
-			ga.params[0] = assignedWorkflow.getId();
-			double time = actionTimeLookup.get(ga, false);
-			assignedWorkflow.add(node, time);
+			assignedWorkflow.add(node);
 		}
 		
 		return assignedWorkflows;

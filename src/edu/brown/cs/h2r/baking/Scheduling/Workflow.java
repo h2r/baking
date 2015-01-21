@@ -1,6 +1,7 @@
 package edu.brown.cs.h2r.baking.Scheduling;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -80,6 +81,13 @@ public class Workflow implements Iterable<Node> {
 			}
 		}
 		return dependencies;
+	}
+	
+	public Node get(int i) {
+		if (i < this.actions.size()) {
+			return this.actions.get(i);
+		}
+		return null;
 	}
 	
 	public Node get(String actionName) {
@@ -185,8 +193,10 @@ public class Workflow implements Iterable<Node> {
 	
 	public void insert(int position, Node node) {
 		position = Math.min(this.actions.size(), position);
-		this.actions.set(position, node);
+		this.actions.add(position, node);
 	}
+	
+	
 	
 	public void swap(Node node1, Node node2) {
 		int index1 = this.actions.indexOf(node1);
@@ -269,12 +279,8 @@ public class Workflow implements Iterable<Node> {
 			return this.parents.isEmpty() || accomplishedNodes.containsAll(this.parents);
 		}
 		
-		public void setAgent(String agent) {
-			this.action.params[0] = agent;
-		}
-		
 		public GroundedAction getAction() {
-			return new GroundedAction(this.action.action, this.action.params.clone());
+			return new GroundedAction(this.action.action, Arrays.copyOf(this.action.params, this.action.params.length));
 		}
 		
 		private int maxDegree() {

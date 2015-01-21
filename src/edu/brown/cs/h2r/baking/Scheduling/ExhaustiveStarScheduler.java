@@ -36,7 +36,7 @@ public class ExhaustiveStarScheduler implements Scheduler {
 		Map<String, Assignment> assignedWorkflows = new HashMap<String, Assignment>();
 		
 		for (String agent : agents) {
-			Assignment assignedWorkflow = new Assignment(agent);
+			Assignment assignedWorkflow = new Assignment(agent, actionTimeLookup);
 			assignedWorkflows.put(agent, assignedWorkflow);
 		}
 		return this.assignActions(workflow, actionTimeLookup, openQueue, agents);
@@ -45,25 +45,18 @@ public class ExhaustiveStarScheduler implements Scheduler {
 	public List<Assignment> finishSchedule(Workflow workflow, ActionTimeGenerator actionTimeLookup, 
 			List<Assignment> assignedWorkflows, BufferedAssignments bufferedWorkflows, Set<Workflow.Node> visitedNodes) {
 		
-		HashIndexedHeap<AssignmentNode> openQueue = new HashIndexedHeap<AssignmentNode>(new AssignmentNode.AssignmentComparator());
-		
 		Map<String, Assignment> assignedWorkflowMap = new HashMap<String, Assignment>();
 		
 		for (Assignment assignedWorkflow : assignedWorkflows) {
 			assignedWorkflowMap.put(assignedWorkflow.getId(), assignedWorkflow);
 		}
 		List<String> agents = new ArrayList<String>(assignedWorkflowMap.keySet());
-		int previousSize = 0;
-		while (previousSize != workflow.size()) {
-			this.assignActions(workflow, actionTimeLookup, openQueue, agents);
-			
-			previousSize = 0;
-			for (Assignment assignedWorkflow : assignedWorkflows) {
-				previousSize += assignedWorkflow.size();
-			}
-		}
 		
-		return new ArrayList<Assignment>(assignedWorkflows);
+		HashIndexedHeap<AssignmentNode> openQueue = new HashIndexedHeap<AssignmentNode>(new AssignmentNode.AssignmentComparator());
+		AssignmentNode firstNode = new AssignmentNode(workflow, assignedWorkflows, new GreedyScheduler(), actionTimeLookup);
+		openQueue.insert(firstNode);
+		
+		return this.assignActions(workflow, actionTimeLookup, openQueue, agents);
 	}
 	
 	
@@ -121,9 +114,34 @@ public class ExhaustiveStarScheduler implements Scheduler {
 		public AssignmentNode(Workflow workflow, Scheduler heuristicScheduler, ActionTimeGenerator timeGenerator, List<String> agents) {
 			this.assignments = new HashMap<String, Assignment>();
 			for (String agent : agents) {
-				this.assignments.put(agent, new Assignment(agent));
+				this.assignments.put(agent, new Assignment(agent, timeGenerator));
 			}
 			this.assignedNodes = new HashSet<Workflow.Node>();
+			this.workflow = workflow;
+			this.scheduler = heuristicScheduler;
+			this.timeGenerator = timeGenerator;
+			
+			List<Assignment> copied = SchedulingHelper.copy(new ArrayList<Assignment>(this.assignments.values()));
+			this.bufferedAssignments = new BufferedAssignments(copied);
+			BufferedAssignments completedBuffered = this.bufferedAssignments.copy();
+			
+			Set<Workflow.Node> visitedNodes = new HashSet<Workflow.Node>(this.assignedNodes); 
+			this.completedAssignments = 
+					this.scheduler.finishSchedule(workflow, this.timeGenerator, copied, completedBuffered, visitedNodes);
+			
+			this.time = completedBuffered.time();
+			
+		}
+		
+		public AssignmentNode(Workflow workflow, List<Assignment> assignments, Scheduler heuristicScheduler, ActionTimeGenerator timeGenerator) {
+			this.assignments = new HashMap<String, Assignment>();
+			this.assignedNodes = new HashSet<Workflow.Node>();
+			
+			for (Assignment assignment : assignments) {
+				this.assignments.put(assignment.getId(), assignment);
+				this.assignedNodes.addAll(assignment.nodes());
+			}
+			
 			this.workflow = workflow;
 			this.scheduler = heuristicScheduler;
 			this.timeGenerator = timeGenerator;
@@ -156,12 +174,13 @@ public class ExhaustiveStarScheduler implements Scheduler {
 				return;
 			}
 			
-			agentsAssignment.add(action.getNode(), action.getTime());
+			
+			agentsAssignment.add(action.getNode());
 			Set<Workflow.Node> visitedNodes = new HashSet<Workflow.Node>(node.assignedNodes);
 			visitedNodes.add(action.getNode());
 			
 			this.bufferedAssignments = node.bufferedAssignments.copy();
-			this.bufferedAssignments.add(action.getNode(), action.getTime(), agent);
+			this.bufferedAssignments.add(action.getNode(), agent);
 			BufferedAssignments completedBuffered = this.bufferedAssignments.copy();
 			List<Assignment> copied = SchedulingHelper.copy(new ArrayList<Assignment>(assignments.values()));
 			this.completedAssignments = this.scheduler.finishSchedule(workflow, this.timeGenerator, copied, completedBuffered, visitedNodes);
