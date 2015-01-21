@@ -74,7 +74,7 @@ public class ManyAgentsScheduling {
 		
 			//System.out.println("Agent: " + agent.getAgentName());
 		//Agent agent = agents.get(3);
-		int choice = 3;//trialId % (agents.size() + 1);
+		int choice = trialId % (agents.size() + 1);
 		SimulationHelper.run(numTrials, generalDomain, hashingFactory, recipes, timeGenerator, human, agents,
 				reset, choice, false);	
 		

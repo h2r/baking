@@ -22,6 +22,7 @@ import burlap.oomdp.singleagent.SADomain;
 import edu.brown.cs.h2r.baking.Agents.AdaptiveByFlow;
 import edu.brown.cs.h2r.baking.Agents.Agent;
 import edu.brown.cs.h2r.baking.Agents.AgentHelper;
+import edu.brown.cs.h2r.baking.Agents.Expert;
 import edu.brown.cs.h2r.baking.Agents.Human;
 import edu.brown.cs.h2r.baking.Agents.RandomActionAgent;
 import edu.brown.cs.h2r.baking.Agents.RandomRecipeAgent;
@@ -71,7 +72,7 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 		factors.put("human", 1.0);
 		
 		ActionTimeGenerator timeGenerator = new ActionTimeGenerator(true, true);
-		Human human = new Human(generalDomain, timeGenerator);
+		Human human = new Expert(generalDomain, "human", timeGenerator);
 		
 		State state = SimulationHelper.generateInitialState(generalDomain, hashingFactory, recipes, human, null);
 		/*for (Recipe recipe : recipes) {
@@ -88,6 +89,7 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 				(Agent)new RandomActionAgent(generalDomain),
 				(Agent)new RandomRecipeAgent(generalDomain, timeGenerator),
 				(Agent)new Human(generalDomain, "partner", timeGenerator),
+				(Agent)new Expert(generalDomain, "partner", timeGenerator),
 				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator)
 				);
 		System.out.println("Agent, Successes, Trials, Average reward, average successful reward");
