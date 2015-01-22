@@ -93,7 +93,7 @@ public class SimulationHelper {
 		objects.add(counterSpace);
 		
 		objects.add(ToolFactory.getNewSimpleToolObjectInstance(generalDomain, "whisk", "", "", SpaceFactory.SPACE_COUNTER, objectHashingFactory));
-		objects.add(ToolFactory.getNewSimpleToolObjectInstance(generalDomain, "spoon","", "", SpaceFactory.SPACE_COUNTER, objectHashingFactory));
+		//objects.add(ToolFactory.getNewSimpleToolObjectInstance(generalDomain, "spoon","", "", SpaceFactory.SPACE_COUNTER, objectHashingFactory));
 		
 		objects.add(ContainerFactory.getNewBakingContainerObjectInstance(generalDomain, "baking_dish", null, SpaceFactory.SPACE_COUNTER, objectHashingFactory));
 		ObjectInstance pan = ContainerFactory.getNewHeatingContainerObjectInstance(generalDomain, "frying_pan", null, SpaceFactory.SPACE_COUNTER, objectHashingFactory);
@@ -246,9 +246,6 @@ public class SimulationHelper {
 				} else {
 					humanAction = human.getActionWithScheduler(currentState, agents, !onlySubgoals);
 				}
-				if (humanAction == null) {
-					break;
-				}
 			}
 			
 			if (partnerAction == null) {
@@ -280,7 +277,9 @@ public class SimulationHelper {
 				throw new RuntimeException("Partner can't choose this action");
 			}
 			
-			
+			if (humanAction == null && partnerAction == null) {
+				break;
+			}
 			currentState = SimulationHelper.performActions(currentState, humanAction, partnerAction, actionMap, statePair, actionPair, timesPair, timeGenerator);
 			if (actionPair.contains(humanAction)) {
 				humanAction = null;
