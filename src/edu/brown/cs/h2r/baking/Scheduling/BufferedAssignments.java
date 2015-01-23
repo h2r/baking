@@ -1,13 +1,14 @@
 package edu.brown.cs.h2r.baking.Scheduling;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import burlap.oomdp.singleagent.GroundedAction;
 import edu.brown.cs.h2r.baking.Scheduling.Assignment.ActionTime;
 import edu.brown.cs.h2r.baking.Scheduling.Assignment.AssignmentIterator;
 
@@ -17,12 +18,74 @@ public class BufferedAssignments {
 	private double earliestTime;
 	private final ActionTimeGenerator timeGenerator;
 	private Set<Workflow.Node> completedAtEarliest; 
+	private final boolean useActualValues;
+	
+	public BufferedAssignments(ActionTimeGenerator timeGenerator, boolean useActualValues) {
+		this.adjustedAssignments = new HashMap<String, Assignment>();
+		this.completedAtEarliest = new HashSet<Workflow.Node>();
+		this.earliestTime = 0.0;
+		this.timeGenerator = timeGenerator;
+		this.useActualValues = useActualValues;
+	}
+	
+	public BufferedAssignments(Collection<Assignment> assignments) {
+		this.adjustedAssignments = new HashMap<String, Assignment>();
+		this.completedAtEarliest = new HashSet<Workflow.Node>();
+		this.earliestTime = 0.0;
+		ActionTimeGenerator timeGenerator = null;
+		boolean useActualValues = false;
+		for (Assignment assignment : assignments) {
+			if (timeGenerator == null) {
+				timeGenerator = assignment.getTimeGenerator();
+			} else if (timeGenerator != assignment.getTimeGenerator()) {
+				throw new RuntimeException("Time generators are different!");
+			}
+			useActualValues |= assignment.getUseActualValues();
+		}
+		this.useActualValues = useActualValues;
+		this.timeGenerator = timeGenerator;
+		
+		this.buildAdjustedAssignments(assignments);
+		this.updateEarliest();
+	}
+	
+	public BufferedAssignments(BufferedAssignments other) {
+		this.adjustedAssignments = SchedulingHelper.copyMap(other.adjustedAssignments);
+		this.time = other.time;
+		this.earliestTime = other.earliestTime;
+		this.completedAtEarliest = new HashSet<Workflow.Node>(other.completedAtEarliest);
+		this.timeGenerator = other.timeGenerator;
+		this.useActualValues = other.useActualValues;
+	}
 	
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append(this.time).append(", ");
 		builder.append(adjustedAssignments.toString());
+		
+		return builder.toString();
+	}
+	
+	public String getFullString() {
+		StringBuilder builder = new StringBuilder();
+		for (Map.Entry<String, Assignment> entry : this.adjustedAssignments.entrySet()) {
+			String agent = entry.getKey();
+			builder.append(agent).append("\n");
+			
+			Assignment assignment = entry.getValue();
+			
+			double sum = 0.0;
+			for (ActionTime actionTime : assignment) {
+				Workflow.Node node = actionTime.getNode();
+				String nodeStr = (node == null) ? "wait" : node.getAction().toString();
+				
+				String previous = String.format("%4f", sum);
+				sum += actionTime.getTime();
+				String next = String.format("%4f", sum);
+				builder.append("\t").append(nodeStr).append(" - ").append(previous).append(", ").append(next).append("\n");
+			}
+		}
 		
 		return builder.toString();
 	}
@@ -45,39 +108,15 @@ public class BufferedAssignments {
 		}
 		return builder.toString();
 	}
-	public BufferedAssignments(ActionTimeGenerator timeGenerator) {
-		this.adjustedAssignments = new HashMap<String, Assignment>();
-		this.completedAtEarliest = new HashSet<Workflow.Node>();
-		this.earliestTime = 0.0;
-		this.timeGenerator = timeGenerator;
-	}
 	
-	public BufferedAssignments(Collection<Assignment> assignments) {
-		this.adjustedAssignments = new HashMap<String, Assignment>();
-		this.completedAtEarliest = new HashSet<Workflow.Node>();
-		this.earliestTime = 0.0;
-		ActionTimeGenerator timeGenerator = null;
-		for (Assignment assignment : assignments) {
-			if (timeGenerator == null) {
-				timeGenerator = assignment.getTimeGenerator();
-			} else if (timeGenerator != assignment.getTimeGenerator()) {
-				throw new RuntimeException("Time generators are different!");
-			}
-		}
-		this.timeGenerator = timeGenerator;
-		
-		this.buildAdjustedAssignments(assignments);
-		this.updateEarliest();
-	}
 
 	private void buildAdjustedAssignments(Collection<Assignment> assignments) {
 		
-		boolean keepGoing = true;
 		Map<String, AssignmentIterator> iterators = new HashMap<String, AssignmentIterator>();
 		for (Assignment assignment : assignments) {
 			String agent = assignment.getId();
 			iterators.put(agent, (AssignmentIterator)assignment.iterator());
-			this.adjustedAssignments.put(agent, new Assignment(agent, assignment.getTimeGenerator()));
+			this.adjustedAssignments.put(agent, new Assignment(agent, assignment.getTimeGenerator(), assignment.getUseActualValues()));
 			
 		}
 		int numAdded = -1;
@@ -100,22 +139,26 @@ public class BufferedAssignments {
 		}		
 	}
 	
-	public BufferedAssignments(BufferedAssignments other) {
-		this.adjustedAssignments = SchedulingHelper.copyMap(other.adjustedAssignments);
-		this.time = other.time;
-		this.earliestTime = other.earliestTime;
-		this.completedAtEarliest = new HashSet<Workflow.Node>(other.completedAtEarliest);
-		this.timeGenerator = other.timeGenerator;
-	}
-	
 	public BufferedAssignments copy() {
 		return new BufferedAssignments(this);
+	}
+	
+	public GroundedAction getFirstAction(String agent) {
+		Assignment assignment = this.adjustedAssignments.get(agent);
+		if (assignment == null) {
+			return null;
+		}
+		Workflow.Node node = assignment.first();
+		if (node == null) {
+			return null;
+		}
+		return node.getAction();
 	}
 	
 	public boolean add(Workflow.Node node, String agent) {
 		Assignment assignment = this.adjustedAssignments.get(agent);
 		if (assignment == null) {
-			assignment = new Assignment(agent, this.timeGenerator);
+			assignment = new Assignment(agent, this.timeGenerator, this.useActualValues);
 			this.adjustedAssignments.put(agent, assignment);
 		}
 		double assignmentTime = assignment.time();

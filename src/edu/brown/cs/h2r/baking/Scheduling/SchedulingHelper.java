@@ -32,24 +32,4 @@ public class SchedulingHelper {
 		}
 		return copyOf;
 	}
-	
-	public static double computeSequenceTime( State state,
-			List<AbstractGroundedAction> actionSequence, ActionTimeGenerator timeGenerator) {
-		Workflow workflow = Workflow.buildWorkflow(state, actionSequence);
-		Map<String, Assignment> sortedActions = new HashMap<String, Assignment>();
-		
-		for (Workflow.Node node : workflow) {
-			GroundedAction ga = node.getAction();
-			String agent = ga.params[0];
-			Assignment assignment = sortedActions.get(agent);
-			if (assignment == null) {
-				assignment = new Assignment(agent, timeGenerator);
-				sortedActions.put(agent, assignment);
-			}
-			assignment.add(node);
-		}
-		BufferedAssignments buffered = new BufferedAssignments(sortedActions.values());
-		
-		return buffered.time();
-	}
 }

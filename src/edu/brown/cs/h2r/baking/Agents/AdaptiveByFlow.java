@@ -22,8 +22,8 @@ public class AdaptiveByFlow extends AdaptiveAgent implements Agent {
 	private static final StateHashFactory hashingFactory = new NameDependentStateHashFactory();
 	private static final int MAX_ALPHA = 5;
 	private PolicyPrediction prediction;
-	public AdaptiveByFlow(Domain domain, ActionTimeGenerator timeGenerator) {
-		super(domain, timeGenerator);
+	public AdaptiveByFlow(Domain domain, ActionTimeGenerator timeGenerator, boolean useScheduling) {
+		super(domain, timeGenerator, useScheduling);
 	}
 	
 	@Override

@@ -38,7 +38,7 @@ public class RandomRecipeAgent extends Human implements Agent {
 	@Override
 	public void setInitialState(State state) {
 		super.setInitialState(state);
-		super.chooseNewRecipe();
 	}
-
+	
+	
 }

@@ -36,11 +36,12 @@ public abstract class AdaptiveAgent implements Agent {
 	private final Domain domain;
 	protected final static StateHashFactory hashingFactory = new NameDependentStateHashFactory();
 	protected final ActionTimeGenerator timeGenerator;
+	protected final boolean useScheduling;
+	
 	protected final static RewardFunction rewardFunction = new RewardFunction() {
 	
 		@Override
 		public double reward(State s, GroundedAction a, State sprime) {
-			// TODO Auto-generated method stub
 			return (a.action instanceof ResetAction) ? -2 : -1;
 		}
 		
@@ -49,12 +50,13 @@ public abstract class AdaptiveAgent implements Agent {
 	private final List<PolicyProbability> policyBeliefDistribution;
 	protected final List<KitchenSubdomain> subdomains;
 	
-	public AdaptiveAgent(Domain domain, ActionTimeGenerator timeScheduler) {
+	public AdaptiveAgent(Domain domain, ActionTimeGenerator timeScheduler, boolean useScheduling) {
 		this.domain = domain;
 		this.stateHistory = new ArrayList<State>();
 		this.subdomains = new ArrayList<KitchenSubdomain>();
 		this.policyBeliefDistribution = new ArrayList<PolicyProbability>();
 		this.timeGenerator = timeScheduler;
+		this.useScheduling = useScheduling;
 	}
 	
 	@Override
@@ -103,14 +105,15 @@ public abstract class AdaptiveAgent implements Agent {
 	
 	@Override
 	public AbstractGroundedAction getActionWithScheduler(State state, List<String> agents, boolean finishRecipe) {
+		if (!this.useScheduling) {
+			return this.getAction(state);
+		}
 		List<PolicyProbability> policyDistribution = this.getPolicyDistribution(state);
 		
 		if (policyDistribution == null) {
 			return null;
 		}
-		for (PolicyProbability policy : policyDistribution) {
-			//System.out.println(policy.toString());
-		}
+		
 		this.updateBeliefDistribution(policyDistribution);
 		List<PolicyProbability> nonZero = this.trimDistribution(policyDistribution);
 		
@@ -179,7 +182,7 @@ public abstract class AdaptiveAgent implements Agent {
 				KitchenSubdomain policy = policyProb.getPolicyDomain();
 				List<GroundedAction> groundedActions = new ArrayList<GroundedAction>();
 				List<KitchenSubdomain> remainingSubgoals = AdaptiveAgent.getRemainingSubgoals(policy, subdomains, state);
-				State result = AgentHelper.generateActionSequence(remainingSubgoals, state, rewardFunction, groundedActions, finishRecipe);
+				State result = AgentHelper.generateActionSequence(policy, remainingSubgoals, state, rewardFunction, groundedActions, finishRecipe);
 				List<AbstractGroundedAction> abstractActions = new ArrayList<AbstractGroundedAction>(groundedActions.size());
 				TerminalFunction tf = policy.getTerminalFunction();
 				if (tf.isTerminal(result)) {
@@ -249,7 +252,7 @@ public abstract class AdaptiveAgent implements Agent {
 	}
 	
 	protected static List<List<Assignment>> assignAllWorkflows(State state, List<String> agents, List<Workflow> workflows, ActionTimeGenerator timeGenerator) {
-		Scheduler exhaustive = new ExhaustiveStarScheduler();
+		Scheduler exhaustive = new ExhaustiveStarScheduler(false);
 		List<List<Assignment>> assignments = new ArrayList<List<Assignment>>(workflows.size());
 		for (Workflow workflow : workflows) {
 			assignments.add(exhaustive.schedule(workflow, agents, timeGenerator));

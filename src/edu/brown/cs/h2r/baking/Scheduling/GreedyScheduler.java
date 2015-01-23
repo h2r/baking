@@ -11,6 +11,10 @@ import edu.brown.cs.h2r.baking.Scheduling.Assignment.ActionTime;
 import edu.brown.cs.h2r.baking.Scheduling.Assignment.AssignmentIterator;
 
 public class GreedyScheduler implements Scheduler {
+	private final boolean useActualValues;
+	public GreedyScheduler(boolean useActualValues) {
+		this.useActualValues = useActualValues;
+	}
 
 	@Override
 	public List<Assignment> schedule(Workflow workflow, List<String> agents,
@@ -21,7 +25,7 @@ public class GreedyScheduler implements Scheduler {
 				
 		// Create the new workflow specific to the agents
 		for (String agent : agents) {
-			Assignment assignedWorkflow = new Assignment(agent, actionTimeLookup);
+			Assignment assignedWorkflow = new Assignment(agent, actionTimeLookup, this.useActualValues);
 			assignedWorkflows.add(assignedWorkflow);
 		}
 				

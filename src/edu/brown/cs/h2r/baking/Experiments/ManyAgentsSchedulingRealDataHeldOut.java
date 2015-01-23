@@ -25,7 +25,10 @@ import edu.brown.cs.h2r.baking.Agents.AgentHelper;
 import edu.brown.cs.h2r.baking.Agents.Expert;
 import edu.brown.cs.h2r.baking.Agents.Human;
 import edu.brown.cs.h2r.baking.Agents.RandomActionAgent;
+import edu.brown.cs.h2r.baking.Agents.RandomActionCorrectRecipeAgent;
+import edu.brown.cs.h2r.baking.Agents.RandomActionCorrectSubgoal;
 import edu.brown.cs.h2r.baking.Agents.RandomRecipeAgent;
+import edu.brown.cs.h2r.baking.Agents.RandomSubgoalAgent;
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
 import edu.brown.cs.h2r.baking.Knowledgebase.Knowledgebase;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
@@ -87,11 +90,16 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 		
 		List<Agent> agents = Arrays.asList(
 				(Agent)new RandomActionAgent(generalDomain),
+				(Agent)new RandomSubgoalAgent(generalDomain, "partner", timeGenerator),
+				(Agent)new RandomActionCorrectRecipeAgent(generalDomain, "partner", timeGenerator),
+				(Agent)new RandomActionCorrectSubgoal(generalDomain, "partner", timeGenerator),
 				(Agent)new RandomRecipeAgent(generalDomain, timeGenerator),
 				(Agent)new Human(generalDomain, "partner", timeGenerator),
 				(Agent)new Expert(generalDomain, "partner", timeGenerator),
-				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator)
+				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator, false),
+				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator, true)
 				);
+		
 		System.out.println("Agent, Successes, Trials, Average reward, average successful reward");
 		ResetAction reset = (ResetAction)generalDomain.getAction(ResetAction.className);
 		reset.setState(state);

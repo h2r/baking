@@ -24,11 +24,6 @@ import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
-import edu.brown.cs.h2r.baking.Scheduling.Assignment;
-import edu.brown.cs.h2r.baking.Scheduling.Assignment.ActionTime;
-import edu.brown.cs.h2r.baking.Scheduling.ExhaustiveStarScheduler;
-import edu.brown.cs.h2r.baking.Scheduling.Scheduler;
-import edu.brown.cs.h2r.baking.Scheduling.Workflow;
 import edu.brown.cs.h2r.baking.actions.ResetAction;
 
 public class Human implements Agent {
@@ -36,7 +31,6 @@ public class Human implements Agent {
 
 		@Override
 		public double reward(State s, GroundedAction a, State sprime) {
-			// TODO Auto-generated method stub
 			return (a.action instanceof ResetAction) ? -2 : -1;
 		}
 		
@@ -46,13 +40,12 @@ public class Human implements Agent {
 	private State startingState;
 	protected final String name;
 	
-	private Recipe currentRecipe;
+	protected Recipe currentRecipe;
 	protected KitchenSubdomain currentSubgoal;
-	private List<KitchenSubdomain> kitchenSubdomains;
+	protected List<KitchenSubdomain> kitchenSubdomains;
 	private List<KitchenSubdomain> allKitchenSubdomains;
 	private TerminalFunction isFailure;
-	private Domain generalDomain;
-	private final Scheduler scheduler = new ExhaustiveStarScheduler();
+	protected Domain generalDomain;
 	protected final ActionTimeGenerator timeGenerator;
 	public Human(Domain generalDomain, ActionTimeGenerator timeGenerator) {
 		this.generalDomain = generalDomain;
@@ -139,7 +132,6 @@ public class Human implements Agent {
 			return;
 		}
 		
-		final PropositionalFunction isSuccess = this.currentSubgoal.getSubgoal().getGoal();
 		final PropositionalFunction isFailure = this.currentSubgoal.getDomain().getPropFunction(AffordanceCreator.BOTCHED_PF);
 		this.isFailure = new RecipeTerminalFunction(isFailure);
 		
@@ -166,7 +158,6 @@ public class Human implements Agent {
 			return;
 		}
 		
-		final PropositionalFunction isSuccess = this.currentSubgoal.getSubgoal().getGoal();
 		final PropositionalFunction isFailure = this.currentSubgoal.getDomain().getPropFunction(AffordanceCreator.BOTCHED_PF);
 		this.isFailure = new RecipeTerminalFunction(isFailure);
 		
@@ -175,8 +166,6 @@ public class Human implements Agent {
 	
 	@Override
 	public void addObservation(State state) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
@@ -238,45 +227,8 @@ public class Human implements Agent {
 		return null;*/
 	}
 	
-	private List<AbstractGroundedAction> generateActionList(State state) {
-		List<AbstractGroundedAction> actions = new ArrayList<AbstractGroundedAction>();
-		boolean isFinished = false;
-		List<KitchenSubdomain> kitchenSubdomains = new ArrayList<KitchenSubdomain>(this.getKitchenSubdomains());
-		while(!isFinished) {
-			if (this.currentSubgoal == null) {
-				this.chooseNewSubgoal(state);
-			} else if (this.currentSubgoal.getSubgoal().goalCompleted(state)) {
-				kitchenSubdomains.remove(this.currentSubgoal);
-				this.chooseNewSubgoal(state);
-			}
-			if (this.currentSubgoal == null) {
-				break;
-			}
-			
-			List<ActionProb> allowableActions = this.getAllowableActions(state);
-			if (allowableActions.size() == 0) {
-				this.chooseNewSubgoal(state);
-				if (this.currentSubgoal == null) {
-					return null;
-				}
-				allowableActions = this.getAllowableActions(state);
-			}
-			this.normalizeActionDistribution(allowableActions);
-			AbstractGroundedAction action = this.getActionFromPolicyDistribution(allowableActions);
-			if (action == null) {
-				kitchenSubdomains.remove(this.currentSubgoal);
-				this.chooseNewSubgoal(state);
-			} else {
-				state = action.executeIn(state);
-				actions.add(action);
-			}
-			
-		}
-		
-		return actions;
-	}
 
-	private List<ActionProb> getAllowableActions(State state) {
+	protected List<ActionProb> getAllowableActions(State state) {
 		RTDP planner = this.currentSubgoal.getPlanner();
 		planner.planFromState(state);
 		Policy policy = this.currentSubgoal.getPolicy();
@@ -291,7 +243,7 @@ public class Human implements Agent {
 		return allowableActions;
 	}
 	
-	private void normalizeActionDistribution(List<ActionProb> actionDistribution) {
+	protected void normalizeActionDistribution(List<ActionProb> actionDistribution) {
 		double sumProbability = 0.0;
 		for (ActionProb actionProb : actionDistribution) {
 			sumProbability += actionProb.pSelection;
@@ -301,7 +253,7 @@ public class Human implements Agent {
 		}
 	}
 	
-	private AbstractGroundedAction getActionFromPolicyDistribution(List<ActionProb> actionDistribution) {
+	protected AbstractGroundedAction getActionFromPolicyDistribution(List<ActionProb> actionDistribution) {
 		Random random = new Random();
 		double roll = random.nextDouble();
 		double sumProbability = 0.0;
@@ -332,7 +284,6 @@ public class Human implements Agent {
 	
 	public double getCostActions(List<AbstractGroundedAction> actionSequence, List<State> stateSequence) {
 		double cost = 0.0;
-		State previousState = this.startingState;
 		for (int i = 0; i < actionSequence.size(); i++) {
 			GroundedAction groundedAction = (GroundedAction)actionSequence.get(i);
 			cost += (groundedAction.params[0].equals("human")) ? 1 : 0;

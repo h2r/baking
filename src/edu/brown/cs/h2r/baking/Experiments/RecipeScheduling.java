@@ -33,14 +33,13 @@ import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ToolFactory;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
+import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
 import edu.brown.cs.h2r.baking.Scheduling.Assignment;
 import edu.brown.cs.h2r.baking.Scheduling.Assignment.ActionTime;
-import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
 import edu.brown.cs.h2r.baking.Scheduling.ExhaustiveScheduler;
 import edu.brown.cs.h2r.baking.Scheduling.GreedyScheduler;
 import edu.brown.cs.h2r.baking.Scheduling.RandomScheduler;
 import edu.brown.cs.h2r.baking.Scheduling.Scheduler;
-import edu.brown.cs.h2r.baking.Scheduling.SchedulingHelper;
 import edu.brown.cs.h2r.baking.Scheduling.WeightByDifference;
 import edu.brown.cs.h2r.baking.Scheduling.WeightByShortest;
 import edu.brown.cs.h2r.baking.Scheduling.Workflow;
@@ -59,7 +58,6 @@ public class RecipeScheduling {
 
 		@Override
 		public double reward(State s, GroundedAction a, State sprime) {
-			// TODO Auto-generated method stub
 			return (a.action instanceof ResetAction) ? -2 : -1;
 		}
 		
@@ -203,9 +201,9 @@ public class RecipeScheduling {
 	public static void main(String argv[]) {
 		List<Scheduler> schedulers = Arrays.asList(
 				new RandomScheduler(),
-				new GreedyScheduler(),
-				new WeightByShortest(),
-				new WeightByDifference(),
+				new GreedyScheduler(false),
+				new WeightByShortest(false),
+				new WeightByDifference(false),
 				new ExhaustiveScheduler(5)/*,
 				new ExhaustiveScheduler()*/
 				);

@@ -22,6 +22,7 @@ import burlap.oomdp.singleagent.SADomain;
 import edu.brown.cs.h2r.baking.Agents.AdaptiveByFlow;
 import edu.brown.cs.h2r.baking.Agents.Agent;
 import edu.brown.cs.h2r.baking.Agents.AgentHelper;
+import edu.brown.cs.h2r.baking.Agents.Expert;
 import edu.brown.cs.h2r.baking.Agents.Human;
 import edu.brown.cs.h2r.baking.Agents.RandomActionAgent;
 import edu.brown.cs.h2r.baking.Agents.RandomRecipeAgent;
@@ -70,7 +71,7 @@ public class ManyAgentsSchedulingRealData {
 		factors.put("human", 1.0);
 		
 		ActionTimeGenerator timeGenerator = new ActionTimeGenerator(true, false);
-		Human human = new Human(generalDomain, timeGenerator);
+		Human human = new Expert(generalDomain, "human", timeGenerator);
 		
 		State state = SimulationHelper.generateInitialState(generalDomain, hashingFactory, recipes, human, null);
 		/*for (Recipe recipe : recipes) {
@@ -87,7 +88,9 @@ public class ManyAgentsSchedulingRealData {
 				(Agent)new RandomActionAgent(generalDomain),
 				(Agent)new RandomRecipeAgent(generalDomain, timeGenerator),
 				(Agent)new Human(generalDomain, "partner", timeGenerator),
-				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator)
+				(Agent)new Expert(generalDomain, "partner", timeGenerator),
+				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator, false),
+				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator, true)
 				);
 		System.out.println("Agent, Successes, Trials, Average reward, average successful reward");
 		ResetAction reset = (ResetAction)generalDomain.getAction(ResetAction.className);
@@ -96,7 +99,7 @@ public class ManyAgentsSchedulingRealData {
 		
 			//System.out.println("Agent: " + agent.getAgentName());
 		//Agent agent = agents.get(3);
-		int choice = trialId % (agents.size() + 1);
+		int choice = 3;//trialId % (agents.size() + 1);
 		SimulationHelper.run(numTrials, generalDomain, hashingFactory, recipes, timeGenerator, human, agents,
 				reset, choice, false);	
 	}

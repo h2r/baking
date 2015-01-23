@@ -299,5 +299,6 @@ public class ActionTimeGenerator {
 	
 	public void clear() {
 		this.actionTimeLookup.clear();
+		this.realDataChoice.clear();
 	}
 }

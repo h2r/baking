@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-import burlap.oomdp.singleagent.GroundedAction;
-
 public class RandomScheduler implements Scheduler {
 	Random random = new Random();
 	
@@ -15,7 +13,7 @@ public class RandomScheduler implements Scheduler {
 			List<String> agents, ActionTimeGenerator timeGenerator) {
 		List<Assignment> assignedWorkflows = new ArrayList<Assignment>();
 		for (String agent : agents) {
-			Assignment assignedWorkflow = new Assignment(agent, timeGenerator);
+			Assignment assignedWorkflow = new Assignment(agent, timeGenerator, false);
 			assignedWorkflows.add(assignedWorkflow);
 		}
 		

@@ -98,17 +98,6 @@ public class SchedulingComparison {
 		}
 		return true;
 	}
-	private static boolean verifySortedWorkflow(Workflow workflow) {
-		Set<Workflow.Node> visited = new HashSet<Workflow.Node>(workflow.size() * 2);
-		for (Workflow.Node node : workflow) {
-			if (!node.isAvailable(visited)) {
-				return false;
-			}
-			visited.add(node);
-		}
-		return true;
-		
-	}
 	
 	public static void main(String argv[]) throws InterruptedException {
 		List<Scheduler> schedulers = Arrays.asList(
@@ -116,7 +105,7 @@ public class SchedulingComparison {
 				//(Scheduler)(new GreedyScheduler()),
 				//new WeightByShortest(),
 				//new WeightByDifference(),
-				(Scheduler)(new ExhaustiveStarScheduler())
+				(Scheduler)(new ExhaustiveStarScheduler(false))
 				);
 		
 		int numTries = 100;

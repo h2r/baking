@@ -443,7 +443,8 @@ public class TestManyAgents {
 				(Agent)new RandomActionAgent(generalDomain),
 				(Agent)new RandomRecipeAgent(generalDomain, timeGenerator),
 				(Agent)new Human(generalDomain, "friend", timeGenerator),
-				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator)
+				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator, false),
+				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator, true)
 				);
 		System.out.println("Agent, Successes, Trials, Average reward, average successful reward");
 		ResetAction reset = (ResetAction)generalDomain.getAction(ResetAction.className);

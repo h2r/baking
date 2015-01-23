@@ -22,14 +22,18 @@ import edu.brown.cs.h2r.baking.Scheduling.Workflow;
 import edu.brown.cs.h2r.baking.Scheduling.Workflow.Node;
 
 public class Expert extends Human implements Agent {
+	private boolean isCooperative;
 	public Expert(Domain domain, String name, ActionTimeGenerator timeGenerator) {
 		super(domain, name, timeGenerator);
+		this.isCooperative = false;
 	}
 	
 	@Override
 	public void addObservation(State state) {
-		// TODO Auto-generated method stub
-
+	}
+	
+	public void setCooperative(boolean isCooperative) {
+		this.isCooperative = isCooperative;
 	}
 	
 	protected static List<KitchenSubdomain> getRemainingSubgoals(KitchenSubdomain policyDomain, List<KitchenSubdomain> allSubdomains, State state) {
@@ -85,16 +89,31 @@ public class Expert extends Human implements Agent {
 		List<AbstractGroundedAction> aga = new ArrayList<AbstractGroundedAction>(actions);
 		
 		Workflow workflow = Workflow.buildWorkflow(state, aga);
-		
-		Scheduler exhaustive = new ExhaustiveStarScheduler();
-		List<Assignment> assignments = exhaustive.schedule(workflow, agents, timeGenerator);
-		Integer location = agents.indexOf(this.getAgentName());
-		Assignment assignment = assignments.get(location);
-		Workflow.Node first = assignment.first();
-		if (first == null) {
-			return null;
+		if (this.isCooperative) {
+			Scheduler exhaustive = new ExhaustiveStarScheduler(true);
+			List<Assignment> assignments = exhaustive.schedule(workflow, agents, timeGenerator);
+			Integer location = agents.indexOf(this.getAgentName());
+			Assignment assignment = assignments.get(location);
+			Workflow.Node first = assignment.first();
+			if (first == null) {
+				return null;
+			}
+			return first.getAction();
+		} else {
+			List<Workflow.Node> available = workflow.getReadyNodes();
+			GroundedAction bestAction = null;
+			double bestTime = Double.MAX_VALUE;
+			for (Workflow.Node node : available) {
+				GroundedAction ga = node.getAction();
+				ga.params[0] = this.getAgentName();
+				double time = this.timeGenerator.get(ga, true);
+				if (time < bestTime) {
+					bestAction = ga;
+					bestTime = time;
+				}
+			}
+			return bestAction;
 		}
-		return first.getAction();
 		/*if (this.isSuccess(state)) {
 			return null;
 		}
@@ -133,35 +152,48 @@ public class Expert extends Human implements Agent {
 		AgentHelper.generateActionSequence(this.currentSubgoal, remaining, state, rewardFunction, actions, finishRecipe);
 		
 		List<AbstractGroundedAction> aga = new ArrayList<AbstractGroundedAction>(actions);
+		Workflow workflow = Workflow.buildWorkflow(state, aga);
 		
-		List<Assignment> assignments = scheduleActions(state, agents, partnersAction, aga);
-		System.out.println(this.getAgentName() + " scheduled actions");
-		for (Assignment assignment : assignments) {
-			System.out.println("-" + assignment.getId());
-			List<Workflow.Node> nodes = assignment.nodes();
-			for (Workflow.Node node : nodes) {
-				System.out.println("\t" + node.getAction().toString());
-			}
-		}
-		for (Assignment assignment : assignments) {
-			if (assignment.getId().equals(this.getAgentName()) && assignment.first() != null) {
-				Workflow.Node first = assignment.first();
-				GroundedAction action = first.getAction();
-				action.params[0] = this.getAgentName();
-				if (partnersAction != null && action.params[0].equals(partnersAction.params[0])) {
-					throw new RuntimeException("Action agents shouldn't be the same");
+		if (this.isCooperative) {
+			List<Assignment> assignments = scheduleActions(state, agents, partnersAction, workflow);
+			System.out.println(this.getAgentName() + " scheduled actions");
+			for (Assignment assignment : assignments) {
+				System.out.println("-" + assignment.getId());
+				List<Workflow.Node> nodes = assignment.nodes();
+				for (Workflow.Node node : nodes) {
+					System.out.println("\t" + node.getAction().toString());
 				}
-				return action;
 			}
+			
+			BufferedAssignments buffered = new BufferedAssignments(assignments);
+			System.out.println(buffered.getFullString());
+			GroundedAction action = buffered.getFirstAction(this.getAgentName());
+			if (action == null) {
+				return null;
+			}
+			action.params[0] = this.getAgentName();
+			return action;
+		} else {
+			List<Workflow.Node> available = workflow.getReadyNodes();
+			GroundedAction bestAction = null;
+			double bestTime = Double.MAX_VALUE;
+			for (Workflow.Node node : available) {
+				GroundedAction ga = node.getAction();
+				ga.params[0] = this.getAgentName();
+				double time = this.timeGenerator.get(ga, true);
+				if (!this.matchingActions(ga, partnersAction) && time < bestTime) {
+					bestAction = ga;
+					bestTime = time;
+				}
+			}
+			return bestAction;
 		}
-		return null;
 	}
 
 	private List<Assignment> scheduleActions(State state, List<String> agents,
-			GroundedAction partnersAction, List<AbstractGroundedAction> aga) {
+			GroundedAction partnersAction, Workflow workflow) {
 		
-		Workflow workflow = Workflow.buildWorkflow(state, aga);
-		Scheduler exhaustive = new ExhaustiveStarScheduler();
+		Scheduler exhaustive = new ExhaustiveStarScheduler(true);
 		
 		if (partnersAction == null) {
 			return exhaustive.schedule(workflow, agents, this.timeGenerator);
@@ -170,10 +202,10 @@ public class Expert extends Human implements Agent {
 		List<Assignment> assignments = new ArrayList<Assignment>();
 		Set<Workflow.Node> visitedNodes = new HashSet<Workflow.Node>(workflow.size() * 2); 
 		
-		Assignment humansAssignment = new Assignment(this.getAgentName(), this.timeGenerator);
+		Assignment humansAssignment = new Assignment(this.getAgentName(), this.timeGenerator, true);
 		assignments.add(humansAssignment);
 		
-		Assignment partnerAssignment = new Assignment(partnersAction.params[0], this.timeGenerator);
+		Assignment partnerAssignment = new Assignment(partnersAction.params[0], this.timeGenerator, true);
 		assignments.add(partnerAssignment);
 		
 		boolean matchedAction = false;
@@ -220,6 +252,9 @@ public class Expert extends Human implements Agent {
 	}
 	
 	private boolean matchingActions(GroundedAction lhs, GroundedAction rhs) {
+		if (lhs == null || rhs == null) {
+			return false;
+		}
 		if (!lhs.action.equals(rhs.action)){ 
 			return false;
 		}

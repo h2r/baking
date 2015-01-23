@@ -8,22 +8,22 @@ import java.util.Map;
 import java.util.Set;
 
 import burlap.oomdp.singleagent.GroundedAction;
-import edu.brown.cs.h2r.baking.Scheduling.Assignment.ActionTime;
-import edu.brown.cs.h2r.baking.Scheduling.Workflow.Node;
 
 public abstract class HeuristicScheduler implements Scheduler {
+	protected final boolean useActualValues;
+	public HeuristicScheduler(boolean useActualValues) {
+		this.useActualValues = useActualValues;
+	}
 
 	@Override
 	public List<Assignment> schedule(Workflow workflow, List<String> agents,
 			ActionTimeGenerator actionTimeLookup) {
 		Map<String, Assignment> assignedWorkflows = new HashMap<String, Assignment>();
 		for (String agent : agents) {
-			Assignment assignedWorkflow = new Assignment(agent, actionTimeLookup);
+			Assignment assignedWorkflow = new Assignment(agent, actionTimeLookup, this.useActualValues);
 			assignedWorkflows.put(agent, assignedWorkflow);
 		}
 		
-		boolean keepGoing = true;
-		int previousSize = 0;
 		this.assignActions(workflow, actionTimeLookup, assignedWorkflows, agents);
 		return new ArrayList<Assignment>(assignedWorkflows.values());
 	}
@@ -54,7 +54,6 @@ public abstract class HeuristicScheduler implements Scheduler {
 		
 		String bestAgent = "";
 		Double bestWeight = -Double.MAX_VALUE;
-		double bestTime = 0.0;
 		Workflow.Node bestAction = null;
 		
 		for (Map.Entry<Workflow.Node, Map<String, Double>> entry : heuristics.entrySet()) {
@@ -70,7 +69,6 @@ public abstract class HeuristicScheduler implements Scheduler {
 					bestAction = node;
 					GroundedAction ga = node.getAction();
 					ga.params[0] = agent;
-					bestTime = actionTimeLookup.get(ga, false);
 				}
 			}
 		}

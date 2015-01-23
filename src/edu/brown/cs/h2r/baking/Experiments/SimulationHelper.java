@@ -17,7 +17,6 @@ import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.SADomain;
-import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.Agents.Agent;
 import edu.brown.cs.h2r.baking.Agents.AgentHelper;
 import edu.brown.cs.h2r.baking.Agents.Expert;
@@ -34,14 +33,13 @@ import edu.brown.cs.h2r.baking.ObjectFactories.ToolFactory;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
-import edu.brown.cs.h2r.baking.actions.GreaseAction;
+import edu.brown.cs.h2r.baking.actions.BakingAction;
+import edu.brown.cs.h2r.baking.actions.BakingActionResult;
 import edu.brown.cs.h2r.baking.actions.MixAction;
 import edu.brown.cs.h2r.baking.actions.MoveAction;
 import edu.brown.cs.h2r.baking.actions.PourAction;
-import edu.brown.cs.h2r.baking.actions.PreparationAction;
 import edu.brown.cs.h2r.baking.actions.ResetAction;
 import edu.brown.cs.h2r.baking.actions.SwitchAction;
-import edu.brown.cs.h2r.baking.actions.UseAction;
 
 public class SimulationHelper {
 	public static Domain generateGeneralDomain() {
@@ -220,11 +218,13 @@ public class SimulationHelper {
 		Map<String, Double> actionMap = new HashMap<String, Double>();
 		actionMap.put(human.getAgentName(), 0.0);
 		actionMap.put(partner.getAgentName(), 0.0);
+		double currentTime = 0.0;
 		
 		List<String> agents = Arrays.asList(human.getAgentName(), partner.getAgentName());
 		
 		if (human instanceof Expert) {
 			humanExpert = (Expert)human;
+			humanExpert.setCooperative(false);
 		}
 		if ((partner instanceof Human) && !(partner instanceof RandomRecipeAgent)) {
 			otherHuman = (Human)partner;
@@ -234,38 +234,70 @@ public class SimulationHelper {
 			if (otherHuman instanceof Expert) {
 				otherExpert = (Expert)otherHuman;
 			}
+			if (humanExpert != null) {
+				humanExpert.setCooperative(true);
+			}
 		}
 		boolean isSuccess = false;
 		partner.addObservation(currentState);
-		AbstractGroundedAction humanAction = null, partnerAction = null;
+		GroundedAction humanAction = null, partnerAction = null;
+		int numNullActions = 0;
 		while (!finished) {
 			
 			if (humanAction == null) {
 				if (humanExpert != null) {
-					humanAction = humanExpert.getActionWithScheduler(currentState, agents, !onlySubgoals, (GroundedAction)partnerAction);
+					humanExpert.setCooperative(!currentState.equals(startingState));
+					humanAction = (GroundedAction)humanExpert.getActionWithScheduler(currentState, agents, !onlySubgoals, (GroundedAction)partnerAction);
 				} else {
-					humanAction = human.getActionWithScheduler(currentState, agents, !onlySubgoals);
+					humanAction = (GroundedAction)human.getActionWithScheduler(currentState, agents, !onlySubgoals);
+				}
+				if (humanAction != null) {
+					System.out.println("Human chose " + humanAction.toString());
+				} 
+			}
+			if (humanAction != null) {
+				BakingAction bakingAction = (BakingAction)humanAction.action;
+				BakingActionResult result = bakingAction.checkActionIsApplicableInState(currentState, humanAction.params);
+				if (!result.getIsSuccess()) {
+					System.err.println("Action " + humanAction.toString() + " cannot be performed");
+					System.err.println(result.getWhyFailed());
+					humanAction = null;
 				}
 			}
 			
 			if (partnerAction == null) {
 				if (otherHuman != null) {
-					if (!startingState.equals(currentState)) {
+					//if (haveGoneOnce) {
 						if (otherExpert != null) {
-							partnerAction = otherExpert.getActionWithScheduler(currentState, agents, !onlySubgoals, (GroundedAction)humanAction);
+							partnerAction = (GroundedAction)otherExpert.getActionWithScheduler(currentState, agents, !onlySubgoals, (GroundedAction)humanAction);
 							if (partnerAction != null && !partnerAction.params[0].equals(partner.getAgentName())) {
 								throw new RuntimeException("Partner can't choose this action");
 							}
 						} else {
-							State newState = humanAction.executeIn(currentState);
-							partnerAction = otherHuman.getActionWithScheduler(newState, agents, !onlySubgoals);
+							if (!currentState.equals(startingState)) {
+								State newState = humanAction.executeIn(currentState);
+								partnerAction = (GroundedAction)otherHuman.getActionWithScheduler(newState, agents, !onlySubgoals);
+							}
 						}
-					}
+					//}
 				} else {
-					partnerAction = partner.getActionWithScheduler(currentState, agents, !onlySubgoals);
+					partnerAction = (GroundedAction)partner.getActionWithScheduler(currentState, agents, !onlySubgoals);
 					if (partnerAction == null) {
 						//partnerAction = TestManyAgents.getActionAndWait(partner, currentState);
 					}
+				}
+				if (partnerAction != null) {
+					System.out.println("Partner chose " + partnerAction.toString());
+				} 
+			}
+			
+			if (partnerAction != null) {
+				BakingAction bakingAction = (BakingAction)partnerAction.action;
+				BakingActionResult result = bakingAction.checkActionIsApplicableInState(currentState, partnerAction.params);
+				if (!result.getIsSuccess()) {
+					System.err.println("Action " + partnerAction.toString() + " cannot be performed");
+					System.err.println(result.getWhyFailed());
+					partnerAction = null;
 				}
 			}
 			
@@ -278,14 +310,41 @@ public class SimulationHelper {
 			}
 			
 			if (humanAction == null && partnerAction == null) {
-				break;
+				numNullActions++;
+				if (numNullActions > 3) {
+					break;
+				}
+			} else {
+				numNullActions = 0;
 			}
 			currentState = SimulationHelper.performActions(currentState, humanAction, partnerAction, actionMap, statePair, actionPair, timesPair, timeGenerator);
+			
+			if (!timesPair.isEmpty()){
+				double now = timesPair.get(0);
+				if (humanAction == null) {
+					SimulationHelper.agentWaitUntilNext(human, actionMap, now);
+					System.out.println("Human waits until " + actionMap.get(human.getAgentName()));
+				}
+				if (partnerAction == null) {
+					SimulationHelper.agentWaitUntilNext(partner, actionMap, now);
+					System.out.println("Partner waits until " + actionMap.get(partner.getAgentName()));
+				}
+				currentTime += timesPair.get(0);
+			}
+			
 			if (actionPair.contains(humanAction)) {
+				if (((GroundedAction)humanAction).action instanceof ResetAction) {
+					partnerAction = null;
+				}
 				humanAction = null;
+				
 			}
 			if (actionPair.contains(partnerAction)) {
+				if (((GroundedAction)partnerAction).action instanceof ResetAction) {
+					humanAction = null;
+				}
 				partnerAction = null;
+				
 			}
 			
 			//partner.addObservation(currentState);
@@ -322,11 +381,16 @@ public class SimulationHelper {
 			}
 		}
 		
-		double reward = Collections.max(actionTimes);
+		double reward = (actionTimes.isEmpty()) ? 0 : Collections.max(actionTimes);
 		//double reward = SchedulingHelper.computeSequenceTime(startingState, actionSequence, timeGenerator);
 		return new EvaluationResult(reward, isSuccess);
 	}
 	
+	private static void agentWaitUntilNext(Agent agent,
+			Map<String, Double> actionMap, double next) {
+		actionMap.put(agent.getAgentName(), next);
+	}
+
 	private static boolean checkIfRepeating(List<State> stateSequence) {
 		List<State> reverse = new ArrayList<State>(stateSequence);
 		Collections.reverse(stateSequence);

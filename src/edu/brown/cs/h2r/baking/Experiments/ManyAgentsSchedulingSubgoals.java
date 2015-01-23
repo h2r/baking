@@ -66,7 +66,8 @@ public class ManyAgentsSchedulingSubgoals {
 				(Agent)new RandomRecipeAgent(generalDomain, timeGenerator),
 				(Agent)new Human(generalDomain, "partner", timeGenerator),
 				(Agent)new Expert(generalDomain, "partner", timeGenerator),
-				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator)
+				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator, false),
+				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator, true)
 				);
 		System.out.println("Agent, Successes, Trials, Average reward, average successful reward");
 		ResetAction reset = (ResetAction)generalDomain.getAction(ResetAction.className);

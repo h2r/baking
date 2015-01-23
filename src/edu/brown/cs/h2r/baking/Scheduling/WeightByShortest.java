@@ -9,7 +9,9 @@ import java.util.Set;
 import edu.brown.cs.h2r.baking.Scheduling.Workflow.Node;
 
 public class WeightByShortest extends HeuristicScheduler {
-
+	public WeightByShortest(boolean useActualValues) {
+		super(useActualValues);
+	}
 	@Override
 	protected Map<Node, Map<String, Double>> getWeights(
 			Map<Node, Map<String, Double>> times, Map<String, Assignment> assignments) {

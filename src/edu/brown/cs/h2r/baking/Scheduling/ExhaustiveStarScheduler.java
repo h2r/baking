@@ -19,24 +19,23 @@ public class ExhaustiveStarScheduler implements Scheduler {
 	public static final String ASSIGNMENTS = "assignments";
 	public static final String ASSIGNMENT_CLASS = "assignment";
 	private static final int debugCode = 101;
+	private final Boolean useActualValues;
 	
-	public ExhaustiveStarScheduler() {
+	public ExhaustiveStarScheduler(boolean useActualValues) {
 		DPrint.toggleCode(debugCode, false);
-	}
-	
-	public ExhaustiveStarScheduler(int maxDepth) {
+		this.useActualValues = useActualValues;
 	}
 
 	@Override
 	public List<Assignment> schedule(Workflow workflow, List<String> agents,
 			ActionTimeGenerator actionTimeLookup) {
 		HashIndexedHeap<AssignmentNode> openQueue = new HashIndexedHeap<AssignmentNode>(new AssignmentNode.AssignmentComparator());
-		AssignmentNode firstNode = new AssignmentNode(workflow, new GreedyScheduler(), actionTimeLookup, agents);
+		AssignmentNode firstNode = new AssignmentNode(workflow, new GreedyScheduler(this.useActualValues), actionTimeLookup, agents, this.useActualValues);
 		openQueue.insert(firstNode);
 		Map<String, Assignment> assignedWorkflows = new HashMap<String, Assignment>();
 		
 		for (String agent : agents) {
-			Assignment assignedWorkflow = new Assignment(agent, actionTimeLookup);
+			Assignment assignedWorkflow = new Assignment(agent, actionTimeLookup, this.useActualValues);
 			assignedWorkflows.put(agent, assignedWorkflow);
 		}
 		return this.assignActions(workflow, actionTimeLookup, openQueue, agents);
@@ -53,7 +52,7 @@ public class ExhaustiveStarScheduler implements Scheduler {
 		List<String> agents = new ArrayList<String>(assignedWorkflowMap.keySet());
 		
 		HashIndexedHeap<AssignmentNode> openQueue = new HashIndexedHeap<AssignmentNode>(new AssignmentNode.AssignmentComparator());
-		AssignmentNode firstNode = new AssignmentNode(workflow, assignedWorkflows, new GreedyScheduler(), actionTimeLookup);
+		AssignmentNode firstNode = new AssignmentNode(workflow, assignedWorkflows, new GreedyScheduler(this.useActualValues), actionTimeLookup);
 		openQueue.insert(firstNode);
 		
 		return this.assignActions(workflow, actionTimeLookup, openQueue, agents);
@@ -111,10 +110,10 @@ public class ExhaustiveStarScheduler implements Scheduler {
 		private final ActionTimeGenerator timeGenerator;
 		private final List<Assignment> completedAssignments;
 		
-		public AssignmentNode(Workflow workflow, Scheduler heuristicScheduler, ActionTimeGenerator timeGenerator, List<String> agents) {
+		public AssignmentNode(Workflow workflow, Scheduler heuristicScheduler, ActionTimeGenerator timeGenerator, List<String> agents, boolean useActualValues) {
 			this.assignments = new HashMap<String, Assignment>();
 			for (String agent : agents) {
-				this.assignments.put(agent, new Assignment(agent, timeGenerator));
+				this.assignments.put(agent, new Assignment(agent, timeGenerator,useActualValues));
 			}
 			this.assignedNodes = new HashSet<Workflow.Node>();
 			this.workflow = workflow;

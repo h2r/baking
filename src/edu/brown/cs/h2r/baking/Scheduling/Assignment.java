@@ -18,19 +18,21 @@ public class Assignment implements Iterable<ActionTime> {
 	private final List<Workflow.Node> nodes; 
 	private final ActionTimeGenerator timeGenerator;
 	private double time;
+	private final boolean useActualValues;
 	
 	@Override
 	public String toString() {
 		return nodes.toString();
 	}
 	
-	public Assignment(String agent, ActionTimeGenerator timeGenerator) {
+	public Assignment(String agent, ActionTimeGenerator timeGenerator, boolean useActualValues) {
 		this.agent = agent;
 		this.nodes = new ArrayList<Workflow.Node>();
 		this.time = 0;
 		this.times = new ArrayList<Double>();
 		this.completionTimes = new ArrayList<Double>();
 		this.timeGenerator = timeGenerator;
+		this.useActualValues = useActualValues;
 	}
 	
 	public Assignment(Assignment other) {
@@ -40,9 +42,10 @@ public class Assignment implements Iterable<ActionTime> {
 		this.times = new ArrayList<Double>(other.times);
 		this.completionTimes = new ArrayList<Double>(other.completionTimes);
 		this.timeGenerator = other.timeGenerator;
+		this.useActualValues = other.getUseActualValues();
 	}
 	
-	public Assignment(String agent, List<Workflow.Node> assignedActions,  ActionTimeGenerator timeGenerator ) {
+	public Assignment(String agent, List<Workflow.Node> assignedActions,  ActionTimeGenerator timeGenerator, boolean useActualValues ) {
 		this.agent = agent;
 		this.nodes = Collections.unmodifiableList(assignedActions);
 		this.timeGenerator = timeGenerator;
@@ -53,7 +56,7 @@ public class Assignment implements Iterable<ActionTime> {
 			double time = timeGenerator.get(ga, false);
 			times.add(time);
 		}
-		
+		this.useActualValues = useActualValues;
 		
 		
 		this.times = Collections.unmodifiableList(times);
@@ -108,7 +111,7 @@ public class Assignment implements Iterable<ActionTime> {
 	public void add(Workflow.Node node) {
 		GroundedAction ga = node.getAction();
 		ga.params[0] = this.agent;
-		double time = this.timeGenerator.get(ga, false);
+		double time = this.timeGenerator.get(ga, this.getUseActualValues());
 		this.nodes.add(node);
 		this.times.add(time);
 		this.time += time;
@@ -180,7 +183,18 @@ public class Assignment implements Iterable<ActionTime> {
 		
 		Integer begin = this.position(beginTime);
 		Integer end = this.position(endTime);
-		end = (end == null) ? this.nodes.size() : end + 1;
+		if (begin == null) {
+			return null;
+		} else if (beginTime == this.completionTimes.get(begin)) {
+			beginTime++;
+		}
+		
+		if (end == null) {
+			end = this.nodes.size();
+		} else if (endTime == this.completionTimes.get(end)) {
+			end++;
+		}
+		
 		return this.nodes.subList(begin, end);
 	}
 	
@@ -219,6 +233,10 @@ public class Assignment implements Iterable<ActionTime> {
 		return this.time < time;
 	}
 	
+	public boolean getUseActualValues() {
+		return useActualValues;
+	}
+
 	public static class AssignmentIterator implements ListIterator<ActionTime> {
 
 		private final List<Workflow.Node> nodes;

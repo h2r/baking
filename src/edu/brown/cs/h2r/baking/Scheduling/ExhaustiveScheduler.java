@@ -27,7 +27,7 @@ public class ExhaustiveScheduler implements Scheduler {
 		Map<String, Assignment> assignedWorkflows = new HashMap<String, Assignment>();
 		
 		for (String agent : agents) {
-			Assignment assignedWorkflow = new Assignment(agent, actionTimeLookup);
+			Assignment assignedWorkflow = new Assignment(agent, actionTimeLookup, false);
 			assignedWorkflows.put(agent, assignedWorkflow);
 		}
 		int previousSize = 0;
@@ -69,7 +69,7 @@ public class ExhaustiveScheduler implements Scheduler {
 			return new BufferedAssignments(assignments.values()).time();
 		}
 		if (depth == 0) {
-			GreedyScheduler greedyScheduler = new GreedyScheduler();
+			GreedyScheduler greedyScheduler = new GreedyScheduler(false);
 			List<Assignment> assignedWorkflows = new ArrayList<Assignment>(assignments.values());
 			BufferedAssignments buffered = new BufferedAssignments(assignedWorkflows);
 			greedyScheduler.finishSchedule(workflow, actionTimeLookup, assignedWorkflows, buffered, visitedNodes);
