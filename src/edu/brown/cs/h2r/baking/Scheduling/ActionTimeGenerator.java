@@ -18,8 +18,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import burlap.oomdp.singleagent.GroundedAction;
 
 public class ActionTimeGenerator {
-	private final Map<String, Double> actionTimeLookup;
-	private final Map<String, String> realDataChoice;
+	private final Map<GroundedAction, Double> actionTimeLookup;
+	private final Map<GroundedAction, String> realDataChoice;
 	private String humanSubject;
 	private final Map<String, Map<String, Map<String, List<Double>>>> humanParsedTimes; 
 	private final Map<String, Map<String, Map<String, List<Double>>>> robotParsedTimes; 
@@ -34,8 +34,8 @@ public class ActionTimeGenerator {
 	
 	public ActionTimeGenerator(Map<String, Double> mapFactorLookup) {
 		this.biasFactors = Collections.unmodifiableMap(mapFactorLookup);
-		this.actionTimeLookup = new HashMap<String, Double>();
-		this.realDataChoice = new HashMap<String, String>();
+		this.actionTimeLookup = new HashMap<GroundedAction, Double>();
+		this.realDataChoice = new HashMap<GroundedAction, String>();
 		this.humanParsedTimes = null;
 		this.robotParsedTimes = null;
 		this.conversions = null;
@@ -45,7 +45,7 @@ public class ActionTimeGenerator {
 		this.conversions = new HashMap<String, String>();
 		this.conversions.put("stir", "mix");
 		this.conversions.put("put", "move");
-		this.realDataChoice = new HashMap<String, String>();
+		this.realDataChoice = new HashMap<GroundedAction, String>();
 		List<String> humanSubjects = new ArrayList<String>();
 		this.humanParsedTimes = this.parseFromFile("action_times.csv", humanSubjects);
 		this.robotParsedTimes = this.parseFromFile("robot_times.csv", null);
@@ -56,7 +56,7 @@ public class ActionTimeGenerator {
 			this.humanSubject = null;
 		}
 		this.biasFactors = new HashMap<String, Double>();
-		this.actionTimeLookup = new HashMap<String, Double>();
+		this.actionTimeLookup = new HashMap<GroundedAction, Double>();
 		
 		
 	}
@@ -78,7 +78,7 @@ public class ActionTimeGenerator {
 		
 		try {
 			this.readLock.lock();
-			time = this.actionTimeLookup.get(action.toString());
+			time = this.actionTimeLookup.get(action);
 		} finally {
 			this.readLock.unlock();
 		}
@@ -142,7 +142,7 @@ public class ActionTimeGenerator {
 		}
 		try {
 			this.writeLock.lock();
-			this.actionTimeLookup.put(action.toString(), time);
+			this.actionTimeLookup.put(action, time);
 		} finally {
 			this.writeLock.unlock();
 		}
@@ -169,7 +169,7 @@ public class ActionTimeGenerator {
 			return null;
 		}
 		
-		this.realDataChoice.put(action.toString(), choice);
+		this.realDataChoice.put(action, choice);
 		
 		
 		List<Double> times = new ArrayList<Double>();

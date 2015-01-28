@@ -14,6 +14,10 @@ public abstract class HeuristicScheduler implements Scheduler {
 	public HeuristicScheduler(boolean useActualValues) {
 		this.useActualValues = useActualValues;
 	}
+	
+	public boolean isUsingActualValues() {
+		return this.useActualValues;
+	}
 
 	@Override
 	public List<Assignment> schedule(Workflow workflow, List<String> agents,
@@ -26,6 +30,18 @@ public abstract class HeuristicScheduler implements Scheduler {
 		
 		this.assignActions(workflow, actionTimeLookup, assignedWorkflows, agents);
 		return new ArrayList<Assignment>(assignedWorkflows.values());
+	}
+	
+
+	
+	public List<Assignment> finishSchedule(Workflow workflow, ActionTimeGenerator actionTimeLookup, 
+			List<Assignment> assignedWorkflows, BufferedAssignments bufferedWorkflows, Set<Workflow.Node> visitedNodes) {
+		Map<String, Assignment> assignments = new HashMap<String, Assignment>();
+		for (Assignment assignment: assignedWorkflows) assignments.put(assignment.getId(), assignment);
+		List<String> agents = new ArrayList<String>(assignments.keySet());
+		
+		this.assignActions(workflow, actionTimeLookup, assignments, agents);
+		return new ArrayList<Assignment>(assignments.values());
 	}
 
 	private void assignActions(Workflow workflow, ActionTimeGenerator actionTimeLookup, 
@@ -104,7 +120,6 @@ public abstract class HeuristicScheduler implements Scheduler {
 		}
 		return buffered;
 	}
-	
 	protected abstract Map<Workflow.Node, Map<String, Double>> getWeights(Map<Workflow.Node, Map<String, Double>> times, 
 			Map<String, Assignment> assignments);
 }

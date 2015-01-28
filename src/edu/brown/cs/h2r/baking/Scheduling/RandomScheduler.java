@@ -7,6 +7,15 @@ import java.util.Set;
 
 public class RandomScheduler implements Scheduler {
 	Random random = new Random();
+	private boolean useActualValues;
+	
+	public RandomScheduler(boolean useActualValues) {
+		this.useActualValues = useActualValues;
+	}
+	
+	public boolean isUsingActualValues() {
+		return this.useActualValues;
+	}
 	
 	@Override
 	public List<Assignment> schedule(Workflow workflow,

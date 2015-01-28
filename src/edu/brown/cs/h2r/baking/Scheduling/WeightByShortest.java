@@ -41,10 +41,5 @@ public class WeightByShortest extends HeuristicScheduler {
 		return weights;
 	}
 	
-	public List<Assignment> finishSchedule(Workflow workflow, ActionTimeGenerator actionTimeLookup, 
-			List<Assignment> assignedWorkflows, BufferedAssignments bufferedWorkflows, Set<Workflow.Node> visitedNodes) {
-		return assignedWorkflows;
-	}
-	
 
 }

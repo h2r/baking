@@ -200,11 +200,11 @@ public class RecipeScheduling {
 	}
 	public static void main(String argv[]) {
 		List<Scheduler> schedulers = Arrays.asList(
-				new RandomScheduler(),
-				new GreedyScheduler(false),
-				new WeightByShortest(false),
-				new WeightByDifference(false),
-				new ExhaustiveScheduler(5)/*,
+				new RandomScheduler(true),
+				new GreedyScheduler(true),
+				new WeightByShortest(true),
+				new WeightByDifference(true),
+				new ExhaustiveScheduler(5, true)/*,
 				new ExhaustiveScheduler()*/
 				);
 		

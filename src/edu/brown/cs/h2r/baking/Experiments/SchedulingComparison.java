@@ -14,6 +14,7 @@ import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
 import edu.brown.cs.h2r.baking.Scheduling.Assignment;
 import edu.brown.cs.h2r.baking.Scheduling.Assignment.ActionTime;
 import edu.brown.cs.h2r.baking.Scheduling.BufferedAssignments;
+import edu.brown.cs.h2r.baking.Scheduling.ExhaustiveScheduler;
 import edu.brown.cs.h2r.baking.Scheduling.ExhaustiveStarScheduler;
 import edu.brown.cs.h2r.baking.Scheduling.GreedyScheduler;
 import edu.brown.cs.h2r.baking.Scheduling.RandomScheduler;
@@ -102,10 +103,11 @@ public class SchedulingComparison {
 	public static void main(String argv[]) throws InterruptedException {
 		List<Scheduler> schedulers = Arrays.asList(
 				//new RandomScheduler(),
-				//(Scheduler)(new GreedyScheduler()),
-				//new WeightByShortest(),
-				//new WeightByDifference(),
-				(Scheduler)(new ExhaustiveStarScheduler(false))
+				(Scheduler)new GreedyScheduler(false),
+				(Scheduler)new ExhaustiveStarScheduler(new GreedyScheduler(false)),
+				(Scheduler)new ExhaustiveStarScheduler(new WeightByShortest(false)),
+				(Scheduler)new ExhaustiveStarScheduler(new WeightByDifference(false)),
+				(Scheduler)new ExhaustiveScheduler(10, false)
 				);
 		
 		int numTries = 100;
@@ -116,29 +118,36 @@ public class SchedulingComparison {
 		factors.put("human", 1.0);
 		
 		ActionTimeGenerator timeGenerator = new ActionTimeGenerator(factors);
-		List<Integer> connectedness = Arrays.asList(60, 40, 20);
-		Collections.shuffle(connectedness);
-		
+		List<Integer> connectedness = Arrays.asList(20, 10, 5);
+		//Collections.shuffle(connectedness);
 		for (Integer edges : connectedness) {
 			for (int i = 0; i < numTries; i++) {
-				Workflow workflow = SchedulingComparison.buildSortedWorkflow(20, edges);
-				
+				Workflow workflow = SchedulingComparison.buildSortedWorkflow(10, edges);
+				double bestTime = Double.MAX_VALUE;
+				List<List<Assignment>> allAssignments = new ArrayList<List<Assignment>>();
 				for (Scheduler scheduler : schedulers) {
 					List<Assignment> assignments;
-					workflow = SchedulingComparison.buildSortedWorkflow(20, edges);
 					
-					while(true) {
+					//while(true) {
 					/*if (!SchedulingComparison.verifySortedWorkflow(workflow)) {
 						System.err.println("Workflow is not actually sorted");
 					}*/
 					assignments = scheduler.schedule(workflow, Arrays.asList("human", "friend"), timeGenerator);
-					
-					/*if (!SchedulingComparison.verifyAssignments(workflow, assignments)) {
-						System.err.println("Error with assignments");
-					}*/
+					allAssignments.add(assignments);
+					//if (!SchedulingComparison.verifyAssignments(workflow, assignments)) {
+					//	System.err.println("Error with assignments");
+					//}
+					//}
+					double time = new BufferedAssignments(assignments).time();
+					if (time < bestTime) {
+						bestTime = time;
 					}
-					//double time = new BufferedAssignments(assignments).time();
-					//System.out.println(scheduler.getClass().getSimpleName() + ", " + edges + ": " + time);
+					System.out.println(scheduler.getClass().getSimpleName() + ", " + edges + ": " + time);
+					if (scheduler instanceof ExhaustiveScheduler && time > bestTime) {
+						System.err.println("Exhaustive did not achieve the best solution");
+						scheduler.schedule(workflow, Arrays.asList("human", "friend"), timeGenerator);
+					}
+					
 					
 				}
 				timeGenerator.clear();

@@ -94,7 +94,7 @@ public class BufferedAssignments {
 		StringBuilder builder = new StringBuilder();
 		for (Assignment assignedWorkflow : this.adjustedAssignments.values()) {
 			for (ActionTime time : assignedWorkflow) {
-				int duration = (int)(time.getTime() * 10);
+				int duration = time.getTime().intValue();
 				String label = (time.getNode() == null ) ? "." : time.getNode().toString();
 				int length = duration * 3;
 				length = Math.max(1, length);

@@ -8,4 +8,5 @@ public interface Scheduler {
 	List<Assignment> schedule(Workflow workflow, List<String> agents, ActionTimeGenerator  timeGenerator);
 	List<Assignment> finishSchedule(Workflow workflow, ActionTimeGenerator actionTimeLookup, 
 			List<Assignment> assignedWorkflows, BufferedAssignments bufferedAssignments, Set<Workflow.Node> visitedNodes);
+	boolean isUsingActualValues();
 }

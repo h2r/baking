@@ -60,6 +60,11 @@ public class Human implements Agent {
 	}
 	
 	@Override
+	public String toString() {
+		return this.getClass().getSimpleName();
+	}
+	
+	@Override
 	public ObjectInstance getAgentObject() {
 		return AgentFactory.getNewHumanAgentObjectInstance(this.generalDomain, this.getAgentName(), hashingFactory.getObjectHashFactory());
 	}

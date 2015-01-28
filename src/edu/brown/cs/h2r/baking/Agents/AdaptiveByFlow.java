@@ -27,6 +27,11 @@ public class AdaptiveByFlow extends AdaptiveAgent implements Agent {
 	}
 	
 	@Override
+	public String toString() {
+		return this.getClass().getSimpleName() + " scheduling: " + this.useScheduling;
+	}
+	
+	@Override
 	protected void init() {
 		this.prediction = new PolicyPrediction(this.subdomains);
 	}

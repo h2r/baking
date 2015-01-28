@@ -24,6 +24,11 @@ public class RandomActionAgent implements Agent {
 		// TODO Auto-generated method stub
 
 	}
+	
+	@Override
+	public String toString(){
+		return this.getClass().getSimpleName();
+	}
 
 	@Override
 	public String getAgentName() {

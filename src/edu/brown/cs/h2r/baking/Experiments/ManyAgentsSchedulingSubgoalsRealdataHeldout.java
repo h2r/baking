@@ -31,7 +31,7 @@ public class ManyAgentsSchedulingSubgoalsRealdataHeldout {
 	
 	public static void main(String[] args) {
 		
-		int numTrials = 100;
+		int numTrials = 1;
 		int trialId = new Random().nextInt();
 		trialId = Math.abs(trialId);
 		if (args.length == 1) {
@@ -65,26 +65,31 @@ public class ManyAgentsSchedulingSubgoalsRealdataHeldout {
 		
 		
 		List<Agent> agents = Arrays.asList(
-				(Agent)new RandomActionAgent(generalDomain),
+				(Agent)new RandomActionAgent(generalDomain), //0
 				(Agent)new RandomSubgoalAgent(generalDomain, "partner", timeGenerator),
 				(Agent)new RandomActionCorrectRecipeAgent(generalDomain, "partner", timeGenerator),
 				(Agent)new RandomActionCorrectSubgoal(generalDomain, "partner", timeGenerator),
 				(Agent)new RandomRecipeAgent(generalDomain, timeGenerator),
-				(Agent)new Human(generalDomain, "partner", timeGenerator),
+				(Agent)new Human(generalDomain, "partner", timeGenerator),//5
 				(Agent)new Expert(generalDomain, "partner", timeGenerator),
 				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator, false),
 				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator, true)
 				);
+		
 		System.out.println("Agent, Successes, Trials, Average reward, average successful reward");
 		ResetAction reset = (ResetAction)generalDomain.getAction(ResetAction.className);
 		reset.setState(state);
 		
 		
 			//System.out.println("Agent: " + agent.getAgentName());
-		int choice = trialId % (agents.size() + 1);
-		
-		SimulationHelper.run(numTrials, generalDomain, hashingFactory, recipes, timeGenerator, human, agents,
-				reset, choice, true);	
+		for (int i = 0; i < 100; i++) {
+			trialId = Math.abs(new Random().nextInt());
+			int choice = 7;//trialId % (agents.size() + 1);
+			
+			SimulationHelper.run(numTrials, generalDomain, hashingFactory, recipes, timeGenerator, human, agents,
+					reset, choice, true);
+		}
+			
 	}
 
 

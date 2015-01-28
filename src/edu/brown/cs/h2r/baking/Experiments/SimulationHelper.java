@@ -246,7 +246,7 @@ public class SimulationHelper {
 			
 			if (humanAction == null) {
 				if (humanExpert != null) {
-					humanExpert.setCooperative(!currentState.equals(startingState));
+					humanExpert.setCooperative(!currentState.equals(startingState) && numNullActions < 2);
 					humanAction = (GroundedAction)humanExpert.getActionWithScheduler(currentState, agents, !onlySubgoals, (GroundedAction)partnerAction);
 				} else {
 					humanAction = (GroundedAction)human.getActionWithScheduler(currentState, agents, !onlySubgoals);
@@ -274,7 +274,7 @@ public class SimulationHelper {
 								throw new RuntimeException("Partner can't choose this action");
 							}
 						} else {
-							if (!currentState.equals(startingState)) {
+							if (humanAction != null && !currentState.equals(startingState)) {
 								State newState = humanAction.executeIn(currentState);
 								partnerAction = (GroundedAction)otherHuman.getActionWithScheduler(newState, agents, !onlySubgoals);
 							}
@@ -537,8 +537,9 @@ public class SimulationHelper {
 			human.setInitialState(startingState);
 			agent.setInitialState(startingState);
 			
+			System.out.println("Evaluating " + agent.toString());
 			result = SimulationHelper.evaluateAgent(human, agent, startingState, timeGenerator, subgoalsOnly);
-			System.out.println(agent.getClass().getSimpleName() + ", " +  result.toString());
+			System.out.println(agent.toString() + ", " +  result.toString());
 			//}
 			System.out.println("");
 			timeGenerator.clear();

@@ -1,46 +1,51 @@
 package edu.brown.cs.h2r.baking.Scheduling;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Set;
 
+import burlap.debugtools.DPrint;
+import burlap.oomdp.singleagent.GroundedAction;
 import edu.brown.cs.h2r.baking.Scheduling.Assignment.ActionTime;
-import edu.brown.cs.h2r.baking.Scheduling.Workflow.Node;
 
 public class ExhaustiveScheduler implements Scheduler {
 	private final int maxDepth;
+	private final boolean useActualValues;
+	private static final int debugCode = 102;
 	
-	public ExhaustiveScheduler() {
+	public ExhaustiveScheduler(boolean useActualValues) {
 		this.maxDepth = -1;
+		this.useActualValues = useActualValues;
+		DPrint.toggleCode(debugCode, false);
+		
 	}
 	
-	public ExhaustiveScheduler(int maxDepth) {
+	public ExhaustiveScheduler(int maxDepth, boolean useActualValues) {
 		this.maxDepth = maxDepth;
+		this.useActualValues = useActualValues;
+		DPrint.toggleCode(debugCode, false);
+	}
+	
+	public boolean isUsingActualValues() {
+		return this.useActualValues;
 	}
 
 	@Override
 	public List<Assignment> schedule(Workflow workflow, List<String> agents,
 			ActionTimeGenerator actionTimeLookup) {
-		Map<String, Assignment> assignedWorkflows = new HashMap<String, Assignment>();
-		
-		for (String agent : agents) {
-			Assignment assignedWorkflow = new Assignment(agent, actionTimeLookup, false);
-			assignedWorkflows.put(agent, assignedWorkflow);
-		}
-		int previousSize = 0;
-		while (previousSize != workflow.size()) {
-			this.assignActions(workflow, actionTimeLookup, assignedWorkflows, new HashSet<Workflow.Node>(), this.maxDepth);
-			
-			previousSize = 0;
-			for (Assignment assignedWorkflow : assignedWorkflows.values()) {
-				previousSize += assignedWorkflow.size();
-			}
-		}
-		
-		return new ArrayList<Assignment>(assignedWorkflows.values());
+		List<Assignment> assignments = new ArrayList<Assignment>();
+		for (String agent : agents) assignments.add(new Assignment(agent, actionTimeLookup, this.useActualValues));
+
+		Queue<AssignmentNode> queue =  new LinkedList<AssignmentNode>();
+		AssignmentNode first = new AssignmentNode(assignments, this.useActualValues, actionTimeLookup, null, null);
+		queue.add(first);
+		return this.assignActions(workflow, actionTimeLookup,queue, agents);
 	}
 	
 	public List<Assignment> finishSchedule(Workflow workflow, ActionTimeGenerator actionTimeLookup, 
@@ -50,67 +55,63 @@ public class ExhaustiveScheduler implements Scheduler {
 		for (Assignment assignedWorkflow : assignedWorkflows) {
 			assignedWorkflowMap.put(assignedWorkflow.getId(), assignedWorkflow);
 		}
-		int previousSize = 0;
-		while (previousSize != workflow.size()) {
-			this.assignActions(workflow, actionTimeLookup, assignedWorkflowMap, new HashSet<Workflow.Node>(), this.maxDepth);
-			
-			previousSize = 0;
-			for (Assignment assignedWorkflow : assignedWorkflowMap.values()) {
-				previousSize += assignedWorkflow.size();
-			}
-		}
-		
-		return new ArrayList<Assignment>(assignedWorkflowMap.values());
+		List<Assignment> assignments = new ArrayList<Assignment>(assignedWorkflowMap.values());
+		Queue<AssignmentNode> queue = new LinkedList<AssignmentNode>();
+		AssignmentNode first = new AssignmentNode(assignments, this.useActualValues, actionTimeLookup, null, null);
+		queue.add(first);
+		return this.assignActions(workflow, actionTimeLookup, queue, assignedWorkflowMap.keySet());
 	}
 	
-	private double assignActions(Workflow workflow, ActionTimeGenerator actionTimeLookup, 
-			Map<String, Assignment> assignments, Set<Workflow.Node> visitedNodes, int depth ) {
-		if (visitedNodes.size() == workflow.size()) {
-			return new BufferedAssignments(assignments.values()).time();
-		}
-		if (depth == 0) {
-			GreedyScheduler greedyScheduler = new GreedyScheduler(false);
-			List<Assignment> assignedWorkflows = new ArrayList<Assignment>(assignments.values());
-			BufferedAssignments buffered = new BufferedAssignments(assignedWorkflows);
-			greedyScheduler.finishSchedule(workflow, actionTimeLookup, assignedWorkflows, buffered, visitedNodes);
-			return buffered.time();
-		}
-		for (Assignment assignedWorkflow : assignments.values()) {
-			for (ActionTime actionTime : assignedWorkflow) {
-				visitedNodes.add(actionTime.getNode());
+	private List<Assignment> assignActions(Workflow workflow, ActionTimeGenerator actionTimeLookup, 
+			Queue<AssignmentNode> openQueue, Collection<String> agents) {
+		int checkedNodes = 0;
+		List<AssignmentNode> completedNodes = new ArrayList<AssignmentNode>();
+		while(openQueue.peek() != null) {
+			checkedNodes++;
+			AssignmentNode node = openQueue.poll();
+			if (node.complete(workflow)) {
+				completedNodes.add(node);
+				continue;
 			}
-		}
-		
-		List<Workflow.Node> availableNodes = workflow.getAvailableNodes(visitedNodes); 
-		
-		double bestTime = Double.MAX_VALUE;
-		double bestActionTime = 0.0;
-		Workflow.Node bestNode = null;
-		String bestAgent = "";
-		
-		for (Workflow.Node node : availableNodes) {
 			
-			Set<Workflow.Node> futureVisitedNodes = new HashSet<Workflow.Node>(visitedNodes);
-			futureVisitedNodes.add(node);
+			List<Workflow.Node> availableActions = workflow.getAvailableNodes(node.getAssignedNodes());
 			
-			for (Map.Entry<String, Assignment> entry : assignments.entrySet()) {
-				Map<String, Assignment> copied = SchedulingHelper.copyMap(assignments);
-				String agent = entry.getKey();
-				double time = actionTimeLookup.get(node.getAction(), false);
-				copied.get(agent).add(node);
-				double sequenceTime = this.assignActions(workflow, actionTimeLookup, copied, futureVisitedNodes, depth - 1);
-				if (sequenceTime < bestTime) {
-					bestTime = sequenceTime;
-					bestActionTime = time;
-					bestNode = node;
-					bestAgent = agent;
+			int numAddedNodes = 0;
+			for (Workflow.Node nextNode : availableActions) {
+				for (String agent : agents){
+					GroundedAction ga = nextNode.getAction();
+					ga.params[0] = agent;
+					double time = actionTimeLookup.get(ga, this.useActualValues);
+					ActionTime actionTime = new ActionTime(nextNode, time);
+					AssignmentNode newNode = new AssignmentNode(node, agent, actionTime, null, null);
+					if (!newNode.equals(node)) {
+						openQueue.add(newNode);
+						numAddedNodes++;
+					}
+					
 				}
 			}
-			
 		}
-		assignments.get(bestAgent).add(bestNode);
-		return bestTime;
-	}
+		AssignmentNode bestNode = null;
+		double minTime = Double.MAX_VALUE;
+		for (int j = 0; j < completedNodes.size(); j++) {
+			AssignmentNode node = completedNodes.get(j);
+			List<Assignment> assignments = node.getAssignments();
+			double bufferedTime = 0.0;
+			for (int i = 0; i < 3; i++) {
+			BufferedAssignments buffered = new BufferedAssignments(assignments);
+			if (bufferedTime > 0.0 && bufferedTime != buffered.time()) {
+				System.err.println("Inconsistent buffered time " + bufferedTime + " " + buffered.time());
+			}
+			bufferedTime = buffered.time();
+			}
+			if (bufferedTime < minTime) {
+				minTime = node.getTime();
+				bestNode = node;
+			}
+		}
+		return (bestNode == null ) ? null : bestNode.getAssignments();
+	}	
 	
 	
 

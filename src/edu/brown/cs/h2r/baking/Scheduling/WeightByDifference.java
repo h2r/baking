@@ -43,11 +43,6 @@ public class WeightByDifference extends HeuristicScheduler {
 		return weights;
 	}
 	
-	public List<Assignment> finishSchedule(Workflow workflow, ActionTimeGenerator actionTimeLookup, 
-			List<Assignment> assignedWorkflows, BufferedAssignments bufferedWorkflows, Set<Workflow.Node> visitedNodes) {
-		return assignedWorkflows;
-	}
-	
 	private List<Double> maxValue(Map<String, Double> times) {
 		List<Double> topValues = new ArrayList<Double>();
 		for (Map.Entry<String, Double> entry : times.entrySet()) {

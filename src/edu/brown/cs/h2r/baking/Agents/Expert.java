@@ -28,6 +28,7 @@ public class Expert extends Human implements Agent {
 		this.isCooperative = false;
 	}
 	
+	
 	@Override
 	public void addObservation(State state) {
 	}

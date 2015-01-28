@@ -16,6 +16,10 @@ public class GreedyScheduler implements Scheduler {
 		this.useActualValues = useActualValues;
 	}
 
+	public boolean isUsingActualValues() {
+		return this.useActualValues;
+	}
+	
 	@Override
 	public List<Assignment> schedule(Workflow workflow, List<String> agents,
 			ActionTimeGenerator actionTimeLookup) {
@@ -33,6 +37,7 @@ public class GreedyScheduler implements Scheduler {
 		return this.finishSchedule(workflow, actionTimeLookup, assignedWorkflows, buffered, new HashSet<Workflow.Node>());
 	}
 	
+	@Override
 	public List<Assignment> finishSchedule(Workflow workflow, ActionTimeGenerator actionTimeLookup, 
 			List<Assignment> assignedWorkflows, BufferedAssignments bufferedAssignments, Set<Workflow.Node> visitedNodes ) {
 		
@@ -67,8 +72,7 @@ public class GreedyScheduler implements Scheduler {
 				String agent = assignment.getId();
 				GroundedAction ga = node.getAction();
 				ga.params[0] = agent;
-				GroundedAction action = node.getAction();
-				double actionTime = actionTimeLookup.get(action, false);
+				double actionTime = actionTimeLookup.get(ga, false);
 				
 				double anticipatedTime = 
 						bufferedAssignments.getTimeAssigningNodeToAgent(node, actionTime, agent);
