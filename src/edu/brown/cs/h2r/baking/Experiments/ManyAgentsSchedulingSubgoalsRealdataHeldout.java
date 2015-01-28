@@ -80,16 +80,10 @@ public class ManyAgentsSchedulingSubgoalsRealdataHeldout {
 		ResetAction reset = (ResetAction)generalDomain.getAction(ResetAction.className);
 		reset.setState(state);
 		
+		int choice = trialId % (agents.size() + 1);
 		
-			//System.out.println("Agent: " + agent.getAgentName());
-		for (int i = 0; i < 100; i++) {
-			trialId = Math.abs(new Random().nextInt());
-			int choice = 7;//trialId % (agents.size() + 1);
-			
-			SimulationHelper.run(numTrials, generalDomain, hashingFactory, recipes, timeGenerator, human, agents,
-					reset, choice, true);
-		}
-			
+		SimulationHelper.run(numTrials, generalDomain, hashingFactory, recipes, timeGenerator, human, agents,
+				reset, choice, true);
 	}
 
 
