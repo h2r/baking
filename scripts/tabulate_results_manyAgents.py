@@ -62,12 +62,12 @@ if len(argv) > 1:
 
     print("coordinates {")
     for line in sorted_results:
-        print("(" + str(line[3]) + "," + str(line[0]) + " )\t+- (" + str(line[4]) + ", " + str(line[4]) + ")")
+        print("(" + str(line[3]) + "," + str(line[0]) + ")\t+- (" + str(line[4]) + ", " + str(line[4]) + ")")
     print("};")
 
     print("coordinates {")
     for line in sorted_results:
-        print("("  + str(line[5]) + "," + str(line[0]) + " )\t+- (" + str(line[6]) + ", " + str(line[6]) + ")")
+        print("("  + str(line[5]) + "," + str(line[0]) + ")\t+- (" + str(line[6]) + ", " + str(line[6]) + ")")
     print("};")
 
 
