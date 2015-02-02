@@ -52,6 +52,7 @@ if len(argv) > 1:
     for line in sorted_results:
         yCoords = yCoords + "{" + str(line[0]) + "},"
     yCoords = yCoords + "}"
+    print(yCoords)
     
 
     print("coordinates {")
