@@ -46,7 +46,7 @@ if len(argv) > 1:
         print(str(agent) + ", " + str(int(sum(line[0]))) + ", " + str(int(sum(line[1]))) + ", " + str( numpy.mean(line[2])) + ", " + str(numpy.mean(line[3])) + " +- " + str(1.96 * numpy.std(line[3], ddof=1)/math.sqrt(len(line[3]))))
         results.append([agent, int(sum(line[0])), int(sum(line[1])), numpy.mean(line[2]), 1.96 * numpy.std(line[2], ddof=1)/math.sqrt(len(line[2])), numpy.mean(line[3]), 1.96 * numpy.std(line[3], ddof=1)/math.sqrt(len(line[3]))])
    
-    sorted_results = sorted(results, key= lambda line: int(line[0]))
+    sorted_results = sorted(results, key= lambda line: line[0])
     print("coordinates {")
     for line in sorted_results:
         print("(" + str(line[0]) + ", " + str(float(line[1]) / line[2]) + ")")
