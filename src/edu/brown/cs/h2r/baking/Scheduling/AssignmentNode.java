@@ -26,40 +26,30 @@ public class AssignmentNode {
 		
 		this.completedAssignments = completedAssignments;
 		if (initialTime == null) {
-			BufferedAssignments buffered = new BufferedAssignments(assignments);
+			BufferedAssignments buffered = new BufferedAssignments(assignments, false);
 			this.time = buffered.time();
 		} else {
 			this.time = initialTime;
 		}
 	}
 	
-	public AssignmentNode(AssignmentNode node, String agent, ActionTime action, Double initialTime, List<Assignment> completedAssignments) {
+	public AssignmentNode(Map<String, Assignment> assignments, Double initialTime, List<Assignment> completedAssignments) {
 		
-		Map<String, Assignment> assignments = SchedulingHelper.copyMap(node.assignments);
-		Assignment agentsAssignment = assignments.get(agent);
-		if (node.getAssignedNodes().contains(action.getNode())) {
-			this.time = node.time;
-			this.assignments = node.assignments;
-			this.assignedNodes = node.getAssignedNodes();
-			this.completedAssignments = node.completedAssignments;
-			return;
+		this.assignments = SchedulingHelper.copyMap(assignments);
+		Set<Workflow.Node> visitedNodes = new HashSet<Workflow.Node>();
+		
+		for (Assignment assignment : assignments.values()) {
+			visitedNodes.addAll(assignment.nodes());
 		}
-		
-		agentsAssignment.add(action.getNode());
-		Set<Workflow.Node> visitedNodes = new HashSet<Workflow.Node>(node.getAssignedNodes());
-		visitedNodes.add(action.getNode());
-		
+		this.assignedNodes = visitedNodes;
 		this.completedAssignments = completedAssignments;
 		
 		if (initialTime == null) {
-			BufferedAssignments buffered = new BufferedAssignments(assignments.values());
+			BufferedAssignments buffered = new BufferedAssignments(assignments.values(), false);
 			this.time = buffered.time();
 		} else {
 			this.time = initialTime;
 		}
-		
-		this.assignments = assignments;
-		this.assignedNodes = visitedNodes;
 	}
 	
 	/*
@@ -175,7 +165,11 @@ public class AssignmentNode {
 		return this.time;
 	}
 	
-	public List<Assignment> getAssignments() {
+	public Map<String, Assignment> getAssignments() {
+		return SchedulingHelper.copyMap(this.assignments);
+	}
+	
+	public List<Assignment> getAssignmentLists() {
 		return new ArrayList<Assignment>(this.assignments.values());
 	}
 	

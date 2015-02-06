@@ -18,7 +18,7 @@ public class WeightByShortest extends HeuristicScheduler {
 		Map<Node, Map<String, Double>> weights = new HashMap<Node, Map<String, Double>>();
 		
 		List<Assignment> assignedWorkflows = new ArrayList<Assignment>(assignments.values());
-		BufferedAssignments bufferedAssignments = new BufferedAssignments(assignedWorkflows);
+		BufferedAssignments bufferedAssignments = new BufferedAssignments(assignedWorkflows, false);
 		double baseTime = bufferedAssignments.time();
 		
 		Map<String, Assignment> bufferedMap = bufferedAssignments.getAssignmentMap();

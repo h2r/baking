@@ -2,6 +2,7 @@ package edu.brown.cs.h2r.baking.Scheduling;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -143,11 +144,12 @@ public class Workflow implements Iterable<Node> {
 	
 	public Workflow sort() {
 		Set<Node> sortedNodes = new LinkedHashSet<Node>();
-		
+		List<Node> nodes = new ArrayList<Node>(this.actions);
+		Collections.shuffle(nodes);
 		boolean keepGoing = true;
 		while (keepGoing) {
 			keepGoing = false;
-			for (Node node : this.actions) {
+			for (Node node : nodes) {
 				if (node.isAvailable(sortedNodes)) {
 					keepGoing |= sortedNodes.add(node);
 				}
@@ -250,6 +252,7 @@ public class Workflow implements Iterable<Node> {
 		private int degree;
 		private final Set<Node> parents;
 		private final Set<Node> children;
+		private final Set<String> resources;
 		
 		public Node(int id) {
 			this.id = id;
@@ -257,6 +260,16 @@ public class Workflow implements Iterable<Node> {
 			this.degree = 0;
 			this.parents = new HashSet<Node>();
 			this.children = new HashSet<Node>();
+			this.resources = null;
+		}
+		
+		public Node(int id, Set<String> resources) {
+			this.id = id;
+			this.action = new GroundedAction(null, new String[]{"agent", Integer.toString(this.id)});
+			this.degree = 0;
+			this.parents = new HashSet<Node>();
+			this.children = new HashSet<Node>();
+			this.resources = new HashSet<String>(resources);
 		}
 		
 		public Node(int id, GroundedAction action) {
@@ -265,6 +278,8 @@ public class Workflow implements Iterable<Node> {
 			this.degree = 0;
 			this.parents = new HashSet<Node>();
 			this.children = new HashSet<Node>();
+			String[] resources = Arrays.copyOfRange(action.params, 1, action.params.length);
+			this.resources = new HashSet<String>(Arrays.asList(resources));
 		}
 		
 		public Set<Node> parents() {
@@ -281,6 +296,12 @@ public class Workflow implements Iterable<Node> {
 		
 		public GroundedAction getAction() {
 			return new GroundedAction(this.action.action, Arrays.copyOf(this.action.params, this.action.params.length));
+		}
+		
+		public GroundedAction getAction(String agent) {
+			String [] params = Arrays.copyOf(this.action.params, this.action.params.length);
+			params[0] = agent;
+			return new GroundedAction(this.action.action, params);
 		}
 		
 		private int maxDegree() {
@@ -375,7 +396,7 @@ public class Workflow implements Iterable<Node> {
 		
 		@Override
 		public String toString() {
-			return Integer.toString(this.id);
+			return Integer.toString(this.id) + ((this.resources != null) ? this.resources.toString() : "");
 		}
 		
 		private boolean checkChildCanBeAdded(Node child) {
@@ -406,6 +427,56 @@ public class Workflow implements Iterable<Node> {
 				}
 			}
 			return true;
+		}
+
+		public boolean ancestorOf(Node secondNode) {
+			if (this.equals(secondNode)) {
+				return false;
+			}
+			for (Node node : this.children) {
+				if (node.equals(secondNode) || node.ancestorOf(secondNode)) {
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		public Set<String> getResources() {
+			return new HashSet<String>(this.resources);
+		}
+		
+		public boolean resourceConflicts(Node node) {
+			Set<String> shorter = null;
+			Set<String> longer = null;
+			if (this.resources.size() < node.resources.size()) {
+				shorter = this.resources; 
+				longer = node.resources;
+			} else {
+				shorter = node.resources;
+				longer = this.resources; 
+			}
+			
+			for (String resource : shorter) {
+				if (longer.contains(resource)) {
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		public boolean resourceConflicts(Collection<Node> nodes) {
+			Set<String> resources = new HashSet<String>();
+			for (Node node : nodes) {
+				if (node != null) {
+					resources.addAll(node.resources);
+				}
+			}
+			for (String resource : this.resources) {
+				if (resources.contains(resource)) {
+					return true;
+				}
+			}
+			return false;
 		}
 	}
 	

@@ -32,7 +32,7 @@ public class CombinedScheduler implements Scheduler {
 		for (String agent : agents) {
 			assignments.add(new Assignment(agent, timeGenerator, this.isUsingActualValues()));
 		}
-		BufferedAssignments buffered = new BufferedAssignments(assignments);
+		BufferedAssignments buffered = new BufferedAssignments(assignments, false);
 		Set<Workflow.Node> visited = new HashSet<Workflow.Node>();
 		return this.assignActions(workflow, timeGenerator, assignments, buffered, visited);
 	}
@@ -55,7 +55,7 @@ public class CombinedScheduler implements Scheduler {
 		List<Assignment> best = null;
 		double minTime = Double.MAX_VALUE;
 		for (List<Assignment> assignment : results) {
-			BufferedAssignments buff = new BufferedAssignments(assignment);
+			BufferedAssignments buff = new BufferedAssignments(assignment, false);
 			if (buff.time() < minTime) {
 				best = assignment;
 				minTime = buff.time();

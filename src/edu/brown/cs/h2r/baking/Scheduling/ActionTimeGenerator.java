@@ -138,7 +138,8 @@ public class ActionTimeGenerator {
 			Double factor = this.biasFactors.get(agent);
 			factor = (factor == null) ? 10.0 : factor;
 			double roll = this.random.nextDouble();
-			time = factor * roll + 10;
+			time = 9.0 * roll + 1;
+			time = (this.random.nextDouble() + 0.25) * time;
 		}
 		try {
 			this.writeLock.lock();

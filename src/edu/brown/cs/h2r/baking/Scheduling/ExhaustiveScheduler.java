@@ -79,11 +79,9 @@ public class ExhaustiveScheduler implements Scheduler {
 			int numAddedNodes = 0;
 			for (Workflow.Node nextNode : availableActions) {
 				for (String agent : agents){
-					GroundedAction ga = nextNode.getAction();
-					ga.params[0] = agent;
-					double time = actionTimeLookup.get(ga, this.useActualValues);
-					ActionTime actionTime = new ActionTime(nextNode, time);
-					AssignmentNode newNode = new AssignmentNode(node, agent, actionTime, null, null);
+					Map<String, Assignment> currentAssignments = node.getAssignments();
+					currentAssignments.get(agent).add(nextNode);
+					AssignmentNode newNode = new AssignmentNode(currentAssignments, null, null);
 					if (!newNode.equals(node)) {
 						openQueue.add(newNode);
 						numAddedNodes++;
@@ -96,10 +94,10 @@ public class ExhaustiveScheduler implements Scheduler {
 		double minTime = Double.MAX_VALUE;
 		for (int j = 0; j < completedNodes.size(); j++) {
 			AssignmentNode node = completedNodes.get(j);
-			List<Assignment> assignments = node.getAssignments();
+			List<Assignment> assignments = node.getAssignmentLists();
 			double bufferedTime = 0.0;
 			for (int i = 0; i < 3; i++) {
-			BufferedAssignments buffered = new BufferedAssignments(assignments);
+			BufferedAssignments buffered = new BufferedAssignments(assignments, false);
 			if (bufferedTime > 0.0 && bufferedTime != buffered.time()) {
 				System.err.println("Inconsistent buffered time " + bufferedTime + " " + buffered.time());
 			}
@@ -110,7 +108,7 @@ public class ExhaustiveScheduler implements Scheduler {
 				bestNode = node;
 			}
 		}
-		return (bestNode == null ) ? null : bestNode.getAssignments();
+		return (bestNode == null ) ? null : bestNode.getAssignmentLists();
 	}	
 	
 	

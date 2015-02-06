@@ -166,7 +166,7 @@ public class Expert extends Human implements Agent {
 				}
 			}
 			
-			BufferedAssignments buffered = new BufferedAssignments(assignments);
+			BufferedAssignments buffered = new BufferedAssignments(assignments, false);
 			System.out.println(buffered.getFullString());
 			GroundedAction action = buffered.getFirstAction(this.getAgentName());
 			if (action == null) {
@@ -247,7 +247,7 @@ public class Expert extends Human implements Agent {
 			
 		}
 		
-		BufferedAssignments bufferedAssignments = new BufferedAssignments(assignments);
+		BufferedAssignments bufferedAssignments = new BufferedAssignments(assignments, false);
 		assignments = exhaustive.finishSchedule(workflow, this.timeGenerator, assignments, bufferedAssignments, visitedNodes);
 		return assignments;
 	}

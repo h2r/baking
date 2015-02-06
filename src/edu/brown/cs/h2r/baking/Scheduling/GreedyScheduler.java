@@ -33,7 +33,7 @@ public class GreedyScheduler implements Scheduler {
 			assignedWorkflows.add(assignedWorkflow);
 		}
 				
-		BufferedAssignments buffered = new BufferedAssignments(assignedWorkflows);
+		BufferedAssignments buffered = new BufferedAssignments(assignedWorkflows, false);
 		return this.finishSchedule(workflow, actionTimeLookup, assignedWorkflows, buffered, new HashSet<Workflow.Node>());
 	}
 	

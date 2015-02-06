@@ -17,7 +17,7 @@ import edu.brown.cs.h2r.baking.Scheduling.Assignment.AssignmentIterator;
 
 public class SchedulingHelper {
 
-	public static List<Assignment> copy(List<Assignment> other) {
+	public static List<Assignment> copy(Collection<Assignment> other) {
 		List<Assignment> copyOf = new ArrayList<Assignment>(other.size());
 		for (Assignment workflow : other) {
 			copyOf.add(new Assignment(workflow));

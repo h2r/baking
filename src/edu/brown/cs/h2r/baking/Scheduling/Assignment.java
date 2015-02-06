@@ -2,9 +2,11 @@ package edu.brown.cs.h2r.baking.Scheduling;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Objects;
 import java.util.Set;
 
 import burlap.oomdp.singleagent.GroundedAction;
@@ -43,6 +45,25 @@ public class Assignment implements Iterable<ActionTime> {
 		this.completionTimes = new ArrayList<Double>(other.completionTimes);
 		this.timeGenerator = other.timeGenerator;
 		this.useActualValues = other.getUseActualValues();
+	}
+	
+	public Assignment(List<ActionTime> actionTimes, String agent, ActionTimeGenerator timeGenerator, boolean useActualValues) {
+		this.agent = agent;
+		this.timeGenerator = timeGenerator;
+		this.useActualValues = useActualValues;
+		
+		this.nodes = new ArrayList<Workflow.Node>(actionTimes.size());
+		this.times = new ArrayList<Double>(actionTimes.size());
+		this.completionTimes = new ArrayList<Double>(actionTimes.size());
+		
+		this.time = 0;
+		for (ActionTime actionTime : actionTimes) {
+			this.nodes.add(actionTime.getNode());
+			double time = actionTime.getTime();
+			this.times.add(time);
+			this.time += time;
+			this.completionTimes.add(this.time);
+		}
 	}
 	
 	public Assignment(String agent, List<Workflow.Node> assignedActions,  ActionTimeGenerator timeGenerator, boolean useActualValues ) {
@@ -97,8 +118,36 @@ public class Assignment implements Iterable<ActionTime> {
 		return true;
 	}
 	
+	@Override 
+	public int hashCode() {
+		return Objects.hash(this.nodes, this.times);
+	}
+	
 	public Iterator<ActionTime> iterator() {
 		return new AssignmentIterator(this.nodes, this.times);
+	}
+	
+	public void shuffle() {
+		List<ActionTime> actionTimes = new ArrayList<ActionTime>();
+		for (ActionTime actionTime : this) {
+			actionTimes.add(actionTime);
+		}
+		Collections.shuffle(actionTimes);
+		
+		this.nodes.clear();
+		this.times.clear();
+		this.completionTimes.clear();
+		
+		
+		double sum = 0.0;
+		for (ActionTime actionTime : actionTimes) {
+			this.nodes.add(actionTime.getNode());
+			double time = actionTime.getTime();
+			this.times.add(time);
+			sum += time;
+			this.completionTimes.add(sum);
+		}
+		this.time = sum;
 	}
 	
 	public Workflow.Node first() {
@@ -109,14 +158,70 @@ public class Assignment implements Iterable<ActionTime> {
 	}
 	
 	public void add(Workflow.Node node) {
-		GroundedAction ga = node.getAction();
-		ga.params[0] = this.agent;
+		GroundedAction ga = node.getAction(this.agent);
 		double time = this.timeGenerator.get(ga, this.getUseActualValues());
 		this.nodes.add(node);
 		this.times.add(time);
 		this.time += time;
 		this.completionTimes.add(this.time);
 	}
+	
+	public void add(int position, Workflow.Node node) {
+		GroundedAction ga = node.getAction(this.agent);
+		double time = this.timeGenerator.get(ga, this.getUseActualValues());
+		
+		this.nodes.add(position, node);
+		this.times.add(position, time);
+		this.completionTimes.add(this.time);
+		double sum = 0.0;
+		for (int i = position ; i < this.completionTimes.size(); i++) {
+			sum += this.times.get(i);
+			this.completionTimes.set(i, sum);
+		}
+		
+	}
+	
+	private void rebuildCompletionTimes(int start, int end) {
+		start = Math.max(0, start);
+		end = Math.min(end, this.size());
+		if (start >= end) {
+			return;
+		}
+		
+		double sum = (start == 0) ? 0.0 : this.completionTimes.get(start - 1);
+		for (int i = start; i < end; i++) {
+			double time = this.times.get(i);
+			sum += time;
+			this.completionTimes.set(i, sum);
+		}
+	}
+	
+	public void swap(int first, int second) {
+		if (first < this.size() && second < this.size()) {
+			Workflow.Node nodeTmp = this.nodes.get(first);
+			double timeTmp = this.times.get(first);
+			
+			this.nodes.set(first, this.nodes.get(second));
+			this.times.set(first, this.times.get(second));
+			this.nodes.set(second, nodeTmp);
+			this.times.set(second, timeTmp);
+		}
+		this.rebuildCompletionTimes(first, second);
+	}
+	
+	public void trim() {
+		for (int i = this.nodes.size() - 1; i >= 0; i--) {
+			if (this.nodes.get(i) == null) {
+				this.nodes.remove(i);
+				this.times.remove(i);
+				this.completionTimes.remove(i);
+			} else {
+				return;
+			}
+		}
+	}
+	
+	
 	
 	public String getId() {
 		return this.agent;
@@ -128,6 +233,42 @@ public class Assignment implements Iterable<ActionTime> {
 	
 	public boolean contains(Node node) {
 		return this.nodes.contains(node);
+	}
+	
+	// Not the ideal sorted workflow, as it allows actions with dependencies on others go first
+	public Assignment sort(Workflow workflow) {
+		Set<Workflow.Node> nodes = new HashSet<Workflow.Node>();
+		for (Workflow.Node node : workflow) nodes.add(node);
+		nodes.removeAll(this.nodes);
+		
+		List<ActionTime> sorted = new ArrayList<ActionTime>(this.size());
+		boolean keepGoing = true;
+		while (keepGoing) {
+			keepGoing = false;
+			for (ActionTime actionTime : this) {
+				Workflow.Node node = actionTime.getNode();
+				if (node.isAvailable(nodes) && !nodes.contains(node)) {
+					sorted.add(actionTime);
+					nodes.add(node);
+					keepGoing = true;
+				}
+			}
+		}
+		if (sorted.size() != this.size()) {
+			throw new RuntimeException("Sorting failed");
+		}
+		
+		return new Assignment(sorted, this.agent, this.timeGenerator, this.useActualValues);
+	}
+	
+	public Assignment condense() {
+		List<ActionTime> sorted = new ArrayList<ActionTime>(this.size());
+		for (ActionTime actionTime : this) {
+			if (actionTime.node != null) {
+				sorted.add(actionTime);
+			}
+		}
+		return new Assignment(sorted, this.agent, this.timeGenerator, this.useActualValues);
 	}
 	
 	
@@ -150,11 +291,11 @@ public class Assignment implements Iterable<ActionTime> {
 			return null;
 		}
 		
-		Integer place = Collections.binarySearch(this.completionTimes, time);
+		Integer place = Collections.binarySearch(this.completionTimes, currentTime);
 		
 		if (place < 0) {
 			place = - (place + 1);
-		} else {
+		} else if (currentTime == this.completionTimes.get(place)) {
 			place++;
 		}
 		
@@ -165,20 +306,62 @@ public class Assignment implements Iterable<ActionTime> {
 		return this.completionTimes.get(place);
 	}
 	
+	public List<Workflow.Node> nodes(Set<Workflow.Node> visited) { 
+		List<Workflow.Node> nodes = new ArrayList<Workflow.Node>();
+		for (Workflow.Node node : this.nodes){ 
+			if (node != null && node.isAvailable(visited)) {
+				nodes.add(node);
+			}
+		}
+		
+		return nodes;
+	}
+	
+	public List<Double> times() {
+		return this.times;
+	}
+	
+	public List<Double> completionTimes() {
+		return this.completionTimes;
+	}
+	
 	public List<Workflow.Node> nodes() { 
 		return this.nodes;
 	}
 	
+	
+	
 	public List<Workflow.Node> nodes(double time) { 
-		Integer end = this.position(time);
-		end = (end == null) ? this.nodes.size() : end + 1;
-		
-		return this.nodes.subList(0, end);
+		return this.nodes(0.0, time);
 	}
 	
+	// Includes nodes that are overlap with beginTime, endTime and occur inbetween
+	public List<Workflow.Node> slice(double beginTime, double endTime) {
+		if (beginTime >= this.time || beginTime > endTime) {
+			return new ArrayList<Workflow.Node>();
+		}
+		
+		Integer begin = this.position(beginTime);
+		Integer end = this.position(endTime);
+		if (begin == null) {
+			return new ArrayList<Workflow.Node>();
+		} else if (beginTime == this.completionTimes.get(begin)) {
+			begin++;
+		}
+		
+		if (end == null) {
+			end = this.nodes.size();
+		} else if (endTime < this.completionTimes.get(end)) {
+			end++;
+		}
+		
+		return this.nodes.subList(begin, end);
+	}
+	
+	// Only includes nodes completely between beginTime and endTime
 	public List<Workflow.Node> nodes(double beginTime, double endTime) { 
 		if (beginTime >= this.time || beginTime >= endTime) {
-			return null;
+			return new ArrayList<Workflow.Node>();
 		}
 		
 		Integer begin = this.position(beginTime);
@@ -186,7 +369,7 @@ public class Assignment implements Iterable<ActionTime> {
 		if (begin == null) {
 			return null;
 		} else if (beginTime == this.completionTimes.get(begin)) {
-			beginTime++;
+			begin++;
 		}
 		
 		if (end == null) {
@@ -344,7 +527,22 @@ public class Assignment implements Iterable<ActionTime> {
 				return false;
 			}
 			ActionTime otherTime = (ActionTime)other;
-			return (this.time == otherTime.time && this.node.equals(otherTime.node));
+			if (!this.time.equals(otherTime.time)){ 
+				return false;
+			}
+			
+			if ((this.node == null) != (otherTime.node == null)) {
+				return false;
+			}
+			
+			if (this.node == null) {
+				return true;
+			}
+			
+			if (!this.node.equals(otherTime.node)) {
+				return false;
+			}
+			return true;
 		}
 		
 		@Override
