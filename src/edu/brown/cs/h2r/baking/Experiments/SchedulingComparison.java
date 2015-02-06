@@ -169,7 +169,7 @@ public class SchedulingComparison {
 						time = mScheduler.schedule(workflow, assignments, Arrays.asList("human", "friend", "friend1", "friend2"), timeGenerator);
 						double bTime = new BufferedAssignments(assignments, false).time();
 						if (Math.abs(time - bTime) > MILPScheduler.TOLERANCE) {
-							System.out.println("MILP: " + time + " Buffered: " + bTime);
+							//System.out.println("MILP: " + time + " Buffered: " + bTime);
 						}
 					} else {
 						assignments = scheduler.schedule(workflow, Arrays.asList("human", "friend", "friend1", "friend2"), timeGenerator);
@@ -179,9 +179,9 @@ public class SchedulingComparison {
 					
 					allAssignments.add(assignments);
 					//System.out.println(assignments.toString());
-					if (MILPScheduler.checkAssignments(workflow, assignments)) {
-						System.out.println("Scheduler " + scheduler.getClass().getSimpleName() + " violated constraints");
-					}
+					//if (MILPScheduler.checkAssignments(workflow, assignments)) {
+					//	System.out.println("Scheduler " + scheduler.getClass().getSimpleName() + " violated constraints");
+					//}
 					//if (!SchedulingComparison.verifyAssignments(workflow, assignments)) {
 					//	System.err.println("Error with assignments");
 					//}

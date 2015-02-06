@@ -170,7 +170,7 @@ public class SequencerComparison {
 				}
 				
 				BufferedAssignments search = sequencer.sequenceAssignments(assignments);
-				MILPScheduler.checkAssignments(workflow, assignments, search);
+				//MILPScheduler.checkAssignments(workflow, assignments, search);
 				
 				double sTime = search.time();
 				if (sTime -0.0001 > time) {
