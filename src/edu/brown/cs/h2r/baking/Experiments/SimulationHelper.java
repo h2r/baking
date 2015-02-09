@@ -452,16 +452,15 @@ public class SimulationHelper {
 	
 	public static EvaluationResult evaluateHuman(Domain generalDomain, Human human, ActionTimeGenerator timeGenerator, StateHashFactory hashingFactory, boolean onlySubgoals, int numTrials) {
 		EvaluationResult result = new EvaluationResult();
+		List<Recipe> recipes = AgentHelper.recipes(generalDomain);
+		
+		State startingState = SimulationHelper.generateInitialState(generalDomain, hashingFactory, recipes, human, null);
+		human.setInitialState(startingState);
+		
 		for (int i = 0; i < numTrials; i++) {
-			List<Recipe> recipes = AgentHelper.recipes(generalDomain);
-			
-			State startingState = SimulationHelper.generateInitialState(generalDomain, hashingFactory, recipes, human, null);
-			human.setInitialState(startingState);
-			
-			
 			//System.out.println("Trial: " + i);
 			human.chooseNewRecipe();
-			result.incrementResult(SimulationHelper.evaluateHumanAlone(human, startingState, timeGenerator, onlySubgoals));
+			System.out.println("solo" + ", " +  SimulationHelper.evaluateHumanAlone(human, startingState, timeGenerator, onlySubgoals).toString());
 		}
 		return result;
 		//System.out.println("Human alone: " + result.toString());
@@ -520,21 +519,24 @@ public class SimulationHelper {
 			Human human, List<Agent> agents, ResetAction reset, int choice, boolean subgoalsOnly) {
 		
 		SimulationHelper.EvaluationResult result;
-		Agent agent = agents.get(choice);
-		
+		Agent agent = null;
+		if (choice < agents.size() ) {
+			agent = agents.get(choice);
+		} else {
+			SimulationHelper.evaluateHuman(generalDomain, human, timeGenerator, hashingFactory, subgoalsOnly, numTrials);
+			return;
+		}
 		human = new Expert(generalDomain, "human", timeGenerator);
 		
 		State startingState = SimulationHelper.generateInitialState(generalDomain, hashingFactory, recipes, human, agent);
 		reset.setState(startingState);
 		
 		human.setInitialState(startingState);
-		agent.setInitialState(startingState);
-		
+		if (agent != null) {
+			agent.setInitialState(startingState);
+		}
 		for (int i = 0; i < numTrials; i++) {
-			if (choice == agents.size()) {
-				System.out.println("solo" + ", " +  SimulationHelper.evaluateHuman(generalDomain, human, timeGenerator, hashingFactory, subgoalsOnly, 1).toString());
-				continue;
-			}
+			
 			
 			//for (Agent agent : agents) {
 			System.out.println("Evaluating " + agent.toString());
