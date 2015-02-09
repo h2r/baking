@@ -31,7 +31,7 @@ public class ManyAgentsSchedulingSubgoalsRealdataHeldout {
 	
 	public static void main(String[] args) {
 		
-		int numTrials = 1;
+		int numTrials = 100;
 		int trialId = new Random().nextInt();
 		trialId = Math.abs(trialId);
 		if (args.length == 1) {
@@ -80,7 +80,7 @@ public class ManyAgentsSchedulingSubgoalsRealdataHeldout {
 		ResetAction reset = (ResetAction)generalDomain.getAction(ResetAction.className);
 		reset.setState(state);
 		
-		int choice = trialId % (agents.size() + 1);
+		int choice = 6;//trialId % (agents.size() + 1);
 		
 		SimulationHelper.run(numTrials, generalDomain, hashingFactory, recipes, timeGenerator, human, agents,
 				reset, choice, true);

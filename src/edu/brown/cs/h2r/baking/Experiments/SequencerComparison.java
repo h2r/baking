@@ -10,105 +10,109 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import burlap.oomdp.singleagent.GroundedAction;
 import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
-import edu.brown.cs.h2r.baking.Scheduling.Assignment;
-import edu.brown.cs.h2r.baking.Scheduling.Assignment.ActionTime;
-import edu.brown.cs.h2r.baking.Scheduling.BufferedAssignments;
-import edu.brown.cs.h2r.baking.Scheduling.HeuristicSearchSequencer;
-import edu.brown.cs.h2r.baking.Scheduling.MILPScheduler;
-import edu.brown.cs.h2r.baking.Scheduling.Workflow;
-import edu.brown.cs.h2r.baking.Scheduling.Workflow.Node;
+import edu.brown.cs.h2r.baking.Scheduling.Multitiered.AgentAssignment;
+import edu.brown.cs.h2r.baking.Scheduling.Multitiered.Assignments;
+import edu.brown.cs.h2r.baking.Scheduling.Multitiered.MILPScheduler;
+import edu.brown.cs.h2r.baking.Scheduling.Multitiered.Subtask;
+import edu.brown.cs.h2r.baking.Scheduling.Multitiered.Task;
+import edu.brown.cs.h2r.baking.Scheduling.Multitiered.TercioSequencer;
+import edu.brown.cs.h2r.baking.Scheduling.Multitiered.Workflow;
 
 public class SequencerComparison {
 
-	public static Workflow buildSortedWorkflow(int numberNodes, int numberEdges, int numberResources, int resourcesPerNode) {
+	public static Workflow buildSortedWorkflow(int numberTasks, int numberSubtasks, int numberEdges, int numberResources, int resourcesPerNode, ActionTimeGenerator timeGenerator, List<String> agents) {
 		Random rando = new Random();
-		List<Workflow.Node> nodes = new ArrayList<Workflow.Node>();
+		List<Subtask> subtasks = new ArrayList<Subtask>();
 		
-		for (int i = 0; i < numberNodes; i++) {
-			Set<String> resources = new HashSet<String>();
-			while (resources.size() < resourcesPerNode) {
-				resources.add(Integer.toString(rando.nextInt(numberResources)));
+		List<Task> tasks = new ArrayList<Task>();
+		
+		int index = 0;
+		for (int i = 0; i < numberTasks; i++) {
+			double deadline = 0;
+			double suspension = 0;
+			List<Subtask> tasksSubtasks = new ArrayList<Subtask>();
+			Task task = new Task(i, deadline, suspension);
+			int numSubtasks = rando.nextInt(numberSubtasks) + numberSubtasks / 4;
+			for (int j = 0; j < numSubtasks; j++) {
+				Set<String> resources = new HashSet<String>();
+				while (resources.size() < resourcesPerNode) {
+					resources.add(Integer.toString(rando.nextInt(numberResources)));
+				}
+				
+				List<String> resList = new ArrayList<String>(resources);
+				resList.add(0, "agent");
+				resList.add(1, "" + i + " - " + j);
+				GroundedAction action = new GroundedAction(null, resList.toArray(new String[resList.size()]));
+				double maxDuration = 0;
+				for (String agent : agents) {
+					GroundedAction ga = (GroundedAction)action.copy();
+					ga.params[0] = agent;
+					double duration = timeGenerator.get(ga, false);
+					maxDuration = Math.max(maxDuration, duration);
+				}
+				tasksSubtasks.add(task.addSubtask(index++, action));
 			}
-			nodes.add(new Workflow.Node(i, resources));
-			
+			tasks.add(task);
+			subtasks.addAll(tasksSubtasks);
 		}
-		Workflow workflow = new Workflow(nodes);
 		
-		int edges = 0;
-		while(edges < numberEdges) {
-			int from = rando.nextInt(numberNodes);
-			int to = rando.nextInt(numberNodes);
-			edges += (workflow.connect(from, to)) ? 1 : 0;
+		Workflow workflow = new Workflow(subtasks);
+		
+		for (Task task : tasks) {
+			for (Subtask subtask : task.getSubtasks()) {
+				List<Subtask> validSubtasks = new ArrayList<Subtask>(task.getSubtasks());
+				validSubtasks.remove(subtask);
+				for (Subtask child : task.getSubtasks()) {
+					if (child.isAncestorOf(subtask)) {
+						validSubtasks.remove(child);
+					}
+				}
+				
+				boolean wait = rando.nextDouble() <= 0.25;
+				if (wait && !validSubtasks.isEmpty()) {
+					Subtask child = validSubtasks.get(rando.nextInt(validSubtasks.size()));
+					double waitDuration = rando.nextDouble() * 9 + 4.5;
+					workflow.connect(subtask, child, waitDuration, Double.MAX_VALUE);
+				}
+			}
+		}
+			
+		for (Task task : tasks) {
+			for (Subtask subtask : task.getSubtasks()) {
+				List<Subtask> validSubtasks = new ArrayList<Subtask>(task.getSubtasks());
+				validSubtasks.remove(subtask);
+				for (Subtask child : task.getSubtasks()) {
+					if (child.isAncestorOf(subtask)) {
+						validSubtasks.remove(child);
+					}
+				}
+				
+				boolean deadline = rando.nextDouble() <= 0.25;
+				if (deadline && !validSubtasks.isEmpty()) {
+					Subtask child = validSubtasks.get(rando.nextInt(validSubtasks.size()));
+					double minValue = task.getMinRequiredTimeBetweenSubtasks(subtask, child, timeGenerator, agents);
+					double subTaskDeadline = 1.0;
+					while (subTaskDeadline < minValue) {
+						subTaskDeadline = rando.nextGaussian() * minValue + minValue;
+					}
+					workflow.connect(subtask, child, 0.0, subTaskDeadline);
+				}
+			}
 		}
 		return workflow.sort();
-	}
-	
-	public static Map<String, Map<Workflow.Node, Double>> buildActionTimeLookup(Workflow workflow, int numAgents) {
-		Map<String, Map<Workflow.Node, Double>> actionTimeLookup = new HashMap<String, Map<Workflow.Node, Double>>();
-		
-		Random random = new Random();
-		
-		for (int i = 0; i < numAgents; i++) {
-			String id = Integer.toString(i);
-			Map<Workflow.Node, Double> times = new HashMap<Workflow.Node, Double>();
-			for (Workflow.Node node : workflow) {
-				times.put(node, random.nextDouble());
-			}
-			actionTimeLookup.put(id, times);
-		}
-		
-		return actionTimeLookup;
-	}
-	
-	
-	
-	public static double getAgentsSoloTime(Workflow workflow, Map<Workflow.Node, Double> timeLookup) {
-		double sum = 0.0;
-		for (Node node : workflow) {
-			sum += timeLookup.get(node);
-		}
-		return sum;
-	}
-	
-	public static boolean verifyAssignments(Workflow workflow, List<Assignment> assignedWorkflows) {
-		int size = 0;
-		Set<Workflow.Node> visited = new HashSet<Workflow.Node>();  
-		for (Assignment assignment : assignedWorkflows) {
-			size += assignment.size();
-			visited.clear();
-			for (Assignment assignment2 : assignedWorkflows) {
-				if (assignment != assignment2) {
-					visited.addAll(assignment2.nodes());
-				}
-			}
-			for (ActionTime action : assignment) {
-				if (!action.getNode().isAvailable(visited)) {
-					System.err.println("This set of assignments is impossible to finish");
-					return false;
-				}
-				visited.add(action.getNode());
-			}
-		}
-		BufferedAssignments buffered = new BufferedAssignments(assignedWorkflows, false);
-		System.out.println(buffered.visualString());
-		
-		if (size != workflow.size()) {
-			System.err.println(Integer.toString(size) + " actions were assigned. Should be " + workflow.size());
-			return false;
-		}
-		return true;
 	}
 	
 	public static void main(String argv[]){
 		MILPScheduler milp = new MILPScheduler(false);
 		
 		int trialId = new Random().nextInt();
-		trialId = 1;
+		trialId = 2;
 		if (argv.length == 2) {
 			trialId = Integer.parseInt(argv[0]);
 		}
-		int numTries = 1;
+		int numTries = 100;
 		/*for (Map.Entry<String, Map<Workflow.Node, Double>> entry : actionTimeLookup.entrySet()) {
 			System.out.println("Workflow time for " + entry.getKey() + ": " + SchedulingComparison.getAgentsSoloTime(workflow, entry.getValue()));
 		}*/
@@ -117,15 +121,17 @@ public class SequencerComparison {
 		System.out.println("MILP, Rearrange, Tercio, Search");
 		ActionTimeGenerator timeGenerator = new ActionTimeGenerator(factors);
 		List<Integer> connectedness = Arrays.asList(20);
-		HeuristicSearchSequencer sequencer = new HeuristicSearchSequencer(true);
+		//HeuristicSearchSequencer sequencer = new HeuristicSearchSequencer(true);
 		Random random = new Random();
 		boolean shuffleOrder = true;
 		//Collections.shuffle(connectedness);
 		for (int j = 4; j < 40; j++) {
 			for (int i = 0; i < numTries; i++) {
-				int numEdges =  j;
-				int numResources = j;
-				int numResourcesPerNode = 3;
+				int numTasks = j;
+				int numSubtasks = j;
+				int numEdges =  j/2;
+				int numResources = j*j;
+				int numResourcesPerNode = 1;
 				if (trialId % 3 == 0) {
 					numEdges = random.nextInt(2*j-4);
 					numResources = random.nextInt(j);
@@ -135,33 +141,44 @@ public class SequencerComparison {
 					numResources = j;
 					numResourcesPerNode = 1;
 				}
-				Workflow workflow = SequencerComparison.buildSortedWorkflow(j, numEdges, numResources, numResourcesPerNode);
-				List<Assignment> assignments = new ArrayList<Assignment>();
-				
-				double time = Double.MAX_VALUE;
 				List<String> agents = Arrays.asList("human", "friend", "friend1", "friend2");
-				time = milp.schedule(workflow, assignments, agents, timeGenerator);
+				Workflow workflow = null;
+				Assignments assignments = new Assignments(agents, timeGenerator, false);
+				double time = -1.0;
+				
+				while (time < 0.0) {
+					 workflow = SequencerComparison.buildSortedWorkflow(numTasks, numSubtasks, numEdges, numResources, numResourcesPerNode, timeGenerator, agents);
+					 System.out.println(workflow.toString());
+					 time = milp.schedule(workflow, assignments, timeGenerator);
+					 System.out.println(assignments.toString());
+				}
+				
 				
 				
 				if (shuffleOrder) {
-					for (Assignment assignment : assignments) {
+					for (AgentAssignment assignment : assignments.getAssignments()) {
 						assignment.shuffle();
 					}
 				}
 				
 				boolean didPrint = false;
-				BufferedAssignments buffered =  new BufferedAssignments(timeGenerator, agents, false, false);
-				buffered.sequenceTasksWithReorder(assignments);
+				//BufferedAssignments buffered =  new BufferedAssignments(timeGenerator, agents, false, false);
+				//buffered.sequenceTasksWithReorder(assignments);
 				//MILPScheduler.checkAssignments(workflow, assignments, buffered);
-				double bTime = buffered.time();
+				//double bTime = buffered.time();
 				
 				//if (bTime - 0.0001 > time) {
 					//System.out.println(buffered.visualString());
 					//System.out.println(buffered.getFullString());
 					//didPrint = true;
 				//}
-				BufferedAssignments tercio = new BufferedAssignments(assignments, true);
-				//MILPScheduler.checkAssignments(workflow, assignments, tercio);
+				TercioSequencer tSequencer = new TercioSequencer(false);
+				Assignments tercio = tSequencer.sequence(assignments, timeGenerator);
+				if (tercio == null) {
+					continue;
+				}
+				//System.out.println(tercio.toString());
+				MILPScheduler.checkAssignments(workflow, assignments, tercio);
 				double tTime = tercio.time();
 				if (tTime - 0.0001 > time) {
 					//System.out.println(tercio.visualString());
@@ -169,18 +186,18 @@ public class SequencerComparison {
 					didPrint = true;
 				}
 				
-				BufferedAssignments search = sequencer.sequenceAssignments(assignments);
+				//BufferedAssignments search = sequencer.sequenceAssignments(assignments);
 				//MILPScheduler.checkAssignments(workflow, assignments, search);
 				
-				double sTime = search.time();
-				if (sTime -0.0001 > time) {
+				//double sTime = search.time();
+				//if (sTime -0.0001 > time) {
 					//System.out.println(search.visualString());
 					//System.out.println(search.getFullString());
-					didPrint = true;
-				}
+					//didPrint = true;
+				//}
 				
 				
-				System.out.println(j + ", " + time + ", " + bTime + ", " + tTime + ", " + sTime);
+				System.out.println(j + ", " + time + ", " + tTime);
 				
 				timeGenerator.clear();
 			}

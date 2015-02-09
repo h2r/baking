@@ -1,4 +1,4 @@
-package edu.brown.cs.h2r.baking.Scheduling;
+package edu.brown.cs.h2r.baking.Scheduling.Multitiered;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,9 +8,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import scpsolver.lpsolver.LinearProgramSolver;
+import scpsolver.lpsolver.SolverFactory;
+import scpsolver.problems.LPSolution;
+import scpsolver.problems.LPWizard;
+import scpsolver.problems.LPWizardConstraint;
+import scpsolver.problems.LinearProgram;
 import burlap.oomdp.singleagent.GroundedAction;
+import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
 import edu.brown.cs.h2r.baking.Scheduling.Assignment.ActionTime;
-import edu.brown.cs.h2r.baking.Scheduling.Workflow;
+import edu.brown.cs.h2r.baking.Scheduling.Workflow.Node;
 import gurobi.GRB;
 import gurobi.GRB.DoubleAttr;
 import gurobi.GRBConstr;
@@ -28,11 +35,11 @@ public class MILPScheduler {
 		this.useActualValues = useActualValues;
 	}
 
-	public  double schedule(Workflow workflow, List<Assignment> assignments, List<String> agents, ActionTimeGenerator timeGenerator) {
+	public  double schedule(Workflow workflow, Assignments assignments, ActionTimeGenerator timeGenerator) {
 		return this.assignTasks(workflow, assignments, timeGenerator);
 	}
 
-	public double assignTasks(Workflow workflow, List<Assignment> assignments, ActionTimeGenerator timeGenerator) {
+	public double assignTasks(Workflow workflow, Assignments assignments, ActionTimeGenerator timeGenerator) {
 		double time = -1.0;
 		try {
 			GRBEnv    env   = new GRBEnv("mip1.log");
@@ -62,23 +69,13 @@ public class MILPScheduler {
 			model.presolve();
 			
 			model.optimize();
-			double computedTime = v.get(GRB.DoubleAttr.X);
 			int status = model.get(GRB.IntAttr.Status);
 			if (status != 2) {
 				System.err.println("Non-optimal solution found");
+				return -1.0;
 			}
+			
 			List<List<Double>> startTimes = this.extractAssignments(workflow, assignments, modelVariables);
-			BufferedAssignments buffered = new BufferedAssignments(assignments, false);
-			double actualTime = buffered.time();
-			if (computedTime - 0.00001 > actualTime) {
-				System.out.println(assignments.toString());
-				System.out.println(buffered.toString());
-				System.out.println(buffered.getFullString());
-				System.out.println(buffered.visualString());
-				System.out.println(startTimes.toString());
-				System.err.println("MILP: " + computedTime + " buffered " + actualTime);
-				printResults(model, modelVariables, false, false);
-			}
 			//printResults(model, modelVariables, false, false);
 			time = v.get(GRB.DoubleAttr.X);
 			//this.printResults(model, modelVariables, startTimes);
@@ -93,51 +90,26 @@ public class MILPScheduler {
 		return time;
 	}
 
-	public static boolean checkAssignments(Workflow workflow, List<Assignment> assignments){
-		try {
-			GRBEnv env = new GRBEnv("mip1.log");
-			env.set(GRB.IntParam.OutputFlag, 0); 
-			GRBModel  model = new GRBModel(env);
-			
-			ActionTimeGenerator timeGenerator = null;
-			for (Assignment assignment : assignments) {
-				timeGenerator = assignment.getTimeGenerator();
-				break;
-			}
-			// Create variables
-
-			Map<String, GRBVar> modelVariables = new HashMap<String, GRBVar>();
-			GRBVar v = setupModelVariables(workflow, assignments, model,
-					modelVariables);
-			model.update();
-			
-			BufferedAssignments buffered = new BufferedAssignments(assignments, false);
-			setVariableValues(workflow, buffered, modelVariables, v);
-			// Integrate new variables
-			
-			model.update();	
-			MILPScheduler.addConstraints(workflow, assignments, timeGenerator, model,
-					modelVariables, v, false);
-			model.update();
-			return printResults(model, modelVariables, true, true);
-		} catch (GRBException e) {
-			System.out.println("Code: " + e.getErrorCode());
-			System.out.println(e.getCause());
-			System.out.println(e.getMessage());
-			e.printStackTrace();
+	public static boolean checkAssignments(Workflow workflow, Assignments assignments){
+		ActionTimeGenerator timeGenerator = null;
+		for (AgentAssignment assignment : assignments.getAssignments()) {
+			timeGenerator = assignment.getTimeGenerator();
+			break;
 		}
 		
-		return false;
+		OrderPreservingSequencer sequencer = new OrderPreservingSequencer(false);
+		Assignments buffered = sequencer.sequence(assignments, timeGenerator);
+		return MILPScheduler.checkAssignments(workflow, assignments, buffered);
 	}
 	
-	public static boolean checkAssignments(Workflow workflow, List<Assignment> assignments, BufferedAssignments buffered){
+	public static boolean checkAssignments(Workflow workflow, Assignments assignments, Assignments buffered){
 		try {
 			GRBEnv env = new GRBEnv("mip1.log");
 			env.set(GRB.IntParam.OutputFlag, 0); 
 			GRBModel  model = new GRBModel(env);
 			
 			ActionTimeGenerator timeGenerator = null;
-			for (Assignment assignment : assignments) {
+			for (AgentAssignment assignment : assignments.getAssignments()) {
 				timeGenerator = assignment.getTimeGenerator();
 				break;
 			}
@@ -167,85 +139,87 @@ public class MILPScheduler {
 	}
 
 
-	private static void setVariableValues(Workflow workflow, BufferedAssignments buffered,
+	private static void setVariableValues(Workflow workflow, Assignments buffered,
 			Map<String, GRBVar> modelVariables, GRBVar v) throws GRBException {
 		
-		List<String> agents = new ArrayList<String>(buffered.getAssignmentMap().keySet());
-		List<Assignment> assignments = new ArrayList<Assignment>(buffered.getAssignmentMap().values());
-		List<Workflow.Node> nodes = new ArrayList<Workflow.Node>();
+		List<String> agents = new ArrayList<String>(buffered.getAgents());
+		List<AgentAssignment> assignments = new ArrayList<AgentAssignment>(buffered.getAssignments());
+		List<Subtask> nodes = new ArrayList<Subtask>();
 		List<Double> startTimes = new ArrayList<Double>();
 		List<Double> endTimes = new ArrayList<Double>();
 		
-		for (Assignment assignment : assignments) {
+		for (AgentAssignment assignment : assignments) {
 			String agent = assignment.getId();
 			double sum = 0.0;
-			for (ActionTime actionTime : assignment) {
-				Workflow.Node node = actionTime.getNode();
-				if (node != null) {
+			for (AssignedSubtask assignedSubtask : assignment) {
+				Subtask subtask = assignedSubtask.getSubtask();
+				if (subtask != null) {
 					
 					// set the action var corresponding to this agent
-					GroundedAction action = node.getAction();
-					action.params[0] = assignment.getId();
+					GroundedAction action = subtask.getAction(assignment.getId());
 					GRBVar actionVar = modelVariables.get(action.toString());
 					actionVar.set(GRB.DoubleAttr.Start, 1.0);
 					
 					// for all other agents, set it to 0.0
 					for (String agent2 : agents) {
 						if (!agent.equals(agent2)) {
-							action = node.getAction();
-							action.params[0] = agent2;
+							action = subtask.getAction(agent2);
 							actionVar = modelVariables.get(action.toString());
 							actionVar.set(GRB.DoubleAttr.Start, 0.0);
 						}
 					}
 					
 					// get all nodes, start times and end times
-					nodes.add(actionTime.getNode());
+					nodes.add(subtask);
 					startTimes.add(sum);
-					endTimes.add(sum + actionTime.getTime());
+					endTimes.add(sum + assignedSubtask.getTime());
 				}
 				
-				sum += actionTime.getTime();
+				sum += assignedSubtask.getTime();
 				
 			}
 		}
 		
+		// set V to the last end time
+		v.set(GRB.DoubleAttr.Start, Collections.max(endTimes));
+		
 		// set precedence bit for the nodes
 		for (int i = 0; i < nodes.size(); i++) {
+			String firstNodeStr = nodes.get(i).toString();
+			double firstNodeStart = startTimes.get(i);
+			double firstNodeEnd = endTimes.get(i);
+			
+			String firstNodeStartStr = firstNodeStr + "_START", firstNodeEndStr = firstNodeStr + "_END";
+			GRBVar nodeStart = modelVariables.get(firstNodeStartStr);
+			GRBVar nodeEnd = modelVariables.get(firstNodeEndStr);
+			
+			nodeStart.set(GRB.DoubleAttr.Start, firstNodeStart);
+			nodeEnd.set(GRB.DoubleAttr.Start, firstNodeEnd);
+			
 			for (int j = 0; j < nodes.size(); j++) {
 				if (i == j) {
 					continue;
 				}
 				
-				String firstNodeStr = nodes.get(i).toString();
 				String secondNodeStr = nodes.get(j).toString();
 				String firstBeforeSecondStr = firstNodeStr + "->" + secondNodeStr;
 				
-				double firstNodeStart = startTimes.get(i);
-				double firstNodeEnd = endTimes.get(i);
 				double secondNodeStart = startTimes.get(j);
 				GRBVar firstBeforeSecond = modelVariables.get(firstBeforeSecondStr);
 				
 				double value = (firstNodeEnd - TOLERANCE < secondNodeStart) ? 1.0 : 0.0;
-				firstBeforeSecond.set(GRB.DoubleAttr.Start, value);
-				
-				String firstNodeStartStr = firstNodeStr + "_START", firstNodeEndStr = firstNodeStr + "_END";
-				GRBVar nodeStart = modelVariables.get(firstNodeStartStr);
-				GRBVar nodeEnd = modelVariables.get(firstNodeEndStr);
-				
-				nodeStart.set(GRB.DoubleAttr.Start, firstNodeStart);
-				nodeEnd.set(GRB.DoubleAttr.Start, firstNodeEnd);
-				
+				firstBeforeSecond.set(GRB.DoubleAttr.Start, value);	
 			}
 		}
 	}
 
-	private static GRBVar setupModelVariables(Workflow workflow, List<Assignment> assignments, 
-			GRBModel model, Map<String, GRBVar> modelVariables) throws GRBException {
+	private static GRBVar setupModelVariables(Workflow workflow,
+			Assignments assignments, GRBModel model,
+			Map<String, GRBVar> modelVariables) throws GRBException {
 		GRBVar v = model.addVar(0.0, GRB.INFINITY, 1.0, GRB.CONTINUOUS, "v");
 		modelVariables.put("v", v);
 
-		for (Workflow.Node node : workflow) {
+		for (Subtask node : workflow) {
 			String nodeStr = node.toString();
 			String nodeStartStr = nodeStr + "_START", nodeEndStr = nodeStr + "_END";
 
@@ -255,13 +229,13 @@ public class MILPScheduler {
 			modelVariables.put(nodeStartStr, nodeStart);
 			modelVariables.put(nodeEndStr, nodeEnd);
 
-			for (Assignment assignment : assignments) {
+			for (AgentAssignment assignment : assignments.getAssignments()) {
 				GroundedAction action = node.getAction(assignment.getId());
 				String actionStr = action.toString();
 				GRBVar actionAgent = model.addVar(0.0, 1.0, 1.0, GRB.BINARY, actionStr);
 				modelVariables.put(actionStr, actionAgent);
 			}
-			for (Workflow.Node secondNode : workflow) {
+			for (Subtask secondNode : workflow) {
 				if (!node.equals(secondNode)) {
 					String firstNodeStr = node.toString();
 					String secondNodeStr = secondNode.toString();
@@ -275,8 +249,185 @@ public class MILPScheduler {
 		return v;
 	}
 	
-	private static boolean printResults(GRBModel model, Map<String, GRBVar> modelVariables, 
-			boolean useStart, boolean printOnError) throws GRBException {
+	private static void addConstraints(Workflow workflow,
+			Assignments assignments, ActionTimeGenerator timeGenerator,
+			GRBModel model, Map<String, GRBVar> modelVariables, GRBVar v, boolean useActualValues)
+					throws GRBException {
+		GRBLinExpr expr;
+		// v is the latest action end time
+		for (Subtask node : workflow) {
+			String nodeStr = node.toString();
+			String nodeStartStr = nodeStr + "_START", nodeEndStr = nodeStr + "_END";
+			GRBVar nodeStart = modelVariables.get(nodeStartStr), nodeEnd = modelVariables.get(nodeEndStr);
+
+			// v is the maximum of all action ending times
+			expr = new GRBLinExpr();
+			expr.addTerm(-1.0, v); expr.addTerm(1.0, nodeEnd);
+			model.addConstr(expr, GRB.LESS_EQUAL, 0.0, nodeStr + "_v");
+
+			// all start times must be greater or equal to 0. is this needed?
+			expr = new GRBLinExpr();
+			expr.addTerm(1.0, nodeStart);
+			model.addConstr(expr, GRB.GREATER_EQUAL, 0.0, nodeStr + "_START");
+
+		}
+
+		// all actions are assigned exactly once (eq 2);
+		for (Subtask node : workflow) {
+			String nodeStr = node.toString();
+
+			expr = new GRBLinExpr();
+			for (AgentAssignment assignment : assignments.getAssignments()) {
+				String agent = assignment.getId();
+				GroundedAction action = node.getAction(agent);
+				String actionStr = action.toString();
+				GRBVar actionVar = modelVariables.get(actionStr);
+				expr.addTerm(1.0, actionVar);
+			}
+			model.addConstr(expr, GRB.EQUAL, 1.0, nodeStr);
+		}
+
+		// if an action depends on another action, that one must go first
+		for (Subtask firstNode : workflow) {
+			String firstNodeStr = firstNode.toString();
+			String firstNodeEndStr = firstNodeStr + "_END";
+			GRBVar firstNodeEnd = modelVariables.get(firstNodeEndStr);
+
+			for (Subtask secondNode : workflow) {
+				if (secondNode.isConstrainedTo(firstNode)) {
+					String secondNodeStr = secondNode.toString();
+					String secondNodeStartStr = secondNodeStr + "_START";
+					GRBVar secondNodeStart = modelVariables.get(secondNodeStartStr);
+
+					String firstBeforeSecondDeadline = firstNodeStr + "_deadline_" + secondNodeStr;
+					double deadline = secondNode.getDeadline(firstNode);
+					expr = new GRBLinExpr();
+					expr.addTerm(1.0, secondNodeStart); expr.addTerm(-1.0, firstNodeEnd);
+					model.addConstr(expr, GRB.LESS_EQUAL, deadline, firstBeforeSecondDeadline);
+					
+					String firstBeforeSecondWait = firstNodeStr + "_wait_" + secondNodeStr;
+					double wait = secondNode.getWait(firstNode);
+					expr = new GRBLinExpr();
+					expr.addTerm(1.0, secondNodeStart); expr.addTerm(-1.0, firstNodeEnd);
+					model.addConstr(expr, GRB.GREATER_EQUAL, wait, firstBeforeSecondWait);
+				}
+			}
+		}
+
+		// end time - start time must equal the expected time of the action for the agent (if its assigned), otherwise greater than 0.0
+		for (AgentAssignment assignment : assignments.getAssignments()) {
+			String agent = assignment.getId();
+
+			for (Subtask node : workflow) {
+				String nodeStr = node.toString();
+				String nodeStartStr = nodeStr + "_START", nodeEndStr = nodeStr + "_END";
+				GRBVar nodeStart = modelVariables.get(nodeStartStr), nodeEnd = modelVariables.get(nodeEndStr);
+
+
+				GroundedAction action = node.getAction(agent);
+				String actionStr = action.toString();
+				GRBVar actionVar = modelVariables.get(actionStr);
+				double time = timeGenerator.get(action, useActualValues );
+				
+				expr = new GRBLinExpr();
+				expr.addTerm(1.0, nodeEnd); expr.addTerm(-1.0, nodeStart);expr.addTerm(-time, actionVar);
+				model.addConstr(expr, GRB.GREATER_EQUAL, 0.0, actionStr + "_lb");						
+			}
+		}
+		
+		
+		
+		// If two actions have a resource conflict, or are assigned to the same agent they cannot overlap
+		for (Subtask firstNode : workflow) {
+			String firstNodeStr = firstNode.toString();
+			String firstNodeEndStr = firstNodeStr + "_END";
+			GRBVar firstNodeEnd = modelVariables.get(firstNodeEndStr);
+
+			for (Subtask secondNode : workflow) {
+				if (firstNode.equals(secondNode)) {
+					continue;
+				}
+				String secondNodeStr = secondNode.toString();
+				String secondNodeStartStr = secondNodeStr + "_START";
+				GRBVar secondNodeStart = modelVariables.get(secondNodeStartStr);
+
+				
+				String firstBeforeSecondStr = firstNodeStr + "->" + secondNodeStr;
+				GRBVar firstBeforeSecond = modelVariables.get(firstBeforeSecondStr);
+				
+				expr = new GRBLinExpr();
+				expr.addTerm(1.0, secondNodeStart); 
+				expr.addTerm(-1.0, firstNodeEnd);
+				expr.addTerm(-M, firstBeforeSecond);
+				model.addConstr(expr, GRB.GREATER_EQUAL, -M, firstBeforeSecondStr);
+			}
+		}
+		
+		// If an agent is assigned two actions or they have resource conflict, the precedent variable must be set
+		for (Subtask firstNode : workflow) {
+			String firstNodeStr = firstNode.toString();
+			String firstNodeEndStr = firstNodeStr + "_END";
+			GRBVar firstNodeEnd = modelVariables.get(firstNodeEndStr);
+			
+			for (Subtask secondNode : workflow) {
+				if (firstNode.equals(secondNode)) {
+					continue;
+				}
+				String secondNodeStr = secondNode.toString();
+				String secondNodeStartStr = secondNodeStr + "_START";
+				GRBVar secondNodeStart = modelVariables.get(secondNodeStartStr);
+
+				String firstBeforeSecondStr = firstNodeStr + "->" + secondNodeStr;
+				GRBVar firstBeforeSecond = modelVariables.get(firstBeforeSecondStr);
+				String secondBeforeFirstStr = secondNodeStr + "->" + firstNodeStr;
+				GRBVar secondBeforeFirst = modelVariables.get(secondBeforeFirstStr);
+				
+				String overlapName = firstNodeStr + "_" + secondNodeStr + "_precedence";
+				
+				if (firstNode.resourceConflicts(secondNode)) {
+					// One of the precedence bits must be set
+					String resourceConflict = firstNodeStr + "_" + secondNodeStr + "_conflict";
+					expr = new GRBLinExpr();
+					expr.addTerm(1.0, firstBeforeSecond); 
+					expr.addTerm(1.0, secondBeforeFirst);
+					model.addConstr(expr, GRB.EQUAL, 1, resourceConflict);
+				} else {
+					// otherwise, they just must be less than 1
+					expr = new GRBLinExpr();
+					expr.addTerm(1.0, firstBeforeSecond); 
+					expr.addTerm(1.0, secondBeforeFirst);
+					model.addConstr(expr, GRB.LESS_EQUAL, 1, overlapName);
+					
+					// if an two actions are assigned to the same agent, then the precedence bits must be 1, otherwise they can be 0
+					for (AgentAssignment assignment : assignments.getAssignments()) {
+						
+						String firstActionStr = firstNode.getAction(assignment.getId()).toString();
+						GRBVar firstAction = modelVariables.get(firstActionStr);
+						String secondActionStr = secondNode.getAction(assignment.getId()).toString();
+						GRBVar secondAction = modelVariables.get(secondActionStr);
+						
+						
+						expr = new GRBLinExpr();
+						expr.addTerm(1.0, firstBeforeSecond); 
+						expr.addTerm(1.0, secondBeforeFirst); 
+						expr.addTerm(-1, firstAction);
+						expr.addTerm(-1, secondAction);
+						model.addConstr(expr, GRB.GREATER_EQUAL, -1, firstBeforeSecondStr + "_" + assignment.getId());
+						
+						
+					}
+				}
+				
+				
+			}
+		}
+		
+	}
+
+	
+	private static boolean printResults(GRBModel model,
+			Map<String, GRBVar> modelVariables, boolean useStart, boolean printOnError)
+			throws GRBException {
 		GRBLinExpr expr;
 		DoubleAttr variableValue = (useStart) ? GRB.DoubleAttr.Start : GRB.DoubleAttr.X;
 		boolean hadErrors = false;
@@ -341,189 +492,21 @@ public class MILPScheduler {
 		return hadErrors;
 	}
 
-	private static void addConstraints(Workflow workflow, List<Assignment> assignments, ActionTimeGenerator timeGenerator,
-			GRBModel model, Map<String, GRBVar> modelVariables, GRBVar v, boolean useActualValues)
-					throws GRBException {
-		GRBLinExpr expr;
-		// v is the latest action end time
-		for (Workflow.Node node : workflow) {
-			String nodeStr = node.toString();
-			String nodeStartStr = nodeStr + "_START", nodeEndStr = nodeStr + "_END";
-			GRBVar nodeStart = modelVariables.get(nodeStartStr), nodeEnd = modelVariables.get(nodeEndStr);
-
-			// v is the maximum of all action ending times
-			expr = new GRBLinExpr();
-			expr.addTerm(-1.0, v); expr.addTerm(1.0, nodeEnd);
-			model.addConstr(expr, GRB.LESS_EQUAL, 0.0, nodeStr + "_v");
-
-			// all start times must be greater or equal to 0. is this needed?
-			expr = new GRBLinExpr();
-			expr.addTerm(1.0, nodeStart);
-			model.addConstr(expr, GRB.GREATER_EQUAL, 0.0, nodeStr + "_START");
-
-		}
-
-		// all actions are assigned exactly once (eq 2);
-		for (Workflow.Node node : workflow) {
-			String nodeStr = node.toString();
-
-			expr = new GRBLinExpr();
-			for (Assignment assignment : assignments) {
-				String agent = assignment.getId();
-				GroundedAction action = node.getAction(agent);
-				String actionStr = action.toString();
-				GRBVar actionVar = modelVariables.get(actionStr);
-				expr.addTerm(1.0, actionVar);
-			}
-			model.addConstr(expr, GRB.EQUAL, 1.0, nodeStr);
-		}
-
-		// if an action depends on another action, that one must go first
-		for (Workflow.Node firstNode : workflow) {
-			String firstNodeStr = firstNode.toString();
-			String firstNodeEndStr = firstNodeStr + "_END";
-			GRBVar firstNodeEnd = modelVariables.get(firstNodeEndStr);
-
-			for (Workflow.Node secondNode : workflow) {
-				if (firstNode.children().contains(secondNode)) {
-					String secondNodeStr = secondNode.toString();
-					String secondNodeStartStr = secondNodeStr + "_START";
-					GRBVar secondNodeStart = modelVariables.get(secondNodeStartStr);
-
-					String firstBeforeSecond = firstNodeStr + "_depends_" + secondNodeStr;
-					expr = new GRBLinExpr();
-					expr.addTerm(1.0, secondNodeStart); expr.addTerm(-1.0, firstNodeEnd);
-					model.addConstr(expr, GRB.GREATER_EQUAL, 0.0, firstBeforeSecond);
-				}
-			}
-		}
-
-		// end time - start time must equal the expected time of the action for the agent (if its assigned), otherwise greater than 0.0
-		for (Assignment assignment : assignments) {
-			String agent = assignment.getId();
-
-			for (Workflow.Node node : workflow) {
-				String nodeStr = node.toString();
-				String nodeStartStr = nodeStr + "_START", nodeEndStr = nodeStr + "_END";
-				GRBVar nodeStart = modelVariables.get(nodeStartStr), nodeEnd = modelVariables.get(nodeEndStr);
-
-
-				GroundedAction action = node.getAction(agent);
-				String actionStr = action.toString();
-				GRBVar actionVar = modelVariables.get(actionStr);
-				double time = timeGenerator.get(action, useActualValues );
-				
-				expr = new GRBLinExpr();
-				expr.addTerm(1.0, nodeEnd); expr.addTerm(-1.0, nodeStart);expr.addTerm(-time, actionVar);
-				model.addConstr(expr, GRB.GREATER_EQUAL, 0.0, actionStr + "_lb");						
-			}
-		}
-		
-		
-		
-		// If two actions have a resource conflict, or are assigned to the same agent they cannot overlap
-		for (Workflow.Node firstNode : workflow) {
-			String firstNodeStr = firstNode.toString();
-			String firstNodeEndStr = firstNodeStr + "_END";
-			GRBVar firstNodeEnd = modelVariables.get(firstNodeEndStr);
-
-			for (Workflow.Node secondNode : workflow) {
-				if (firstNode.equals(secondNode)) {
-					continue;
-				}
-				String secondNodeStr = secondNode.toString();
-				String secondNodeStartStr = secondNodeStr + "_START";
-				GRBVar secondNodeStart = modelVariables.get(secondNodeStartStr);
-
-				
-				String firstBeforeSecondStr = firstNodeStr + "->" + secondNodeStr;
-				GRBVar firstBeforeSecond = modelVariables.get(firstBeforeSecondStr);
-				
-				expr = new GRBLinExpr();
-				expr.addTerm(1.0, secondNodeStart); 
-				expr.addTerm(-1.0, firstNodeEnd);
-				expr.addTerm(-M, firstBeforeSecond);
-				model.addConstr(expr, GRB.GREATER_EQUAL, -M, firstBeforeSecondStr);
-			}
-		}
-		
-		// If an agent is assigned two actions or they have resource conflict, the precedent variable must be set
-		for (Workflow.Node firstNode : workflow) {
-			String firstNodeStr = firstNode.toString();
-			String firstNodeEndStr = firstNodeStr + "_END";
-			GRBVar firstNodeEnd = modelVariables.get(firstNodeEndStr);
-			
-			for (Workflow.Node secondNode : workflow) {
-				if (firstNode.equals(secondNode)) {
-					continue;
-				}
-				String secondNodeStr = secondNode.toString();
-				String secondNodeStartStr = secondNodeStr + "_START";
-				GRBVar secondNodeStart = modelVariables.get(secondNodeStartStr);
-
-				String firstBeforeSecondStr = firstNodeStr + "->" + secondNodeStr;
-				GRBVar firstBeforeSecond = modelVariables.get(firstBeforeSecondStr);
-				String secondBeforeFirstStr = secondNodeStr + "->" + firstNodeStr;
-				GRBVar secondBeforeFirst = modelVariables.get(secondBeforeFirstStr);
-				
-				String overlapName = firstNodeStr + "_" + secondNodeStr + "_precedence";
-				
-				
-				
-				
-				
-				if (firstNode.resourceConflicts(secondNode)) {
-					// One of the precedence bits must be set
-					String resourceConflict = firstNodeStr + "_" + secondNodeStr + "_conflict";
-					expr = new GRBLinExpr();
-					expr.addTerm(1.0, firstBeforeSecond); 
-					expr.addTerm(1.0, secondBeforeFirst);
-					model.addConstr(expr, GRB.EQUAL, 1, resourceConflict);
-				} else {
-					// otherwise, they just must be less than 1
-					expr = new GRBLinExpr();
-					expr.addTerm(1.0, firstBeforeSecond); 
-					expr.addTerm(1.0, secondBeforeFirst);
-					model.addConstr(expr, GRB.LESS_EQUAL, 1, overlapName);
-					
-					// if an two actions are assigned to the same agent, then the precedence bits must be 1, otherwise they can be 0
-					for (Assignment assignment : assignments) {
-						
-						String firstActionStr = firstNode.getAction(assignment.getId()).toString();
-						GRBVar firstAction = modelVariables.get(firstActionStr);
-						String secondActionStr = secondNode.getAction(assignment.getId()).toString();
-						GRBVar secondAction = modelVariables.get(secondActionStr);
-						
-						
-						expr = new GRBLinExpr();
-						expr.addTerm(1.0, firstBeforeSecond); 
-						expr.addTerm(1.0, secondBeforeFirst); 
-						expr.addTerm(-1, firstAction);
-						expr.addTerm(-1, secondAction);
-						model.addConstr(expr, GRB.GREATER_EQUAL, -1, firstBeforeSecondStr + "_" + assignment.getId());
-						
-						
-					}
-				}
-				
-				
-			}
-		}
-		
-	}
-
+	
 	private List<List<Double>> extractAssignments(Workflow workflow,
-			List<Assignment> assignments, Map<String, GRBVar> modelVariables) throws GRBException {
+			Assignments assignments, Map<String, GRBVar> modelVariables) throws GRBException {
 		List<List<Double>> startTimes = new ArrayList<List<Double>>();
-		for (Assignment assignment : assignments) {
+		for (AgentAssignment assignment : assignments.getAssignments()) {
 			startTimes.add(new ArrayList<Double>());
 		}
-		for (Workflow.Node node : workflow) {
+		List<AgentAssignment> assignmentList = assignments.getAssignments();
+		for (Subtask node : workflow) {
 			String nodeStartStr = node.toString() + "_START";
 			GRBVar nodeStart = modelVariables.get(nodeStartStr);
 
-			for (int i = 0; i < assignments.size(); i++) {
-				Assignment assignment = assignments.get(i);
+			
+			for (int i = 0; i < assignmentList.size(); i++) {
+				AgentAssignment assignment = assignmentList.get(i);
 				List<Double> times = startTimes.get(i);
 				String agent = assignment.getId();
 				String actionStr = node.getAction(agent).toString();

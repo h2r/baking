@@ -353,7 +353,7 @@ public class SimulationHelper {
 			actionSequence.addAll(actionPair);
 			actionTimes.addAll(timesPair);
 			boolean isRepeating = checkIfRepeating(stateSequence);
-			isSuccess = (onlySubgoals) ? human.isSubgoalFinished(currentState) : human.isFinished(currentState);
+			isSuccess = (onlySubgoals) ? human.isSubgoalFinished(currentState) : human.isSuccess(currentState);
 			double reward = Collections.max(actionTimes);
 			//double reward = SchedulingHelper.computeSequenceTime(startingState, actionSequence, timeGenerator);
 			finished = isSuccess || reward > 1000.0;
@@ -520,6 +520,16 @@ public class SimulationHelper {
 			Human human, List<Agent> agents, ResetAction reset, int choice, boolean subgoalsOnly) {
 		
 		SimulationHelper.EvaluationResult result;
+		Agent agent = agents.get(choice);
+		
+		human = new Expert(generalDomain, "human", timeGenerator);
+		
+		State startingState = SimulationHelper.generateInitialState(generalDomain, hashingFactory, recipes, human, agent);
+		reset.setState(startingState);
+		
+		human.setInitialState(startingState);
+		agent.setInitialState(startingState);
+		
 		for (int i = 0; i < numTrials; i++) {
 			if (choice == agents.size()) {
 				System.out.println("solo" + ", " +  SimulationHelper.evaluateHuman(generalDomain, human, timeGenerator, hashingFactory, subgoalsOnly, 1).toString());
@@ -527,16 +537,6 @@ public class SimulationHelper {
 			}
 			
 			//for (Agent agent : agents) {
-			Agent agent = agents.get(choice);
-			
-			human = new Expert(generalDomain, "human", timeGenerator);
-			
-			State startingState = SimulationHelper.generateInitialState(generalDomain, hashingFactory, recipes, human, agent);
-			reset.setState(startingState);
-			
-			human.setInitialState(startingState);
-			agent.setInitialState(startingState);
-			
 			System.out.println("Evaluating " + agent.toString());
 			result = SimulationHelper.evaluateAgent(human, agent, startingState, timeGenerator, subgoalsOnly);
 			System.out.println(agent.toString() + ", " +  result.toString());

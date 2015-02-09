@@ -2,7 +2,9 @@ package edu.brown.cs.h2r.baking.Agents;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import burlap.behavior.singleagent.Policy;
@@ -44,6 +46,7 @@ public class Human implements Agent {
 	protected KitchenSubdomain currentSubgoal;
 	protected List<KitchenSubdomain> kitchenSubdomains;
 	private List<KitchenSubdomain> allKitchenSubdomains;
+	private Map<Recipe, List<KitchenSubdomain>> recipeLookup;
 	private TerminalFunction isFailure;
 	protected Domain generalDomain;
 	protected final ActionTimeGenerator timeGenerator;
@@ -51,12 +54,14 @@ public class Human implements Agent {
 		this.generalDomain = generalDomain;
 		this.name = "human";
 		this.timeGenerator = timeGenerator;
+		this.recipeLookup = new HashMap<Recipe, List<KitchenSubdomain>>();
 	}
 	
 	public Human(Domain generalDomain, String name, ActionTimeGenerator timeGenerator) {
 		this.generalDomain = generalDomain;
 		this.name = name;
 		this.timeGenerator = timeGenerator;
+		this.recipeLookup = new HashMap<Recipe, List<KitchenSubdomain>>();
 	}
 	
 	@Override
@@ -72,6 +77,11 @@ public class Human implements Agent {
 	@Override
 	public void setInitialState(State state) {
 		this.startingState = state;
+		
+		for (Recipe recipe : AgentHelper.recipes(this.generalDomain)) {
+			List<KitchenSubdomain> policies = AgentHelper.generateRTDPPolicies(recipe, this.generalDomain, this.startingState, Human.rewardFunction, Human.hashingFactory);
+			this.recipeLookup.put(recipe, policies);
+		}
 	}
 	
 	public void chooseNewRecipe() {
@@ -85,7 +95,7 @@ public class Human implements Agent {
 	public void setRecipe(Recipe recipe) {
 		this.currentRecipe = recipe;
 		this.currentSubgoal = null;
-		this.allKitchenSubdomains = AgentHelper.generateRTDPPolicies(this.currentRecipe, this.generalDomain, this.startingState, Human.rewardFunction, Human.hashingFactory);
+		this.allKitchenSubdomains = this.recipeLookup.get(recipe);
 		this.setKitchenSubdomains(new ArrayList<KitchenSubdomain>(this.allKitchenSubdomains));
 	}
 	
@@ -274,9 +284,8 @@ public class Human implements Agent {
 	public boolean isFinished(State state) {
 		
 		boolean isFailure = (this.isFailure == null) ? false : this.isFailure.isTerminal(state);
-		boolean isGoalComplete = (this.currentSubgoal == null) ? false : this.currentSubgoal.getSubgoal().goalCompleted(state);
-		boolean areGoalsCompleted = this.getKitchenSubdomains().size() == 1;
-		return (isFailure || (isGoalComplete && areGoalsCompleted)); 
+		boolean isGoalComplete = this.currentRecipe.isSuccess(state);
+		return (isFailure || isGoalComplete); 
 	}
 	
 	public boolean isSuccess(State state) {
