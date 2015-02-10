@@ -18,7 +18,7 @@ public class TercioSequencer implements Sequencer {
 	}
 	
 	@Override
-	public Assignments sequence(Assignments assignments, ActionTimeGenerator timeGenerator) {
+	public Assignments sequence(Assignments assignments, ActionTimeGenerator timeGenerator, Workflow workflow) {
 		Assignments sequenced = new Assignments(assignments.getAgents(), timeGenerator, this.useActualValues);
 		HashIndexedHeap<TercioNode> priorityQueue = new HashIndexedHeap<TercioNode>(new TercioNode.TercioComparator());
 		
@@ -66,7 +66,7 @@ public class TercioSequencer implements Sequencer {
 				String agent = tNode.getAgent();
 				GroundedAction action = node.getAction(agent);
 				double actionDuration = timeGenerator.get(action, this.useActualValues);
-				if (this.add(sequenced, node, agent, currentTime, actionDuration)) {
+				if (this.add(sequenced, assignments, workflow, node, agent, currentTime, actionDuration)) {
 					numAdded++;
 					assigned.add(node);
 					sequencedTimes.put(node, currentTime + actionDuration);
@@ -77,7 +77,6 @@ public class TercioSequencer implements Sequencer {
 				return sequenced;
 			}
 			
-			// TODO 	Need to add in lowerbound so that the nexttime can wait
 			double nextTime = Double.MAX_VALUE;
 			for (AgentAssignment assignment : sequenced.getAssignments()) {
 				Double time = assignment.nextTime(currentTime);
@@ -91,11 +90,14 @@ public class TercioSequencer implements Sequencer {
 				for (AgentAssignment assignment :  assignments.getAssignments()) {
 					String agent = assignment.getId();
 					List<Subtask> nodes = new ArrayList<Subtask>();
-					for (Subtask node : assignment.availableSubtasks(visited)) {
+					for (Subtask node : assignment.availableSubtasks(assigned)) {
 						if (!assigned.contains(node)) {
 							nextSubtasks.add(node);
 						}
 					}
+				}
+				if (nextSubtasks.size() == 0) {
+					System.err.println("well this failed");
 				}
 				
 				for (Subtask subtask : nextSubtasks) {
@@ -111,6 +113,25 @@ public class TercioSequencer implements Sequencer {
 					}
 					if (allTasksAssigned && latestLowerbound > currentTime) {
 						nextTime = Math.min(nextTime, latestLowerbound);
+					}
+				}
+				
+				if (nextTime == Double.MAX_VALUE) {
+					System.err.println("Actually this failed");
+					for (Subtask subtask : nextSubtasks) {
+						double latestLowerbound = 0.0;
+						boolean allTasksAssigned = true;
+						for (TemporalConstraint constraint : subtask.getConstraints()) {
+							if (assigned.contains(constraint.subtask)) {
+								Double taskTime = sequencedTimes.get(constraint.subtask);
+								latestLowerbound = Math.max(latestLowerbound, taskTime + constraint.lowerBound);
+							} else {
+								allTasksAssigned = false;
+							}
+						}
+						if (allTasksAssigned && latestLowerbound >= currentTime) {
+							nextTime = Math.min(nextTime, latestLowerbound);
+						}
 					}
 				}
 			}
@@ -130,18 +151,61 @@ public class TercioSequencer implements Sequencer {
 		return sequenced;
 	}
 	
-	private boolean add(Assignments assignments, Subtask task, String agent, double currentTime, double actionDuration) {
-		if (assignments.isAssigned(task, agent)) {
+	private boolean add(Assignments sequenced, Assignments assignments, Workflow workflow, 
+			Subtask task, String agent, double currentTime, double actionDuration) {
+		if (sequenced.isAssigned(task, agent)) {
 			return true;
 		}
 		
-		if (!assignments.isSubtaskAvailable(task, agent, currentTime, actionDuration)) {
+		if (this.taskViolateDeadlines(sequenced, assignments, workflow, task, agent, currentTime, actionDuration)) {
 			return false;
 		}
 		
-		return assignments.add(task, agent);
+		if (!sequenced.isSubtaskAvailable(task, agent, currentTime, actionDuration)) {
+			return false;
+		}
+		
+		return sequenced.add(task, agent);
 	}
 	
+	private boolean taskViolateDeadlines(Assignments sequenced, Assignments assignments, Workflow workflow, 
+			Subtask taskToCheck, String agent, double currentTime, double actionDuration) {
+		Set<Subtask> assigned = new HashSet<Subtask>(),
+				yetToAssign = new HashSet<Subtask>();
+		for (Subtask subtask : workflow) {
+			if (sequenced.isAssigned(subtask)) {
+				assigned.add(subtask);
+			} else {
+				yetToAssign.add(subtask);
+			}
+		}
+		yetToAssign.remove(taskToCheck);
+		Set<TemporalConstraint> activeConstraints = new HashSet<TemporalConstraint>();
+		for (Subtask subtask : yetToAssign) {
+			for (TemporalConstraint constraint : subtask.getConstraints()) {
+				if (assigned.contains(constraint.subtask) && 
+						(assignments.isAssigned(constraint.subtask, agent) || taskToCheck.resourceConflicts(constraint.subtask))) {
+					activeConstraints.add(constraint);
+				}
+			}
+		}
+		
+		for (TemporalConstraint constraint : activeConstraints) {
+			Double endTime = sequenced.getSubtaskEndTime(constraint.subtask);
+			if (endTime == null) {
+				continue;
+			}
+			double constraintDeadline = endTime + constraint.upperBound;
+			double actionFinishTime = currentTime + actionDuration;
+			if (endTime != null &&  constraintDeadline < actionFinishTime) {
+				if (constraintDeadline < currentTime) {
+					System.err.println("This constraint can no longer be satisfied");
+				}
+				return true;
+			}
+		}
+		return false;
+	}
 	
 
 }

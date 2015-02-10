@@ -448,7 +448,7 @@ public class BufferedAssignments {
 		GroundedAction action = node.getAction(agent);
 		double actionDuration = this.timeGenerator.get(action, this.useActualValues);
 		
-		double time = this.getTimeNodeIsAvailable(node, assignmentTime, actionDuration);
+		double time = this.getTimeNodeIsAvailable(node, assignment, assignmentTime, actionDuration);
 		if (time > assignmentTime) {
 			assignment.waitUntil(time);
 		} else if (time < 0.0) {
@@ -478,10 +478,10 @@ public class BufferedAssignments {
 		}
 	}
 	
-	private double getTimeNodeIsAvailable(Workflow.Node node, double seed, double actionDuration) {
+	private double getTimeNodeIsAvailable(Workflow.Node node, Assignment assignment, double seed, double actionDuration) {
 		Set<Workflow.Node> completed = new HashSet<Workflow.Node>(this.completedAtEarliest);
 		double previous = this.earliestTime;
-		double currentTime = seed;
+		double currentTime = assignment.time();
 		List<Workflow.Node> nodes = null; 
 		for (Assignment workflow : this.adjustedAssignments.values()) {
 			nodes = workflow.nodes(previous, currentTime);
@@ -505,6 +505,7 @@ public class BufferedAssignments {
 			if (nextTime == Double.MAX_VALUE) {
 				return -1.0;
 			}
+			previous = currentTime;
 			currentTime = nextTime;
 			
 			for (Assignment workflow : this.adjustedAssignments.values()) {
@@ -539,7 +540,7 @@ public class BufferedAssignments {
 			return null;
 		}
 		double assignmentTime = assignment.time();
-		double time = this.getTimeNodeIsAvailable(node, assignmentTime, actionTime);
+		double time = this.getTimeNodeIsAvailable(node, assignment, assignmentTime, actionTime);
 		
 		time = Math.max(time, assignmentTime);
 		return time + actionTime;

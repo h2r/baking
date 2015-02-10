@@ -18,7 +18,7 @@ public class OrderPreservingSequencer implements Sequencer {
 	}
 
 	@Override
-	public Assignments sequence(Assignments assignments, ActionTimeGenerator timeGenerator) {
+	public Assignments sequence(Assignments assignments, ActionTimeGenerator timeGenerator, Workflow workflow) {
 		Assignments sequenced = new Assignments(assignments.getAgents(), timeGenerator, this.useActualValues);
 		
 		Map<String, Iterator<AssignedSubtask>> iterators = new HashMap<String, Iterator<AssignedSubtask>>();

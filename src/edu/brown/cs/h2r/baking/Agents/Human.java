@@ -55,6 +55,7 @@ public class Human implements Agent {
 		this.name = "human";
 		this.timeGenerator = timeGenerator;
 		this.recipeLookup = new HashMap<Recipe, List<KitchenSubdomain>>();
+		this.kitchenSubdomains = new ArrayList<KitchenSubdomain>();
 	}
 	
 	public Human(Domain generalDomain, String name, ActionTimeGenerator timeGenerator) {
@@ -62,6 +63,7 @@ public class Human implements Agent {
 		this.name = name;
 		this.timeGenerator = timeGenerator;
 		this.recipeLookup = new HashMap<Recipe, List<KitchenSubdomain>>();
+		this.kitchenSubdomains = new ArrayList<KitchenSubdomain>();
 	}
 	
 	@Override
@@ -82,6 +84,13 @@ public class Human implements Agent {
 			List<KitchenSubdomain> policies = AgentHelper.generateRTDPPolicies(recipe, this.generalDomain, this.startingState, Human.rewardFunction, Human.hashingFactory);
 			this.recipeLookup.put(recipe, policies);
 		}
+	}
+	
+	@Override
+	public void reset() {
+		this.currentRecipe = null;
+		this.currentSubgoal = null;
+		this.kitchenSubdomains.clear();
 	}
 	
 	public void chooseNewRecipe() {

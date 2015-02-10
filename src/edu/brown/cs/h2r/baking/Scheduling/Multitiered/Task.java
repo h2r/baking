@@ -83,7 +83,7 @@ public class Task {
 		Map<Subtask, Double> startTimes = new HashMap<Subtask, Double>(),
 				endTimes = new HashMap<Subtask, Double>();
 		this.generateStartEndTimes(timeGenerator, agents, startTimes, endTimes);
-		return startTimes.get(from) - endTimes.get(to);
+		return endTimes.get(to) - startTimes.get(from);
 	}
 	
 	private void generateStartEndTimes(ActionTimeGenerator timeGenerator,

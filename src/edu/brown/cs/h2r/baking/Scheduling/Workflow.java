@@ -16,7 +16,7 @@ import burlap.oomdp.singleagent.GroundedAction;
 import edu.brown.cs.h2r.baking.Scheduling.Workflow.Node;
 
 public class Workflow implements Iterable<Node> {
-
+	private static List<String> shareableResources = Arrays.asList("counter", "stove", "oven");
 	private final List<Node> actions;
 	private final State startState;
 	public Workflow(State startState) {
@@ -280,6 +280,7 @@ public class Workflow implements Iterable<Node> {
 			this.children = new HashSet<Node>();
 			String[] resources = Arrays.copyOfRange(action.params, 1, action.params.length);
 			this.resources = new HashSet<String>(Arrays.asList(resources));
+			this.resources.removeAll(shareableResources);
 		}
 		
 		public Set<Node> parents() {

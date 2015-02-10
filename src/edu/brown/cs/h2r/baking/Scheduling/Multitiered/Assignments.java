@@ -189,4 +189,14 @@ public class Assignments implements Iterable<Entry<String, AgentAssignment>>{
 		completed.removeAll(subtasks);
 		return completed.isEmpty();
 	}
+	
+	public Double getSubtaskEndTime(Subtask subtask) {
+		for (AgentAssignment assignment : this.assignments.values()) {
+			Double endTime = assignment.getEndTime(subtask);
+			if (endTime != null) {
+				return endTime;
+			}
+		}
+		return null;
+	}
 }

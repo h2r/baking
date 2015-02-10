@@ -203,6 +203,9 @@ public class SimulationHelper {
 	
 	public static EvaluationResult evaluateAgent(Human human, Agent partner, State startingState, 
 			ActionTimeGenerator timeGenerator, boolean onlySubgoals) {
+		human.reset();
+		partner.reset();
+		
 		List<AbstractGroundedAction> actionSequence = new ArrayList<AbstractGroundedAction>();
 		List<State> stateSequence = new ArrayList<State>();
 		boolean finished = false;
@@ -213,13 +216,13 @@ public class SimulationHelper {
 		List<Double> timesPair = new ArrayList<Double>(2);
 		List<Double> actionTimes = new ArrayList<Double>();
 		human.chooseNewRecipe();
+		
 		Human otherHuman = null;
 		Expert humanExpert = null, otherExpert = null;
 		Map<String, Double> actionMap = new HashMap<String, Double>();
 		actionMap.put(human.getAgentName(), 0.0);
 		actionMap.put(partner.getAgentName(), 0.0);
 		double currentTime = 0.0;
-		
 		List<String> agents = Arrays.asList(human.getAgentName(), partner.getAgentName());
 		
 		if (human instanceof Expert) {
@@ -242,11 +245,11 @@ public class SimulationHelper {
 		partner.addObservation(currentState);
 		GroundedAction humanAction = null, partnerAction = null;
 		int numNullActions = 0;
+		boolean partnerChoseToWait = false;
 		while (!finished) {
-			
 			if (humanAction == null) {
 				if (humanExpert != null) {
-					humanExpert.setCooperative(!currentState.equals(startingState) && numNullActions < 2);
+					humanExpert.setCooperative((!currentState.equals(startingState) && numNullActions < 2) || partnerChoseToWait);
 					humanAction = (GroundedAction)humanExpert.getActionWithScheduler(currentState, agents, !onlySubgoals, (GroundedAction)partnerAction);
 				} else {
 					humanAction = (GroundedAction)human.getActionWithScheduler(currentState, agents, !onlySubgoals);
@@ -266,6 +269,7 @@ public class SimulationHelper {
 			}
 			
 			if (partnerAction == null) {
+				partnerChoseToWait = false;
 				if (otherHuman != null) {
 					//if (haveGoneOnce) {
 						if (otherExpert != null) {
@@ -281,13 +285,18 @@ public class SimulationHelper {
 						}
 					//}
 				} else {
+					if (humanAction != null && humanAction.action instanceof ResetAction) {
+						System.out.println("Human resets");
+					}
 					partnerAction = (GroundedAction)partner.getActionWithScheduler(currentState, agents, !onlySubgoals);
 					if (partnerAction == null) {
 						//partnerAction = TestManyAgents.getActionAndWait(partner, currentState);
 					}
 				}
-				if (partnerAction != null) {
-					System.out.println("Partner chose " + partnerAction.toString());
+				if (partnerAction != null && partnerAction.action == null) {
+					partnerChoseToWait = true;
+					partnerAction = null;
+					System.out.println("Partner chose to wait");
 				} 
 			}
 			
@@ -357,6 +366,9 @@ public class SimulationHelper {
 			double reward = Collections.max(actionTimes);
 			//double reward = SchedulingHelper.computeSequenceTime(startingState, actionSequence, timeGenerator);
 			finished = isSuccess || reward > 1000.0;
+			if (reward > 1000.0) {
+				System.out.println("Reward became to large");
+			}
 			
 			/*if (human.isSubgoalFinished(currentState)) {
 				//System.out.println("Subgoal is finished");

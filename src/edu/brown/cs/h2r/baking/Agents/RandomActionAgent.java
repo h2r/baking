@@ -68,4 +68,6 @@ public class RandomActionAgent implements Agent {
 		return this.getAction(state);
 	}
 
+	@Override
+	public void reset() {}
 }

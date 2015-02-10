@@ -437,6 +437,16 @@ public class AgentAssignment implements Iterable<AssignedSubtask> {
 	public boolean getUseActualValues() {
 		return useActualValues;
 	}
+	
+	public Double getEndTime(Subtask subtask) {
+		int index = this.subtasks.indexOf(subtask);
+		if (index < 0) {
+			return null;
+		}
+		
+		return this.completionTimes.get(index);
+		
+	}
 
 	public static class AssignmentIterator implements ListIterator<AssignedSubtask> {
 

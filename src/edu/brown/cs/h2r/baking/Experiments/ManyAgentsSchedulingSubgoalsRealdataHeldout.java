@@ -65,12 +65,12 @@ public class ManyAgentsSchedulingSubgoalsRealdataHeldout {
 		
 		
 		List<Agent> agents = Arrays.asList(
-				(Agent)new RandomActionAgent(generalDomain), //0
-				(Agent)new RandomSubgoalAgent(generalDomain, "partner", timeGenerator),
-				(Agent)new RandomActionCorrectRecipeAgent(generalDomain, "partner", timeGenerator),
-				(Agent)new RandomActionCorrectSubgoal(generalDomain, "partner", timeGenerator),
+				(Agent)new RandomActionAgent(generalDomain),
+				//(Agent)new RandomSubgoalAgent(generalDomain, "partner", timeGenerator),
+				//(Agent)new RandomActionCorrectRecipeAgent(generalDomain, "partner", timeGenerator),
+				//(Agent)new RandomActionCorrectSubgoal(generalDomain, "partner", timeGenerator),
 				(Agent)new RandomRecipeAgent(generalDomain, timeGenerator),
-				(Agent)new Human(generalDomain, "partner", timeGenerator),//5
+				(Agent)new Human(generalDomain, "partner", timeGenerator),
 				(Agent)new Expert(generalDomain, "partner", timeGenerator),
 				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator, false),
 				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator, true)

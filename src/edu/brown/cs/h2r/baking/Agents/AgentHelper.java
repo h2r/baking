@@ -85,16 +85,16 @@ public class AgentHelper {
 	}
 	public static List<Recipe> recipes(Domain domain) {
 		return Arrays.asList(
-				/*CoffeeWithMilk.getRecipe(domain),
+				CoffeeWithMilk.getRecipe(domain),
 				CerealWithMilk.getRecipe(domain),
 				Pancake.getRecipe(domain),
 				FriedEgg.getRecipe(domain),
-				ScrambledEgg.getRecipe(domain),*/
-				Brownies.getRecipe(domain), 
-				ChocolateChipCookies.getRecipe(domain), 
-				CranberryWalnutCookies.getRecipe(domain), 
+				ScrambledEgg.getRecipe(domain)
+				//Brownies.getRecipe(domain), 
+				//ChocolateChipCookies.getRecipe(domain), 
+				//CranberryWalnutCookies.getRecipe(domain), 
 				//MoltenLavaCake.getRecipe(domain),
-				(Recipe)PeanutButterCookies.getRecipe(domain)
+				//(Recipe)PeanutButterCookies.getRecipe(domain)
 				);
 	}
 	

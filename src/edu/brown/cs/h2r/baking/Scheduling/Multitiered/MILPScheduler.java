@@ -98,7 +98,7 @@ public class MILPScheduler {
 		}
 		
 		OrderPreservingSequencer sequencer = new OrderPreservingSequencer(false);
-		Assignments buffered = sequencer.sequence(assignments, timeGenerator);
+		Assignments buffered = sequencer.sequence(assignments, timeGenerator, workflow);
 		return MILPScheduler.checkAssignments(workflow, assignments, buffered);
 	}
 	

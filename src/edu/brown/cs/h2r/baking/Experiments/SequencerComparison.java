@@ -93,6 +93,16 @@ public class SequencerComparison {
 				if (deadline && !validSubtasks.isEmpty()) {
 					Subtask child = validSubtasks.get(rando.nextInt(validSubtasks.size()));
 					double minValue = task.getMinRequiredTimeBetweenSubtasks(subtask, child, timeGenerator, agents);
+					if (minValue < 0.0) {
+						Subtask tmp = child;
+						child = subtask;
+						subtask = tmp;
+						minValue = task.getMinRequiredTimeBetweenSubtasks(subtask, child, timeGenerator, agents);
+						
+					}
+					if (minValue < 0.0) {
+						System.err.println("Something is still wrong");
+					}
 					double subTaskDeadline = 1.0;
 					while (subTaskDeadline < minValue) {
 						subTaskDeadline = rando.nextGaussian() * minValue + minValue;
@@ -173,7 +183,7 @@ public class SequencerComparison {
 					//didPrint = true;
 				//}
 				TercioSequencer tSequencer = new TercioSequencer(false);
-				Assignments tercio = tSequencer.sequence(assignments, timeGenerator);
+				Assignments tercio = tSequencer.sequence(assignments, timeGenerator, workflow);
 				if (tercio == null) {
 					continue;
 				}

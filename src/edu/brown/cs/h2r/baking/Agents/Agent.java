@@ -12,6 +12,7 @@ public interface Agent {
 	String getAgentName();
 	ObjectInstance getAgentObject();
 	void setInitialState(State state);
+	void reset();
 	AbstractGroundedAction getAction(State state);
 	AbstractGroundedAction getActionWithScheduler(State state, List<String> agents, boolean finishRecipe);
 }

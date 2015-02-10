@@ -92,7 +92,7 @@ public class TercioScheduler implements Scheduler {
 				
 				List<List<Double>> startTimes = this.extractAssignments(workflow, currentAssignments, modelVariables);
 				
-				Assignments sortedAssignments = this.sequencer.sequence(currentAssignments, timeGenerator);
+				Assignments sortedAssignments = this.sequencer.sequence(currentAssignments, timeGenerator, workflow);
 				double time = sortedAssignments.time();
 				if (time < makespanTime) {
 					//System.out.println(solutionCount + ", " + time);

@@ -3,9 +3,11 @@ package edu.brown.cs.h2r.baking.Agents;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import burlap.behavior.singleagent.Policy;
@@ -27,6 +29,7 @@ import edu.brown.cs.h2r.baking.Prediction.PolicyProbability;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
 import edu.brown.cs.h2r.baking.Scheduling.Assignment;
+import edu.brown.cs.h2r.baking.Scheduling.BufferedAssignments;
 import edu.brown.cs.h2r.baking.Scheduling.ExhaustiveStarScheduler;
 import edu.brown.cs.h2r.baking.Scheduling.Scheduler;
 import edu.brown.cs.h2r.baking.Scheduling.Workflow;
@@ -77,6 +80,15 @@ public abstract class AdaptiveAgent implements Agent {
 		this.init();
 	}
 	
+	@Override
+	public void reset() {
+		State first = this.stateHistory.get(0);
+		this.stateHistory.clear();
+		this.stateHistory.add(first);
+		this.policyBeliefDistribution.clear();
+		this.policyBeliefDistribution.addAll(this.getInitialPolicyDistribution(subdomains));
+	}
+	
 	private final List<PolicyProbability> getInitialPolicyDistribution(List<KitchenSubdomain> subdomains) {
 		List<PolicyProbability> distribution = new ArrayList<PolicyProbability>(subdomains.size());
 		double uniformProbability = 1.0 / subdomains.size();
@@ -108,15 +120,32 @@ public abstract class AdaptiveAgent implements Agent {
 		if (!this.useScheduling) {
 			return this.getAction(state);
 		}
-		List<PolicyProbability> policyDistribution = this.getPolicyDistribution(state);
 		
+		System.out.println("Previous Distribution");
+		for (PolicyProbability policyProb : this.policyBeliefDistribution) {
+			System.out.println(policyProb.toString());
+		}
+		System.out.println("\n");
+		
+		List<PolicyProbability> policyDistribution = this.getPolicyDistribution(state);
 		if (policyDistribution == null) {
 			return null;
 		}
 		
-		this.updateBeliefDistribution(policyDistribution);
-		List<PolicyProbability> nonZero = this.trimDistribution(policyDistribution);
+		System.out.println("Update");
+		for (PolicyProbability policyProb : policyDistribution) {
+			System.out.println(policyProb.toString());
+		}
+		System.out.println("\n");
 		
+		
+		this.updateBeliefDistribution(policyDistribution);
+		List<PolicyProbability> nonZero = this.trimDistribution(this.policyBeliefDistribution);
+		System.out.println("Current Distribution");
+		for (PolicyProbability policyProb : nonZero) {
+			System.out.println(policyProb.toString());
+		}
+		System.out.println("\n");
 		/*
 		for (PolicyProbability policy : nonZero) {
 			System.out.println(policy.toString());
@@ -129,6 +158,7 @@ public abstract class AdaptiveAgent implements Agent {
 		
 		// Get the available actions for each workflow
 		List<GroundedAction> availableActions = this.getAvailableActions(workflows, state);
+		availableActions.add(new GroundedAction(null, new String[]{this.getAgentName()}));
 		/*
 		System.out.println("Possible actions to take:");
 		for (GroundedAction action : availableActions) {
@@ -136,7 +166,9 @@ public abstract class AdaptiveAgent implements Agent {
 		}*/
 		ChooseHelpfulActionCallable callable = new ChooseHelpfulActionCallable(state, agents, nonZero, this.subdomains, this.timeGenerator, finishRecipe);
 		List<Double> completionTimes = Parallel.ForEach(availableActions, callable);
-		return this.findBestAction(availableActions, completionTimes);
+		
+		GroundedAction bestAction = (GroundedAction)this.findBestAction(availableActions, completionTimes);
+		return bestAction;
 	}
 	
 	
@@ -145,20 +177,27 @@ public abstract class AdaptiveAgent implements Agent {
 			List<String> agents, List<PolicyProbability> policyDistribution, List<KitchenSubdomain> subdomains,
 			GroundedAction action, ActionTimeGenerator timeGenerator, boolean finishRecipe) {
 		
-		State newState = action.executeIn(state);
+		State newState = state;
+		if (action.action != null) {
+			newState = action.executeIn(state);
+		}
 		
 		// For every available action, generate a new list of actions, that have to be taken to accomodate the available action
+		StringBuffer buffer = new StringBuffer();
+		buffer.append(action.toString() + "\n");
 		List<List<AbstractGroundedAction>> adjustedActionLists = 
-				AdaptiveAgent.correctActionLists(newState, policyDistribution, subdomains, finishRecipe);
+				AdaptiveAgent.correctActionLists(newState, policyDistribution, subdomains, buffer, finishRecipe);
+		System.out.println(buffer.toString());
 		
 		// For each adjusted action list, create the associated adjusted workflow
 		List<Workflow> adjustedWorkflows = AdaptiveAgent.generateWorkflows(state, adjustedActionLists);
 		
-		// For each workflow, create the optimal assignments
-		List<List<Assignment>> assignedWorkflows = AdaptiveAgent.assignAllWorkflows(state, agents, adjustedWorkflows, timeGenerator);
-		
-		// For each assignment, compute how long each assignment would take
-		List<Double> expectedCompletionTimes = AdaptiveAgent.generateExpectedCompletionTimes(assignedWorkflows);
+		Map<String, Double> startingDelays = new HashMap<String, Double>();
+		if (action.action == null) {
+			startingDelays.put(action.params[0], 10.0);
+		}
+		// For each workflow, create the assignments and compute the expected time of finishing that assignment 
+		List<Double> expectedCompletionTimes = AdaptiveAgent.assignAllWorkflowsAndGetCompletionTimes(state, agents, adjustedWorkflows, timeGenerator, startingDelays);
 		
 		// Weight the completion time by the belief in the policy
 		return AdaptiveAgent.getWeightedCompletionTimes(expectedCompletionTimes, policyDistribution);
@@ -251,19 +290,38 @@ public abstract class AdaptiveAgent implements Agent {
 		return workflows;
 	}
 	
-	protected static List<List<Assignment>> assignAllWorkflows(State state, List<String> agents, List<Workflow> workflows, ActionTimeGenerator timeGenerator) {
+	protected static List<Double> assignAllWorkflowsAndGetCompletionTimes(State state, List<String> agents, List<Workflow> workflows, ActionTimeGenerator timeGenerator, Map<String, Double> startingDelays) {
 		Scheduler exhaustive = new ExhaustiveStarScheduler(false);
-		List<List<Assignment>> assignments = new ArrayList<List<Assignment>>(workflows.size());
+		List<Double> completionTimes = new ArrayList<Double>();
+		
 		for (Workflow workflow : workflows) {
-			assignments.add(exhaustive.schedule(workflow, agents, timeGenerator));
+			List<Assignment> assignments = new ArrayList<Assignment>();
+			for (String agent : agents) {
+				Assignment assignment = new Assignment(agent, timeGenerator, exhaustive.isUsingActualValues());
+				assignments.add(assignment);
+			}
+			
+			BufferedAssignments buffered = new BufferedAssignments(timeGenerator, agents, exhaustive.isUsingActualValues(), false);
+			for (Map.Entry<String, Assignment> entry : buffered.getAssignmentMap().entrySet()) {
+				Assignment assignment = entry.getValue();
+				String agent = entry.getKey();
+				Double waitTime = startingDelays.get(agent);
+				if (waitTime != null) {
+					assignment.waitUntil(waitTime);
+				}
+			}
+			exhaustive.finishSchedule(workflow, timeGenerator, assignments, buffered, new HashSet<Workflow.Node>());
+			buffered.buildAdjustedAssignments(assignments, false);
+			completionTimes.add(buffered.time());
 		}
-		return assignments;
+		return completionTimes;
 	}
 	
-	protected static List<Double> generateExpectedCompletionTimes(List<List<Assignment>> allAssignments) {
+	protected static List<Double> generateExpectedCompletionTimes(List<List<Assignment>> allAssignments, Map<String, Double> startingDelays) {
 		List<Double> expectedCompletionTimes = new ArrayList<Double>(allAssignments.size());
 		for (List<Assignment> assignments : allAssignments) {
 			Double longestTime = 0.0;
+			
 			for (Assignment workflow : assignments) {
 				longestTime = Math.max(longestTime, workflow.time());
 			}
@@ -317,6 +375,7 @@ public abstract class AdaptiveAgent implements Agent {
 			//System.out.println("");
 		}
 		
+		
 		List<GroundedAction> possibleActions = new ArrayList<GroundedAction>(availableActions);
 		return possibleActions;
 	}
@@ -330,19 +389,19 @@ public abstract class AdaptiveAgent implements Agent {
 	}
 	
 	// Generates States x policies 2D array of Action sequences
-	protected static List<List<AbstractGroundedAction>> correctActionLists(State state, List<PolicyProbability> policies, List<KitchenSubdomain> subdomains, boolean finishRecipe) {
+	protected static List<List<AbstractGroundedAction>> correctActionLists(State state, List<PolicyProbability> policies, List<KitchenSubdomain> subdomains, StringBuffer buffer, boolean finishRecipe) {
 		
 		List<GroundedAction> actions = new ArrayList<GroundedAction>();
 		
 		List<List<AbstractGroundedAction>> actionLists = new ArrayList<List<AbstractGroundedAction>>(policies.size());
-		
 		for (PolicyProbability policyProb : policies) {
 			KitchenSubdomain policy = policyProb.getPolicyDomain();
 			
 			actions.clear();
 			List<KitchenSubdomain> remainingSubgoals = AdaptiveAgent.getRemainingSubgoals(policy, subdomains, state);
 			AgentHelper.generateActionSequence(remainingSubgoals, state, rewardFunction, actions, finishRecipe);
-			
+			buffer.append("\t" + policy.toString() + "\n");
+			buffer.append("\t\t" + actions.toString() + "\n");
 			List<AbstractGroundedAction> abstractActions = new ArrayList<AbstractGroundedAction>(actions.size());
 			for (GroundedAction ga : actions) abstractActions.add((AbstractGroundedAction)ga);
 			
@@ -363,6 +422,7 @@ public abstract class AdaptiveAgent implements Agent {
 				bestTime = time;
 				bestAction = availableNodes.get(i);
 			}
+			System.out.println(availableNodes.get(i).toString() + ": " + time);
 		}
 
 		return bestAction;
@@ -411,7 +471,9 @@ public abstract class AdaptiveAgent implements Agent {
 			PolicyProbability belief = this.policyBeliefDistribution.get(i);
 			double beliefProbability = belief.getProbability();
 			
-			double normalizedProbability = (sumProbability == 0.0) ? 0.0 : beliefProbability / sumProbability;
+			double normalizedProbability = (sumProbability == 0.0) ? 
+					1.0 / this.policyBeliefDistribution.size() : 
+						beliefProbability / sumProbability;
 			PolicyProbability normalizedBelief = PolicyProbability.updatePolicyProbability(belief, normalizedProbability);
 			this.policyBeliefDistribution.set(i, normalizedBelief);
 			

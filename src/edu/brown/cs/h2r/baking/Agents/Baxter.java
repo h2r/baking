@@ -223,5 +223,8 @@ public class Baxter implements Agent {
 		// TODO Auto-generated method stub
 		
 	}
+	
+	@Override
+	public void reset(){}
 
 }
