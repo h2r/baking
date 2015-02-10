@@ -39,6 +39,7 @@ import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunctio
 import edu.brown.cs.h2r.baking.Recipes.Brownies;
 import edu.brown.cs.h2r.baking.Recipes.CerealWithMilk;
 import edu.brown.cs.h2r.baking.Recipes.ChocolateChipCookies;
+import edu.brown.cs.h2r.baking.Recipes.ChocolateMilk;
 import edu.brown.cs.h2r.baking.Recipes.CoffeeWithMilk;
 import edu.brown.cs.h2r.baking.Recipes.CranberryWalnutCookies;
 import edu.brown.cs.h2r.baking.Recipes.FriedEgg;
@@ -46,6 +47,7 @@ import edu.brown.cs.h2r.baking.Recipes.Pancake;
 import edu.brown.cs.h2r.baking.Recipes.PeanutButterCookies;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.Recipes.ScrambledEgg;
+import edu.brown.cs.h2r.baking.Recipes.Tea;
 
 public class AgentHelper {
 	public static final Map<String, Map<GroundedAction, Double>> actionTimes = new HashMap<String, Map<GroundedAction, Double>>();
@@ -89,7 +91,9 @@ public class AgentHelper {
 				CerealWithMilk.getRecipe(domain),
 				Pancake.getRecipe(domain),
 				FriedEgg.getRecipe(domain),
-				ScrambledEgg.getRecipe(domain)
+				ScrambledEgg.getRecipe(domain),
+				ChocolateMilk.getRecipe(domain),
+				Tea.getRecipe(domain)
 				//Brownies.getRecipe(domain), 
 				//ChocolateChipCookies.getRecipe(domain), 
 				//CranberryWalnutCookies.getRecipe(domain), 

@@ -20,10 +20,11 @@ public class Tea extends Recipe {
 	@Override
 	protected IngredientRecipe createTopLevelIngredient() {
 		List<IngredientRecipe> ingredientList = new ArrayList<IngredientRecipe>();
-		ingredientList.add(knowledgebase.getIngredient("water"));
+		IngredientRecipe water = knowledgebase.getIngredient("water");
+		ingredientList.add(water);
 		//ingredientList.add(knowledgebase.getIngredient("brown_sugar"));
 		ingredientList.add(knowledgebase.getIngredient("tea"));
-		IngredientRecipe tea = new IngredientRecipe("tea", Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, ingredientList);
+		IngredientRecipe tea = new IngredientRecipe("tea", Recipe.HEATED, this, Recipe.SWAPPED, ingredientList);
 		this.subgoalIngredients.put(tea.getSimpleName(), tea);
 		return tea;
 		

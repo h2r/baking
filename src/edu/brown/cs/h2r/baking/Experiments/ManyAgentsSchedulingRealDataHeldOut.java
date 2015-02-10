@@ -107,7 +107,7 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 		
 			//System.out.println("Agent: " + agent.getAgentName());
 		//Agent agent = agents.get(3);
-		int choice = trialId % (agents.size() + 1);
+		int choice = agents.size(); //trialId % (agents.size() + 1);
 		SimulationHelper.run(numTrials, generalDomain, hashingFactory, recipes, timeGenerator, human, agents,
 				reset, choice, false);	
 	}
