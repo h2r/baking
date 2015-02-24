@@ -8,7 +8,7 @@ import edu.brown.cs.h2r.baking.Scheduling.Multitiered.Workflow;
 
 public interface Scheduler {
 	Assignments schedule(Workflow workflow, List<String> agents, ActionTimeGenerator timeGenerator);
-	Assignments finishSchedule(Workflow workflow, ActionTimeGenerator actionTimeLookup, 
-			Assignments assignments, Assignments bufferedAssignments, Set<Subtask> visitedNodes);
+	Assignments finishSchedule(Workflow workflow, Assignments assignments, ActionTimeGenerator timeGenerator);
 	boolean isUsingActualValues();
+	String getDescription();
 }

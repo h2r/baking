@@ -3,10 +3,12 @@ package edu.brown.cs.h2r.baking.Scheduling.Multitiered;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
@@ -16,7 +18,7 @@ public class Subtask {
 	private final Task task;
 	private final Map<Subtask, TemporalConstraint> constraints;
 	private final Set<Subtask> children;
-	private final int id;
+	private final Integer id;
 	private final GroundedAction action;
 	private final Set<String> resources;
 	private double duration;
@@ -26,7 +28,8 @@ public class Subtask {
 		this.task = task;
 		this.id = id;
 		this.action = action;
-		this.resources = new HashSet<String>(Arrays.asList(Arrays.copyOfRange(action.params, 2, action.params.length)));
+		Set<String> resources = new HashSet<String>(Arrays.asList(Arrays.copyOfRange(action.params, 2, action.params.length)));
+		this.resources = Collections.unmodifiableSet(resources);
 		this.constraints = new HashMap<Subtask, TemporalConstraint>();
 		this.children = new HashSet<Subtask>();
 		this.deadline = Double.MAX_VALUE;
@@ -36,7 +39,7 @@ public class Subtask {
 		this.task = task;
 		this.id = id;
 		this.action = new GroundedAction(null, new String[]{"agent", Integer.toString(this.id)});
-		this.resources = resources;
+		this.resources = Collections.unmodifiableSet(resources);
 		this.constraints = new HashMap<Subtask, TemporalConstraint>();
 		this.children = new HashSet<Subtask>();
 		this.deadline = Double.MAX_VALUE;
@@ -46,8 +49,39 @@ public class Subtask {
 	public String toString() {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append(this.getTask().toString()).append(" - ").append(this.id);
+		buffer.append("(" + this.resources.toString() + ")");
 		buffer.append(this.constraints.values().toString());
 		return buffer.toString();
+	}
+	
+	@Override
+	public boolean equals(Object other) {
+		if (this == other) {
+			return true;
+		}
+		if (!(other instanceof Subtask)) {
+			return false;
+		}
+		
+		Subtask sOther = (Subtask)other;
+		if (this.id != sOther.id){ 
+			return false;
+		}
+		
+		/*if (!this.resources.equals(sOther.resources)) {
+			return false;
+		}*/
+		
+		/*if (!this.constraints.equals(sOther.constraints)) {
+			return false;
+		}*/
+		
+		return true;
+	}
+	
+	@Override
+	public int hashCode() {
+		return this.id.hashCode();
 	}
 	
 	public String getId() {
@@ -71,7 +105,7 @@ public class Subtask {
 	}
 	
 	public GroundedAction getAction() {
-		return this.action;
+		return new GroundedAction(this.action.action, this.action.params);
 	}
 	
 	public GroundedAction getAction(String agent) {
@@ -80,8 +114,8 @@ public class Subtask {
 		return new GroundedAction(this.action.action, params);
 	}
 	
-	public List<TemporalConstraint> getConstraints() {
-		return new ArrayList<TemporalConstraint>(this.constraints.values());
+	public Collection<TemporalConstraint> getConstraints() {
+		return this.constraints.values();
 	}
 	
 	public boolean addConstraint(Subtask to, double lowerBound, double upperBound) {
@@ -152,7 +186,12 @@ public class Subtask {
 	}
 	
 	public boolean isAvailable(Set<Subtask> subtasks) {
-		return this.constraints.isEmpty() || subtasks.containsAll(constraints.keySet());		
+		for (Subtask subtask : this.constraints.keySet()){
+			if (!subtasks.contains(subtask)) {
+				return false;
+			}
+		}
+		return true;		
 	}
 	
 	public boolean resourceConflicts(Subtask secondNode) {
@@ -183,7 +222,7 @@ public class Subtask {
 		return this.resources;
 	}
 
-	public double getMaxDuration(ActionTimeGenerator timeGenerator, List<String> agents) {
+	public double getMaxDuration(ActionTimeGenerator timeGenerator, Collection<String> agents) {
 		double maxDuration = 0.0;
 		for (String agent : agents) {
 			GroundedAction action = this.getAction(agent);
@@ -193,7 +232,7 @@ public class Subtask {
 		return maxDuration;
 	}
 	
-	public double getMinDuration(ActionTimeGenerator timeGenerator, List<String> agents) {
+	public double getMinDuration(ActionTimeGenerator timeGenerator, Collection<String> agents) {
 		double maxDuration = Double.MAX_VALUE;
 		for (String agent : agents) {
 			GroundedAction action = this.getAction(agent);
@@ -206,6 +245,22 @@ public class Subtask {
 	public Task getTask() {
 		return task;
 	}
+
+	public List<Subtask> getChildren() {
+		return new ArrayList<Subtask>(children);
+	}
+	
+	public Set<Subtask> getChildDeadlines() {
+		Set<Subtask> childDeadlines = new HashSet<Subtask>();
+		for (Subtask child : this.children) {
+			if (child.constraints.get(this).upperBound < Double.MAX_VALUE) {
+				childDeadlines.add(child);
+			}
+		}
+		return childDeadlines;
+	}
+
+	
 
 	
 

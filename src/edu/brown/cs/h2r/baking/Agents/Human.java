@@ -298,6 +298,9 @@ public class Human implements Agent {
 	}
 	
 	public boolean isSuccess(State state) {
+		if (this.currentRecipe == null) {
+			return false;
+		}
 		return this.currentRecipe.isSuccess(state);
 	}
 	

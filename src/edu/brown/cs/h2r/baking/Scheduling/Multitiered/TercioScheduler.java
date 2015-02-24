@@ -1,11 +1,9 @@
 package edu.brown.cs.h2r.baking.Scheduling.Multitiered;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import burlap.oomdp.singleagent.GroundedAction;
 import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
@@ -20,13 +18,17 @@ import gurobi.GRBVar;
 
 public class TercioScheduler implements Scheduler {
 	private static double M = 1000.0;
-	private static long MAX_SOLUTIONS = 100;
+	private static long MAX_SOLUTIONS = 10;
 	private final boolean useActualValues;
 	private final Sequencer sequencer;
 	
 	public TercioScheduler(boolean useActualValues) {
 		this.useActualValues = useActualValues;
 		this.sequencer = new TercioSequencer(useActualValues);
+	}
+
+	public String getDescription() {
+		return this.getClass().getSimpleName() + " - " + this.sequencer.getDescription();
 	}
 
 	@Override
@@ -37,9 +39,7 @@ public class TercioScheduler implements Scheduler {
 	}
 
 	@Override
-	public Assignments finishSchedule(Workflow workflow, ActionTimeGenerator timeGenerator, 
-			Assignments assignments, Assignments bufferedAssignments, Set<Subtask> visitedNodes) {
-		// TODO Auto-generated method stub
+	public Assignments finishSchedule(Workflow workflow, Assignments assignments, ActionTimeGenerator timeGenerator) {
 		return this.assignTasks(workflow, assignments, timeGenerator);
 	}
 
@@ -90,16 +90,20 @@ public class TercioScheduler implements Scheduler {
 				}
 				Assignments currentAssignments = assignments.copy();
 				
-				List<List<Double>> startTimes = this.extractAssignments(workflow, currentAssignments, modelVariables);
+				this.extractAssignments(workflow, currentAssignments, modelVariables);
 				
-				Assignments sortedAssignments = this.sequencer.sequence(currentAssignments, timeGenerator, workflow);
-				double time = sortedAssignments.time();
-				if (time < makespanTime) {
-					//System.out.println(solutionCount + ", " + time);
-					bestAssignments = currentAssignments;
-					makespanTime = time;
+				Assignments sequenced = this.sequencer.sequence(currentAssignments, timeGenerator, workflow);
+				if (sequenced != null) {
+					double time = sequenced.time();
+					if (time < makespanTime) {
+						//System.out.println(solutionCount + ", " + time);
+						bestAssignments = sequenced;
+						makespanTime = time;
+					}
+				} else {
+					//System.err.println("Sequencing failed " + currentAssignments.getAllSubtasks().size());
 				}
-				if (!TercioScheduler.addConstraint(sortedAssignments, workflow, model, modelVariables, solutionCount)) {
+				if (!TercioScheduler.addConstraint(currentAssignments, workflow, model, modelVariables, solutionCount)) {
 					break;
 				}
 				model.update();
@@ -387,36 +391,19 @@ public class TercioScheduler implements Scheduler {
 		
 	}
 
-	private List<List<Double>> extractAssignments(Workflow workflow,
+	private void extractAssignments(Workflow workflow,
 			Assignments assignments, Map<String, GRBVar> modelVariables) throws GRBException {
-		List<List<Double>> startTimes = new ArrayList<List<Double>>();
-		for (AgentAssignment assignment : assignments.getAssignments()) {
-			startTimes.add(new ArrayList<Double>());
-		}
+		Collection<String> agents = assignments.getAgents();
 		for (Subtask node : workflow) {
-			String nodeStartStr = node.toString() + "_START";
-			GRBVar nodeStart = modelVariables.get(nodeStartStr);
-
-			for (int i = 0; i < assignments.getAssignments().size(); i++) {
-				AgentAssignment assignment = assignments.getAssignments().get(i);
-				List<Double> times = startTimes.get(i);
-				String agent = assignment.getId();
+			for (String agent : agents) {
 				String actionStr = node.getAction(agent).toString();
 				GRBVar actionVar = modelVariables.get(actionStr);
 				double value = actionVar.get(GRB.DoubleAttr.X);
 				if (value > 0.5) {
-					double startTime = nodeStart.get(GRB.DoubleAttr.X);
-					int pos = Collections.binarySearch(times, startTime);
-					if (pos < 0) {
-						pos = -(pos + 1);
-					}
-					times.add(pos, startTime);
-					assignment.add(pos, node);
-					
+					assignments.add(node, agent);					
 				}
 			}
 		}
-		return startTimes;
 	}
 
 	

@@ -3,7 +3,10 @@ package edu.brown.cs.h2r.baking.Scheduling.Multitiered;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
@@ -17,6 +20,7 @@ public class TercioNode {
 	private final double hR;
 	private final double hP;
 	private final double hD;
+	private final Comparator comparator;
 	public TercioNode(Subtask node, String agent, double hA, double hR, double hP, double hD) {
 		this.node = node;
 		this.agent = agent;
@@ -24,6 +28,7 @@ public class TercioNode {
 		this.hR = hR;
 		this.hP = hP;
 		this.hD = hD;
+		this.comparator = new TercioComparator();
 	}
 	
 	@Override
@@ -31,62 +36,72 @@ public class TercioNode {
 		return this.agent + ", " + this.node.toString() + ", hA: " + this.hA + " hP: " + this.hP + " hR: " + this.hR + " hD: " + this.hD;
 	}
 	
+	@Override
+	public boolean equals(Object other) {
+		if (this == other) {
+			return true;
+		}
+		if (!(other instanceof TercioNode)) {
+			return false;
+		}
+		TercioNode tNode = (TercioNode)other;
+		if (!this.node.equals(tNode.node)) {
+			return false;
+		}
+		if (!this.agent.equals(tNode.agent)) {
+			return false;
+		}
+		return false;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.node, this.agent);
+	}
 	public String getAgent() {
 		return this.agent;
 	}
 	
-	public Subtask getNode() {
+	public Subtask getSubtask() {
 		return this.node;
 	}
 	
-	public static double computeA(Collection<Subtask> availableAssignedNodes ) {
-		int size = availableAssignedNodes.size();
-		return (size == 0) ? 2.0 : 1.0 / size;
-	}
-	
-	public static double computeR(Assignments assignments, Set<String> nodeResources) {
-		Map<String, Integer> resourceCounts = new HashMap<String, Integer>();
-		for (AgentAssignment assignment : assignments.getAssignments()) {
-			for (Subtask node : assignment.nodes()) {
-				Set<String> resources = node.getResources();
-				for (String resource : resources) {
-					Integer count = resourceCounts.get(resource);
-					if (count == null) {
-						resourceCounts.put(resource, 1);
-					} else {
-						resourceCounts.put(resource, count+1);
-					}
-					
-				}
-			}
-		}
+	public static double computeP(Subtask subtask, String agent, Assignments assignments) {
 		
-		double sum = 0;
-		for (String resource : nodeResources) {
-			Integer count =  resourceCounts.get(resource);
-			sum += (count == null) ? 0 : count;
-		}
-		return sum;
-	}
-	
-	public static double computeP(String thisAgent, Subtask thisNode, Assignments assignments, Set<Subtask> visited ) {
 		double sum = 0.0;
-		for (AgentAssignment assignment : assignments.getAssignments()) {
-			if (assignment.getId().equals(thisAgent)) {
-				continue;
+		Queue<Subtask> queue = new LinkedList<Subtask>(subtask.getChildren());
+		while (queue.peek() != null) {
+			Subtask child = queue.poll();
+			if (!assignments.isAssigned(child, agent)) {
+				sum += 1.0;
 			}
-			
-			for (AssignedSubtask subtask : assignment) {
-				Subtask node = subtask.getSubtask();
-				if (!visited.contains(node)) {
-					if (thisNode.isAncestorOf(node)) {
-						sum++;
-					}
-				}
-			}
+			queue.addAll(child.getChildren());
 		}
 		
+		
 		return sum;
+	}
+	
+	public static double computeR(Subtask subtask, Collection<Subtask> unexecuted) {
+		double sum = 0.0;
+		for (Subtask unexec : unexecuted) {
+			if (subtask.resourceConflicts(unexec)) {
+				sum += 1.0;
+			}
+		}
+		return sum;
+	}
+	
+	public static double computeA(String agent, Map<String, Set<Subtask>> available) {
+		double sum = 0.0;
+		double thisAgent = 0.0;
+		for (Map.Entry<String, Set<Subtask>> entry : available.entrySet()) {
+			sum += entry.getValue().size();
+			if (entry.getKey().equals(agent)) {
+				thisAgent = entry.getValue().size();
+			}
+		}
+		return (sum == 0.0) ? 0.0 : 1.0 - thisAgent / sum;
 	}
 	
 	public static double computeD() {
@@ -99,19 +114,19 @@ public class TercioNode {
 	
 	public static class TercioComparator implements Comparator<TercioNode> {
 		public int compare(TercioNode o1, TercioNode o2) {
-			if (o1.hA != o2.hA) {
-				return Double.compare(o1.hA, o2.hA);
+			int res = Double.compare(o1.hA, o2.hA);
+			if (res != 0) {
+				return res;
 			}
-			if (o1.hP != o2.hP) {
-				return Double.compare(o1.hP, o2.hP);
+			res = Double.compare(o1.hP, o2.hP);
+			if (res != 0) {
+				return res;
 			}
-			if (o1.hD != o2.hD) {
-				return -Double.compare(o1.hD, o2.hD);
+			res = Double.compare(o1.hR, o2.hR);
+			if (res != 0) {
+				return res;
 			}
-			if (o1.hR != o2.hR) {
-				return Double.compare(o1.hR, o2.hR);
-			}
-			return 0;
+			return Double.compare(o1.hD, o2.hD);
 		}
 		
 	}

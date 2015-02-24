@@ -41,6 +41,15 @@ public class ActionTimeGenerator {
 		this.conversions = null;
 	}
 	
+	public ActionTimeGenerator(Map<GroundedAction, Double> map, boolean justSoThisMethodLooksDifferent) {
+		this.biasFactors = null;
+		this.actionTimeLookup = Collections.unmodifiableMap(map);
+		this.realDataChoice = new HashMap<GroundedAction, String>();
+		this.humanParsedTimes = null;
+		this.robotParsedTimes = null;
+		this.conversions = null;
+	}
+	
 	public ActionTimeGenerator(Boolean generateFromFiles, Boolean leaveOneOut) {
 		this.conversions = new HashMap<String, String>();
 		this.conversions.put("stir", "mix");
@@ -60,7 +69,6 @@ public class ActionTimeGenerator {
 		
 		
 	}
-	
 	
 	public double get(GroundedAction action, boolean actualValue) {
 		// if not using parsed table, use lookup
@@ -96,6 +104,10 @@ public class ActionTimeGenerator {
 		}
 		
 		return time;
+	}
+	
+	public Map<GroundedAction, Double> getMap() {
+		return new HashMap<GroundedAction, Double>(this.actionTimeLookup);
 	}
 	
 	private Double getActualValue(GroundedAction action) {

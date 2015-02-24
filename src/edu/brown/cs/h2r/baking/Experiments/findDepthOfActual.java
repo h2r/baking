@@ -1,12 +1,10 @@
 package edu.brown.cs.h2r.baking.Experiments;
 
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -14,15 +12,19 @@ import java.util.Set;
 
 import burlap.oomdp.singleagent.GroundedAction;
 import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
-import edu.brown.cs.h2r.baking.Scheduling.Multitiered.AgentAssignment;
 import edu.brown.cs.h2r.baking.Scheduling.Multitiered.Assignments;
+import edu.brown.cs.h2r.baking.Scheduling.Multitiered.ECTScheduler;
+import edu.brown.cs.h2r.baking.Scheduling.Multitiered.HeuristicSearchScheduler;
 import edu.brown.cs.h2r.baking.Scheduling.Multitiered.MILPScheduler;
+import edu.brown.cs.h2r.baking.Scheduling.Multitiered.OrderPreservingSequencer;
+import edu.brown.cs.h2r.baking.Scheduling.Multitiered.Scheduler;
 import edu.brown.cs.h2r.baking.Scheduling.Multitiered.Subtask;
 import edu.brown.cs.h2r.baking.Scheduling.Multitiered.Task;
+import edu.brown.cs.h2r.baking.Scheduling.Multitiered.TercioScheduler;
 import edu.brown.cs.h2r.baking.Scheduling.Multitiered.TercioSequencer;
 import edu.brown.cs.h2r.baking.Scheduling.Multitiered.Workflow;
 
-public class SequencerComparison {
+public class findDepthOfActual {
 
 	public static Workflow buildSortedWorkflow(int numberTasks, int numberSubtasks, int numberEdges, int numberResources, int resourcesPerNode, ActionTimeGenerator timeGenerator, List<String> agents) {
 		Random rando = new Random();
@@ -76,7 +78,7 @@ public class SequencerComparison {
 				if (wait && !validSubtasks.isEmpty()) {
 					Subtask child = validSubtasks.get(rando.nextInt(validSubtasks.size()));
 					double waitDuration = rando.nextDouble() * 9 + 4.5;
-					workflow.connect(subtask, child, waitDuration, Double.MAX_VALUE);
+					//workflow.connect(subtask, child, waitDuration, Double.MAX_VALUE);
 				}
 			}
 		}
@@ -102,7 +104,7 @@ public class SequencerComparison {
 						Subtask tmp = child;
 						child = subtask;
 						subtask = tmp;
-						minValue = task.getMinRequiredTimeBetweenSubtasks(subtask, child, timeGenerator, agents);
+						minValue = 5.0 * task.getMinRequiredTimeBetweenSubtasks(subtask, child, timeGenerator, agents);
 						
 					}
 					if (minValue < 0.0) {
@@ -112,11 +114,11 @@ public class SequencerComparison {
 					while (subTaskDeadline < minValue) {
 						subTaskDeadline = rando.nextGaussian() * minValue + minValue;
 					}
-					workflow.connect(subtask, child, 0.0, subTaskDeadline);
+					//workflow.connect(subtask, child, 0.0, subTaskDeadline);
 				}
 			}
 		}
-		return workflow.sort();
+		return workflow;
 	}
 	
 	public static void main(String argv[]){
@@ -142,17 +144,33 @@ public class SequencerComparison {
 		List<Workflow> problematicWorkflows = new ArrayList<Workflow>();
 		Set<Workflow> uniqueProblematic = new HashSet<Workflow>();
 		List<ActionTimeGenerator> problematicTimeMaps = new ArrayList<ActionTimeGenerator>();
-		List<Workflow> workflowsToTest = new ArrayList<Workflow>(problematicWorkflows);
-		List<ActionTimeGenerator> timeGenerators = new ArrayList<ActionTimeGenerator>(problematicTimeMaps);
+		List<Workflow> workflowsToTest = new ArrayList<Workflow>();
+		List<Double> milpTimes = new ArrayList<Double>();
+		List<Assignments> allAssignments = new ArrayList<Assignments>();
+		List<ActionTimeGenerator> timeGenerators = new ArrayList<ActionTimeGenerator>();
 		
 		Workflow.listFromYAMLFile("/Users/brawner/workspace/baking/results/workflows.test", workflowsToTest, timeGenerators);
 		List<String> agents = Arrays.asList("human", "friend", "friend1", "friend2");
 		
+		TercioSequencer tSequencer = new TercioSequencer(false);
+		OrderPreservingSequencer opSequencer = new OrderPreservingSequencer(false);
+		//ECTScheduler ectScheduler = new ECTScheduler(tSequencer, false);
+		ECTScheduler ectScheduler2 = new ECTScheduler(opSequencer, false);
+		HeuristicSearchScheduler search = new HeuristicSearchScheduler(ectScheduler2, opSequencer, false);
+		List<Scheduler> schedulers = Arrays.asList(
+				ectScheduler2,
+				//(Scheduler)new HeuristicSearchScheduler(ectScheduler, tSequencer, false),
+				//(Scheduler)new HeuristicSearchScheduler(ectScheduler2, opSequencer, false),
+				new TercioScheduler(false)
+				);
+				
 		
 		//problematicWorkflows.clear();
 		//problematicTimeMaps.clear();
-		for (int j = 4; j < 10; j++) {
-			for (int i = 0; i < 5; i++) {
+		for (int j = 6; j < 20; j++) {
+			for (int i = 0; i < 10; i++) {
+				Map<String, Double> results = new HashMap<String, Double>();
+				Map<String, Long> resultTimes = new HashMap<String, Long>();
 				ActionTimeGenerator timeGenerator = new ActionTimeGenerator(factors);
 				
 				int numTasks = j;
@@ -170,102 +188,33 @@ public class SequencerComparison {
 					numResourcesPerNode = 1;
 				}
 				Workflow workflow = null;
-				Assignments assignments = new Assignments(agents, timeGenerator, false);
+				Assignments assignments = null;
+				
 				double time = -1.0;
 				
+				long end = 0, start = 0;
 				while (time < 0.0) {
-					 workflow = SequencerComparison.buildSortedWorkflow(numTasks, numSubtasks, numEdges, numResources, numResourcesPerNode, timeGenerator, agents);
-					 //System.out.println(workflow.toString());
-					 time = milp.schedule(workflow, assignments, timeGenerator, null);
-					 //System.out.println(assignments.toString());
+					resultTimes.clear();
+					results.clear();
+					
+					workflow = findDepthOfActual.buildSortedWorkflow(numTasks, numSubtasks, numEdges, numResources, numResourcesPerNode, timeGenerator, agents);
+					Assignments heuristic = search.assignActions(workflow, new Assignments(agents, timeGenerator, false), timeGenerator, 0.0);
+					
+					 start = System.nanoTime();
+					 time = milp.schedule(workflow, new Assignments(agents, timeGenerator, false), timeGenerator, heuristic);
+					 end = System.nanoTime();
 				}
-				workflowsToTest.add(workflow);
-				timeGenerators.add(timeGenerator);
+				//System.out.println(workflow.toString());
+				resultTimes.put("milp", end - start);
+				results.put("milp", time);
+				
+				assignments = new Assignments(agents, timeGenerator, false);
+				assignments = search.assignActions(workflow, assignments, timeGenerator, time);
+				System.out.println(numTasks + ", " + time + ", " + assignments.time());
 				
 				
 				
 			}
-		}
-		
-		for (int i = 0; i < workflowsToTest.size(); i++) {
-			Workflow workflow = workflowsToTest.get(i);
-			
-			ActionTimeGenerator timeGenerator = timeGenerators.get(i);
-			Assignments assignments = new Assignments(agents, timeGenerator, false);
-			double time = -1.0;
-			int tries = 0;
-			while (time < 0.0 && tries++ < 3) {
-				time = milp.schedule(workflow, assignments, timeGenerator, null);
-			}
-			if (shuffleOrder) {
-				for (AgentAssignment assignment : assignments.getAssignments()) {
-					assignment.shuffle();
-				}
-			}
-			
-			boolean didPrint = false;
-			//BufferedAssignments buffered =  new BufferedAssignments(timeGenerator, agents, false, false);
-			//buffered.sequenceTasksWithReorder(assignments);
-			//MILPScheduler.checkAssignments(workflow, assignments, buffered);
-			//double bTime = buffered.time();
-			
-			//if (bTime - 0.0001 > time) {
-				//System.out.println(buffered.visualString());
-				//System.out.println(buffered.getFullString());
-				//didPrint = true;
-			//}
-			List<String> lines = new ArrayList<String>();
-			for (Subtask subtask : workflow) {
-				lines.add(subtask.toString() + " - " + subtask.getResources().toString());
-			}
-			Collections.sort(lines);
-			//for (String s : lines) System.out.println(s);
-			TercioSequencer tSequencer = new TercioSequencer(false);
-			Assignments tercio = tSequencer.sequence(assignments, timeGenerator, workflow);
-			
-			tries = 0;
-			while (tercio == null && tries++ < 3) {
-				tercio = tSequencer.sequence(assignments, timeGenerator, workflow);
-			}
-			
-			if (tercio == null) {
-				if (uniqueProblematic.add(workflow)) {
-					problematicWorkflows.add(workflow);
-					problematicTimeMaps.add(timeGenerator);
-				}
-				continue;
-			}
-			//System.out.println(tercio.toString());
-			//MILPScheduler.checkAssignments(workflow, assignments, tercio);
-			double tTime = tercio.time();
-			if (tTime - 0.0001 > time) {
-				//System.out.println(tercio.visualString());
-				//System.out.println(tercio.getFullString());
-				didPrint = true;
-			}
-			
-			//BufferedAssignments search = sequencer.sequenceAssignments(assignments);
-			//MILPScheduler.checkAssignments(workflow, assignments, search);
-			
-			//double sTime = search.time();
-			//if (sTime -0.0001 > time) {
-				//System.out.println(search.visualString());
-				//System.out.println(search.getFullString());
-				//didPrint = true;
-			//}
-			
-			
-			System.out.println(workflow.getTasks().size() + ", " + time + ", " + tTime);
-		}
-		FileWriter fw;
-		try {
-			fw = new FileWriter("/Users/brawner/workspace/baking/results/workflows.test");
-			System.out.println("There were " + problematicWorkflows.size() + " workflows that have been written");
-			String sL = Workflow.toYAML(problematicWorkflows, problematicTimeMaps);
-			fw.write(sL);
-			fw.close();
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
 		
 	}

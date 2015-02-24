@@ -1,24 +1,27 @@
 package edu.brown.cs.h2r.baking.Scheduling.Multitiered;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
 import burlap.oomdp.singleagent.GroundedAction;
 import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
-import edu.brown.cs.h2r.baking.Scheduling.Assignment.ActionTime;
-import edu.brown.cs.h2r.baking.Scheduling.Workflow.Node;
 
 public class AgentAssignment implements Iterable<AssignedSubtask> {
 	private final String agent;
 	private final List<Double> times;
 	private final List<Double> completionTimes;
 	private final List<Subtask> subtasks; 
+	private final Map<Subtask, Double> subtaskMap;
 	private final ActionTimeGenerator timeGenerator;
 
 	private double time;
@@ -27,6 +30,7 @@ public class AgentAssignment implements Iterable<AssignedSubtask> {
 	public AgentAssignment(String agent, ActionTimeGenerator timeGenerator, boolean useActualValues) {
 		this.agent = agent;
 		this.subtasks = new ArrayList<Subtask>();
+		this.subtaskMap = new HashMap<Subtask, Double>();
 		this.time = 0;
 		this.times = new ArrayList<Double>();
 		this.completionTimes = new ArrayList<Double>();
@@ -37,6 +41,8 @@ public class AgentAssignment implements Iterable<AssignedSubtask> {
 	public AgentAssignment(AgentAssignment other) {
 		this.agent = other.agent;
 		this.subtasks = new ArrayList<Subtask>(other.subtasks);
+		this.subtaskMap = new HashMap<Subtask, Double>(other.subtaskMap);
+		
 		this.time = other.time;
 		this.times = new ArrayList<Double>(other.times);
 		this.completionTimes = new ArrayList<Double>(other.completionTimes);
@@ -50,6 +56,8 @@ public class AgentAssignment implements Iterable<AssignedSubtask> {
 		this.useActualValues = useActualValues;
 		
 		this.subtasks = new ArrayList<Subtask>(assignedSubtasks.size());
+		this.subtaskMap = new HashMap<Subtask, Double>();
+		
 		this.times = new ArrayList<Double>(assignedSubtasks.size());
 		this.completionTimes = new ArrayList<Double>(assignedSubtasks.size());
 		
@@ -58,21 +66,25 @@ public class AgentAssignment implements Iterable<AssignedSubtask> {
 			this.subtasks.add(subtask.getSubtask());
 			double time = subtask.getTime();
 			this.times.add(time);
+			this.subtaskMap.put(subtask.getSubtask(), time);
 			this.time += time;
 			this.completionTimes.add(this.time);
 		}
 	}
 	
-	public AgentAssignment(String agent, List<Subtask> assignedActions,  ActionTimeGenerator timeGenerator, boolean useActualValues ) {
+	public AgentAssignment(String agent, Collection<Subtask> assignedActions,  ActionTimeGenerator timeGenerator, boolean useActualValues ) {
 		this.agent = agent;
-		this.subtasks = Collections.unmodifiableList(assignedActions);
+		this.subtasks = new ArrayList<Subtask>(assignedActions);
 		this.timeGenerator = timeGenerator;
 		List<Double> times = new ArrayList<Double>(this.subtasks.size());
+		this.subtaskMap = new HashMap<Subtask, Double>();
+		
 		for (Subtask subtask : this.subtasks) {
 			GroundedAction ga = subtask.getAction();
 			ga.params[0] = this.agent;
 			double time = timeGenerator.get(ga, false);
 			times.add(time);
+			this.subtaskMap.put(subtask, time);
 		}
 		this.useActualValues = useActualValues;
 		
@@ -177,6 +189,7 @@ public class AgentAssignment implements Iterable<AssignedSubtask> {
 		GroundedAction ga = node.getAction(this.agent);
 		double time = this.timeGenerator.get(ga, this.getUseActualValues());
 		this.subtasks.add(node);
+		this.subtaskMap.put(node, time);
 		this.times.add(time);
 		this.time += time;
 		this.completionTimes.add(this.time);
@@ -188,13 +201,10 @@ public class AgentAssignment implements Iterable<AssignedSubtask> {
 		double time = this.timeGenerator.get(ga, this.getUseActualValues());
 		
 		this.subtasks.add(position, node);
+		this.subtaskMap.put(node, time);
 		this.times.add(position, time);
 		this.completionTimes.add(this.time);
-		double sum = 0.0;
-		for (int i = position ; i < this.completionTimes.size(); i++) {
-			sum += this.times.get(i);
-			this.completionTimes.set(i, sum);
-		}
+		this.rebuildCompletionTimes(position, this.size());
 		return true;
 		
 	}
@@ -250,7 +260,7 @@ public class AgentAssignment implements Iterable<AssignedSubtask> {
 	}
 	
 	public boolean contains(Subtask node) {
-		return this.subtasks.contains(node);
+		return this.subtaskMap.containsKey(node);
 	}
 	
 	// Not the ideal sorted workflow, as it allows actions with dependencies on others go first
@@ -321,7 +331,43 @@ public class AgentAssignment implements Iterable<AssignedSubtask> {
 			return this.completionTimes.get(place - 1);
 		}
 		
-		return this.completionTimes.get(place);
+		double nextTime = this.completionTimes.get(place);
+		if (nextTime <= currentTime) {
+			System.err.println("Next time did not work");
+		}
+		
+		return nextTime;
+	}
+	
+	public List<Double> nextTimes(double startTime, double endTime) {
+		if (this.completionTimes.isEmpty()) {
+			return null;
+		}
+		
+		Integer start = (startTime == 0.0) ? 0 :
+			Collections.binarySearch(this.completionTimes, startTime);
+		
+		if (start < 0) {
+			start = - (start + 1);
+		} else if (startTime >= this.completionTimes.get(start)) {
+			start++;
+		}
+		if (start == this.completionTimes.size()) {
+			return new ArrayList<Double>();
+		}
+		
+		Integer end = (endTime >= this.time) ? this.completionTimes.size() :
+				Collections.binarySearch(this.completionTimes, endTime);
+		
+		if (end < 0) {
+			end = - (end + 1);
+		} 
+		
+		List<Double> res = this.completionTimes.subList(start, end);
+		if (res.size() > 0 && (res.get(0) <= startTime || res.get(res.size() - 1) >= endTime)) {
+			System.err.println("nextTimes did not work");
+		}
+		return res;
 	}
 	
 	public List<Subtask> availableSubtasks(Set<Subtask> visited) { 
@@ -347,8 +393,6 @@ public class AgentAssignment implements Iterable<AssignedSubtask> {
 		return this.subtasks;
 	}
 	
-	
-	
 	public List<Subtask> completedSubtasks(double time) { 
 		return this.completedSubtasks(0.0, time);
 	}
@@ -359,17 +403,17 @@ public class AgentAssignment implements Iterable<AssignedSubtask> {
 			return new ArrayList<Subtask>();
 		}
 		
-		Integer begin = this.position(beginTime);
-		Integer end = this.position(endTime);
+		Integer begin = (beginTime == 0.0) ? 0 : this.position(beginTime);
 		if (begin == null) {
 			return new ArrayList<Subtask>();
 		} else if (beginTime == this.completionTimes.get(begin)) {
 			begin++;
 		}
 		
+		Integer end = (endTime >= this.time) ? this.completionTimes.size() : this.position(endTime);
 		if (end == null) {
 			end = this.subtasks.size();
-		} else if (endTime < this.completionTimes.get(end)) {
+		} else if (end < this.completionTimes.size() && endTime <= this.completionTimes.get(end)) {
 			end++;
 		}
 		
@@ -447,6 +491,11 @@ public class AgentAssignment implements Iterable<AssignedSubtask> {
 		return this.completionTimes.get(index);
 		
 	}
+	
+	public Double subtaskDuration(Subtask subtask) {
+		return this.subtaskMap.get(subtask);
+	}
+	
 
 	public static class AssignmentIterator implements ListIterator<AssignedSubtask> {
 
@@ -454,7 +503,7 @@ public class AgentAssignment implements Iterable<AssignedSubtask> {
 		private final List<Double> times;
 		private int currentIndex;
 		private AssignmentIterator(List<Subtask> subtasks, List<Double> times) {
-			this.subtasks = subtasks;
+			this.subtasks = new ArrayList<Subtask>(subtasks);
 			this.times = times;
 			this.currentIndex = 0;
 		}
@@ -529,6 +578,7 @@ public class AgentAssignment implements Iterable<AssignedSubtask> {
 			throw new UnsupportedOperationException();			
 		}	
 	}
+
 	
 	
 

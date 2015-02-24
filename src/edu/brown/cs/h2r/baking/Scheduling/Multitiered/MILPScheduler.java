@@ -20,6 +20,7 @@ import edu.brown.cs.h2r.baking.Scheduling.Assignment.ActionTime;
 import edu.brown.cs.h2r.baking.Scheduling.Workflow.Node;
 import gurobi.GRB;
 import gurobi.GRB.DoubleAttr;
+import gurobi.GRBCallback;
 import gurobi.GRBConstr;
 import gurobi.GRBEnv;
 import gurobi.GRBException;
@@ -35,11 +36,26 @@ public class MILPScheduler {
 		this.useActualValues = useActualValues;
 	}
 
-	public  double schedule(Workflow workflow, Assignments assignments, ActionTimeGenerator timeGenerator) {
-		return this.assignTasks(workflow, assignments, timeGenerator);
+	public  double schedule(Workflow workflow, Assignments assignments, ActionTimeGenerator timeGenerator, Assignments start) {
+		return this.assignTasks(workflow, assignments, timeGenerator, start);
+	}
+	
+	public static class TimeoutCallback extends GRBCallback {
+		private final long endTime;
+		public TimeoutCallback(double timeout) {
+			this.endTime = (long) (1000000000L * timeout + System.nanoTime());
+		}
+		@Override
+		protected void callback() {
+			if (System.nanoTime() > this.endTime) {
+				this.abort();
+			}
+			
+		}
+		
 	}
 
-	public double assignTasks(Workflow workflow, Assignments assignments, ActionTimeGenerator timeGenerator) {
+	public double assignTasks(Workflow workflow, Assignments assignments, ActionTimeGenerator timeGenerator, Assignments start) {
 		double time = -1.0;
 		try {
 			GRBEnv    env   = new GRBEnv("mip1.log");
@@ -50,9 +66,13 @@ public class MILPScheduler {
 
 			Map<String, GRBVar> modelVariables = new HashMap<String, GRBVar>();
 			GRBVar v = setupModelVariables(workflow, assignments, model, modelVariables);
-
 			model.update();
 
+			if (start != null) {
+				setVariableValues(workflow, start, modelVariables, v);
+			}
+
+			
 			// Set objective: maximize x + y + 2 z
 
 			GRBLinExpr expr = new GRBLinExpr();
@@ -66,17 +86,18 @@ public class MILPScheduler {
 			// Optimize model
 			model.update();
 			
+			model.setCallback(new TimeoutCallback(10.0));
 			model.presolve();
 			
 			model.optimize();
 			int status = model.get(GRB.IntAttr.Status);
 			if (status != 2) {
-				System.err.println("Non-optimal solution found");
+				//System.err.println("Non-optimal solution found");
 				return -1.0;
 			}
 			
 			List<List<Double>> startTimes = this.extractAssignments(workflow, assignments, modelVariables);
-			//printResults(model, modelVariables, false, false);
+			//printVariables(modelVariables, false);
 			time = v.get(GRB.DoubleAttr.X);
 			//this.printResults(model, modelVariables, startTimes);
 
@@ -90,41 +111,29 @@ public class MILPScheduler {
 		return time;
 	}
 
-	public static boolean checkAssignments(Workflow workflow, Assignments assignments){
-		ActionTimeGenerator timeGenerator = null;
-		for (AgentAssignment assignment : assignments.getAssignments()) {
-			timeGenerator = assignment.getTimeGenerator();
-			break;
-		}
-		
-		OrderPreservingSequencer sequencer = new OrderPreservingSequencer(false);
-		Assignments buffered = sequencer.sequence(assignments, timeGenerator, workflow);
-		return MILPScheduler.checkAssignments(workflow, assignments, buffered);
-	}
-	
-	public static boolean checkAssignments(Workflow workflow, Assignments assignments, Assignments buffered){
+	public static boolean checkAssignments(Workflow workflow, Assignments sequenced){
 		try {
 			GRBEnv env = new GRBEnv("mip1.log");
 			env.set(GRB.IntParam.OutputFlag, 0); 
 			GRBModel  model = new GRBModel(env);
 			
 			ActionTimeGenerator timeGenerator = null;
-			for (AgentAssignment assignment : assignments.getAssignments()) {
+			for (AgentAssignment assignment : sequenced.getAssignments()) {
 				timeGenerator = assignment.getTimeGenerator();
 				break;
 			}
 			// Create variables
 
 			Map<String, GRBVar> modelVariables = new HashMap<String, GRBVar>();
-			GRBVar v = setupModelVariables(workflow, assignments, model,
+			GRBVar v = setupModelVariables(workflow, sequenced, model,
 					modelVariables);
 			model.update();
 			
-			setVariableValues(workflow, buffered, modelVariables, v);
+			setVariableValues(workflow, sequenced, modelVariables, v);
 			// Integrate new variables
 			
 			model.update();	
-			MILPScheduler.addConstraints(workflow, assignments, timeGenerator, model,
+			MILPScheduler.addConstraints(workflow, sequenced, timeGenerator, model,
 					modelVariables, v, false);
 			model.update();
 			return printResults(model, modelVariables, true, true);
@@ -229,8 +238,8 @@ public class MILPScheduler {
 			modelVariables.put(nodeStartStr, nodeStart);
 			modelVariables.put(nodeEndStr, nodeEnd);
 
-			for (AgentAssignment assignment : assignments.getAssignments()) {
-				GroundedAction action = node.getAction(assignment.getId());
+			for (String agent : assignments.getAgents()) {
+				GroundedAction action = node.getAction(agent);
 				String actionStr = action.toString();
 				GRBVar actionAgent = model.addVar(0.0, 1.0, 1.0, GRB.BINARY, actionStr);
 				modelVariables.put(actionStr, actionAgent);
@@ -469,27 +478,33 @@ public class MILPScheduler {
 		}
 		
 		Collections.sort(constraintLines);
+		for (String line : constraintLines) {
+			System.out.println(line);
+		}
+		if (hadErrors || !printOnError) {
+			printVariables(modelVariables, useStart);
+		}
+		
+		
+		return hadErrors;
+	}
+
+	private static void printVariables(
+			Map<String, GRBVar> modelVariables, boolean useStart) throws GRBException {
+		DoubleAttr variableValue = (useStart) ? GRB.DoubleAttr.Start : GRB.DoubleAttr.X;
+		
 		List<String> varLines = new ArrayList<String>();
-		if (!printOnError || hadErrors) {
-			for (GRBVar variable : modelVariables.values()) {
-				varLines.add(variable.get(GRB.StringAttr.VarName)
-						+ " " +variable.get(variableValue));
-			}
-			
+		for (GRBVar variable : modelVariables.values()) {
+			varLines.add(variable.get(GRB.StringAttr.VarName)
+					+ " " +variable.get(variableValue));
 		}
 		Collections.sort(varLines);
 		if (varLines.size() > 0) {
 			varLines.add("\n");
 		}
-		List<List<String>> lines = Arrays.asList(constraintLines, varLines);
-		for (List<String> list : lines) {
-			for (String line : list) {
-				System.out.println(line);
-			}
+		for (String line : varLines) {
+			System.out.println(line);
 		}
-		
-		
-		return hadErrors;
 	}
 
 	

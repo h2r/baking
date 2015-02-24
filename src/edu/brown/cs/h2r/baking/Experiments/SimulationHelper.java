@@ -216,7 +216,10 @@ public class SimulationHelper {
 		List<Double> timesPair = new ArrayList<Double>(2);
 		List<Double> actionTimes = new ArrayList<Double>();
 		human.chooseNewRecipe();
-		
+		if (human.getCurrentRecipe() == null) {
+			throw new RuntimeException("Human's chosen recipe is null");
+		}
+		System.out.println("Chosen recipe: " + human.getCurrentRecipe().toString());
 		Human otherHuman = null;
 		Expert humanExpert = null, otherExpert = null;
 		Map<String, Double> actionMap = new HashMap<String, Double>();
@@ -552,8 +555,15 @@ public class SimulationHelper {
 			
 			//for (Agent agent : agents) {
 			System.out.println("Evaluating " + agent.toString());
-			result = SimulationHelper.evaluateAgent(human, agent, startingState, timeGenerator, subgoalsOnly);
-			System.out.println(agent.toString() + ", " +  result.toString());
+			try {
+				result = SimulationHelper.evaluateAgent(human, agent, startingState, timeGenerator, subgoalsOnly);
+				System.out.println(agent.toString() + ", " +  result.toString());
+			} catch (Exception e) {
+				System.out.println("Exception generated");
+				String agentStr = (agent == null) ? "null" : agent.getAgentName();
+				System.out.println("Agent: " + agentStr);
+				System.out.println("Recipe: " + human.getCurrentRecipe().toString());
+			}
 			//}
 			System.out.println("");
 			timeGenerator.clear();
