@@ -55,7 +55,7 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 	
 	public static void main(String[] args) {
 		
-		int numTrials = 1000;
+		int numTrials = 1;
 		int trialId = new Random().nextInt();
 		trialId = Math.abs(trialId);
 		if (args.length == 1) {
@@ -95,9 +95,9 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 				//(Agent)new RandomActionCorrectSubgoal(generalDomain, "partner", timeGenerator),
 				(Agent)new RandomRecipeAgent(generalDomain, timeGenerator),
 				(Agent)new Human(generalDomain, "partner", timeGenerator),
-				(Agent)new Expert(generalDomain, "partner", timeGenerator)//,
-				//(Agent)new AdaptiveByFlow(generalDomain, timeGenerator, false),
-				//(Agent)new AdaptiveByFlow(generalDomain, timeGenerator, true)
+				(Agent)new Expert(generalDomain, "partner", timeGenerator),
+				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator, false),
+				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator, true)
 				);
 		
 		System.out.println("Agent, Successes, Trials, Average reward, average successful reward");
