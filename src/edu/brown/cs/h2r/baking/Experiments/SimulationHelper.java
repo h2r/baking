@@ -9,6 +9,7 @@ import java.util.Map;
 
 import burlap.behavior.statehashing.ObjectHashFactory;
 import burlap.behavior.statehashing.StateHashFactory;
+import burlap.oomdp.auxiliary.common.StateYAMLParser;
 import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
@@ -532,12 +533,13 @@ public class SimulationHelper {
 	public static void run(int numTrials, Domain generalDomain, StateHashFactory hashingFactory,
 			List<Recipe> recipes, ActionTimeGenerator timeGenerator,
 			Human human, List<Agent> agents, ResetAction reset, int choice, boolean subgoalsOnly) {
-		
+		StateYAMLParser parser = new StateYAMLParser(generalDomain);
 		SimulationHelper.EvaluationResult result;
 		Agent agent = null;
 		if (choice < agents.size() ) {
 			agent = agents.get(choice);
 		} else {
+			System.out.println("Evaluating solo");
 			SimulationHelper.evaluateHuman(generalDomain, human, timeGenerator, hashingFactory, subgoalsOnly, numTrials);
 			return;
 		}
@@ -550,21 +552,15 @@ public class SimulationHelper {
 		if (agent != null) {
 			agent.setInitialState(startingState);
 		}
+		System.out.println("Evaluating " + agent.toString());
+		System.out.println("Recipe: " + human.getCurrentRecipe().toString());
+		System.out.println(parser.stateToString(startingState));
+		
 		for (int i = 0; i < numTrials; i++) {
 			
-			
-			//for (Agent agent : agents) {
-			System.out.println("Evaluating " + agent.toString());
-			try {
 				result = SimulationHelper.evaluateAgent(human, agent, startingState, timeGenerator, subgoalsOnly);
 				System.out.println(agent.toString() + ", " +  result.toString());
-			} catch (Exception e) {
-				System.out.println("Exception generated");
-				String agentStr = (agent == null) ? "null" : agent.getAgentName();
-				System.out.println("Agent: " + agentStr);
-				System.out.println("Recipe: " + human.getCurrentRecipe().toString());
-			}
-			//}
+
 			System.out.println("");
 			timeGenerator.clear();
 		}

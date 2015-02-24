@@ -26,8 +26,6 @@ public class RandomRecipeAgent extends Human implements Agent {
 	}
 	@Override
 	public void addObservation(State state) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
@@ -38,7 +36,18 @@ public class RandomRecipeAgent extends Human implements Agent {
 	@Override
 	public void setInitialState(State state) {
 		super.setInitialState(state);
+		List<Recipe> recipes = AgentHelper.recipes(this.domain);
+		Collections.shuffle(recipes);
+		this.setRecipe(recipes.get(0));
 	}
 	
-	
+	@Override
+	public AbstractGroundedAction getAction(State state) {
+		if (this.currentRecipe == null) {
+			List<Recipe> recipes = AgentHelper.recipes(this.domain);
+			Collections.shuffle(recipes);
+			this.setRecipe(recipes.get(0));
+		}
+		return super.getAction(state);
+	}
 }
