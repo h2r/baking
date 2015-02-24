@@ -553,7 +553,6 @@ public class SimulationHelper {
 			agent.setInitialState(startingState);
 		}
 		System.out.println("Evaluating " + agent.toString());
-		System.out.println("Recipe: " + human.getCurrentRecipe().toString());
 		System.out.println(parser.stateToString(startingState));
 		
 		for (int i = 0; i < numTrials; i++) {
