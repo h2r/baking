@@ -3,6 +3,7 @@ package edu.brown.cs.h2r.baking.Agents;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import burlap.behavior.singleagent.Policy;
 import burlap.behavior.statehashing.NameDependentStateHashFactory;
@@ -18,12 +19,23 @@ import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
 import edu.brown.cs.h2r.baking.actions.BakingAction;
 import edu.brown.cs.h2r.baking.actions.BakingActionResult;
 
-public class AdaptiveByFlow extends AdaptiveAgent implements Agent {
+public class AdaptiveByFlow extends AdaptiveAgent{
 	private static final StateHashFactory hashingFactory = new NameDependentStateHashFactory();
 	private static final int MAX_ALPHA = 5;
+	
 	private PolicyPrediction prediction;
 	public AdaptiveByFlow(Domain domain, ActionTimeGenerator timeGenerator, boolean useScheduling) {
-		super(domain, timeGenerator, useScheduling);
+		super("partner", domain, timeGenerator, useScheduling);
+	}
+	
+	protected AdaptiveByFlow(Domain domain, Map<String, Object> objectMap, ActionTimeGenerator timeGenerator, State startState) {
+		super(domain, objectMap, timeGenerator, startState);
+	}
+	
+	@Override
+	public Map<String, Object> toMap() {
+		Map<String, Object> map = super.toMap();
+		return map;
 	}
 	
 	@Override
@@ -137,10 +149,6 @@ public class AdaptiveByFlow extends AdaptiveAgent implements Agent {
 	
 	private final boolean canAgentGo(GroundedAction action, State state) {
 		return (action.params[0].equals(this.getAgentName()));	
-	}
-
-	public final String getAgentName() {
-		return "partner";
 	}
 	
 	@Override

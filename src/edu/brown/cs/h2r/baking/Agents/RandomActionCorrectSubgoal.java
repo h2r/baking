@@ -11,7 +11,7 @@ import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.GroundedAction;
 import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
 
-public class RandomActionCorrectSubgoal extends Human implements Agent {
+public class RandomActionCorrectSubgoal extends Human {
 	private final Domain domain;
 	Random random;
 	public RandomActionCorrectSubgoal(Domain domain, String name, ActionTimeGenerator timeGenerator) {
@@ -23,11 +23,6 @@ public class RandomActionCorrectSubgoal extends Human implements Agent {
 	public void addObservation(State state) {
 		// TODO Auto-generated method stub
 
-	}
-
-	@Override
-	public String getAgentName() {
-		return "partner";
 	}
 
 	@Override

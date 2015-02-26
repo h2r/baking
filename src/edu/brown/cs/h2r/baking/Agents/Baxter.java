@@ -2,6 +2,7 @@ package edu.brown.cs.h2r.baking.Agents;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import burlap.behavior.affordances.AffordancesController;
 import burlap.behavior.singleagent.EpisodeAnalysis;
@@ -37,7 +38,7 @@ import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.actions.BakingAction;
 
 // TODO this hasn't been updated with new changes
-public class Baxter implements Agent {
+public class Baxter extends Agent {
 	
 	private static int numRollouts = 300; // RTDP
 	private static int maxDepth = 10; // RTDP
@@ -57,6 +58,7 @@ public class Baxter implements Agent {
 	private List<PropositionalFunction> domainPFs;
 	
 	public Baxter(Domain domain, Recipe recipe, StateHashFactory hashFactory) {
+		super("partner");
 		this.recipe = recipe;
 		this.domain = domain;
 		this.domainActions = domain.getActions();
@@ -64,6 +66,10 @@ public class Baxter implements Agent {
 		this.hashFactory = hashFactory;
 		this.addSubgoalsToPF();
 		this.knowledgebase = Knowledgebase.getKnowledgebase(domain);
+	}
+	
+	public Map<String, Object> toMap() {
+		return null;
 	}
 		
 	@Override
@@ -204,12 +210,6 @@ public class Baxter implements Agent {
 	public void addObservation(State state) {
 		// TODO Auto-generated method stub
 		
-	}
-
-	@Override
-	public String getAgentName() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override

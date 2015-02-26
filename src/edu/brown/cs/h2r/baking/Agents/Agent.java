@@ -1,18 +1,69 @@
 package edu.brown.cs.h2r.baking.Agents;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import burlap.oomdp.core.AbstractGroundedAction;
+import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
+import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
 
-public interface Agent {
+public abstract class Agent{
 	
-	void addObservation(State state);
-	String getAgentName();
-	ObjectInstance getAgentObject();
-	void setInitialState(State state);
-	void reset();
-	AbstractGroundedAction getAction(State state);
-	AbstractGroundedAction getActionWithScheduler(State state, List<String> agents, boolean finishRecipe);
+	private final String agentName;
+	
+	public Agent(String name) {
+		this.agentName = name;
+	}
+	public Agent(Map<String, Object> objectMap) {
+		this.agentName = (String)objectMap.get("name");
+	}
+	
+	protected Map<String, Object> toMap() {
+		Map<String, Object> objectMap = new HashMap<String, Object>();
+		objectMap.put("name", this.agentName);
+		return objectMap;
+	}
+	
+	public final String getAgentName() {
+		return this.agentName;
+	}
+	
+	public abstract void addObservation(State state);
+	public abstract ObjectInstance getAgentObject();
+	public abstract void setInitialState(State state);
+	public abstract void reset();
+	public abstract AbstractGroundedAction getAction(State state);
+	public abstract AbstractGroundedAction getActionWithScheduler(State state, List<String> agents, boolean finishRecipe);
+	
+	public static Map<String, Object> toMap(Agent agent) {
+		String type = agent.getClass().getSimpleName();
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("type", type);
+		map.put("agent", agent.toMap());
+		return map;
+	}
+	
+	public static Agent fromMap(Domain domain, Map<String, Object> map, ActionTimeGenerator timeGenerator, State startState) {
+		String type = (String)map.get("type");
+		Map<String, Object> agentData = (Map<String, Object>)map.get("agent");
+		switch(type) {
+		case "Expert":
+			return new Expert(domain, agentData, timeGenerator, startState);
+		case "Human":
+			return new Human(domain, agentData, timeGenerator, startState);
+		case "AdaptiveByFlow":
+			return new AdaptiveByFlow(domain, agentData, timeGenerator, startState);
+		case "RandomRecipeAgent":
+			return new RandomRecipeAgent(domain, agentData, timeGenerator, startState);
+		case "RandomActionAgent":
+			return new RandomActionAgent(domain);
+			default:
+				return null;
+		
+		}
+		
+	}
 }

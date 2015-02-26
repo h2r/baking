@@ -69,7 +69,7 @@ public class ManyAgentsSchedulingSubgoalsRealdataHeldout {
 				//(Agent)new RandomSubgoalAgent(generalDomain, "partner", timeGenerator),
 				//(Agent)new RandomActionCorrectRecipeAgent(generalDomain, "partner", timeGenerator),
 				//(Agent)new RandomActionCorrectSubgoal(generalDomain, "partner", timeGenerator),
-				(Agent)new RandomRecipeAgent(generalDomain, timeGenerator),
+				(Agent)new RandomRecipeAgent(generalDomain,"partner", timeGenerator),
 				(Agent)new Human(generalDomain, "partner", timeGenerator),
 				(Agent)new Expert(generalDomain, "partner", timeGenerator),
 				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator, false),
@@ -80,10 +80,11 @@ public class ManyAgentsSchedulingSubgoalsRealdataHeldout {
 		ResetAction reset = (ResetAction)generalDomain.getAction(ResetAction.className);
 		reset.setState(state);
 		
-		int choice = trialId % (agents.size() + 1);
-		
-		SimulationHelper.run(numTrials, generalDomain, hashingFactory, recipes, timeGenerator, human, agents,
-				reset, choice, true);
+		int choice = 0;//trialId % (agents.size() + 1);
+		for (int i = 0; i <= agents.size(); i++) {
+			SimulationHelper.run(numTrials, generalDomain, hashingFactory, recipes, timeGenerator, human, agents,
+					reset, i, true, null);
+		}
 	}
 
 

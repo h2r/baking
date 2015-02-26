@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -15,6 +16,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import burlap.oomdp.core.Domain;
+import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 
 public class ActionTimeGenerator {
@@ -41,13 +44,19 @@ public class ActionTimeGenerator {
 		this.conversions = null;
 	}
 	
-	public ActionTimeGenerator(Map<GroundedAction, Double> map, boolean justSoThisMethodLooksDifferent) {
-		this.biasFactors = null;
-		this.actionTimeLookup = Collections.unmodifiableMap(map);
-		this.realDataChoice = new HashMap<GroundedAction, String>();
-		this.humanParsedTimes = null;
-		this.robotParsedTimes = null;
-		this.conversions = null;
+	private ActionTimeGenerator(Map<String, Double> biasFactors, Map<GroundedAction, Double> actionTimes, Map<GroundedAction, String> realDataChoice,
+			Map<String, Map<String, Map<String, List<Double>>>> humanParsedTimes, Map<String, Map<String, Map<String, List<Double>>>> robotParsedTimes,
+			String humanSubject) {
+		this.biasFactors = (biasFactors == null) ? new HashMap<String, Double>() : Collections.unmodifiableMap(biasFactors);
+		this.actionTimeLookup = new HashMap<GroundedAction, Double>(actionTimes);
+		this.realDataChoice = new HashMap<GroundedAction, String>(realDataChoice);
+		this.humanParsedTimes = humanParsedTimes;
+		this.robotParsedTimes = robotParsedTimes;
+		this.conversions = new HashMap<String, String>();
+		this.conversions.put("stir", "mix");
+		this.conversions.put("put", "move");
+		this.humanSubject = humanSubject;
+		
 	}
 	
 	public ActionTimeGenerator(Boolean generateFromFiles, Boolean leaveOneOut) {
@@ -108,6 +117,79 @@ public class ActionTimeGenerator {
 	
 	public Map<GroundedAction, Double> getMap() {
 		return new HashMap<GroundedAction, Double>(this.actionTimeLookup);
+	}
+	
+//	private final Map<GroundedAction, Double> actionTimeLookup;
+//	private final Map<GroundedAction, String> realDataChoice;
+//	private String humanSubject;
+//	private final Map<String, Map<String, Map<String, List<Double>>>> humanParsedTimes; 
+//	private final Map<String, Map<String, Map<String, List<Double>>>> robotParsedTimes; 
+//	private final Map<String, Double> biasFactors;
+	
+	public static ActionTimeGenerator fromMap(Domain domain, Map<String, Object> map) {
+		
+		String humanSubject = (String)map.get("human_subject");
+		Map<String, Map<String, Map<String, List<Double>>>> humanParsedTimes = 
+				(Map<String, Map<String, Map<String, List<Double>>>>)map.get("human_parsed_times");
+		Map<String, Map<String, Map<String, List<Double>>>> robotParsedTimes = 
+				(Map<String, Map<String, Map<String, List<Double>>>>)map.get("robot_parsed_times");
+		Map<String, Double> biasFactors = (Map<String, Double>)map.get("bias_factors");
+		
+		Map<List<String>, Double> actionTimesStr = (Map<List<String>, Double>)map.get("action_times");
+		Map<GroundedAction, Double> actionTimes = new HashMap<GroundedAction, Double>();
+		for (Map.Entry<List<String>, Double> entry : actionTimesStr.entrySet()) {
+			List<String> params = entry.getKey();
+			Action action = (domain == null || params.get(0) == null) ? null : domain.getAction(params.get(0));
+			String[] paramsArry = params.subList(1, params.size()).toArray(new String[params.size() - 1]);
+			GroundedAction ga = new GroundedAction(action, paramsArry);
+			actionTimes.put(ga, entry.getValue());
+		}
+		
+		Map<List<String>, String> realDataChoiceStr = (Map<List<String>, String>)map.get("real_data_choice");
+		Map<GroundedAction, String> realDataChoice = new HashMap<GroundedAction, String>();
+		for (Map.Entry<List<String>, String> entry : realDataChoiceStr.entrySet()) {
+			List<String> params = entry.getKey();
+			Action action = (domain == null || params.get(0) == null) ? null : domain.getAction(params.get(0));
+			String[] paramsArry = params.subList(1, params.size()).toArray(new String[params.size() - 1]);
+			GroundedAction ga = new GroundedAction(action, paramsArry);
+			realDataChoice.put(ga, entry.getValue());
+		}
+		
+		return new ActionTimeGenerator(biasFactors, actionTimes, realDataChoice, humanParsedTimes, robotParsedTimes, humanSubject);
+	}
+	
+	public Map<String, Object> toMap() {
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("bias_factors", this.biasFactors);
+		if (this.humanParsedTimes != null) {
+			map.put("human_parsed_times", this.humanParsedTimes);
+			map.put("robot_parsed_times", this.robotParsedTimes);
+		}
+		if (this.humanSubject != null) {
+			map.put("human_subject", this.humanSubject);
+		}
+		
+		Map<List<String>, Double> actionTimes = new HashMap<List<String>, Double>();
+		for (Map.Entry<GroundedAction, Double> entry : actionTimeLookup.entrySet()) {
+			GroundedAction ga = entry.getKey();
+			List<String> params = new ArrayList<String>(Arrays.asList(ga.params));
+			String actionName = (ga.action == null) ? null : ga.actionName();
+			params.add(0, actionName);
+			actionTimes.put(params, entry.getValue());
+		}
+		map.put("action_times", actionTimes);
+		
+		Map<List<String>, String> realDataChoice = new HashMap<List<String>, String>();
+		for (Map.Entry<GroundedAction, String> entry : this.realDataChoice.entrySet()) {
+			GroundedAction ga = entry.getKey();
+			List<String> params = new ArrayList<String>(Arrays.asList(ga.params));
+			String actionName = (ga.action == null) ? null : ga.actionName();
+			params.add(0, actionName);
+			realDataChoice.put(params, entry.getValue());
+		}
+		map.put("real_data_choice", realDataChoice);
+		
+		return map;
 	}
 	
 	private Double getActualValue(GroundedAction action) {

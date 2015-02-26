@@ -21,6 +21,7 @@ import org.yaml.snakeyaml.Yaml;
 import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
 import edu.brown.cs.h2r.baking.Scheduling.Workflow.Node;
 import burlap.oomdp.core.Attribute;
+import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.Attribute.AttributeType;
@@ -56,14 +57,14 @@ public class Workflow implements Iterable<Subtask> {
 	}
 	
 	
-	public static void listFromYAML(String string, List<Workflow> workflows, List<ActionTimeGenerator> timeGenerators) {
+	public static void listFromYAML(String string, Domain domain, List<Workflow> workflows, List<ActionTimeGenerator> timeGenerators) {
 		
 		Yaml yaml = new Yaml();
 		List<?> objects = (List<?>)yaml.load(string);
-		parseYAML(objects, workflows, timeGenerators);
+		parseYAML(domain, objects, workflows, timeGenerators);
 	}
 	
-	public static void listFromYAMLFile(String filename, List<Workflow> workflows, List<ActionTimeGenerator> timeGenerators) {
+	public static void listFromYAMLFile(String filename, Domain domain, List<Workflow> workflows, List<ActionTimeGenerator> timeGenerators) {
 		Yaml yaml = new Yaml();
 		try {
 			FileReader fr = new FileReader(filename);
@@ -72,7 +73,7 @@ public class Workflow implements Iterable<Subtask> {
 			if (objects == null) {
 				return;
 			}
-			parseYAML(objects, workflows, timeGenerators);
+			parseYAML(domain, objects, workflows, timeGenerators);
 			
 			
 		} catch (FileNotFoundException e) {
@@ -83,20 +84,14 @@ public class Workflow implements Iterable<Subtask> {
 		} 
 	}
 
-	private static void parseYAML(List<?> objects, List<Workflow> workflows,
+	private static void parseYAML(Domain domain, List<?> objects, List<Workflow> workflows,
 			List<ActionTimeGenerator> timeGenerators) {
 		for (Object o : objects) {
 			Map<String, Object> map = (Map<String, Object>)o;
 			
 			Workflow workflow = Workflow.fromObject((List<?>)map.get("workflow"));
 			Map<List<String>, Double> times = (Map<List<String>, Double>)map.get("times");
-			Map<GroundedAction, Double> timeMap = new HashMap<GroundedAction, Double>();
-			for (Map.Entry<List<String>, Double> entry : times.entrySet()) {
-				List<String> list = entry.getKey();
-				String[] params = list.toArray(new String[list.size()]);
-				timeMap.put(new GroundedAction(null, params), entry.getValue());
-			}
-			ActionTimeGenerator timeGenerator = new ActionTimeGenerator(timeMap, true);
+			ActionTimeGenerator timeGenerator = ActionTimeGenerator.fromMap(domain, (Map<String, Object>)map.get("time_generator"));
 			workflows.add(workflow);
 			timeGenerators.add(timeGenerator);
 		}
@@ -150,13 +145,15 @@ public class Workflow implements Iterable<Subtask> {
 		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
 		for (int i = 0; i < workflows.size(); i++) {
 			Map<String, Object> map = new HashMap<String, Object>();
+			ActionTimeGenerator timeGenerator = timeMaps.get(i);
 			map.put("workflow", workflows.get(i).toObjectList());
-			Map<GroundedAction, Double> timemap = timeMaps.get(i).getMap();
+			Map<GroundedAction, Double> timemap = timeGenerator.getMap();
 			Map<String[], Double> converted = new HashMap<String[], Double>();
 			for (Map.Entry<GroundedAction, Double> entry : timemap.entrySet()) {
 				converted.put(entry.getKey().params, entry.getValue());
 			}
 			map.put("times", converted);
+			map.put("time_generator", timeGenerator.toMap());
 			list.add(map);
 		}
 		Yaml yaml = new Yaml();

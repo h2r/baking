@@ -1,36 +1,33 @@
 package edu.brown.cs.h2r.baking.Agents;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
-import burlap.behavior.statehashing.StateHashFactory;
 import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.Domain;
-import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
-import burlap.oomdp.singleagent.Action;
-import burlap.oomdp.singleagent.GroundedAction;
-import burlap.oomdp.singleagent.RewardFunction;
-import edu.brown.cs.h2r.baking.RecipeAgentSpecificMakeSpanRewardFunction;
-import edu.brown.cs.h2r.baking.Experiments.KitchenSubdomain;
-import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
 
-public class RandomRecipeAgent extends Human implements Agent {
+public class RandomRecipeAgent extends Human{
 	private final Domain domain;
-	public RandomRecipeAgent(Domain domain, ActionTimeGenerator timeGenerator) {
-		super(domain, timeGenerator);
+	public RandomRecipeAgent(Domain domain, String name, ActionTimeGenerator timeGenerator) {
+		super(domain, name, timeGenerator);
 		this.domain = domain;
+	}
+	
+	protected RandomRecipeAgent(Domain domain, Map<String, Object> map, ActionTimeGenerator timeGenerator, State state) {
+		super(domain, map, timeGenerator, state);
+		this.domain = domain;
+	}
+	
+	@Override
+	protected Map<String, Object> toMap() {
+		return super.toMap();
 	}
 	@Override
 	public void addObservation(State state) {
-	}
-
-	@Override
-	public String getAgentName() {
-		return "partner";
 	}
 
 	@Override

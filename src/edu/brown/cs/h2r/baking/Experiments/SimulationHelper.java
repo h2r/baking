@@ -1,11 +1,20 @@
 package edu.brown.cs.h2r.baking.Experiments;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.yaml.snakeyaml.Yaml;
 
 import burlap.behavior.statehashing.ObjectHashFactory;
 import burlap.behavior.statehashing.StateHashFactory;
@@ -202,8 +211,8 @@ public class SimulationHelper {
 		return state;
 	}
 	
-	public static EvaluationResult evaluateAgent(Human human, Agent partner, State startingState, 
-			ActionTimeGenerator timeGenerator, boolean onlySubgoals) {
+	private static EvaluationResult evaluateAgent(Domain domain, StateHashFactory hashingFactory, Human human, Agent partner, State startingState, 
+			ActionTimeGenerator timeGenerator, boolean onlySubgoals, String saveFile) {
 		human.reset();
 		partner.reset();
 		
@@ -245,12 +254,89 @@ public class SimulationHelper {
 				humanExpert.setCooperative(true);
 			}
 		}
+		return evaluateAgent(domain, saveFile, onlySubgoals, hashingFactory,
+				startingState, currentState, currentTime, human, partner,
+				timeGenerator, actionMap, actionSequence, stateSequence,
+				finished, statePair, actionPair, timesPair, actionTimes,
+				otherHuman, humanExpert, otherExpert, agents);
+	}
+	
+	private static void removeFile(String saveFile) {
+		try {
+			Files.delete(Paths.get(saveFile));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+	}
+
+	private static EvaluationResult evaluateAgent(Domain domain, String saveFile, boolean onlySubgoals, StateHashFactory hashingFactory) {
+		SimulationState simState = SimulationHelper.getStateFromSaved(domain, hashingFactory, saveFile);
+		State startingState = simState.startingState;
+		State currentState = simState.state;
+		double currentTime = simState.currentTime;
+		Human human = (Human)simState.human;
+		Agent partner = simState.partner;
+		ActionTimeGenerator timeGenerator = simState.timeGenerator;
+		Map<String, Double> actionMap = simState.actionMap;
+		
+		List<AbstractGroundedAction> actionSequence = new ArrayList<AbstractGroundedAction>();
+		List<State> stateSequence = new ArrayList<State>();
+		boolean finished = false;
+		stateSequence.add(currentState);
+		List<State> statePair = new ArrayList<State>(2);
+		List<AbstractGroundedAction> actionPair = new ArrayList<AbstractGroundedAction>(2);
+		List<Double> timesPair = new ArrayList<Double>(2);
+		List<Double> actionTimes = new ArrayList<Double>();
+		if (human.getCurrentRecipe() == null) {
+			human.chooseNewRecipe();
+		}
+		if (human.getCurrentRecipe() == null) {
+			throw new RuntimeException("Human's chosen recipe is null");
+		}
+		System.out.println("Chosen recipe: " + human.getCurrentRecipe().toString());
+		Human otherHuman = null;
+		Expert humanExpert = null, otherExpert = null;
+		List<String> agents = Arrays.asList(human.getAgentName(), partner.getAgentName());
+		
+		if (human instanceof Expert) {
+			humanExpert = (Expert)human;
+			humanExpert.setCooperative(false);
+		}
+		if ((partner instanceof Human) && !(partner instanceof RandomRecipeAgent)) {
+			otherHuman = (Human)partner;
+			if (otherHuman instanceof Expert) {
+				otherExpert = (Expert)otherHuman;
+			}
+			if (humanExpert != null) {
+				humanExpert.setCooperative(true);
+			}
+		}
+		return evaluateAgent(domain, saveFile, onlySubgoals, hashingFactory,
+				startingState, currentState, currentTime, human, partner,
+				timeGenerator, actionMap, actionSequence, stateSequence,
+				finished, statePair, actionPair, timesPair, actionTimes,
+				otherHuman, humanExpert, otherExpert, agents);
+	}
+
+	private static EvaluationResult evaluateAgent(Domain domain,
+			String saveFile, boolean onlySubgoals,
+			StateHashFactory hashingFactory, State startingState,
+			State currentState, double currentTime, Human human, Agent partner,
+			ActionTimeGenerator timeGenerator, Map<String, Double> actionMap,
+			List<AbstractGroundedAction> actionSequence,
+			List<State> stateSequence, boolean finished, List<State> statePair,
+			List<AbstractGroundedAction> actionPair, List<Double> timesPair,
+			List<Double> actionTimes, Human otherHuman, Expert humanExpert,
+			Expert otherExpert, List<String> agents) {
 		boolean isSuccess = false;
 		partner.addObservation(currentState);
 		GroundedAction humanAction = null, partnerAction = null;
 		int numNullActions = 0;
 		boolean partnerChoseToWait = false;
 		while (!finished) {
+			SimulationHelper.writeCurrentState(saveFile, domain, hashingFactory, startingState, currentState, humanExpert, partner, actionMap, timeGenerator, currentTime);
+			
 			if (humanAction == null) {
 				if (humanExpert != null) {
 					humanExpert.setCooperative((!currentState.equals(startingState) && numNullActions < 2) || partnerChoseToWait);
@@ -282,8 +368,8 @@ public class SimulationHelper {
 								throw new RuntimeException("Partner can't choose this action");
 							}
 						} else {
-							if (humanAction != null && !currentState.equals(startingState)) {
-								State newState = humanAction.executeIn(currentState);
+							if (!currentState.equals(startingState)) {
+								State newState = (humanAction == null) ? currentState : humanAction.executeIn(currentState);
 								partnerAction = (GroundedAction)otherHuman.getActionWithScheduler(newState, agents, !onlySubgoals);
 							}
 						}
@@ -399,7 +485,8 @@ public class SimulationHelper {
 		
 		double reward = (actionTimes.isEmpty()) ? 0 : Collections.max(actionTimes);
 		//double reward = SchedulingHelper.computeSequenceTime(startingState, actionSequence, timeGenerator);
-		return new EvaluationResult(reward, isSuccess);
+		SimulationHelper.removeFile(saveFile);
+		return new EvaluationResult(partner.toString(), reward, isSuccess);
 	}
 	
 	private static void agentWaitUntilNext(Agent agent,
@@ -435,6 +522,68 @@ public class SimulationHelper {
 		return false;
 	}
 	
+	private static boolean writeCurrentState(String saveFile, Domain domain, StateHashFactory hashingFactory, State startState,  State state, Agent human, Agent partner, Map<String, Double> actionMap, ActionTimeGenerator timeGenerator, double currentTime) {
+		if (saveFile == null) {
+			return false;
+		}
+		String saved = SimulationHelper.saveState(domain, hashingFactory, startState, state, human, partner, actionMap, timeGenerator, currentTime);
+		boolean success = true;
+		
+		PrintWriter out = null;
+		try {
+			out = new PrintWriter(saveFile);
+			out.println(saved);
+			
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			success = false;
+		} finally {
+			if (out != null) {
+				out.close();
+			}
+		}
+		
+		return success;
+	}
+	
+	private static String saveState(Domain domain, StateHashFactory hashingFactory, State startState,  State state, Agent human, Agent partner, Map<String, Double> actionMap, ActionTimeGenerator timeGenerator, double currentTime) {
+		SimulationState simState = new SimulationState(startState, state, human, partner, actionMap, timeGenerator, currentTime);
+		Yaml yaml = new Yaml();
+		return yaml.dump(simState.toMap(domain, hashingFactory));
+	}
+	
+	private static SimulationState getStateFromSaved(Domain domain, StateHashFactory hashingFactory, String filename) {
+		StringBuilder  stringBuilder = new StringBuilder();
+		BufferedReader reader = null;
+	    try {
+			reader = new BufferedReader( new FileReader(filename));
+			String line = null;
+			String ls = System.getProperty("line.separator");
+			while( ( line = reader.readLine() ) != null ) {
+		        stringBuilder.append( line );
+		        stringBuilder.append( ls );
+		    }
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			if (reader != null) {
+				try {
+					reader.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	    
+		String saved = stringBuilder.toString();
+		
+		Yaml yaml = new Yaml();
+		Map<String, Object> map = (Map<String, Object>)yaml.load(saved);
+		return SimulationState.fromMap(map, domain, hashingFactory);
+	}
+	
 	private static EvaluationResult evaluateHumanAlone(Human human, State startingState, ActionTimeGenerator timeGenerator, boolean onlySubgoals) {
 		
 		List<AbstractGroundedAction> actionSequence = new ArrayList<AbstractGroundedAction>();
@@ -463,7 +612,7 @@ public class SimulationHelper {
 		double score = timesPair.get(0);
 		//double score = SchedulingHelper.computeSequenceTime(startingState, actionSequence, timeGenerator);
 		boolean success = (onlySubgoals) ? human.isSubgoalFinished(currentState) : human.isSuccess(currentState);
-		return new EvaluationResult(score, success);
+		return new EvaluationResult("solo", score, success);
 	}
 	
 	public static EvaluationResult evaluateHuman(Domain generalDomain, Human human, ActionTimeGenerator timeGenerator, StateHashFactory hashingFactory, boolean onlySubgoals, int numTrials) {
@@ -488,6 +637,7 @@ public class SimulationHelper {
 		private double successScore;
 		private int numberSuccesses;
 		private int numberTrials;
+		private String agent;
 		
 		public EvaluationResult() {
 			this.score = 0.0;
@@ -496,7 +646,8 @@ public class SimulationHelper {
 			this.numberTrials = 0;
 		}
 		
-		public EvaluationResult(double score, boolean wasSuccess) {
+		public EvaluationResult(String agent, double score, boolean wasSuccess) {
+			this.agent = agent;
 			this.score = score;
 			this.successScore = (wasSuccess) ? score : 0.0;
 			this.numberSuccesses = (wasSuccess) ? 1 : 0;
@@ -522,18 +673,19 @@ public class SimulationHelper {
 		
 		public int getTrials() {return this.numberTrials;}
 		
+		public String getAgent() {return this.agent;}
+		
 		// Successes, Trials, Average reward, average success reward
 		@Override
 		public String toString() {
 			double averageSuccessScore = (this.numberSuccesses == 0) ? 0.0 : this.successScore / this.numberSuccesses;
-			return "" + this.numberSuccesses + ", " + this.numberTrials + ", " + this.score / this.numberTrials + ", " + averageSuccessScore;
+			return this.agent + ", " + this.numberSuccesses + ", " + this.numberTrials + ", " + this.score / this.numberTrials + ", " + averageSuccessScore;
 		}
 	}
 	
 	public static void run(int numTrials, Domain generalDomain, StateHashFactory hashingFactory,
 			List<Recipe> recipes, ActionTimeGenerator timeGenerator,
-			Human human, List<Agent> agents, ResetAction reset, int choice, boolean subgoalsOnly) {
-		StateYAMLParser parser = new StateYAMLParser(generalDomain);
+			Human human, List<Agent> agents, ResetAction reset, int choice, boolean subgoalsOnly, String filename) {
 		SimulationHelper.EvaluationResult result;
 		Agent agent = null;
 		if (choice < agents.size() ) {
@@ -553,15 +705,119 @@ public class SimulationHelper {
 			agent.setInitialState(startingState);
 		}
 		System.out.println("Evaluating " + agent.toString());
-		System.out.println(parser.stateToString(startingState));
+		//System.out.println(parser.stateToString(startingState));
+		
 		
 		for (int i = 0; i < numTrials; i++) {
-			
-				result = SimulationHelper.evaluateAgent(human, agent, startingState, timeGenerator, subgoalsOnly);
-				System.out.println(agent.toString() + ", " +  result.toString());
+				result = SimulationHelper.evaluateAgent(generalDomain, hashingFactory, human, agent, startingState, timeGenerator, subgoalsOnly, filename
+						);
+				System.out.println(result.toString());
 
 			System.out.println("");
 			timeGenerator.clear();
+		}
+	}
+	
+	public static void runFromSaved(String filename, Domain generalDomain, StateHashFactory hashingFactory,
+			List<Recipe> recipes, ResetAction reset, boolean subgoalsOnly) {
+		
+		EvaluationResult result = SimulationHelper.evaluateAgent(generalDomain, filename, subgoalsOnly, hashingFactory);
+		System.out.println(result.toString());
+	}
+	
+	public static class SimulationState {
+		private State startingState;
+		private State state;
+		private	Agent human;
+		private Agent partner;
+		private Map<String, Double> actionMap;
+		private double currentTime;
+		private ActionTimeGenerator timeGenerator;
+		
+		public SimulationState(State startState, State state, Agent human, Agent partner, Map<String, Double> actionMap, ActionTimeGenerator timeGenerator, double currentTime) {
+			this.startingState = startState;
+			this.state = state;
+			this.human = human;
+			this.partner = partner;
+			this.actionMap = actionMap;
+			this.currentTime = currentTime;
+			this.timeGenerator = timeGenerator;
+		}
+		
+		public static SimulationState fromMap(Map<String, Object> map, Domain domain, StateHashFactory hashingFactory) {
+			Map<String, Double> actionMap = (Map<String, Double>)map.get("action_map");
+			double currentTime = (Double)map.get("current_time");
+			StateYAMLParser parser = new StateYAMLParser(domain, hashingFactory);
+			String stateStr = (String)map.get("state");
+			State state = parser.stringToState(stateStr);
+			
+			String startStateStr = (String)map.get("start_state");
+			State startState = parser.stringToState(startStateStr);
+			
+			ActionTimeGenerator timeGenerator = ActionTimeGenerator.fromMap(domain, (Map<String, Object>)map.get("time_generator"));
+			
+			Map<String, Object> humanMap = (Map<String, Object>)map.get("human");
+			Agent human = Agent.fromMap(domain, humanMap, timeGenerator, startState);
+			Object partnerObj = map.get("partner");
+			Agent partner = null;
+			if (partnerObj != null) {
+				Map<String, Object> partnerMap = (Map<String, Object>)partnerObj;
+				partner = Agent.fromMap(domain, partnerMap, timeGenerator, startState);
+			}
+			
+			return new SimulationState(startState, state, human, partner, actionMap, timeGenerator, currentTime);
+			
+		}
+		
+		public Map<String, Object> toMap(Domain domain, StateHashFactory hashingFactory) {
+			Map<String, Object> map = new HashMap<String, Object>();
+			map.put("action_map", this.actionMap);
+			map.put("current_time", this.currentTime);
+			StateYAMLParser parser = new StateYAMLParser(domain, hashingFactory);
+			String statePrepared = parser.stateToString(this.state);
+			map.put("state", statePrepared);
+			String startStatePrepared = parser.stateToString(this.startingState);
+			map.put("start_state", startStatePrepared);
+			
+			map.put("time_generator", this.timeGenerator.toMap());
+			
+			Map<String, Object> humanMap = Agent.toMap(this.human);
+			map.put("human", humanMap);
+			if (this.partner != null) {
+				Map<String, Object> partnerMap = Agent.toMap(this.partner);
+				map.put("partner", partnerMap);
+			}
+			return map;
+		}
+		public State getState() {
+			return state;
+		}
+		public void setState(State state) {
+			this.state = state;
+		}
+		public Agent getHuman() {
+			return human;
+		}
+		public void setHuman(Agent human) {
+			this.human = human;
+		}
+		public Agent getPartner() {
+			return partner;
+		}
+		public void setPartner(Agent partner) {
+			this.partner = partner;
+		}
+		public Map<String, Double> getActionMap() {
+			return actionMap;
+		}
+		public void setActionMap(Map<String, Double> actionMap) {
+			this.actionMap = actionMap;
+		}
+		public double getCurrentTime() {
+			return currentTime;
+		}
+		public void setCurrentTime(double currentTime) {
+			this.currentTime = currentTime;
 		}
 	}
 }

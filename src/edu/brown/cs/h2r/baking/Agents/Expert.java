@@ -1,9 +1,11 @@
 package edu.brown.cs.h2r.baking.Agents;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import burlap.oomdp.core.AbstractGroundedAction;
@@ -19,15 +21,26 @@ import edu.brown.cs.h2r.baking.Scheduling.BufferedAssignments;
 import edu.brown.cs.h2r.baking.Scheduling.ExhaustiveStarScheduler;
 import edu.brown.cs.h2r.baking.Scheduling.Scheduler;
 import edu.brown.cs.h2r.baking.Scheduling.Workflow;
-import edu.brown.cs.h2r.baking.Scheduling.Workflow.Node;
+import edu.brown.cs.h2r.baking.actions.ResetAction;
 
-public class Expert extends Human implements Agent {
+public class Expert extends Human{
 	private boolean isCooperative;
 	public Expert(Domain domain, String name, ActionTimeGenerator timeGenerator) {
 		super(domain, name, timeGenerator);
 		this.isCooperative = false;
 	}
 	
+	protected Expert(Domain domain, Map<String, Object> map, ActionTimeGenerator timeGenerator, State state) {
+		super(domain, map, timeGenerator, state);
+		this.isCooperative = (Boolean)map.get("isCooperative");
+	}
+	
+	@Override
+	protected Map<String, Object> toMap() {
+		Map<String, Object> map = super.toMap();
+		map.put("isCooperative", this.isCooperative);
+		return map;
+	}
 	
 	@Override
 	public void addObservation(State state) {
@@ -71,6 +84,7 @@ public class Expert extends Human implements Agent {
 		return remaining;
 	}
 	
+	@Override
 	public AbstractGroundedAction getActionWithScheduler(State state, List<String> agents, boolean finishRecipe) {
 		if (this.isSuccess(state)) {
 			return null;
@@ -99,13 +113,13 @@ public class Expert extends Human implements Agent {
 			if (first == null) {
 				return null;
 			}
-			return first.getAction();
+			return first.getAction(this.getAgentName());
 		} else {
 			List<Workflow.Node> available = workflow.getReadyNodes();
 			GroundedAction bestAction = null;
 			double bestTime = Double.MAX_VALUE;
 			for (Workflow.Node node : available) {
-				GroundedAction ga = node.getAction();
+				GroundedAction ga = node.getAction(this.getAgentName());
 				ga.params[0] = this.getAgentName();
 				double time = this.timeGenerator.get(ga, true);
 				if (time < bestTime) {
@@ -152,6 +166,12 @@ public class Expert extends Human implements Agent {
 		List<GroundedAction> actions = new ArrayList<GroundedAction>();
 		AgentHelper.generateActionSequence(this.currentSubgoal, remaining, state, rewardFunction, actions, finishRecipe);
 		
+		if (actions.size() > 0 && actions.get(0).action instanceof ResetAction) {
+			GroundedAction reset = actions.get(0);
+			reset.params[0] = this.getAgentName();
+			return reset;
+		}
+		
 		List<AbstractGroundedAction> aga = new ArrayList<AbstractGroundedAction>(actions);
 		Workflow workflow = Workflow.buildWorkflow(state, aga);
 		
@@ -162,25 +182,22 @@ public class Expert extends Human implements Agent {
 				System.out.println("-" + assignment.getId());
 				List<Workflow.Node> nodes = assignment.nodes();
 				for (Workflow.Node node : nodes) {
-					System.out.println("\t" + node.getAction().toString());
+					System.out.println("\t" + node.getAction(assignment.getId()).toString());
 				}
 			}
 			
 			BufferedAssignments buffered = new BufferedAssignments(assignments, false);
-			System.out.println(buffered.getFullString());
 			GroundedAction action = buffered.getFirstAction(this.getAgentName());
 			if (action == null) {
 				return null;
 			}
-			action.params[0] = this.getAgentName();
 			return action;
 		} else {
 			List<Workflow.Node> available = workflow.getReadyNodes();
 			GroundedAction bestAction = null;
 			double bestTime = Double.MAX_VALUE;
 			for (Workflow.Node node : available) {
-				GroundedAction ga = node.getAction();
-				ga.params[0] = this.getAgentName();
+				GroundedAction ga = node.getAction(this.getAgentName());
 				double time = this.timeGenerator.get(ga, true);
 				if (!this.matchingActions(ga, partnersAction) && time < bestTime) {
 					bestAction = ga;

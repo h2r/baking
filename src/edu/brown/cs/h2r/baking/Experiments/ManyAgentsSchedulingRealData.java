@@ -86,7 +86,7 @@ public class ManyAgentsSchedulingRealData {
 		
 		List<Agent> agents = Arrays.asList(
 				(Agent)new RandomActionAgent(generalDomain),
-				(Agent)new RandomRecipeAgent(generalDomain, timeGenerator),
+				(Agent)new RandomRecipeAgent(generalDomain,"partner", timeGenerator),
 				(Agent)new Human(generalDomain, "partner", timeGenerator),
 				(Agent)new Expert(generalDomain, "partner", timeGenerator),
 				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator, false),
@@ -101,6 +101,6 @@ public class ManyAgentsSchedulingRealData {
 		//Agent agent = agents.get(3);
 		int choice = 3;//trialId % (agents.size() + 1);
 		SimulationHelper.run(numTrials, generalDomain, hashingFactory, recipes, timeGenerator, human, agents,
-				reset, choice, false);	
+				reset, choice, false, null);	
 	}
 }

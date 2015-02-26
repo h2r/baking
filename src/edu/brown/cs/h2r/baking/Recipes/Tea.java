@@ -15,7 +15,7 @@ public class Tea extends Recipe {
 	private static Tea singleton = null;
 	public Tea(Domain domain) {
 		super(domain);
-		this.recipeName = "coffee with milk";
+		this.recipeName = "tea";
 	}
 	@Override
 	protected IngredientRecipe createTopLevelIngredient() {

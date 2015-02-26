@@ -441,7 +441,7 @@ public class TestManyAgents {
 		
 		List<Agent> agents = Arrays.asList(
 				(Agent)new RandomActionAgent(generalDomain),
-				(Agent)new RandomRecipeAgent(generalDomain, timeGenerator),
+				(Agent)new RandomRecipeAgent(generalDomain,"partner", timeGenerator),
 				(Agent)new Human(generalDomain, "friend", timeGenerator),
 				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator, false),
 				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator, true)

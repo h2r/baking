@@ -2,7 +2,9 @@ package edu.brown.cs.h2r.baking.Agents;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import burlap.behavior.statehashing.NameDependentStateHashFactory;
 import burlap.oomdp.core.AbstractGroundedAction;
@@ -13,11 +15,17 @@ import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 
-public class RandomActionAgent implements Agent {
+public class RandomActionAgent extends Agent {
 	private final Domain domain;
 	private final NameDependentStateHashFactory hashingFactory = new NameDependentStateHashFactory();
 	public RandomActionAgent(Domain domain) {
+		super("partner");
 		this.domain = domain;
+	}
+	
+	@Override
+	protected Map<String, Object> toMap() {
+		return super.toMap();
 	}
 	@Override
 	public void addObservation(State state) {
@@ -28,11 +36,6 @@ public class RandomActionAgent implements Agent {
 	@Override
 	public String toString(){
 		return this.getClass().getSimpleName();
-	}
-
-	@Override
-	public String getAgentName() {
-		return "partner";
 	}
 
 	@Override
@@ -70,4 +73,5 @@ public class RandomActionAgent implements Agent {
 
 	@Override
 	public void reset() {}
+	
 }

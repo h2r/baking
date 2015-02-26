@@ -149,7 +149,7 @@ public class findDepthOfActual {
 		List<Assignments> allAssignments = new ArrayList<Assignments>();
 		List<ActionTimeGenerator> timeGenerators = new ArrayList<ActionTimeGenerator>();
 		
-		Workflow.listFromYAMLFile("/Users/brawner/workspace/baking/results/workflows.test", workflowsToTest, timeGenerators);
+		Workflow.listFromYAMLFile("/Users/brawner/workspace/baking/results/workflows.test", null, workflowsToTest, timeGenerators);
 		List<String> agents = Arrays.asList("human", "friend", "friend1", "friend2");
 		
 		TercioSequencer tSequencer = new TercioSequencer(false);

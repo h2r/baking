@@ -1,5 +1,6 @@
 package edu.brown.cs.h2r.baking.Agents;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -13,6 +14,7 @@ import java.util.Set;
 import burlap.behavior.singleagent.Policy;
 import burlap.behavior.statehashing.NameDependentStateHashFactory;
 import burlap.behavior.statehashing.StateHashFactory;
+import burlap.oomdp.auxiliary.common.StateYAMLParser;
 import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
@@ -35,10 +37,12 @@ import edu.brown.cs.h2r.baking.Scheduling.Scheduler;
 import edu.brown.cs.h2r.baking.Scheduling.Workflow;
 import edu.brown.cs.h2r.baking.actions.ResetAction;
 
-public abstract class AdaptiveAgent implements Agent {
+public abstract class AdaptiveAgent extends Agent{
 	private final Domain domain;
 	protected final static StateHashFactory hashingFactory = new NameDependentStateHashFactory();
+	
 	protected final ActionTimeGenerator timeGenerator;
+	
 	protected final boolean useScheduling;
 	
 	protected final static RewardFunction rewardFunction = new RewardFunction() {
@@ -49,17 +53,64 @@ public abstract class AdaptiveAgent implements Agent {
 		}
 		
 	};
+	
 	protected final List<State> stateHistory;
+	
 	private final List<PolicyProbability> policyBeliefDistribution;
+	
 	protected final List<KitchenSubdomain> subdomains;
 	
-	public AdaptiveAgent(Domain domain, ActionTimeGenerator timeScheduler, boolean useScheduling) {
+	public AdaptiveAgent(String name, Domain domain, ActionTimeGenerator timeScheduler, boolean useScheduling) {
+		super(name);
 		this.domain = domain;
 		this.stateHistory = new ArrayList<State>();
 		this.subdomains = new ArrayList<KitchenSubdomain>();
 		this.policyBeliefDistribution = new ArrayList<PolicyProbability>();
 		this.timeGenerator = timeScheduler;
 		this.useScheduling = useScheduling;
+	}
+	
+	protected AdaptiveAgent(Domain domain, Map<String, Object> objectMap, ActionTimeGenerator timeGenerator, State startState) {
+		super(objectMap);
+		this.domain = domain;
+		this.stateHistory = new ArrayList<State>();
+		this.subdomains = new ArrayList<KitchenSubdomain>();
+		this.policyBeliefDistribution = new ArrayList<PolicyProbability>();
+		this.timeGenerator = timeGenerator;
+		this.useScheduling = (Boolean)objectMap.get("use_scheduling");
+		Map<String, Double> policyDistribution = (Map<String, Double>)objectMap.get("policy_distribution");
+		this.setInitialState(startState);
+		List<PolicyProbability> newDistribution = new ArrayList<PolicyProbability>();
+		for (PolicyProbability prob : this.policyBeliefDistribution){
+			Double value = policyDistribution.get(prob);
+			newDistribution.add(PolicyProbability.newPolicyProbability(prob.getPolicyDomain(), value));
+		}
+		this.policyBeliefDistribution.clear();
+		this.policyBeliefDistribution.addAll(newDistribution);
+		
+		StateYAMLParser parser = new StateYAMLParser(domain, hashingFactory);
+		List<String> stateHistory = (List<String>)objectMap.get("state_history");
+		for (String str : stateHistory) {
+			this.stateHistory.add(parser.stringToState(str));
+		}
+	}
+	
+	@Override
+	protected Map<String, Object> toMap() {
+		Map<String, Object> map = super.toMap();
+		map.put("use_scheduling", this.useScheduling);
+		Map<String, Double> policyDistribution = new HashMap<String, Double>();
+		for (PolicyProbability prob : this.policyBeliefDistribution) {
+			policyDistribution.put(prob.getPolicyDomain().toString(), prob.getProbability());
+		}
+		map.put("policy_distribution", policyDistribution);
+		StateYAMLParser parser = new StateYAMLParser(this.domain, hashingFactory);
+		List<String> stateHistory = new ArrayList<String>();
+		for (State state : this.stateHistory) {
+			stateHistory.add(parser.stateToString(state));
+		}
+		map.put("state_history", stateHistory);
+		return map;
 	}
 	
 	@Override

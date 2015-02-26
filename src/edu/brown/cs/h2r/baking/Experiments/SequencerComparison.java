@@ -145,7 +145,7 @@ public class SequencerComparison {
 		List<Workflow> workflowsToTest = new ArrayList<Workflow>(problematicWorkflows);
 		List<ActionTimeGenerator> timeGenerators = new ArrayList<ActionTimeGenerator>(problematicTimeMaps);
 		
-		Workflow.listFromYAMLFile("/Users/brawner/workspace/baking/results/workflows.test", workflowsToTest, timeGenerators);
+		Workflow.listFromYAMLFile("/Users/brawner/workspace/baking/results/workflows.test", null, workflowsToTest, timeGenerators);
 		List<String> agents = Arrays.asList("human", "friend", "friend1", "friend2");
 		
 		

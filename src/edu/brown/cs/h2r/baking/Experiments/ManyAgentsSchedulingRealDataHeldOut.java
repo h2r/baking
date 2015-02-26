@@ -1,5 +1,8 @@
 package edu.brown.cs.h2r.baking.Experiments;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -56,16 +59,14 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 	public static void main(String[] args) {
 		
 		int numTrials = 1;
-		int trialId = new Random().nextInt();
-		trialId = Math.abs(trialId);
-		if (args.length == 1) {
-			trialId = Integer.parseInt(args[0]);
-		} /*else {
-			System.err.println("Args provided: "  + Arrays.toString(args));
-			System.err.println("Usage TestManyAgents numTrials trialId");
-			System.exit(0);
-		}	*/
-		
+		Integer trialId = Math.abs(new Random().nextInt());
+		String saveFile = null;
+		if (args.length > 0) {
+			saveFile = args[0];
+		}
+		if (args.length > 1) {
+			trialId = Integer.parseInt(args[1]);
+		} 
 		Domain generalDomain = SimulationHelper.generateGeneralDomain(); 
 		
 		List<Recipe> recipes = AgentHelper.recipes(generalDomain);
@@ -78,14 +79,6 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 		Human human = new Expert(generalDomain, "human", timeGenerator);
 		
 		State state = SimulationHelper.generateInitialState(generalDomain, hashingFactory, recipes, human, null);
-		/*for (Recipe recipe : recipes) {
-			//System.out.println("Testing recipe " + recipe.toString());
-			ExperimentHelper.testRecipeExecution(generalDomain, state, recipe);
-			//System.out.println("\n\n");
-		}*/
-		
-		//System.exit(0);
-		
 		
 		
 		List<Agent> agents = Arrays.asList(
@@ -93,7 +86,7 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 				//(Agent)new RandomSubgoalAgent(generalDomain, "partner", timeGenerator),
 				//(Agent)new RandomActionCorrectRecipeAgent(generalDomain, "partner", timeGenerator),
 				//(Agent)new RandomActionCorrectSubgoal(generalDomain, "partner", timeGenerator),
-				(Agent)new RandomRecipeAgent(generalDomain, timeGenerator),
+				(Agent)new RandomRecipeAgent(generalDomain,"partner", timeGenerator),
 				(Agent)new Human(generalDomain, "partner", timeGenerator),
 				(Agent)new Expert(generalDomain, "partner", timeGenerator),
 				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator, false),
@@ -104,13 +97,15 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 		ResetAction reset = (ResetAction)generalDomain.getAction(ResetAction.className);
 		reset.setState(state);
 		
-		
-			//System.out.println("Agent: " + agent.getAgentName());
-		//Agent agent = agents.get(3);
-		for (int i = 0; i < numTrials; i++) {
-		int choice = trialId % (agents.size() + 1);
-		SimulationHelper.run(numTrials, generalDomain, hashingFactory, recipes, timeGenerator, human, agents,
-				reset, choice, false);	
+		Path path = Paths.get(saveFile);
+		if (!Files.exists(path)){
+			for (int i = 0; i < agents.size() + 1; i++) {
+				int choice = 0;//trialId % (agents.size() + 1);
+				SimulationHelper.run(numTrials, generalDomain, hashingFactory, recipes, timeGenerator, human, agents,
+						reset, 1, false, saveFile);	
+			}
+		} else {
+			SimulationHelper.runFromSaved(saveFile, generalDomain, hashingFactory, recipes, reset, false);	
 		}
 	}
 }

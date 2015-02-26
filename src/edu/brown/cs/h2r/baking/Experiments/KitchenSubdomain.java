@@ -1,5 +1,6 @@
 package edu.brown.cs.h2r.baking.Experiments;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,13 +16,18 @@ import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 
-public class KitchenSubdomain {
+public class KitchenSubdomain{
 
 	private final Recipe recipe;
+	
 	private final BakingSubgoal subgoal;
+	
 	private final State startState;
+	
 	private final Policy policy;
+	
 	private final AffordanceRTDP planner;
+	
 	private final Domain domain;
 	
 	private KitchenSubdomain(Domain domain, Recipe recipe, BakingSubgoal subgoal, State startState, Policy policy, AffordanceRTDP planner) {

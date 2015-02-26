@@ -28,7 +28,7 @@ import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
 import edu.brown.cs.h2r.baking.actions.ResetAction;
 
-public class Human implements Agent {
+public class Human extends Agent {
 	protected final static RewardFunction rewardFunction = new RewardFunction() {
 
 		@Override
@@ -40,7 +40,6 @@ public class Human implements Agent {
 	
 	private final static StateHashFactory hashingFactory = new NameDependentStateHashFactory();
 	private State startingState;
-	protected final String name;
 	
 	protected Recipe currentRecipe;
 	protected KitchenSubdomain currentSubgoal;
@@ -51,19 +50,68 @@ public class Human implements Agent {
 	protected Domain generalDomain;
 	protected final ActionTimeGenerator timeGenerator;
 	public Human(Domain generalDomain, ActionTimeGenerator timeGenerator) {
+		super("human");
 		this.generalDomain = generalDomain;
-		this.name = "human";
 		this.timeGenerator = timeGenerator;
 		this.recipeLookup = new HashMap<Recipe, List<KitchenSubdomain>>();
 		this.kitchenSubdomains = new ArrayList<KitchenSubdomain>();
 	}
 	
 	public Human(Domain generalDomain, String name, ActionTimeGenerator timeGenerator) {
+		super(name);
 		this.generalDomain = generalDomain;
-		this.name = name;
 		this.timeGenerator = timeGenerator;
 		this.recipeLookup = new HashMap<Recipe, List<KitchenSubdomain>>();
 		this.kitchenSubdomains = new ArrayList<KitchenSubdomain>();
+	}
+	
+	protected Human(Domain domain, Map<String, Object> map, ActionTimeGenerator timeGenerator, State startState) {
+		super(map);
+		this.generalDomain = domain;
+		this.timeGenerator = timeGenerator;
+		this.recipeLookup = new HashMap<Recipe, List<KitchenSubdomain>>();
+		this.kitchenSubdomains = new ArrayList<KitchenSubdomain>();
+		this.setInitialState(startState);
+		String currentRecipeStr = (String)map.get("current_recipe");
+		if (currentRecipeStr != null) {
+			for (Recipe recipe : this.recipeLookup.keySet()) {
+				if (currentRecipeStr.equals(recipe.toString())) {
+					this.setRecipe(recipe);
+					break;
+				}
+			}
+		}
+		Object currentSubgoal = map.get("current_subgoal");
+		if (currentSubgoal != null) {
+			this.setSubgoal((String)currentSubgoal);
+		} 
+		List<String> currentSubgoalsAvailable = (List<String>)map.get("current_subgoals");
+		
+		List<KitchenSubdomain> toRemove = new ArrayList<KitchenSubdomain>();
+		for (KitchenSubdomain subdomain : this.kitchenSubdomains) {
+			if (!currentSubgoalsAvailable.contains(subdomain.toString())) {
+				toRemove.add(subdomain);
+			}
+		}
+		this.kitchenSubdomains.removeAll(toRemove);
+	}
+	
+	@Override
+	protected Map<String, Object> toMap() {
+		Map<String, Object> map = super.toMap();
+		
+		if (this.currentSubgoal != null) {
+			map.put("current_subgoal", this.currentSubgoal.toString());
+		}
+		if (this.currentRecipe != null) {
+			map.put("current_recipe", this.currentRecipe.toString());
+		}
+		List<String> currentSubgoalsAvailable = new ArrayList<String>();
+		for (KitchenSubdomain subdomain : this.kitchenSubdomains) {
+			currentSubgoalsAvailable.add(subdomain.toString());
+		}
+		map.put("current_subgoals", currentSubgoalsAvailable);
+		return map;
 	}
 	
 	@Override
@@ -190,11 +238,6 @@ public class Human implements Agent {
 	
 	@Override
 	public void addObservation(State state) {
-	}
-
-	@Override
-	public String getAgentName() {
-		return this.name;
 	}
 
 	@Override

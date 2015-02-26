@@ -428,7 +428,7 @@ public class BufferedAssignments {
 		if (node == null) {
 			return null;
 		}
-		return node.getAction();
+		return node.getAction(agent);
 	}
 	
 	public boolean add(Workflow.Node node, String agent) {

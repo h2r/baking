@@ -19,7 +19,7 @@ import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
 
-public class RandomSubgoalAgent extends Human implements Agent {
+public class RandomSubgoalAgent extends Human{
 	private final Domain domain;
 	public RandomSubgoalAgent(Domain domain, String name, ActionTimeGenerator timeGenerator) {
 		super(domain, name, timeGenerator);
@@ -29,11 +29,6 @@ public class RandomSubgoalAgent extends Human implements Agent {
 	public void addObservation(State state) {
 		// TODO Auto-generated method stub
 
-	}
-
-	@Override
-	public String getAgentName() {
-		return "partner";
 	}
 
 	@Override
