@@ -1,5 +1,7 @@
 package edu.brown.cs.h2r.baking.PropositionalFunctions;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Map.Entry;
 
 import edu.brown.cs.h2r.baking.BakingSubgoal;
@@ -43,21 +45,31 @@ public class AllowMixing extends BakingPropositionalFunction {
 			return false;
 		}
 		
+		Set<String> contentsFound = new HashSet<String>();
+		Set<String> matched = new HashSet<String>();
 		for (String name : ContainerFactory.getContentNames(containerInstance)) {
 			ObjectInstance ingObj = state.getObject(name);
 			IngredientRecipe ingredient = null;
 			for (IngredientRecipe i : this.topLevelIngredient.getContents()) {
 				if (i.getFullName().equals(name) || i.isMatching(ingObj, state)) {
-					ingredient = i;
-					break;
+					if (!matched.contains(i.getFullName()) && !contentsFound.contains(name)) {
+						matched.add(i.getFullName());
+						contentsFound.add(name);
+						ingredient = i;
+						break;
+					}
 				}
 			}
 			
 			if (ingredient == null) {
 				for (Entry<String, IngredientRecipe> entry : this.topLevelIngredient.getNecessaryTraits().entrySet()) {
 					if (IngredientFactory.getTraits(ingObj).contains(entry.getKey())) {
-						ingredient = entry.getValue();
-						break;
+						if (!matched.contains(entry.getKey()) && !contentsFound.contains(name)) {
+							contentsFound.add(name);
+							matched.add(entry.getKey());
+							ingredient = entry.getValue();
+							break;
+						}
 					}
 				}
 				if (ingredient == null) {

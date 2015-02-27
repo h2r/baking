@@ -210,7 +210,7 @@ public class SimulationHelper {
 		
 		return state;
 	}
-	
+	/*
 	private static EvaluationResult evaluateAgent(Domain domain, StateHashFactory hashingFactory, Human human, Agent partner, State startingState, 
 			ActionTimeGenerator timeGenerator, boolean onlySubgoals, String saveFile) {
 		human.reset();
@@ -259,7 +259,7 @@ public class SimulationHelper {
 				timeGenerator, actionMap, actionSequence, stateSequence,
 				finished, statePair, actionPair, timesPair, actionTimes,
 				otherHuman, humanExpert, otherExpert, agents);
-	}
+	}*/
 	
 	private static void removeFile(String saveFile) {
 		try {
@@ -269,7 +269,7 @@ public class SimulationHelper {
 		}
 		
 	}
-
+	/*
 	private static EvaluationResult evaluateAgent(Domain domain, String saveFile, boolean onlySubgoals, StateHashFactory hashingFactory) {
 		SimulationState simState = SimulationHelper.getStateFromSaved(domain, hashingFactory, saveFile);
 		State startingState = simState.startingState;
@@ -317,8 +317,195 @@ public class SimulationHelper {
 				timeGenerator, actionMap, actionSequence, stateSequence,
 				finished, statePair, actionPair, timesPair, actionTimes,
 				otherHuman, humanExpert, otherExpert, agents);
-	}
+	}*/
 
+	private static EvaluationResult evaluateTwoAgents(SimulationState state, Domain domain, String saveFile, boolean onlySubgoals, StateHashFactory hashingFactory) {
+		Agent partner = state.partner;
+		Human partnerHuman = null;
+		Expert partnerExpert = null;
+		if (partner instanceof Human && !(partner instanceof RandomRecipeAgent)) {
+			partnerHuman = (Human)partner;
+			if (partner instanceof Expert) {
+				partnerExpert = (Expert)partner;
+			}
+		}
+		Expert human = (Expert)state.human;
+		State currentState = state.state;
+		State startingState = state.startingState;
+		ActionTimeGenerator timeGenerator = state.timeGenerator;
+		Map<String, Double> actionMap = state.actionMap;
+		double currentTime = state.currentTime;
+		List<String> agents = (Arrays.asList(human.getAgentName(), partner.getAgentName()));
+		
+		List<AbstractGroundedAction> actionSequence = new ArrayList<AbstractGroundedAction>();
+		List<State> stateSequence = new ArrayList<State>();
+		boolean finished = false;
+		stateSequence.add(currentState);
+		List<State> statePair = new ArrayList<State>(2);
+		List<AbstractGroundedAction> actionPair = new ArrayList<AbstractGroundedAction>(2);
+		List<Double> timesPair = new ArrayList<Double>(2);
+		List<Double> actionTimes = new ArrayList<Double>();
+		
+		
+		
+		boolean isSuccess = false;
+		partner.addObservation(currentState);
+		GroundedAction humanAction = null, partnerAction = null;
+		int numNullActions = 0;
+		boolean partnerChoseToWait = false;
+		while (!finished) {
+			SimulationHelper.writeCurrentState(saveFile, domain, hashingFactory, startingState, currentState, human, partner, actionMap, timeGenerator, currentTime);
+			
+			if (humanAction == null) {
+				if (human != null) {
+					human.setCooperative((!currentState.equals(startingState) && numNullActions < 2) || partnerChoseToWait);
+					humanAction = (GroundedAction)human.getActionWithScheduler(currentState, agents, !onlySubgoals, (GroundedAction)partnerAction);
+				} else {
+					humanAction = (GroundedAction)human.getActionWithScheduler(currentState, agents, !onlySubgoals);
+				}
+				if (humanAction != null) {
+					System.out.println("Human chose " + humanAction.toString());
+				} 
+			}
+			if (humanAction != null) {
+				BakingAction bakingAction = (BakingAction)humanAction.action;
+				BakingActionResult result = bakingAction.checkActionIsApplicableInState(currentState, humanAction.params);
+				if (!result.getIsSuccess()) {
+					System.err.println("Action " + humanAction.toString() + " cannot be performed");
+					System.err.println(result.getWhyFailed());
+					humanAction = null;
+				}
+			}
+			
+			if (partnerAction == null) {
+				partnerChoseToWait = false;
+				if (partnerHuman != null) {
+					if (partnerExpert != null) {
+						partnerAction = (GroundedAction)partnerExpert.getActionWithScheduler(currentState, agents, !onlySubgoals, (GroundedAction)humanAction);
+						if (partnerAction != null && !partnerAction.params[0].equals(partner.getAgentName())) {
+							throw new RuntimeException("Partner can't choose this action");
+						}
+					} else if (!currentState.equals(startingState)) {
+						State newState = (humanAction == null) ? currentState : humanAction.executeIn(currentState);
+						partnerAction = (GroundedAction)partnerHuman.getActionWithScheduler(newState, agents, !onlySubgoals);
+					}
+					
+				} else {
+					if (humanAction != null && humanAction.action instanceof ResetAction) {
+						System.out.println("Human resets");
+					}
+					partnerAction = (GroundedAction)partner.getActionWithScheduler(currentState, agents, !onlySubgoals);
+					if (partnerAction == null) {
+						//partnerAction = TestManyAgents.getActionAndWait(partner, currentState);
+					}
+				}
+				if (partnerAction != null && partnerAction.action == null) {
+					partnerChoseToWait = true;
+					partnerAction = null;
+					System.out.println("Partner chose to wait");
+				} 
+			}
+			
+			if (partnerAction != null) {
+				BakingAction bakingAction = (BakingAction)partnerAction.action;
+				BakingActionResult result = bakingAction.checkActionIsApplicableInState(currentState, partnerAction.params);
+				if (!result.getIsSuccess()) {
+					System.err.println("Action " + partnerAction.toString() + " cannot be performed");
+					System.err.println(result.getWhyFailed());
+					partnerAction = null;
+				}
+			}
+			
+			if (humanAction != null && !humanAction.params[0].equals(human.getAgentName())) {
+				throw new RuntimeException("Human can't choose this action");
+			}
+			
+			if (partnerAction != null && !partnerAction.params[0].equals(partner.getAgentName())) {
+				throw new RuntimeException("Partner can't choose this action");
+			}
+			
+			if (humanAction == null && partnerAction == null) {
+				numNullActions++;
+				if (numNullActions > 3) {
+					break;
+				}
+			} else {
+				numNullActions = 0;
+			}
+			currentState = SimulationHelper.performActions(currentState, humanAction, partnerAction, actionMap, statePair, actionPair, timesPair, timeGenerator);
+			
+			if (!timesPair.isEmpty()){
+				double now = timesPair.get(0);
+				if (humanAction == null) {
+					SimulationHelper.agentWaitUntilNext(human, actionMap, now);
+					System.out.println("Human waits until " + actionMap.get(human.getAgentName()));
+				}
+				if (partnerAction == null) {
+					SimulationHelper.agentWaitUntilNext(partner, actionMap, now);
+					System.out.println("Partner waits until " + actionMap.get(partner.getAgentName()));
+				}
+				currentTime += timesPair.get(0);
+			}
+			
+			if (actionPair.contains(humanAction)) {
+				if (((GroundedAction)humanAction).action instanceof ResetAction) {
+					partnerAction = null;
+				}
+				humanAction = null;
+				
+			}
+			if (actionPair.contains(partnerAction)) {
+				if (((GroundedAction)partnerAction).action instanceof ResetAction) {
+					humanAction = null;
+				}
+				partnerAction = null;
+				
+			}
+			
+			//partner.addObservation(currentState);
+			
+			stateSequence.addAll(statePair);
+			actionSequence.addAll(actionPair);
+			actionTimes.addAll(timesPair);
+			boolean isRepeating = checkIfRepeating(stateSequence);
+			isSuccess = (onlySubgoals) ? human.isSubgoalFinished(currentState) : human.isSuccess(currentState);
+			double reward = Collections.max(actionTimes);
+			//double reward = SchedulingHelper.computeSequenceTime(startingState, actionSequence, timeGenerator);
+			finished = isSuccess || reward > 1000.0;
+			if (reward > 1000.0) {
+				System.out.println("Reward became to large");
+			}
+			
+			/*if (human.isSubgoalFinished(currentState)) {
+				//System.out.println("Subgoal is finished");
+			} else {
+				//System.out.println("Subogal is not finished");
+			}*/
+			
+			if (finished) {
+				if (isSuccess) {
+					//System.out.println("\n\nHuman finished successfully!!!\n\n");
+				}
+				else {
+					if (reward < -200.0) {
+						//System.err.println("Error became to large");
+					}
+					if (isRepeating) {
+						//System.err.println("\n\nState sequence repetition detected!");
+					}
+					//System.err.println("\n\nHuman failed recipe!!!\n\n");
+				}
+				break;
+			}
+		}
+		
+		double reward = (actionTimes.isEmpty()) ? 0 : Collections.max(actionTimes);
+		//double reward = SchedulingHelper.computeSequenceTime(startingState, actionSequence, timeGenerator);
+		SimulationHelper.removeFile(saveFile);
+		return new EvaluationResult(partner.toString(), reward, isSuccess);
+	}
+	
+	/*
 	private static EvaluationResult evaluateAgent(Domain domain,
 			String saveFile, boolean onlySubgoals,
 			StateHashFactory hashingFactory, State startingState,
@@ -465,7 +652,7 @@ public class SimulationHelper {
 			} else {
 				//System.out.println("Subogal is not finished");
 			}*/
-			
+			/*
 			if (finished) {
 				if (isSuccess) {
 					//System.out.println("\n\nHuman finished successfully!!!\n\n");
@@ -487,7 +674,7 @@ public class SimulationHelper {
 		//double reward = SchedulingHelper.computeSequenceTime(startingState, actionSequence, timeGenerator);
 		SimulationHelper.removeFile(saveFile);
 		return new EvaluationResult(partner.toString(), reward, isSuccess);
-	}
+	}*/
 	
 	private static void agentWaitUntilNext(Agent agent,
 			Map<String, Double> actionMap, double next) {
@@ -583,8 +770,8 @@ public class SimulationHelper {
 		Map<String, Object> map = (Map<String, Object>)yaml.load(saved);
 		return SimulationState.fromMap(map, domain, hashingFactory);
 	}
-	
-	private static EvaluationResult evaluateHumanAlone(Human human, State startingState, ActionTimeGenerator timeGenerator, boolean onlySubgoals) {
+	/*
+	private static EvaluationResult evaluateHumanAlone(String saveFile, Human human, State startingState, ActionTimeGenerator timeGenerator, boolean onlySubgoals, Domain domain, StateHashFactory hashingFactory) {
 		
 		List<AbstractGroundedAction> actionSequence = new ArrayList<AbstractGroundedAction>();
 		List<State> stateSequence = new ArrayList<State>();
@@ -597,6 +784,44 @@ public class SimulationHelper {
 		Map<String, Double> lastActionTime = new HashMap<String, Double>();
 		lastActionTime.put(human.getAgentName(), 0.0);
 		while (!finished) {
+			SimulationHelper.writeCurrentState(saveFile, domain, hashingFactory, startingState, currentState, human, null, null, timeGenerator, 0.0);
+			
+			AbstractGroundedAction humanAction = human.getAction(currentState);
+			if (humanAction == null) {
+				break;
+			}
+			
+			currentState = SimulationHelper.performActions(currentState, humanAction, null, lastActionTime, statePair, actionPair, timesPair, timeGenerator);
+			stateSequence.addAll(statePair);
+			actionSequence.addAll(actionPair);
+			
+			finished = (onlySubgoals) ? human.isSubgoalFinished(currentState) : human.isFinished(currentState);
+		}
+		
+		double score = timesPair.get(0);
+		//double score = SchedulingHelper.computeSequenceTime(startingState, actionSequence, timeGenerator);
+		boolean success = (onlySubgoals) ? human.isSubgoalFinished(currentState) : human.isSuccess(currentState);
+		return new EvaluationResult("solo", score, success);
+	}*/
+	
+	private static EvaluationResult evaluateOneAgent(SimulationState simState, String saveFile, Domain domain, StateHashFactory hashingFactory, boolean onlySubgoals) {
+		Human human = (Human)simState.human;
+		State startingState = simState.startingState;
+		ActionTimeGenerator timeGenerator = simState.timeGenerator;
+		State currentState = simState.state;
+		Map<String, Double> lastActionTime = simState.actionMap;
+		List<AbstractGroundedAction> actionSequence = new ArrayList<AbstractGroundedAction>();
+		List<State> stateSequence = new ArrayList<State>();
+		boolean finished = false;
+		stateSequence.add(currentState);
+		
+		List<State> statePair = new ArrayList<State>(1);
+		List<AbstractGroundedAction> actionPair = new ArrayList<AbstractGroundedAction>(1);
+		List<Double> timesPair = new ArrayList<Double>(1);
+		
+		while (!finished) {
+			SimulationHelper.writeCurrentState(saveFile, domain, hashingFactory, startingState, currentState, human, null, null, timeGenerator, 0.0);
+			
 			AbstractGroundedAction humanAction = human.getAction(currentState);
 			if (humanAction == null) {
 				break;
@@ -615,21 +840,21 @@ public class SimulationHelper {
 		return new EvaluationResult("solo", score, success);
 	}
 	
-	public static EvaluationResult evaluateHuman(Domain generalDomain, Human human, ActionTimeGenerator timeGenerator, StateHashFactory hashingFactory, boolean onlySubgoals, int numTrials) {
-		EvaluationResult result = new EvaluationResult();
+	public static void evaluateHuman(String saveFile, Domain generalDomain, Human human, ActionTimeGenerator timeGenerator, 
+			StateHashFactory hashingFactory, boolean onlySubgoals, int numTrials) {
 		List<Recipe> recipes = AgentHelper.recipes(generalDomain);
 		
 		State startingState = SimulationHelper.generateInitialState(generalDomain, hashingFactory, recipes, human, null);
 		human.setInitialState(startingState);
 		
 		for (int i = 0; i < numTrials; i++) {
-			//System.out.println("Trial: " + i);
 			human.chooseNewRecipe();
-			System.out.println("solo" + ", " +  SimulationHelper.evaluateHumanAlone(human, startingState, timeGenerator, onlySubgoals).toString());
+			Map<String, Double> actionMap = new HashMap<String, Double>();
+			actionMap.put(human.getAgentName(), 0.0);
+			SimulationState simState = new SimulationState(startingState, startingState, human, null, actionMap, timeGenerator, 0.0);
+			EvaluationResult result = SimulationHelper.evaluateOneAgent(simState, saveFile, generalDomain, hashingFactory, onlySubgoals);
+			System.out.println(result.toString());
 		}
-		return result;
-		//System.out.println("Human alone: " + result.toString());
-		
 	}
 	
 	public static class EvaluationResult {
@@ -692,7 +917,7 @@ public class SimulationHelper {
 			agent = agents.get(choice);
 		} else {
 			System.out.println("Evaluating solo");
-			SimulationHelper.evaluateHuman(generalDomain, human, timeGenerator, hashingFactory, subgoalsOnly, numTrials);
+			SimulationHelper.evaluateHuman(filename, generalDomain, human, timeGenerator, hashingFactory, subgoalsOnly, numTrials);
 			return;
 		}
 		human = new Expert(generalDomain, "human", timeGenerator);
@@ -709,9 +934,9 @@ public class SimulationHelper {
 		
 		
 		for (int i = 0; i < numTrials; i++) {
-				result = SimulationHelper.evaluateAgent(generalDomain, hashingFactory, human, agent, startingState, timeGenerator, subgoalsOnly, filename
-						);
-				System.out.println(result.toString());
+			SimulationState simState = new SimulationState(startingState, startingState, human, agent, new HashMap<String, Double>(), timeGenerator, 0.0);
+			result = SimulationHelper.evaluateTwoAgents(simState, generalDomain, filename, subgoalsOnly, hashingFactory);	
+			System.out.println(result.toString());
 
 			System.out.println("");
 			timeGenerator.clear();
@@ -720,9 +945,16 @@ public class SimulationHelper {
 	
 	public static void runFromSaved(String filename, Domain generalDomain, StateHashFactory hashingFactory,
 			List<Recipe> recipes, ResetAction reset, boolean subgoalsOnly) {
+		SimulationState simState = SimulationHelper.getStateFromSaved(generalDomain, hashingFactory, filename);
+		if (simState.partner == null) {
+			EvaluationResult result = SimulationHelper.evaluateOneAgent(simState, filename, generalDomain, hashingFactory, subgoalsOnly);
+			System.out.println(result.toString());
+		} else {
+			EvaluationResult result = SimulationHelper.evaluateTwoAgents(simState, generalDomain, filename, subgoalsOnly, hashingFactory);
+			System.out.println(result.toString());
+		}
 		
-		EvaluationResult result = SimulationHelper.evaluateAgent(generalDomain, filename, subgoalsOnly, hashingFactory);
-		System.out.println(result.toString());
+		
 	}
 	
 	public static class SimulationState {

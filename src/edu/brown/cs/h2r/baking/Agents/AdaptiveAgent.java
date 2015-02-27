@@ -82,7 +82,7 @@ public abstract class AdaptiveAgent extends Agent{
 		this.setInitialState(startState);
 		List<PolicyProbability> newDistribution = new ArrayList<PolicyProbability>();
 		for (PolicyProbability prob : this.policyBeliefDistribution){
-			Double value = policyDistribution.get(prob);
+			Double value = policyDistribution.get(prob.getPolicyDomain().toString());
 			newDistribution.add(PolicyProbability.newPolicyProbability(prob.getPolicyDomain(), value));
 		}
 		this.policyBeliefDistribution.clear();
