@@ -934,7 +934,11 @@ public class SimulationHelper {
 		
 		
 		for (int i = 0; i < numTrials; i++) {
-			SimulationState simState = new SimulationState(startingState, startingState, human, agent, new HashMap<String, Double>(), timeGenerator, 0.0);
+			human.chooseNewRecipe();
+			Map<String, Double> actionTimes =  new HashMap<String, Double>();
+			actionTimes.put(human.getAgentName(), 0.0);
+			actionTimes.put(agent.getAgentName(), 0.0);
+			SimulationState simState = new SimulationState(startingState, startingState, human, agent, actionTimes, timeGenerator, 0.0);
 			result = SimulationHelper.evaluateTwoAgents(simState, generalDomain, filename, subgoalsOnly, hashingFactory);	
 			System.out.println(result.toString());
 
