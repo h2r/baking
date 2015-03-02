@@ -99,7 +99,7 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 		
 		Path path = Paths.get(saveFile);
 		if (!Files.exists(path)){
-			int choice = trialId % (agents.size() + 1);
+			int choice = 2;//trialId % (agents.size() + 1);
 			SimulationHelper.run(numTrials, generalDomain, hashingFactory, recipes, timeGenerator, human, agents,
 					reset, choice, false, saveFile);	
 		} else {

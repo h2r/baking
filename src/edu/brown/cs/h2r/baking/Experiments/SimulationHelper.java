@@ -938,6 +938,10 @@ public class SimulationHelper {
 			Map<String, Double> actionTimes =  new HashMap<String, Double>();
 			actionTimes.put(human.getAgentName(), 0.0);
 			actionTimes.put(agent.getAgentName(), 0.0);
+			if (agent instanceof Human && !(agent instanceof RandomRecipeAgent)) {
+				Human otherHuman = (Human)agent;
+				otherHuman.setRecipe(human.getCurrentRecipe());
+			}
 			SimulationState simState = new SimulationState(startingState, startingState, human, agent, actionTimes, timeGenerator, 0.0);
 			result = SimulationHelper.evaluateTwoAgents(simState, generalDomain, filename, subgoalsOnly, hashingFactory);	
 			System.out.println(result.toString());
