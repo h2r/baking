@@ -911,10 +911,14 @@ public class SimulationHelper {
 	public static void run(int numTrials, Domain generalDomain, StateHashFactory hashingFactory,
 			List<Recipe> recipes, ActionTimeGenerator timeGenerator,
 			Human human, List<Agent> agents, ResetAction reset, int choice, boolean subgoalsOnly, String filename) {
+		
+		long start = System.nanoTime();
 		SimulationHelper.EvaluationResult result;
 		Agent agent = null;
 		if (choice < agents.size() ) {
 			agent = agents.get(choice);
+			System.out.println("Evaluating " + agent.toString());
+			
 		} else {
 			System.out.println("Evaluating solo");
 			SimulationHelper.evaluateHuman(filename, generalDomain, human, timeGenerator, hashingFactory, subgoalsOnly, numTrials);
@@ -929,9 +933,9 @@ public class SimulationHelper {
 		if (agent != null) {
 			agent.setInitialState(startingState);
 		}
-		System.out.println("Evaluating " + agent.toString());
+		long end = System.nanoTime();
 		//System.out.println(parser.stateToString(startingState));
-		
+		System.out.println("Required " + (end - start) / 1000000000.0);
 		
 		for (int i = 0; i < numTrials; i++) {
 			human.chooseNewRecipe();
