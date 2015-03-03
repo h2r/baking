@@ -469,7 +469,7 @@ public class SimulationHelper {
 			actionTimes.addAll(timesPair);
 			boolean isRepeating = checkIfRepeating(stateSequence);
 			isSuccess = (onlySubgoals) ? human.isSubgoalFinished(currentState) : human.isSuccess(currentState);
-			double reward = Collections.max(actionTimes);
+			double reward = (actionTimes.isEmpty()) ? 0 : Collections.max(actionTimes);
 			//double reward = SchedulingHelper.computeSequenceTime(startingState, actionSequence, timeGenerator);
 			finished = isSuccess || reward > 1000.0;
 			if (reward > 1000.0) {
@@ -501,7 +501,6 @@ public class SimulationHelper {
 		
 		double reward = (actionTimes.isEmpty()) ? 0 : Collections.max(actionTimes);
 		//double reward = SchedulingHelper.computeSequenceTime(startingState, actionSequence, timeGenerator);
-		SimulationHelper.removeFile(saveFile);
 		return new EvaluationResult(partner.toString(), reward, isSuccess);
 	}
 	
@@ -949,7 +948,7 @@ public class SimulationHelper {
 			SimulationState simState = new SimulationState(startingState, startingState, human, agent, actionTimes, timeGenerator, 0.0);
 			result = SimulationHelper.evaluateTwoAgents(simState, generalDomain, filename, subgoalsOnly, hashingFactory);	
 			System.out.println(result.toString());
-
+			SimulationHelper.removeFile(filename);
 			System.out.println("");
 			timeGenerator.clear();
 		}
@@ -966,6 +965,7 @@ public class SimulationHelper {
 			System.out.println(result.toString());
 		}
 		
+		SimulationHelper.removeFile(filename);
 		
 	}
 	
