@@ -183,7 +183,7 @@ public class SubgoalDetermination {
 	public static void main(String[] argv) {
 		int maxAlpha = 3;
 		int numTries = 10;
-		boolean breakfastOrDessert = true;
+		boolean breakfastOrDessert = false;
 		//int depth = 1;
 		
 		if (argv.length > 0 && argv[0].equals("dessert")) {
