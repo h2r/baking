@@ -43,6 +43,7 @@ import edu.brown.cs.h2r.baking.Recipes.ChocolateMilk;
 import edu.brown.cs.h2r.baking.Recipes.CoffeeWithMilk;
 import edu.brown.cs.h2r.baking.Recipes.CranberryWalnutCookies;
 import edu.brown.cs.h2r.baking.Recipes.FriedEgg;
+import edu.brown.cs.h2r.baking.Recipes.MoltenLavaCake;
 import edu.brown.cs.h2r.baking.Recipes.Pancake;
 import edu.brown.cs.h2r.baking.Recipes.PeanutButterCookies;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
@@ -99,6 +100,28 @@ public class AgentHelper {
 				//CranberryWalnutCookies.getRecipe(domain), 
 				//MoltenLavaCake.getRecipe(domain),
 				//(Recipe)PeanutButterCookies.getRecipe(domain)
+				);
+	}
+	
+	public static List<Recipe> breakfastRecipes(Domain domain) {
+		return Arrays.asList(
+				CoffeeWithMilk.getRecipe(domain),
+				CerealWithMilk.getRecipe(domain),
+				Pancake.getRecipe(domain),
+				FriedEgg.getRecipe(domain),
+				ScrambledEgg.getRecipe(domain),
+				ChocolateMilk.getRecipe(domain),
+				Tea.getRecipe(domain)
+				);
+	}
+	
+	public static List<Recipe> dessertRecipes(Domain domain) {
+		return Arrays.asList(
+				Brownies.getRecipe(domain), 
+				ChocolateChipCookies.getRecipe(domain), 
+				CranberryWalnutCookies.getRecipe(domain), 
+				//MoltenLavaCake.getRecipe(domain),
+				PeanutButterCookies.getRecipe(domain)
 				);
 	}
 	

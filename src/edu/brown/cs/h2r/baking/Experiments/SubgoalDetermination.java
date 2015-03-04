@@ -183,13 +183,14 @@ public class SubgoalDetermination {
 	public static void main(String[] argv) {
 		int maxAlpha = 3;
 		int numTries = 10;
+		boolean breakfastOrDessert = true;
 		//int depth = 1;
 		
-		if (argv.length > 0) {
-			numTries = Integer.parseInt(argv[0]);
+		if (argv.length > 0 && argv[0].equals("dessert")) {
+			breakfastOrDessert = true;
 		}
 		Domain domain = SubgoalDetermination.generateGeneralDomain();
-		List<Recipe> recipes = AgentHelper.recipes(domain);
+		List<Recipe> recipes = (breakfastOrDessert) ? AgentHelper.dessertRecipes(domain) : AgentHelper.breakfastRecipes(domain);
 		Knowledgebase knowledgebase = Knowledgebase.getKnowledgebase(domain);
 		knowledgebase.initKnowledgebase(recipes);
 		State state = SubgoalDetermination.generateInitialState(domain, recipes);
@@ -222,7 +223,7 @@ public class SubgoalDetermination {
 				for (int depthType = 0; depthType < 3; depthType++) {
 					List<Double> successRate = new ArrayList<Double>();
 					PolicyPrediction prediction = new PolicyPrediction(policyDomains);			
-					for (int depth = 1; depth < 5; depth++) {	
+					for (int depth = 1; depth < 10; depth++) {	
 						int numSuccess = 0;
 						int numEstimateSuccesses = 0;
 						int numRandomGuesses = 0;
