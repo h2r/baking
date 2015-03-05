@@ -30,7 +30,9 @@ if len(argv) > 1:
             isFirst = True
             data_lines = []
             for line in csvreader:
-                if line:
+		if len(line) != 7:
+		    continue
+		if line:
                     if isFirst:
                         labels = line
                         isFirst = False
