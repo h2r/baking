@@ -377,7 +377,7 @@ public class SimulationHelper {
 				}
 			}
 			
-			if (partnerAction == null) {
+			if (partnerAction == null && !currentState.equals(startingState)) {
 				partnerChoseToWait = false;
 				if (partnerHuman != null) {
 					if (partnerExpert != null) {
@@ -385,8 +385,10 @@ public class SimulationHelper {
 						if (partnerAction != null && !partnerAction.params[0].equals(partner.getAgentName())) {
 							throw new RuntimeException("Partner can't choose this action");
 						}
-					} else if (!currentState.equals(startingState)) {
+					} else {
 						State newState = (humanAction == null) ? currentState : humanAction.executeIn(currentState);
+						
+						
 						partnerAction = (GroundedAction)partnerHuman.getActionWithScheduler(newState, agents, !onlySubgoals);
 					}
 					
@@ -738,7 +740,7 @@ public class SimulationHelper {
 		return yaml.dump(simState.toMap(domain, hashingFactory));
 	}
 	
-	private static SimulationState getStateFromSaved(Domain domain, StateHashFactory hashingFactory, String filename) {
+	private static SimulationState getStateFromSaved(Domain domain, StateHashFactory hashingFactory, String filename, List<Recipe> recipes) {
 		StringBuilder  stringBuilder = new StringBuilder();
 		BufferedReader reader = null;
 	    try {
@@ -767,7 +769,7 @@ public class SimulationHelper {
 		
 		Yaml yaml = new Yaml();
 		Map<String, Object> map = (Map<String, Object>)yaml.load(saved);
-		return SimulationState.fromMap(map, domain, hashingFactory);
+		return SimulationState.fromMap(map, domain, hashingFactory, recipes);
 	}
 	/*
 	private static EvaluationResult evaluateHumanAlone(String saveFile, Human human, State startingState, ActionTimeGenerator timeGenerator, boolean onlySubgoals, Domain domain, StateHashFactory hashingFactory) {
@@ -839,23 +841,6 @@ public class SimulationHelper {
 		return new EvaluationResult("solo", score, success);
 	}
 	
-	public static void evaluateHuman(String saveFile, Domain generalDomain, Human human, ActionTimeGenerator timeGenerator, 
-			StateHashFactory hashingFactory, boolean onlySubgoals, int numTrials) {
-		List<Recipe> recipes = AgentHelper.recipes(generalDomain);
-		
-		State startingState = SimulationHelper.generateInitialState(generalDomain, hashingFactory, recipes, human, null);
-		human.setInitialState(startingState);
-		
-		for (int i = 0; i < numTrials; i++) {
-			human.chooseNewRecipe();
-			Map<String, Double> actionMap = new HashMap<String, Double>();
-			actionMap.put(human.getAgentName(), 0.0);
-			SimulationState simState = new SimulationState(startingState, startingState, human, null, actionMap, timeGenerator, 0.0);
-			EvaluationResult result = SimulationHelper.evaluateOneAgent(simState, saveFile, generalDomain, hashingFactory, onlySubgoals);
-			System.out.println(result.toString());
-		}
-	}
-	
 	public static class EvaluationResult {
 		private double score;
 		private double successScore;
@@ -920,10 +905,24 @@ public class SimulationHelper {
 			
 		} else {
 			System.out.println("Evaluating solo");
-			SimulationHelper.evaluateHuman(filename, generalDomain, human, timeGenerator, hashingFactory, subgoalsOnly, numTrials);
+			State startingState = SimulationHelper.generateInitialState(generalDomain, hashingFactory, recipes, human, null);
+			
+			human.setInitialState(startingState);
+			human.chooseNewRecipe();
+			System.out.println("Recipe, " + human.getCurrentRecipe().toString());
+			Map<String, Double> actionTimes =  new HashMap<String, Double>();
+			actionTimes.put(human.getAgentName(), 0.0);
+			if (agent instanceof Human && !(agent instanceof RandomRecipeAgent)) {
+				Human otherHuman = (Human)agent;
+				otherHuman.setRecipe(human.getCurrentRecipe());
+			}
+			
+			SimulationState simState = new SimulationState(startingState, startingState, human, agent, actionTimes, timeGenerator, 0.0);
+			
+			SimulationHelper.evaluateOneAgent(simState, filename, generalDomain, hashingFactory, subgoalsOnly);
 			return;
 		}
-		human = new Expert(generalDomain, "human", timeGenerator);
+		human = new Expert(generalDomain, "human", timeGenerator, recipes);
 		
 		State startingState = SimulationHelper.generateInitialState(generalDomain, hashingFactory, recipes, human, agent);
 		reset.setState(startingState);
@@ -937,7 +936,10 @@ public class SimulationHelper {
 		System.out.println("Required " + (end - start) / 1000000000.0);
 		
 		for (int i = 0; i < numTrials; i++) {
+			human.reset();
+			agent.reset();
 			human.chooseNewRecipe();
+			System.out.println("Recipe, " + human.getCurrentRecipe().toString());
 			Map<String, Double> actionTimes =  new HashMap<String, Double>();
 			actionTimes.put(human.getAgentName(), 0.0);
 			actionTimes.put(agent.getAgentName(), 0.0);
@@ -946,8 +948,12 @@ public class SimulationHelper {
 				otherHuman.setRecipe(human.getCurrentRecipe());
 			}
 			SimulationState simState = new SimulationState(startingState, startingState, human, agent, actionTimes, timeGenerator, 0.0);
+			start = System.nanoTime();
 			result = SimulationHelper.evaluateTwoAgents(simState, generalDomain, filename, subgoalsOnly, hashingFactory);	
+			end = System.nanoTime();
+			
 			System.out.println(result.toString());
+			System.out.println(agent.toString() + ", time, " + ((end - start) / 100000000.0));
 			SimulationHelper.removeFile(filename);
 			System.out.println("");
 			timeGenerator.clear();
@@ -956,7 +962,7 @@ public class SimulationHelper {
 	
 	public static void runFromSaved(String filename, Domain generalDomain, StateHashFactory hashingFactory,
 			List<Recipe> recipes, ResetAction reset, boolean subgoalsOnly) {
-		SimulationState simState = SimulationHelper.getStateFromSaved(generalDomain, hashingFactory, filename);
+		SimulationState simState = SimulationHelper.getStateFromSaved(generalDomain, hashingFactory, filename, recipes);
 		if (simState.partner == null) {
 			EvaluationResult result = SimulationHelper.evaluateOneAgent(simState, filename, generalDomain, hashingFactory, subgoalsOnly);
 			System.out.println(result.toString());
@@ -988,7 +994,7 @@ public class SimulationHelper {
 			this.timeGenerator = timeGenerator;
 		}
 		
-		public static SimulationState fromMap(Map<String, Object> map, Domain domain, StateHashFactory hashingFactory) {
+		public static SimulationState fromMap(Map<String, Object> map, Domain domain, StateHashFactory hashingFactory, List<Recipe> recipes) {
 			Map<String, Double> actionMap = (Map<String, Double>)map.get("action_map");
 			double currentTime = (Double)map.get("current_time");
 			StateYAMLParser parser = new StateYAMLParser(domain, hashingFactory);
@@ -1001,12 +1007,12 @@ public class SimulationHelper {
 			ActionTimeGenerator timeGenerator = ActionTimeGenerator.fromMap(domain, (Map<String, Object>)map.get("time_generator"));
 			
 			Map<String, Object> humanMap = (Map<String, Object>)map.get("human");
-			Agent human = Agent.fromMap(domain, humanMap, timeGenerator, startState);
+			Agent human = Agent.fromMap(domain, humanMap, timeGenerator, startState, recipes);
 			Object partnerObj = map.get("partner");
 			Agent partner = null;
 			if (partnerObj != null) {
 				Map<String, Object> partnerMap = (Map<String, Object>)partnerObj;
-				partner = Agent.fromMap(domain, partnerMap, timeGenerator, startState);
+				partner = Agent.fromMap(domain, partnerMap, timeGenerator, startState, recipes);
 			}
 			
 			return new SimulationState(startState, state, human, partner, actionMap, timeGenerator, currentTime);

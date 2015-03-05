@@ -1,5 +1,6 @@
 package edu.brown.cs.h2r.baking.Agents;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -12,13 +13,13 @@ import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
 
 public class RandomRecipeAgent extends Human{
 	private final Domain domain;
-	public RandomRecipeAgent(Domain domain, String name, ActionTimeGenerator timeGenerator) {
-		super(domain, name, timeGenerator);
+	public RandomRecipeAgent(Domain domain, String name, ActionTimeGenerator timeGenerator, List<Recipe> recipes) {
+		super(domain, name, timeGenerator, recipes);
 		this.domain = domain;
 	}
 	
-	protected RandomRecipeAgent(Domain domain, Map<String, Object> map, ActionTimeGenerator timeGenerator, State state) {
-		super(domain, map, timeGenerator, state);
+	protected RandomRecipeAgent(Domain domain, Map<String, Object> map, ActionTimeGenerator timeGenerator, State state, List<Recipe> recipes) {
+		super(domain, map, timeGenerator, state, recipes);
 		this.domain = domain;
 	}
 	
@@ -33,7 +34,7 @@ public class RandomRecipeAgent extends Human{
 	@Override
 	public void setInitialState(State state) {
 		super.setInitialState(state);
-		List<Recipe> recipes = AgentHelper.recipes(this.domain);
+		List<Recipe> recipes = new ArrayList<Recipe>(this.recipes);
 		Collections.shuffle(recipes);
 		this.setRecipe(recipes.get(0));
 	}
@@ -41,7 +42,7 @@ public class RandomRecipeAgent extends Human{
 	@Override
 	public AbstractGroundedAction getAction(State state) {
 		if (this.currentRecipe == null) {
-			List<Recipe> recipes = AgentHelper.recipes(this.domain);
+			List<Recipe> recipes = new ArrayList<Recipe>(this.recipes);
 			Collections.shuffle(recipes);
 			this.setRecipe(recipes.get(0));
 		}

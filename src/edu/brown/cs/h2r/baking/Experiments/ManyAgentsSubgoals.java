@@ -325,7 +325,7 @@ public class ManyAgentsSubgoals {
 		double score = 0.0;
 		EvaluationResult result = new EvaluationResult();
 		for (int i = 0; i < numTrials; i++) {
-			List<Recipe> recipes = AgentHelper.recipes(generalDomain);
+			List<Recipe> recipes = AgentHelper.allRecipes(generalDomain);
 			
 			State startingState = ManyAgentsSubgoals.generateInitialState(generalDomain, recipes, human, null);
 			human.setInitialState(startingState);
@@ -413,14 +413,14 @@ public class ManyAgentsSubgoals {
 		
 		Domain generalDomain = ManyAgentsSubgoals.generateGeneralDomain(); 
 		
-		List<Recipe> recipes = AgentHelper.recipes(generalDomain);
+		List<Recipe> recipes = AgentHelper.allRecipes(generalDomain);
 		Knowledgebase knowledgebase = Knowledgebase.getKnowledgebase(generalDomain);
 		knowledgebase.initKnowledgebase(recipes);
 		Map<String, Double> factors = new HashMap<String, Double>();
 		factors.put("human", 1.0);
 		
 		ActionTimeGenerator timeGenerator = new ActionTimeGenerator(factors);
-		Human human = new Human(generalDomain, timeGenerator);
+		Human human = new Human(generalDomain, timeGenerator, recipes);
 		
 		/*for (Recipe recipe : recipes) {
 			//System.out.println("Testing recipe " + recipe.toString());
@@ -434,10 +434,10 @@ public class ManyAgentsSubgoals {
 		
 		List<Agent> agents = Arrays.asList(
 				(Agent)new RandomActionAgent(generalDomain),
-				(Agent)new RandomRecipeAgent(generalDomain,"partner", timeGenerator),
-				(Agent)new Human(generalDomain, "friend", timeGenerator),
-				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator, false),
-				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator, true)
+				(Agent)new RandomRecipeAgent(generalDomain,"partner", timeGenerator, recipes),
+				(Agent)new Human(generalDomain, "friend", timeGenerator, recipes),
+				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator, recipes, false),
+				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator, recipes, true)
 				);
 		System.out.println("Agent, Successes, Trials, Average reward, average successful reward");
 		ResetAction reset = (ResetAction)generalDomain.getAction(ResetAction.className);
@@ -475,7 +475,7 @@ public class ManyAgentsSubgoals {
 				
 				human = humanAgents.get(agentName);
 				if (human == null) {
-					human = new Human(generalDomain, timeGenerator);
+					human = new Human(generalDomain, timeGenerator, recipes);
 					human.setInitialState(startingState);
 					reset.setState(startingState);
 					

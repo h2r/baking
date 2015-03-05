@@ -8,6 +8,7 @@ import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
+import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
 
 public abstract class Agent{
@@ -46,18 +47,18 @@ public abstract class Agent{
 		return map;
 	}
 	
-	public static Agent fromMap(Domain domain, Map<String, Object> map, ActionTimeGenerator timeGenerator, State startState) {
+	public static Agent fromMap(Domain domain, Map<String, Object> map, ActionTimeGenerator timeGenerator, State startState, List<Recipe> recipes) {
 		String type = (String)map.get("type");
 		Map<String, Object> agentData = (Map<String, Object>)map.get("agent");
 		switch(type) {
 		case "Expert":
-			return new Expert(domain, agentData, timeGenerator, startState);
+			return new Expert(domain, agentData, timeGenerator, startState, recipes);
 		case "Human":
-			return new Human(domain, agentData, timeGenerator, startState);
+			return new Human(domain, agentData, timeGenerator, startState, recipes);
 		case "AdaptiveByFlow":
-			return new AdaptiveByFlow(domain, agentData, timeGenerator, startState);
+			return new AdaptiveByFlow(domain, agentData, timeGenerator, recipes, startState);
 		case "RandomRecipeAgent":
-			return new RandomRecipeAgent(domain, agentData, timeGenerator, startState);
+			return new RandomRecipeAgent(domain, agentData, timeGenerator, startState, recipes);
 		case "RandomActionAgent":
 			return new RandomActionAgent(domain);
 			default:

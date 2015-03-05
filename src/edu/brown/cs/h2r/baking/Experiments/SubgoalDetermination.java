@@ -150,7 +150,6 @@ public class SubgoalDetermination {
 		if (bestPolicies.size() < numberToReturn) {
 			bestPolicies.put(key, value);
 		} else {
-			boolean insert = false;
 			Map.Entry<String, Double> minEntry = 
 					bestPolicies.entrySet().iterator().next();
 			
@@ -181,10 +180,8 @@ public class SubgoalDetermination {
 	}
 		
 	public static void main(String[] argv) {
-		int maxAlpha = 3;
 		int numTries = 10;
 		boolean breakfastOrDessert = false;
-		//int depth = 1;
 		
 		if (argv.length > 0 && argv[0].equals("dessert")) {
 			breakfastOrDessert = true;
@@ -195,20 +192,11 @@ public class SubgoalDetermination {
 		knowledgebase.initKnowledgebase(recipes);
 		State state = SubgoalDetermination.generateInitialState(domain, recipes);
 		
-		//for (Recipe recipe : recipes) {
-		//System.out.println("Testing recipe " + recipe.toString());
-		//	ExperimentHelper.testRecipeExecution(domain, state, recipe);
-		//System.out.println("\n\n");
-		//}
-		
 		RewardFunction rf = new RewardFunction() {
-
 			@Override
 			public double reward(State s, GroundedAction a, State sprime) {
-				// TODO Auto-generated method stub
 				return -1;
 			}
-			
 		};
 		List<KitchenSubdomain> policyDomains = AgentHelper.generateAllRTDPPoliciesParallel(domain, state, recipes, rf, hashingFactory);
 		List<KitchenSubdomain> testDomains = new ArrayList<KitchenSubdomain>(policyDomains);
@@ -221,7 +209,6 @@ public class SubgoalDetermination {
 		for (int i = 0; i < numTries; i++) {
 			for (int k = 0; k < testDomains.size(); k++) {
 				for (int depthType = 0; depthType < 1; depthType++) {
-					List<Double> successRate = new ArrayList<Double>();
 					PolicyPrediction prediction = new PolicyPrediction(policyDomains);			
 					for (int depth = 1; depth < 20; depth++) {	
 						int numSuccess = 0;
@@ -247,7 +234,6 @@ public class SubgoalDetermination {
 						List<KitchenSubdomain> bestPolicies = new ArrayList<KitchenSubdomain>();
 						for (int j = 0; j < policyDistribution.size(); j++) {
 							PolicyProbability policyProbability = policyDistribution.get(j);
-							String name = policyProbability.getPolicyDomain().toString();
 									
 							double prob = (policyProbability == null) ? 0.0 : policyProbability.getProbability();
 							if (prob > maxProb) {
@@ -279,20 +265,5 @@ public class SubgoalDetermination {
 				}
 			}
 		}
-		
-		/*successRate.add((double)numSuccess / numTries);
-		System.out.println("Success: " + numSuccess + "/" + numTries);
-		System.out.println("Correct non guesses: " + numEstimateSuccesses + "/" + (numTries - numRandomGuesses));
-		System.out.println("Educated Guesses: " + numRandomGuesses + "/" + numTries);
-		
-		
-		for (int i = 0; i < successRate.size(); i++) {
-			int depthType = i % 3;
-			if (depthType == 0) {
-				System.out.println("Depth type: " +  i / 3);
-			}
-			System.out.println(Integer.toString(i+1) + ": " + successRate.get(i));
-		}*/
-			
 	}
 }

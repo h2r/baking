@@ -21,8 +21,8 @@ import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
 
 public class RandomSubgoalAgent extends Human{
 	private final Domain domain;
-	public RandomSubgoalAgent(Domain domain, String name, ActionTimeGenerator timeGenerator) {
-		super(domain, name, timeGenerator);
+	public RandomSubgoalAgent(Domain domain, String name, ActionTimeGenerator timeGenerator, List<Recipe> recipes) {
+		super(domain, name, timeGenerator, recipes);
 		this.domain = domain;
 	}
 	@Override

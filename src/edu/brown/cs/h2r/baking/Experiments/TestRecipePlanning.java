@@ -32,14 +32,14 @@ public class TestRecipePlanning {
 	public static void main(String[] args) {
 		Domain generalDomain = SimulationHelper.generateGeneralDomain(); 
 		
-		List<Recipe> recipes = AgentHelper.recipes(generalDomain);
+		List<Recipe> recipes = AgentHelper.allRecipes(generalDomain);
 		Knowledgebase knowledgebase = Knowledgebase.getKnowledgebase(generalDomain);
 		knowledgebase.initKnowledgebase(recipes);
 		Map<String, Double> factors = new HashMap<String, Double>();
 		factors.put("human", 1.0);
 		
 		ActionTimeGenerator timeGenerator = new ActionTimeGenerator(factors);
-		Human human = new Human(generalDomain, timeGenerator);
+		Human human = new Human(generalDomain, timeGenerator, recipes);
 		
 		State state = SimulationHelper.generateInitialState(generalDomain, hashingFactory, recipes, human, null);
 		for (Recipe recipe : recipes) {
@@ -52,7 +52,7 @@ public class TestRecipePlanning {
 		reset.setState(state);
 		
 		List<KitchenSubdomain> plannedRecipes = 
-				AgentHelper.generateAllRTDPPoliciesParallel(generalDomain, state, AgentHelper.recipes(generalDomain),
+				AgentHelper.generateAllRTDPPoliciesParallel(generalDomain, state, AgentHelper.allRecipes(generalDomain),
 				TestRecipePlanning.rewardFunction ,TestRecipePlanning.hashingFactory);
 
 		for (KitchenSubdomain subdomain : plannedRecipes) {

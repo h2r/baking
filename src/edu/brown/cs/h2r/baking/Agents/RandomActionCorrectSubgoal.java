@@ -9,13 +9,14 @@ import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.GroundedAction;
+import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
 
 public class RandomActionCorrectSubgoal extends Human {
 	private final Domain domain;
 	Random random;
-	public RandomActionCorrectSubgoal(Domain domain, String name, ActionTimeGenerator timeGenerator) {
-		super(domain, name, timeGenerator);
+	public RandomActionCorrectSubgoal(Domain domain, String name, ActionTimeGenerator timeGenerator, List<Recipe> recipes) {
+		super(domain, name, timeGenerator, recipes);
 		this.domain = domain;
 		this.random = new Random();
 	}

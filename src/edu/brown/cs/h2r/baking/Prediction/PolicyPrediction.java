@@ -4,14 +4,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
-import burlap.behavior.singleagent.Policy;
 import burlap.behavior.singleagent.Policy.ActionProb;
 import burlap.behavior.singleagent.planning.StateConditionTest;
 import burlap.behavior.singleagent.planning.stochastic.rtdp.AffordanceRTDP;
@@ -222,22 +217,6 @@ public class PolicyPrediction {
 		PolicyProbabilityCallable runnable = 
 				new PolicyProbabilityCallable(this.policies, fromStateTuple, goalCondition, maxDepth, 
 						actualName, hashFactory, depthType);
-		
-		/*
-		List<PolicyProbability> result = new ArrayList<PolicyProbability>();
-		for(KitchenSubdomain policy : this.policies) {
-			PolicyProbability prob;
-			try {
-				prob = getPolicyProbability(policy, this.policies, fromStateTuple, goalCondition,
-						maxDepth, actualName, hashingFactory, depthType);
-				result.add(prob);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-		}*/
-		
 		
 		List<PolicyProbability> result = Parallel.ForEach(this.policies, (ForEachCallable<KitchenSubdomain, PolicyProbability>)runnable);
 		

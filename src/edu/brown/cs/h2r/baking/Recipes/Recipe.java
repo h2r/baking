@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 import java.util.Set;
 
 import burlap.oomdp.core.Domain;
@@ -23,6 +24,7 @@ import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
 
 
 public abstract class Recipe {
@@ -54,6 +56,19 @@ public abstract class Recipe {
 		
 		this.recipeToolAttributes = Collections.unmodifiableSet(this.createRecipeToolAttributes());
 		
+	}
+	
+	protected Recipe(Domain domain, String recipeName) {
+		this.knowledgebase = Knowledgebase.getKnowledgebase(domain);
+		this.subgoalIngredients = new HashMap<String, IngredientRecipe>();
+		this.topLevelIngredient = this.createTopLevelIngredient();
+		this.subgoals = Collections.unmodifiableList(this.getSubgoals(domain));
+		this.ingredientSubgoals = Collections.unmodifiableList(this.createIngredientSubgoals());
+		
+		this.addRequiredRecipeAttributes();
+		
+		this.recipeToolAttributes = Collections.unmodifiableSet(this.createRecipeToolAttributes());
+		this.recipeName = recipeName;
 	}
 	
 	protected abstract IngredientRecipe createTopLevelIngredient();
@@ -728,5 +743,60 @@ public abstract class Recipe {
 	@Override
 	public String toString() {
 		return this.recipeName;
+	}
+	
+	public static Recipe randomlyGenerateRecipe(Domain domain, final List<IngredientRecipe> ingredients, final int numSubgoals, final int numIngredientsPerSubgoal) {
+		final Set<IngredientRecipe> recipeIngredients = new HashSet<IngredientRecipe>();
+		final Random random = new Random();
+		String recipeName = "Randomly Generated Recipe " + random.nextInt();
+		Recipe recipe = new Recipe(domain, recipeName) {
+			@Override
+			protected IngredientRecipe createTopLevelIngredient() {
+				List<IngredientRecipe> topLevelContents = new ArrayList<IngredientRecipe>();
+				for (int i = 0; i < numSubgoals; i++) {
+					List<IngredientRecipe> subgoalIngredients = new ArrayList<IngredientRecipe>();
+					for (int j = 0; j < numIngredientsPerSubgoal; j++) {
+						IngredientRecipe choice = ingredients.get(random.nextInt(ingredients.size()));
+						if (recipeIngredients.add(choice)) {
+							subgoalIngredients.add(choice);
+						}
+					}
+					String name = Integer.toString(random.nextInt());
+					IngredientRecipe subgoalIngredient = new IngredientRecipe(name, Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, subgoalIngredients);
+					this.subgoalIngredients.put(subgoalIngredient.getSimpleName(), subgoalIngredient);
+					topLevelContents.add(subgoalIngredient);
+				}
+				
+				IngredientRecipe topLevel = (numSubgoals == 1) ? topLevelContents.get(0) : new IngredientRecipe("top_level", Recipe.NO_ATTRIBUTES, this, Recipe.SWAPPED, topLevelContents);
+				this.subgoalIngredients.put(topLevel.getSimpleName(), topLevel);
+				return topLevel;
+			}
+
+			@Override
+			public List<BakingSubgoal> getSubgoals(Domain domain) {
+				List<BakingSubgoal> subgoals = new ArrayList<BakingSubgoal>();
+				
+				for (IngredientRecipe ingredient : this.subgoalIngredients.values()) {
+					BakingPropositionalFunction pf = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, ingredient);
+					BakingSubgoal sg = new BakingSubgoal(pf, ingredient);
+					subgoals.add(sg);
+				}
+				return subgoals;
+			}
+			
+		};
+		
+		return recipe;
+	}
+	
+	public static List<Recipe> generateRecipes(Domain domain, int numberRecipes, List<IngredientRecipe> ingredients, int numSubgoals, int numIngredientsPerSubgoal) {
+		List<Recipe> recipes = new ArrayList<Recipe>();
+		
+		for (int i = 0; i < numberRecipes; i++) {
+			Recipe recipe = Recipe.randomlyGenerateRecipe(domain, ingredients, numSubgoals, numIngredientsPerSubgoal);
+			recipes.add(recipe);
+		}
+		
+		return recipes;
 	}
 }

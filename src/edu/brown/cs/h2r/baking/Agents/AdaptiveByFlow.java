@@ -15,6 +15,7 @@ import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.singleagent.GroundedAction;
 import edu.brown.cs.h2r.baking.Prediction.PolicyPrediction;
 import edu.brown.cs.h2r.baking.Prediction.PolicyProbability;
+import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
 import edu.brown.cs.h2r.baking.actions.BakingAction;
 import edu.brown.cs.h2r.baking.actions.BakingActionResult;
@@ -24,12 +25,12 @@ public class AdaptiveByFlow extends AdaptiveAgent{
 	private static final int MAX_ALPHA = 5;
 	
 	private PolicyPrediction prediction;
-	public AdaptiveByFlow(Domain domain, ActionTimeGenerator timeGenerator, boolean useScheduling) {
-		super("partner", domain, timeGenerator, useScheduling);
+	public AdaptiveByFlow(Domain domain, ActionTimeGenerator timeGenerator, List<Recipe> recipes, boolean useScheduling) {
+		super("partner", domain, timeGenerator, recipes, useScheduling);
 	}
 	
-	protected AdaptiveByFlow(Domain domain, Map<String, Object> objectMap, ActionTimeGenerator timeGenerator, State startState) {
-		super(domain, objectMap, timeGenerator, startState);
+	protected AdaptiveByFlow(Domain domain, Map<String, Object> objectMap, ActionTimeGenerator timeGenerator, List<Recipe> recipes, State startState) {
+		super(domain, objectMap, timeGenerator, recipes, startState);
 	}
 	
 	@Override

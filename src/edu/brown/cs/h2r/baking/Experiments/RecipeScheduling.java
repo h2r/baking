@@ -214,7 +214,7 @@ public class RecipeScheduling {
 		}*/
 		
 		Domain domain = RecipeScheduling.generateGeneralDomain();
-		List<Recipe> recipes = AgentHelper.recipes(domain);
+		List<Recipe> recipes = AgentHelper.allRecipes(domain);
 		
 		Knowledgebase knowledgebase = Knowledgebase.getKnowledgebase(domain);
 		knowledgebase.initKnowledgebase(recipes);
@@ -222,7 +222,7 @@ public class RecipeScheduling {
 		factors.put("human", 1.0);
 		
 		ActionTimeGenerator timeGenerator = new ActionTimeGenerator(factors);
-		Human human = new Human(domain, timeGenerator);
+		Human human = new Human(domain, timeGenerator, recipes);
 		State state = RecipeScheduling.generateInitialState(domain, recipes, human, null);
 		ResetAction reset = (ResetAction)domain.getAction(ResetAction.className);
 		

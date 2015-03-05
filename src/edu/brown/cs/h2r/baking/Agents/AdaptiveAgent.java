@@ -60,7 +60,9 @@ public abstract class AdaptiveAgent extends Agent{
 	
 	protected final List<KitchenSubdomain> subdomains;
 	
-	public AdaptiveAgent(String name, Domain domain, ActionTimeGenerator timeScheduler, boolean useScheduling) {
+	protected final List<Recipe> recipes;
+	
+	public AdaptiveAgent(String name, Domain domain, ActionTimeGenerator timeScheduler, List<Recipe> recipes, boolean useScheduling) {
 		super(name);
 		this.domain = domain;
 		this.stateHistory = new ArrayList<State>();
@@ -68,14 +70,16 @@ public abstract class AdaptiveAgent extends Agent{
 		this.policyBeliefDistribution = new ArrayList<PolicyProbability>();
 		this.timeGenerator = timeScheduler;
 		this.useScheduling = useScheduling;
+		this.recipes = recipes;
 	}
 	
-	protected AdaptiveAgent(Domain domain, Map<String, Object> objectMap, ActionTimeGenerator timeGenerator, State startState) {
+	protected AdaptiveAgent(Domain domain, Map<String, Object> objectMap, ActionTimeGenerator timeGenerator, List<Recipe> recipes, State startState) {
 		super(objectMap);
 		this.domain = domain;
 		this.stateHistory = new ArrayList<State>();
 		this.subdomains = new ArrayList<KitchenSubdomain>();
 		this.policyBeliefDistribution = new ArrayList<PolicyProbability>();
+		this.recipes = recipes;
 		this.timeGenerator = timeGenerator;
 		this.useScheduling = (Boolean)objectMap.get("use_scheduling");
 		Map<String, Double> policyDistribution = (Map<String, Double>)objectMap.get("policy_distribution");
@@ -124,7 +128,7 @@ public abstract class AdaptiveAgent extends Agent{
 		this.subdomains.clear();
 		this.policyBeliefDistribution.clear();
 		this.stateHistory.add(state);
-		List<KitchenSubdomain> subdomains = AgentHelper.generateAllRTDPPolicies(domain, state, AgentHelper.recipes(domain),
+		List<KitchenSubdomain> subdomains = AgentHelper.generateAllRTDPPolicies(domain, state, this.recipes,
 				AdaptiveAgent.rewardFunction ,AdaptiveAgent.hashingFactory);
 		this.subdomains.addAll(subdomains);
 		this.policyBeliefDistribution.addAll(this.getInitialPolicyDistribution(subdomains));
@@ -499,6 +503,9 @@ public abstract class AdaptiveAgent extends Agent{
 			previousSumProbability += beliefProbability;
 			
 			PolicyProbability update = updatePolicyDistribution.get(i);
+			if (!update.getPolicyDomain().equals(priorBelief.getPolicyDomain())) {
+				System.err.println("This isn't doing what you thought");
+			}
 			double updateProbability = update.getProbability();
 			updateSumProbability += updateProbability;
 			

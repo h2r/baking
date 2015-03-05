@@ -25,13 +25,13 @@ import edu.brown.cs.h2r.baking.actions.ResetAction;
 
 public class Expert extends Human{
 	private boolean isCooperative;
-	public Expert(Domain domain, String name, ActionTimeGenerator timeGenerator) {
-		super(domain, name, timeGenerator);
-		this.isCooperative = false;
+	public Expert(Domain domain, String name, ActionTimeGenerator timeGenerator, List<Recipe> recipes)  {
+		super(domain, name, timeGenerator, recipes);
+		this.isCooperative = true;
 	}
 	
-	protected Expert(Domain domain, Map<String, Object> map, ActionTimeGenerator timeGenerator, State state) {
-		super(domain, map, timeGenerator, state);
+	protected Expert(Domain domain, Map<String, Object> map, ActionTimeGenerator timeGenerator, State state, List<Recipe> recipes) {
+		super(domain, map, timeGenerator, state, recipes);
 		this.isCooperative = (Boolean)map.get("isCooperative");
 	}
 	
@@ -86,6 +86,9 @@ public class Expert extends Human{
 	
 	@Override
 	public AbstractGroundedAction getActionWithScheduler(State state, List<String> agents, boolean finishRecipe) {
+		if (!this.isCooperative && this.getAgentName().equals("partner")) {
+			System.err.println("This changed");
+		}
 		if (this.isSuccess(state)) {
 			return null;
 		}
@@ -148,23 +151,27 @@ public class Expert extends Human{
 	}
 	
 	public AbstractGroundedAction getActionWithScheduler(State state, List<String> agents, boolean finishRecipe, GroundedAction partnersAction) {
-		if (this.isSuccess(state)) {
+		State newState = state;
+		if (partnersAction != null) {
+			newState = partnersAction.executeIn(state);
+		}
+		if (this.isSuccess(newState)) {
 			return null;
 		}
 		if (this.currentSubgoal == null) {
-			this.chooseNewSubgoal(state);
-		} else if (this.currentSubgoal.getSubgoal().goalCompleted(state)) {
+			this.chooseNewSubgoal(newState);
+		} else if (this.currentSubgoal.getSubgoal().goalCompleted(newState)) {
 			this.getKitchenSubdomains().remove(this.currentSubgoal);
-			this.chooseNewSubgoal(state);
+			this.chooseNewSubgoal(newState);
 		}
 		if (this.currentSubgoal == null) {
 			return null;
 		}
 		
 		List<KitchenSubdomain> subdomains = new ArrayList<KitchenSubdomain>(this.getKitchenSubdomains());
-		List<KitchenSubdomain> remaining = Expert.getRemainingSubgoals(this.currentSubgoal, subdomains, state);
+		List<KitchenSubdomain> remaining = Expert.getRemainingSubgoals(this.currentSubgoal, subdomains, newState);
 		List<GroundedAction> actions = new ArrayList<GroundedAction>();
-		AgentHelper.generateActionSequence(this.currentSubgoal, remaining, state, rewardFunction, actions, finishRecipe);
+		AgentHelper.generateActionSequence(this.currentSubgoal, remaining, newState, rewardFunction, actions, finishRecipe);
 		
 		if (actions.size() > 0 && actions.get(0).action instanceof ResetAction) {
 			GroundedAction reset = actions.get(0);
@@ -173,6 +180,9 @@ public class Expert extends Human{
 		}
 		
 		List<AbstractGroundedAction> aga = new ArrayList<AbstractGroundedAction>(actions);
+		if (partnersAction != null) {
+			aga.add(0, partnersAction);
+		}
 		Workflow workflow = Workflow.buildWorkflow(state, aga);
 		
 		if (this.isCooperative) {

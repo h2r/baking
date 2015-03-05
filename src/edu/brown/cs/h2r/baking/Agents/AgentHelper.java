@@ -86,7 +86,7 @@ public class AgentHelper {
 	public static double computeCompleteSequenceTime(List<AbstractGroundedAction> actions) {
 		return 0.0;
 	}
-	public static List<Recipe> recipes(Domain domain) {
+	public static List<Recipe> allRecipes(Domain domain) {
 		return Arrays.asList(
 				CoffeeWithMilk.getRecipe(domain),
 				CerealWithMilk.getRecipe(domain),

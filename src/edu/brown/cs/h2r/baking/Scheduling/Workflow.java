@@ -69,10 +69,10 @@ public class Workflow implements Iterable<Node> {
 		State compareState = workflow.getEndState();
 		compareState = action.executeIn(compareState);
 		List<Integer> dependencies = new ArrayList<Integer>();
-		List<Node> ready = workflow.getReadyNodes();
+		List<Node> leaves = workflow.getLeafNodes();
 		Node newNode = new Node(workflow.size(), action);
 		
-		for (Node node : ready) {
+		for (Node node : leaves) {
 			Workflow sorted = workflow.sort();
 			sorted.add(newNode);
 			sorted.swap(node, newNode);
@@ -84,6 +84,16 @@ public class Workflow implements Iterable<Node> {
 		return dependencies;
 	}
 	
+	private List<Node> getLeafNodes() {
+		List<Node> leaves = new ArrayList<Node>();
+		for (Node node : this) {
+			if (node.children.isEmpty()) {
+				leaves.add(node);
+			}
+		}
+		return leaves;
+	}
+
 	public Node get(int i) {
 		if (i < this.actions.size()) {
 			return this.actions.get(i);

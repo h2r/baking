@@ -42,6 +42,7 @@ public class Human extends Agent {
 	private State startingState;
 	
 	protected Recipe currentRecipe;
+	protected final List<Recipe> recipes;
 	protected KitchenSubdomain currentSubgoal;
 	protected List<KitchenSubdomain> kitchenSubdomains;
 	private List<KitchenSubdomain> allKitchenSubdomains;
@@ -49,28 +50,31 @@ public class Human extends Agent {
 	private TerminalFunction isFailure;
 	protected Domain generalDomain;
 	protected final ActionTimeGenerator timeGenerator;
-	public Human(Domain generalDomain, ActionTimeGenerator timeGenerator) {
+	public Human(Domain generalDomain, ActionTimeGenerator timeGenerator, List<Recipe> recipes) {
 		super("human");
 		this.generalDomain = generalDomain;
 		this.timeGenerator = timeGenerator;
 		this.recipeLookup = new HashMap<Recipe, List<KitchenSubdomain>>();
 		this.kitchenSubdomains = new ArrayList<KitchenSubdomain>();
+		this.recipes = recipes;
 	}
 	
-	public Human(Domain generalDomain, String name, ActionTimeGenerator timeGenerator) {
+	public Human(Domain generalDomain, String name, ActionTimeGenerator timeGenerator, List<Recipe> recipes) {
 		super(name);
 		this.generalDomain = generalDomain;
 		this.timeGenerator = timeGenerator;
 		this.recipeLookup = new HashMap<Recipe, List<KitchenSubdomain>>();
 		this.kitchenSubdomains = new ArrayList<KitchenSubdomain>();
+		this.recipes = recipes;
 	}
 	
-	protected Human(Domain domain, Map<String, Object> map, ActionTimeGenerator timeGenerator, State startState) {
+	protected Human(Domain domain, Map<String, Object> map, ActionTimeGenerator timeGenerator, State startState, List<Recipe> recipes) {
 		super(map);
 		this.generalDomain = domain;
 		this.timeGenerator = timeGenerator;
 		this.recipeLookup = new HashMap<Recipe, List<KitchenSubdomain>>();
 		this.kitchenSubdomains = new ArrayList<KitchenSubdomain>();
+		this.recipes = recipes;
 		this.setInitialState(startState);
 		String currentRecipeStr = (String)map.get("current_recipe");
 		if (currentRecipeStr != null) {
@@ -128,7 +132,7 @@ public class Human extends Agent {
 	public void setInitialState(State state) {
 		this.startingState = state;
 		
-		for (Recipe recipe : AgentHelper.recipes(this.generalDomain)) {
+		for (Recipe recipe : this.recipes) {
 			List<KitchenSubdomain> policies = AgentHelper.generateRTDPPolicies(recipe, this.generalDomain, this.startingState, Human.rewardFunction, Human.hashingFactory);
 			this.recipeLookup.put(recipe, policies);
 		}
@@ -142,7 +146,7 @@ public class Human extends Agent {
 	}
 	
 	public void chooseNewRecipe() {
-		List<Recipe> recipes = new ArrayList<Recipe>(AgentHelper.recipes(generalDomain));
+		List<Recipe> recipes = new ArrayList<Recipe>(this.recipes);
 		Collections.shuffle(recipes);
 		
 		this.setRecipe(recipes.get(0));
@@ -365,7 +369,7 @@ public class Human extends Agent {
 	
 	public void buildAllSubdomains() {
 		this.allKitchenSubdomains = AgentHelper.generateAllRTDPPolicies(this.generalDomain, this.startingState, 
-				AgentHelper.recipes(generalDomain), Human.rewardFunction, Human.hashingFactory);
+				this.recipes, Human.rewardFunction, Human.hashingFactory);
 		this.setKitchenSubdomains(new ArrayList<KitchenSubdomain>(this.allKitchenSubdomains));
 	}
 	

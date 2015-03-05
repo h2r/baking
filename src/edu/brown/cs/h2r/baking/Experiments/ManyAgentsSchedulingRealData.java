@@ -64,14 +64,14 @@ public class ManyAgentsSchedulingRealData {
 		
 		Domain generalDomain = SimulationHelper.generateGeneralDomain(); 
 		
-		List<Recipe> recipes = AgentHelper.recipes(generalDomain);
+		List<Recipe> recipes = AgentHelper.allRecipes(generalDomain);
 		Knowledgebase knowledgebase = Knowledgebase.getKnowledgebase(generalDomain);
 		knowledgebase.initKnowledgebase(recipes);
 		Map<String, Double> factors = new HashMap<String, Double>();
 		factors.put("human", 1.0);
 		
 		ActionTimeGenerator timeGenerator = new ActionTimeGenerator(true, false);
-		Human human = new Expert(generalDomain, "human", timeGenerator);
+		Human human = new Expert(generalDomain, "human", timeGenerator, recipes);
 		
 		State state = SimulationHelper.generateInitialState(generalDomain, hashingFactory, recipes, human, null);
 		/*for (Recipe recipe : recipes) {
@@ -86,11 +86,11 @@ public class ManyAgentsSchedulingRealData {
 		
 		List<Agent> agents = Arrays.asList(
 				(Agent)new RandomActionAgent(generalDomain),
-				(Agent)new RandomRecipeAgent(generalDomain,"partner", timeGenerator),
-				(Agent)new Human(generalDomain, "partner", timeGenerator),
-				(Agent)new Expert(generalDomain, "partner", timeGenerator),
-				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator, false),
-				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator, true)
+				(Agent)new RandomRecipeAgent(generalDomain,"partner", timeGenerator, recipes),
+				(Agent)new Human(generalDomain, "partner", timeGenerator, recipes),
+				(Agent)new Expert(generalDomain, "partner", timeGenerator, recipes),
+				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator, recipes, false),
+				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator, recipes, true)
 				);
 		System.out.println("Agent, Successes, Trials, Average reward, average successful reward");
 		ResetAction reset = (ResetAction)generalDomain.getAction(ResetAction.className);
