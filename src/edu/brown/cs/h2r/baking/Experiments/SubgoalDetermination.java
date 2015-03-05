@@ -223,7 +223,7 @@ public class SubgoalDetermination {
 				for (int depthType = 0; depthType < 3; depthType++) {
 					List<Double> successRate = new ArrayList<Double>();
 					PolicyPrediction prediction = new PolicyPrediction(policyDomains);			
-					for (int depth = 1; depth < 10; depth++) {	
+					for (int depth = 1; depth < 20; depth++) {	
 						int numSuccess = 0;
 						int numEstimateSuccesses = 0;
 						int numRandomGuesses = 0;
@@ -237,7 +237,7 @@ public class SubgoalDetermination {
 						}
 						
 						List<PolicyProbability> policyDistribution = 
-								prediction.getPolicyDistributionFromStatePair(policyDomain.getStartState(), state, maxAlpha+1, 
+								prediction.getPolicyDistributionFromStatePair(policyDomain.getStartState(), state, 20, 
 										policyDomain, actions, SubgoalDetermination.hashingFactory, depthType);
 						
 						if (policyDistribution == null) {

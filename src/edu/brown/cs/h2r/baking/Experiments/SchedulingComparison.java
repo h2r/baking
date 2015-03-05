@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import burlap.oomdp.singleagent.GroundedAction;
 import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
 import edu.brown.cs.h2r.baking.Scheduling.Assignment;
 import edu.brown.cs.h2r.baking.Scheduling.Assignment.ActionTime;
@@ -18,6 +17,7 @@ import edu.brown.cs.h2r.baking.Scheduling.ExhaustiveScheduler;
 import edu.brown.cs.h2r.baking.Scheduling.ExhaustiveStarScheduler;
 import edu.brown.cs.h2r.baking.Scheduling.GreedyScheduler;
 import edu.brown.cs.h2r.baking.Scheduling.MILPScheduler;
+import edu.brown.cs.h2r.baking.Scheduling.RandomScheduler;
 import edu.brown.cs.h2r.baking.Scheduling.Scheduler;
 import edu.brown.cs.h2r.baking.Scheduling.TercioScheduler;
 import edu.brown.cs.h2r.baking.Scheduling.Workflow;
@@ -105,17 +105,16 @@ public class SchedulingComparison {
 	
 	public static void main(String argv[]) throws InterruptedException {
 		List<Scheduler> schedulers = Arrays.asList(
-				(Scheduler)new MILPScheduler(false),
-				//new RandomScheduler(),
-				//(Scheduler)new GreedyScheduler(false),
-				(Scheduler)new ExhaustiveStarScheduler(new GreedyScheduler(false)),
-				(Scheduler)new TercioScheduler(false)
+				//new MILPScheduler(false),
+				new GreedyScheduler(false),
+				new ExhaustiveStarScheduler(new GreedyScheduler(false)),
+				new TercioScheduler(false)
 				//(Scheduler)new ExhaustiveStarScheduler(new WeightByShortest(false)),
 				//(Scheduler)new ExhaustiveStarScheduler(new WeightByDifference(false)),
 				//(Scheduler)new ExhaustiveScheduler(10, false),
 				
 				);
-		
+		MILPScheduler milpScheduler = new MILPScheduler(false);
 		int numTries = 100;
 		int trialId = new Random().nextInt();
 		trialId = 0;
@@ -151,69 +150,30 @@ public class SchedulingComparison {
 				}
 				
 				Workflow workflow = SchedulingComparison.buildSortedWorkflow(j, numEdges, numResources, numResourcesPerNode);
-				double bestTime = Double.MAX_VALUE;
-				List<String> best = new ArrayList<String>();
-				List<List<Assignment>> allAssignments = new ArrayList<List<Assignment>>();
 				List<Double> times = new ArrayList<Double>();
+				
+				List<Assignment> milp = new ArrayList<Assignment>();
+				double milpTime = milpScheduler.schedule(workflow, milp, Arrays.asList("human", "friend", "friend1", "friend2"), timeGenerator);
+				
+				
 				for (Scheduler scheduler : schedulers) {
 					List<Assignment> assignments = new ArrayList<Assignment>();
-					
-					//while(true) {
-					/*if (!SchedulingComparison.verifySortedWorkflow(workflow)) {
-						System.err.println("Workflow is not actually sorted");
-					}*/
-					double time = Double.MAX_VALUE;
-					
-					if (scheduler instanceof MILPScheduler) {
-						MILPScheduler mScheduler = (MILPScheduler)scheduler;
-						time = mScheduler.schedule(workflow, assignments, Arrays.asList("human", "friend", "friend1", "friend2"), timeGenerator);
-						double bTime = new BufferedAssignments(assignments, false).time();
-						if (Math.abs(time - bTime) > MILPScheduler.TOLERANCE) {
-							//System.out.println("MILP: " + time + " Buffered: " + bTime);
-						}
-					} else {
-						assignments = scheduler.schedule(workflow, Arrays.asList("human", "friend", "friend1", "friend2"), timeGenerator);
-						time = new BufferedAssignments(assignments, false).time();
-					}
-					
-					
-					allAssignments.add(assignments);
-					//System.out.println(assignments.toString());
-					//if (MILPScheduler.checkAssignments(workflow, assignments)) {
-					//	System.out.println("Scheduler " + scheduler.getClass().getSimpleName() + " violated constraints");
-					//}
-					//if (!SchedulingComparison.verifyAssignments(workflow, assignments)) {
-					//	System.err.println("Error with assignments");
-					//}
-					//}
-					
+					assignments = scheduler.schedule(workflow, Arrays.asList("human", "friend", "friend1", "friend2"), timeGenerator);
+					BufferedAssignments sequenced = new BufferedAssignments(assignments, false);
+					double time = sequenced.time();
 					times.add(time);
-					if (time < bestTime) {
-						bestTime = time;
-						best.clear();
-						best.add(scheduler.getClass().getSimpleName());
-					} else if (time == bestTime) {
-						best.add(scheduler.getClass().getSimpleName());
+					if (milpTime < 0.0) {
+						MILPScheduler.checkAssignments(workflow, assignments);
 					}
-					//System.out.println(scheduler.getClass().getSimpleName() + ", " + j + ", " + time);
-					if (scheduler instanceof ExhaustiveScheduler && time > bestTime) {
-						//System.err.println("Exhaustive did not achieve the best solution");
-						assignments = scheduler.schedule(workflow, Arrays.asList("human", "friend"), timeGenerator);
-					}
-					
-					
 				}
-				System.out.print(j + ", ");
+
+				System.out.print(j + ", " + milpTime + ", ");
 				for (Double time : times) {
 					System.out.print(time + ", ");
 				}
 				System.out.print("\n");
-				for (String name : best) {
-					//System.out.println("Best: " + name + ", " + j + ", " + bestTime);
-					
-				}
+				
 				timeGenerator.clear();
-				//System.out.println("\n\n");
 			}
 		}
 		

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -59,14 +60,14 @@ public class MILPScheduler {
 			// Optimize model
 			model.update();
 			
-			model.presolve();
+			//model.presolve();
 			
 			model.optimize();
-			double computedTime = v.get(GRB.DoubleAttr.X);
 			int status = model.get(GRB.IntAttr.Status);
 			if (status != 2) {
 				System.err.println("Non-optimal solution found");
 			}
+			double computedTime = v.get(GRB.DoubleAttr.X);
 			List<List<Double>> startTimes = this.extractAssignments(workflow, assignments, modelVariables);
 			BufferedAssignments buffered = new BufferedAssignments(assignments, false);
 			double actualTime = buffered.time();
@@ -79,7 +80,7 @@ public class MILPScheduler {
 				System.err.println("MILP: " + computedTime + " buffered " + actualTime);
 				printResults(model, modelVariables, false, false);
 			}
-			//printResults(model, modelVariables, false, false);
+			printResults(model, modelVariables, false, false);
 			time = v.get(GRB.DoubleAttr.X);
 			//this.printResults(model, modelVariables, startTimes);
 
@@ -345,6 +346,9 @@ public class MILPScheduler {
 			GRBModel model, Map<String, GRBVar> modelVariables, GRBVar v, boolean useActualValues)
 					throws GRBException {
 		GRBLinExpr expr;
+		GRBConstr constraint;
+		Set<GRBConstr> constraints = new HashSet<GRBConstr>();
+		constraints.add(null);
 		// v is the latest action end time
 		for (Workflow.Node node : workflow) {
 			String nodeStr = node.toString();
@@ -354,13 +358,17 @@ public class MILPScheduler {
 			// v is the maximum of all action ending times
 			expr = new GRBLinExpr();
 			expr.addTerm(-1.0, v); expr.addTerm(1.0, nodeEnd);
-			model.addConstr(expr, GRB.LESS_EQUAL, 0.0, nodeStr + "_v");
-
+			constraint = model.addConstr(expr, GRB.LESS_EQUAL, 0.0, nodeStr + "_v");
+			if (!constraints.add(constraint)) {
+				System.err.println("Already exists");
+			}
 			// all start times must be greater or equal to 0. is this needed?
 			expr = new GRBLinExpr();
 			expr.addTerm(1.0, nodeStart);
-			model.addConstr(expr, GRB.GREATER_EQUAL, 0.0, nodeStr + "_START");
-
+			constraint = model.addConstr(expr, GRB.GREATER_EQUAL, 0.0, nodeStr + "_START");
+			if (!constraints.add(constraint)) {
+				System.err.println("Already exists");
+			}
 		}
 
 		// all actions are assigned exactly once (eq 2);
@@ -375,7 +383,10 @@ public class MILPScheduler {
 				GRBVar actionVar = modelVariables.get(actionStr);
 				expr.addTerm(1.0, actionVar);
 			}
-			model.addConstr(expr, GRB.EQUAL, 1.0, nodeStr);
+			constraint = model.addConstr(expr, GRB.EQUAL, 1.0, nodeStr);
+			if (!constraints.add(constraint)) {
+				System.err.println("Already exists");
+			}
 		}
 
 		// if an action depends on another action, that one must go first
@@ -393,7 +404,10 @@ public class MILPScheduler {
 					String firstBeforeSecond = firstNodeStr + "_depends_" + secondNodeStr;
 					expr = new GRBLinExpr();
 					expr.addTerm(1.0, secondNodeStart); expr.addTerm(-1.0, firstNodeEnd);
-					model.addConstr(expr, GRB.GREATER_EQUAL, 0.0, firstBeforeSecond);
+					constraint = model.addConstr(expr, GRB.GREATER_EQUAL, 0.0, firstBeforeSecond);
+					if (!constraints.add(constraint)) {
+						System.err.println("Already exists");
+					}
 				}
 			}
 		}
@@ -415,7 +429,10 @@ public class MILPScheduler {
 				
 				expr = new GRBLinExpr();
 				expr.addTerm(1.0, nodeEnd); expr.addTerm(-1.0, nodeStart);expr.addTerm(-time, actionVar);
-				model.addConstr(expr, GRB.GREATER_EQUAL, 0.0, actionStr + "_lb");						
+				constraint = model.addConstr(expr, GRB.GREATER_EQUAL, 0.0, actionStr + "_lb");
+				if (!constraints.add(constraint)) {
+					System.err.println("Already exists");
+				}
 			}
 		}
 		
@@ -431,11 +448,11 @@ public class MILPScheduler {
 				if (firstNode.equals(secondNode)) {
 					continue;
 				}
+				
 				String secondNodeStr = secondNode.toString();
 				String secondNodeStartStr = secondNodeStr + "_START";
 				GRBVar secondNodeStart = modelVariables.get(secondNodeStartStr);
 
-				
 				String firstBeforeSecondStr = firstNodeStr + "->" + secondNodeStr;
 				GRBVar firstBeforeSecond = modelVariables.get(firstBeforeSecondStr);
 				
@@ -443,7 +460,10 @@ public class MILPScheduler {
 				expr.addTerm(1.0, secondNodeStart); 
 				expr.addTerm(-1.0, firstNodeEnd);
 				expr.addTerm(-M, firstBeforeSecond);
-				model.addConstr(expr, GRB.GREATER_EQUAL, -M, firstBeforeSecondStr);
+				constraint = model.addConstr(expr, GRB.GREATER_EQUAL, -M, firstBeforeSecondStr);
+				if (!constraints.add(constraint)) {
+					System.err.println("Already exists");
+				}
 			}
 		}
 		
@@ -468,24 +488,25 @@ public class MILPScheduler {
 				
 				String overlapName = firstNodeStr + "_" + secondNodeStr + "_precedence";
 				
-				
-				
-				
-				
 				if (firstNode.resourceConflicts(secondNode)) {
 					// One of the precedence bits must be set
 					String resourceConflict = firstNodeStr + "_" + secondNodeStr + "_conflict";
 					expr = new GRBLinExpr();
 					expr.addTerm(1.0, firstBeforeSecond); 
 					expr.addTerm(1.0, secondBeforeFirst);
-					model.addConstr(expr, GRB.EQUAL, 1, resourceConflict);
+					constraint = model.addConstr(expr, GRB.EQUAL, 1, resourceConflict);
+					if (!constraints.add(constraint)) {
+						System.err.println("Already exists");
+					}
 				} else {
 					// otherwise, they just must be less than 1
 					expr = new GRBLinExpr();
 					expr.addTerm(1.0, firstBeforeSecond); 
 					expr.addTerm(1.0, secondBeforeFirst);
-					model.addConstr(expr, GRB.LESS_EQUAL, 1, overlapName);
-					
+					constraint = model.addConstr(expr, GRB.LESS_EQUAL, 1, overlapName);
+					if (!constraints.add(constraint)) {
+						System.err.println("Already exists");
+					}
 					// if an two actions are assigned to the same agent, then the precedence bits must be 1, otherwise they can be 0
 					for (Assignment assignment : assignments) {
 						
@@ -494,22 +515,19 @@ public class MILPScheduler {
 						String secondActionStr = secondNode.getAction(assignment.getId()).toString();
 						GRBVar secondAction = modelVariables.get(secondActionStr);
 						
-						
 						expr = new GRBLinExpr();
 						expr.addTerm(1.0, firstBeforeSecond); 
 						expr.addTerm(1.0, secondBeforeFirst); 
 						expr.addTerm(-1, firstAction);
 						expr.addTerm(-1, secondAction);
-						model.addConstr(expr, GRB.GREATER_EQUAL, -1, firstBeforeSecondStr + "_" + assignment.getId());
-						
-						
+						constraint = model.addConstr(expr, GRB.GREATER_EQUAL, -1, firstBeforeSecondStr + "_" + assignment.getId());	
+						if (!constraints.add(constraint)) {
+							System.err.println("Already exists");
+						}
 					}
-				}
-				
-				
+				}		
 			}
-		}
-		
+		}	
 	}
 
 	private List<List<Double>> extractAssignments(Workflow workflow,

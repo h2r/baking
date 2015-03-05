@@ -360,7 +360,6 @@ public class MILPScheduler {
 				String secondNodeStartStr = secondNodeStr + "_START";
 				GRBVar secondNodeStart = modelVariables.get(secondNodeStartStr);
 
-				
 				String firstBeforeSecondStr = firstNodeStr + "->" + secondNodeStr;
 				GRBVar firstBeforeSecond = modelVariables.get(firstBeforeSecondStr);
 				
@@ -415,22 +414,16 @@ public class MILPScheduler {
 						String secondActionStr = secondNode.getAction(assignment.getId()).toString();
 						GRBVar secondAction = modelVariables.get(secondActionStr);
 						
-						
 						expr = new GRBLinExpr();
 						expr.addTerm(1.0, firstBeforeSecond); 
 						expr.addTerm(1.0, secondBeforeFirst); 
 						expr.addTerm(-1, firstAction);
 						expr.addTerm(-1, secondAction);
-						model.addConstr(expr, GRB.GREATER_EQUAL, -1, firstBeforeSecondStr + "_" + assignment.getId());
-						
-						
+						model.addConstr(expr, GRB.GREATER_EQUAL, -1, firstBeforeSecondStr + "_" + assignment.getId());		
 					}
-				}
-				
-				
+				}		
 			}
 		}
-		
 	}
 
 	

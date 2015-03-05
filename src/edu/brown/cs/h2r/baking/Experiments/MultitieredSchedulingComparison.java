@@ -189,7 +189,7 @@ public class MultitieredSchedulingComparison {
 				}
 				Workflow workflow = MultitieredSchedulingComparison.buildSortedWorkflow(numTasks, numSubtasks, numEdges, numResources, numResourcesPerNode, timeGenerator, agents);
 				Assignments assignments = new Assignments(agents, timeGenerator, false);
-				double time = 0.0;
+				double time = -1.0;
 				
 				long end = 0, start = 0;
 				while (time < 0.0) {
