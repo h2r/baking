@@ -220,7 +220,7 @@ public class SubgoalDetermination {
 		
 		for (int i = 0; i < numTries; i++) {
 			for (int k = 0; k < testDomains.size(); k++) {
-				for (int depthType = 0; depthType < 3; depthType++) {
+				for (int depthType = 0; depthType < 1; depthType++) {
 					List<Double> successRate = new ArrayList<Double>();
 					PolicyPrediction prediction = new PolicyPrediction(policyDomains);			
 					for (int depth = 1; depth < 20; depth++) {	
