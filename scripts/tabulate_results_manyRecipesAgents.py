@@ -104,7 +104,7 @@ if len(argv) > 1:
         print(r'\addplot')
         print("coordinates {")
         for line in sorted_results:
-            print("(" + str(line[0]) + ", " + str(line[3]) + ")" + line[1] + ", " + line[2])
+            print("(" + str(line[0]) + ", " + str(line[3]) + ")" + str(line[1]) + ", " + str(line[2]))
         print("};")
         print(r'addlegendentry{' + agent + "}")
 
