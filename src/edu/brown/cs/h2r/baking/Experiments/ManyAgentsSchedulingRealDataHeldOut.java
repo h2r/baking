@@ -58,7 +58,7 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 	
 	public static void main(String[] args) {
 		
-		int numTrials = 1;
+		int numTrials = 1	;
 		Integer trialId = Math.abs(new Random().nextInt());
 		String saveFile = null;
 		if (args.length > 0) {
@@ -70,8 +70,8 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 		Domain generalDomain = SimulationHelper.generateGeneralDomain(); 
 		Knowledgebase knowledgebase = Knowledgebase.getKnowledgebase(generalDomain);
 		int numberOfRecipes = 1 + trialId / (7 * 50);
-		//List<Recipe> recipes = AgentHelper.recipes(generalDomain);
-		List<Recipe> recipes = Recipe.generateRecipes(generalDomain, 5 * numberOfRecipes, knowledgebase.getIngredientList(), 1, 4);
+		List<Recipe> recipes = AgentHelper.breakfastRecipes(generalDomain);
+		//List<Recipe> recipes = Recipe.generateRecipes(generalDomain, 5 * numberOfRecipes, knowledgebase.getIngredientList(), 1, 4);
 		
 		knowledgebase.initKnowledgebase(recipes);
 		Map<String, Double> factors = new HashMap<String, Double>();
