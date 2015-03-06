@@ -90,7 +90,7 @@ if len(argv) > 1:
    
 
     print("\n\n\n\n\n\n")
-   yCoords = "symbolic y coords={"
+    yCoords = "symbolic y coords={"
     for line in sorted_results:
         yCoords = yCoords + "{" + str(line[0]) + "},"
     yCoords = yCoords + "}"
