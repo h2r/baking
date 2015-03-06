@@ -19,7 +19,9 @@ if len(argv) > 1:
     for filename in files:
         print("Processing file " + filename)
         total_files += 1
+        print(filename)
         trial_id = re.findall(r'\d+', filename)[0]
+        print(trial_id)
         number_recipes = 5 * int(int(trial_id) / 350)
         file = open(filename, 'rb')
         
