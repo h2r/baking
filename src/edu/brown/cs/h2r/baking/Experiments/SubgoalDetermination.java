@@ -182,8 +182,13 @@ public class SubgoalDetermination {
 	public static void main(String[] argv) {
 		int numTries = 10;
 		boolean breakfastOrDessert = false;
+		Random rando = new Random();
 		
-		if (argv.length > 0 && argv[0].equals("dessert")) {
+		int trialId = Math.abs(rando.nextInt());
+		if (argv.length > 0) {
+			trialId = Integer.parseInt(argv[0]);
+		}
+		if (argv.length > 1 && argv[1].equals("dessert")) {
 			breakfastOrDessert = true;
 		}
 		Domain domain = SubgoalDetermination.generateGeneralDomain();
@@ -198,26 +203,29 @@ public class SubgoalDetermination {
 				return -1;
 			}
 		};
-		List<KitchenSubdomain> policyDomains = AgentHelper.generateAllRTDPPoliciesParallel(domain, state, recipes, rf, hashingFactory);
-		List<KitchenSubdomain> testDomains = new ArrayList<KitchenSubdomain>(policyDomains);
-		Random rando = new Random();
+		int recipeChoice = trialId % recipes.size();
+		List<KitchenSubdomain> allPolicyDomains = AgentHelper.generateAllRTDPPoliciesParallel(domain, state, recipes, rf, hashingFactory);
+		List<KitchenSubdomain> policyDomains = AgentHelper.generateRTDPPolicies(recipes.get(recipeChoice), domain, state, rf, hashingFactory);
 		
 		
-		//int k = testDomains.size() -1 ;
 		System.out.println("Chosen policy, Depth, Depth Type, Successes, Estimate Successes, Informed Guesses, Total Trials");
 		
 		for (int i = 0; i < numTries; i++) {
-			for (int k = 0; k < testDomains.size(); k++) {
+			for (KitchenSubdomain policyDomain : policyDomains) {
 				for (int depthType = 0; depthType < 1; depthType++) {
-					PolicyPrediction prediction = new PolicyPrediction(policyDomains);			
+					PolicyPrediction prediction = new PolicyPrediction(allPolicyDomains);			
 					for (int depth = 1; depth < 20; depth++) {	
 						int numSuccess = 0;
 						int numEstimateSuccesses = 0;
 						int numRandomGuesses = 0;
 						
-						KitchenSubdomain policyDomain = testDomains.get(k);
-						
 						List<AbstractGroundedAction> actions = SubgoalDetermination.generateActionSequenceFromPolicy(policyDomain, depth);
+						if (actions == null) {
+							break;
+						}
+						for (AbstractGroundedAction action : actions) {
+							System.out.println("\t" + action.toString());
+						}
 						state = SubgoalDetermination.getStateFromActionSequence(policyDomain.getStartState(), actions);
 						if (state == null) {
 							break;
@@ -234,6 +242,7 @@ public class SubgoalDetermination {
 						List<KitchenSubdomain> bestPolicies = new ArrayList<KitchenSubdomain>();
 						for (int j = 0; j < policyDistribution.size(); j++) {
 							PolicyProbability policyProbability = policyDistribution.get(j);
+							System.out.println("\t" + policyProbability.toString());
 									
 							double prob = (policyProbability == null) ? 0.0 : policyProbability.getProbability();
 							if (prob > maxProb) {
@@ -246,15 +255,11 @@ public class SubgoalDetermination {
 						}
 						Collections.shuffle(bestPolicies, rando);
 						if (bestPolicies.size() > 1) {
-							/*for (KitchenSubdomain policy : bestPolicies) {
-								System.out.println("\t" + policy.toString() + ": " + maxProb);
-							}*/
-							
 							numRandomGuesses++;
 						}
 						KitchenSubdomain choice = bestPolicies.get(0);
 						
-						if (choice.equals(policyDomain)) {
+						if (choice.toString().equals(policyDomain.toString())) {
 							numSuccess++;
 							if (bestPolicies.size() == 1) {
 								numEstimateSuccesses++;
@@ -264,6 +269,7 @@ public class SubgoalDetermination {
 					}
 				}
 			}
+		
 		}
 	}
 }
