@@ -102,9 +102,9 @@ if len(argv) > 1:
         print(r'\addplot')
         print("coordinates {")
         for line in sorted_results:
-            print("(" + str(float(line[1]) / line[2])  + "," + str(line[0]) + ")")
+            print("(" + str(line[0]) + ", " + str(line[3]) ")")
         print("};")
-        print("\\addlegendentry{" + agent + "}")
+        print(r'addlegendentry{' + agent + "}")
 
 
 
