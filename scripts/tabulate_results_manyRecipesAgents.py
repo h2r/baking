@@ -91,8 +91,8 @@ if len(argv) > 1:
 
     print("\n\n\n\n\n\n")
     yCoords = "symbolic y coords={"
-    for line in sorted_results:
-        yCoords = yCoords + "{" + str(line[0]) + "},"
+    for key in results.keys():
+        yCoords = yCoords + "{" + str(key) + "},"
     yCoords = yCoords + "}"
     print(yCoords)
     
