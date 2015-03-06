@@ -896,7 +896,6 @@ public class SimulationHelper {
 			List<Recipe> recipes, ActionTimeGenerator timeGenerator,
 			Human human, List<Agent> agents, ResetAction reset, int choice, boolean subgoalsOnly, String filename) {
 		
-		long start = System.nanoTime();
 		SimulationHelper.EvaluationResult result;
 		Agent agent = null;
 		if (choice < agents.size() ) {
@@ -918,10 +917,15 @@ public class SimulationHelper {
 			}
 			
 			SimulationState simState = new SimulationState(startingState, startingState, human, agent, actionTimes, timeGenerator, 0.0);
+			long start = System.nanoTime();
+			result = SimulationHelper.evaluateOneAgent(simState, filename, generalDomain, hashingFactory, subgoalsOnly);
+			long end = System.nanoTime();
+			System.out.println(result.toString());
+			System.out.println(agent.toString() + ", time, " + ((end - start) / 100000000.0));
 			
-			SimulationHelper.evaluateOneAgent(simState, filename, generalDomain, hashingFactory, subgoalsOnly);
 			return;
 		}
+		long start = System.nanoTime();
 		human = new Expert(generalDomain, "human", timeGenerator, recipes);
 		
 		State startingState = SimulationHelper.generateInitialState(generalDomain, hashingFactory, recipes, human, agent);
