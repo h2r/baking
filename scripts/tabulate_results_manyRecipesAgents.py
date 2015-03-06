@@ -85,36 +85,26 @@ if len(argv) > 1:
         for number_recipes, line in data_recipes.iteritems():
             if sum(line[0]) == 0:
                 continue
-            print(str(agent) + ", " + str(int(sum(line[0]))) + ", " + str(int(sum(line[1]))) + ", " + str( numpy.mean(line[2])) + ", " + str(numpy.mean(line[3])) + " +- " + str(1.96 * numpy.std(line[3], ddof=1)/math.sqrt(len(line[3]))))
-            results[agent].append([agent, number_recipes, int(sum(line[0])), int(sum(line[1])), numpy.mean(line[2]), 1.96 * numpy.std(line[2], ddof=1)/math.sqrt(len(line[2])), numpy.mean(line[3]), 1.96 * numpy.std(line[3], ddof=1)/math.sqrt(len(line[3]))])
+            #print(str(agent) + ", " + str(int(sum(line[0]))) + ", " + str(int(sum(line[1]))) + ", " + str( numpy.mean(line[2])) + ", " + str(numpy.mean(line[3])) + " +- " + str(1.96 * numpy.std(line[3], ddof=1)/math.sqrt(len(line[3]))))
+            results[agent].append([number_recipes, int(sum(line[0])), int(sum(line[1])), numpy.mean(line[2]), 1.96 * numpy.std(line[2], ddof=1)/math.sqrt(len(line[2])), numpy.mean(line[3]), 1.96 * numpy.std(line[3], ddof=1)/math.sqrt(len(line[3]))])
    
 
     print("\n\n\n\n\n\n")
-    sorted_results = sorted(results, key= lambda line: line[1])
-    sorted_results = sorted(results, key= lambda line: line[0])
-    yCoords = "symbolic y coords={"
+   yCoords = "symbolic y coords={"
     for line in sorted_results:
         yCoords = yCoords + "{" + str(line[0]) + "},"
     yCoords = yCoords + "}"
     print(yCoords)
     
-    print(r'\addplot')
-    print("coordinates {")
-    for line in sorted_results:
-        print("(" + str(float(line[1]) / line[2])  + "," + str(line[0]) + ")")
-    print("};")
-    print("\addlegendentry{" + line[0] + "}")
+    for agent, results_by_recipes in results.iteritems():
+        sorted_results = sorted(results_by_recipes, key= lambda line: line[0])
     
-
-    print("coordinates {")
-    for line in sorted_results:
-        print("(" + str(line[3]) + "," + str(line[0]) + ")\t+- (" + str(line[4]) + ", " + str(line[4]) + ")")
-    print("};")
-
-    print("coordinates {")
-    for line in sorted_results:
-        print("("  + str(line[5]) + "," + str(line[0]) + ")\t+- (" + str(line[6]) + ", " + str(line[6]) + ")")
-    print("};")
+        print(r'\addplot')
+        print("coordinates {")
+        for line in sorted_results:
+            print("(" + str(float(line[1]) / line[2])  + "," + str(line[0]) + ")")
+        print("};")
+        print("\addlegendentry{" + line[0] + "}")
 
 
 
