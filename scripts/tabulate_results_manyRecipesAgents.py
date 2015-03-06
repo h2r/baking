@@ -104,7 +104,7 @@ if len(argv) > 1:
         for line in sorted_results:
             print("(" + str(float(line[1]) / line[2])  + "," + str(line[0]) + ")")
         print("};")
-        print("\addlegendentry{" + line[0] + "}")
+        print("\addlegendentry{" + agent + "}")
 
 
 
