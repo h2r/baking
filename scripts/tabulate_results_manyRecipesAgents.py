@@ -20,7 +20,7 @@ if len(argv) > 1:
         print("Processing file " + filename)
         total_files += 1
         trial_id = re.findall(r'\d+', filename)[0]
-        number_recipes = 5 * (trial_id % 350)
+        number_recipes = 5 * (int(trial_id) % 350)
         file = open(filename, 'rb')
         
         csvreader = reader(file, delimiter=",")
