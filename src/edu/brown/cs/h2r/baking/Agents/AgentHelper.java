@@ -257,6 +257,7 @@ public static State generateActionSequence(KitchenSubdomain currentSubgoal, List
 			for (BakingSubgoal sg : activeSubgoals) {
 				subgoals.remove(sg);
 				//System.out.println("Planning subgoal " + sg.getIngredient().getName());
+				domain = AgentHelper.setSubgoal(domain, sg);
 				KitchenSubdomain subdomain = AgentHelper.generateRTDPPolicy(domain, state, recipe, sg, rf, hashingFactory);
 				
 				state = ExperimentHelper.getEndState(subdomain);

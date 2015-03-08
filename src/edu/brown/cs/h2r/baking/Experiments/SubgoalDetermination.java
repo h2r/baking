@@ -83,7 +83,6 @@ public class SubgoalDetermination {
 		objects.add(counterSpace);
 		
 		objects.add(ToolFactory.getNewSimpleToolObjectInstance(generalDomain, "whisk", "", "", SpaceFactory.SPACE_COUNTER, objectHashingFactory));
-		objects.add(ToolFactory.getNewSimpleToolObjectInstance(generalDomain, "spoon","", "", SpaceFactory.SPACE_COUNTER, objectHashingFactory));
 		
 		objects.add(ContainerFactory.getNewBakingContainerObjectInstance(generalDomain, "baking_dish", null, SpaceFactory.SPACE_COUNTER, objectHashingFactory));
 		objects.add(ContainerFactory.getNewHeatingContainerObjectInstance(generalDomain, "melting_pot", null, SpaceFactory.SPACE_COUNTER, objectHashingFactory));
@@ -110,7 +109,7 @@ public class SubgoalDetermination {
 		
 		List<ObjectInstance> containersAndIngredients = Recipe.getContainersAndIngredients(containerClass, ingredients, counterSpace.getName());
 		objects.addAll(containersAndIngredients);
-		objects.addAll(tools);
+		//objects.addAll(tools);
 		return new State(objects);
 	}
 	
@@ -181,7 +180,7 @@ public class SubgoalDetermination {
 		
 	public static void main(String[] argv) {
 		int numTries = 10;
-		boolean breakfastOrDessert = false;
+		boolean breakfastOrDessert = true;
 		Random rando = new Random();
 		
 		int trialId = Math.abs(rando.nextInt());
