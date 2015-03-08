@@ -205,7 +205,7 @@ public class SubgoalDetermination {
 		int recipeChoice = trialId % recipes.size();
 		List<KitchenSubdomain> allPolicyDomains = AgentHelper.generateAllRTDPPoliciesParallel(domain, state, recipes, rf, hashingFactory);
 		List<KitchenSubdomain> policyDomains = AgentHelper.generateRTDPPolicies(recipes.get(recipeChoice), domain, state, rf, hashingFactory);
-		
+		Collections.shuffle(policyDomains);
 		
 		System.out.println("Chosen policy, Depth, Depth Type, Successes, Estimate Successes, Informed Guesses, Total Trials");
 		
