@@ -129,6 +129,91 @@ public class IngredientRecipe {
 		String recipeName = (this.recipe == null || this.isSimple()) ? "" : this.recipe.toString()  + " - ";
 		return recipeName + this.name;
 	}
+	
+//	private final Recipe recipe;
+//	private Boolean mixed;
+//	private Boolean heated;
+//	private Boolean baked;
+//	private Boolean recipeBaked;
+//	private Boolean recipeHeated;
+//	private Set<String> recipeToolAttributes;
+//	private Set<String> traits;
+//	private Set<String> toolTraits;
+//	private Set<String> toolAttributes;
+//	private Set<String> prepTraits;
+	
+//	private String heatingInformation;
+//	private String heatedState;
+//	private String name;
+//	private Boolean swapped;
+//	private List<IngredientRecipe> contents;
+//	private int useCount;
+//	private AbstractMap<String, IngredientRecipe> necessaryTraits;
+	
+	public Map<String, Object> toMap() {
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("recipe", this.recipe.toString());
+		map.put("attributes", this.getAttributeNumber());
+		map.put("recipe_tool_attributes", this.recipeToolAttributes);
+		map.put("traits", this.traits);
+		map.put("tool_traits", this.toolTraits);
+		map.put("tool_attributes", this.toolAttributes);
+		map.put("prep_traits", this.prepTraits);
+		
+		map.put("heating_information", this.heatingInformation);
+		map.put("heated_state", this.heatedState);
+		map.put("name", this.name);
+		map.put("swapped", this.swapped);
+		List<Map<String, Object>> contents = new ArrayList<Map<String, Object>>();
+		for (IngredientRecipe ing : this.contents){ 
+			contents.add(ing.toMap());
+		}
+		map.put("contents", contents);
+		map.put("use_count", this.useCount);
+		Map<String, Map<String, Object>> necessaryTraits = new HashMap<String, Map<String, Object>>();
+		for (Map.Entry<String, IngredientRecipe> entry : this.necessaryTraits.entrySet()) {
+			necessaryTraits.put(entry.getKey(), entry.getValue().toMap());
+		}
+		map.put("necessary_traits", necessaryTraits);
+		return map;
+	}
+	
+
+
+	public static IngredientRecipe fromMap(Map<String, Object> map, Recipe recipe) {
+		String name = (String)map.get("name");
+		String recipeName = (String)map.get("recipe");
+		int attributes = (int)map.get("attributes");
+		Set<String> recipeToolAttributes = new HashSet<String>((List<String>)map.get("recipe_tool_attributes"));
+		Set<String> traits = new HashSet<String>((List<String>)map.get("traits"));
+		Set<String> toolTraits = new HashSet<String>((List<String>)map.get("toolTraits"));
+		Set<String> toolAttributes = new HashSet<String>((List<String>)map.get("tool_attributes"));
+		Set<String> prepTraits = new HashSet<String>((List<String>)map.get("prep_traits"));
+		boolean recipeBaked = (boolean)map.get("recipe_baked");
+		boolean recipeHeated = (boolean)map.get("recipe_heated");
+		List<IngredientRecipe> contents = new ArrayList<IngredientRecipe>();
+		List<Map<String, Object>> contentsMaps = (ArrayList<Map<String, Object>>)map.get("contents");
+		for (Map<String, Object> contentsMap : contentsMaps) {
+			contents.add(IngredientRecipe.fromMap(contentsMap, recipe));
+		}
+		
+		AbstractMap<String, IngredientRecipe> necessaryTraits = new HashMap<String, IngredientRecipe>();
+		Map<String, Map<String, Object>> necessaryTraitsMaps = (Map<String, Map<String, Object>>)map.get("necessary_traits");
+		for (Map.Entry<String, Map<String, Object>> entry : necessaryTraitsMaps.entrySet()) {
+			necessaryTraits.put(entry.getKey(), IngredientRecipe.fromMap(entry.getValue(), recipe));
+		}
+		
+		
+		boolean swapped = (boolean)map.get("swapped");
+		int useCount = (int)map.get("use_count");
+		String heatingInfo = (String)map.get("heated_info");
+		String heatedState = (String)map.get("heated_state");
+		
+		return new IngredientRecipe(name, attributes, recipe, recipeBaked, recipeHeated, contents,
+				swapped, useCount, heatingInfo, heatedState, traits, necessaryTraits, 
+				toolTraits, toolAttributes, prepTraits);
+	}
+	
 	public Boolean isSimple() {
 		if (this.necessaryTraits == null || this.necessaryTraits.size() == 0) {
 			return this.contents == null || this.contents.size() == 0;
@@ -777,4 +862,5 @@ public class IngredientRecipe {
 	public Set<String> getPrepTraits() {
 		return this.prepTraits;
 	}
+
 }

@@ -71,7 +71,41 @@ public abstract class Recipe {
 		this.recipeName = recipeName;
 	}
 	
+	protected Recipe(Domain domain, Map<String, Object> map) {
+		this.knowledgebase = Knowledgebase.getKnowledgebase(domain);
+		this.topLevelIngredient = (IngredientRecipe)IngredientRecipe.fromMap((Map<String, Object>)map.get("top_level_ingredient"), this);
+		this.recipeName = (String)map.get("recipe_name");
+		this.subgoals = new ArrayList<BakingSubgoal>();
+		List<Map<String, Object>> subgoalsMaps = (List<Map<String, Object>>)map.get("subgoals");
+		for (Map<String, Object> subgoalMap : subgoalsMaps) {
+			BakingSubgoal subgoal = BakingSubgoal.fromMap(subgoalMap, domain, this);
+			this.subgoals.add(subgoal);
+		}
+		this.subgoalIngredients = new HashMap<String, IngredientRecipe>();
+		
+		this.ingredientSubgoals = this.createIngredientSubgoals();
+		
+		this.addRequiredRecipeAttributes();
+		this.recipeToolAttributes = Collections.unmodifiableSet(this.createRecipeToolAttributes());
+	}
+	
 	protected abstract IngredientRecipe createTopLevelIngredient();
+	
+	public Map<String, Object> toMap() {
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("recipe_name", this.recipeName);
+		map.put("top_level_ingredient", this.topLevelIngredient.toMap());
+		List<Map<String, Object>> subgoalsMaps = new ArrayList<Map<String, Object>>();
+		for (BakingSubgoal subgoal : this.subgoals) {
+			subgoalsMaps.add(subgoal.toMap());
+		}
+		map.put("subgoals", subgoalsMaps);
+		return map;
+	}
+	
+	public Recipe fromMap(Domain domain, Map<String, Object> map) {
+		return new Recipe(domain, map);
+	}
 	
 	public BakingPropositionalFunction getFailurePF(Domain domain) {
 		RecipeBotched isFailure = 

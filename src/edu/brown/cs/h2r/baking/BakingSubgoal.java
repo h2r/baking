@@ -2,7 +2,9 @@ package edu.brown.cs.h2r.baking;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.GroundedProp;
@@ -11,6 +13,8 @@ import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.BakingPropositionalFunction;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeFinished;
+import edu.brown.cs.h2r.baking.Recipes.Recipe;
 
 public class BakingSubgoal {
 
@@ -40,6 +44,38 @@ public class BakingSubgoal {
 		this.goal = subgoal.goal;
 		this.preconditions = Collections.unmodifiableList(preconditions);
 		this.ingredient = subgoal.ingredient;
+	}
+	
+	public static BakingSubgoal fromMap(Map<String, Object> map, Domain domain, Recipe recipe) {
+		String className = (String)map.get("pf_class");
+		BakingPropositionalFunction pf = null;
+		Map<String, Object> ingredientMap = (Map<String, Object>)map.get("ingredient");
+		IngredientRecipe ingredient = IngredientRecipe.fromMap(ingredientMap, recipe);
+		if (className.equals("RecipeFinished")) {
+			String pfName = (String)map.get("pf_name");
+			pf = new RecipeFinished(pfName, domain, ingredient);
+		}
+		List<BakingSubgoal> preconditions = new ArrayList<BakingSubgoal>();
+		List<Map<String, Object>> preconditionMaps = (List<Map<String, Object>>)map.get("preconditions");
+		for (Map<String, Object> preconditionMap : preconditionMaps) {
+			preconditions.add(BakingSubgoal.fromMap(preconditionMap, domain, recipe));
+		}
+		
+		return new BakingSubgoal(pf, ingredient, preconditions);
+	}
+	
+	public Map<String, Object> toMap() {
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("pf_class", this.goal.getClass().getSimpleName());
+		map.put("pf_name", this.goal.getName());
+		List<String> preconditions = new ArrayList<String>();
+		for (BakingSubgoal subgoal : this.preconditions) {
+			preconditions.add(subgoal.toString());
+		}
+		map.put("preconditions", preconditions);
+		map.put("ingredient", this.ingredient.toMap());
+		
+		return map;
 	}
 	
 	public BakingPropositionalFunction getGoal() {
@@ -98,4 +134,8 @@ public class BakingSubgoal {
 		final PropositionalFunction isFailure = domain.getPropFunction(AffordanceCreator.BOTCHED_PF);
 		return new RecipeTerminalFunction(isSuccess, isFailure);
 	}
+
+	
+
+	
 }
