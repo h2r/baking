@@ -103,9 +103,9 @@ public abstract class Recipe {
 		return map;
 	}
 	
-	public Recipe fromMap(Domain domain, Map<String, Object> map) {
+	/*public Recipe fromMap(Domain domain, Map<String, Object> map) {
 		return new Recipe(domain, map);
-	}
+	}*/
 	
 	public BakingPropositionalFunction getFailurePF(Domain domain) {
 		RecipeBotched isFailure = 
