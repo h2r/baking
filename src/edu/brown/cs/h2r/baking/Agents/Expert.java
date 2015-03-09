@@ -186,7 +186,20 @@ public class Expert extends Human{
 		
 		List<AbstractGroundedAction> aga = new ArrayList<AbstractGroundedAction>(actions);
 		if (partnersAction != null) {
-			aga.add(0, partnersAction);
+			boolean foundMatch = false;
+			for (GroundedAction ga : actions) {
+				if (ga.action == partnersAction.action) {
+					boolean foundMatch = true;
+					for (int i = 1 ; i < partnersAction.params.length; i++) {
+						if (!ga.params[i].equals(partnersAction.params[i])) {
+							foundMatch = false;
+						}
+					}
+				}
+			}
+			if (!foundMatch) {
+				aga.add(0, partnersAction);
+			}
 		}
 		Workflow workflow = Workflow.buildWorkflow(state, aga);
 		
