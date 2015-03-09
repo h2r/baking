@@ -189,7 +189,7 @@ public class Expert extends Human{
 			boolean foundMatch = false;
 			for (GroundedAction ga : actions) {
 				if (ga.action == partnersAction.action) {
-					boolean foundMatch = true;
+					foundMatch = true;
 					for (int i = 1 ; i < partnersAction.params.length; i++) {
 						if (!ga.params[i].equals(partnersAction.params[i])) {
 							foundMatch = false;
