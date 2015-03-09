@@ -819,7 +819,7 @@ public class SimulationHelper {
 			result = SimulationHelper.evaluateOneAgent(simState, filename, generalDomain, hashingFactory, subgoalsOnly);
 			long end = System.nanoTime();
 			System.out.println(result.toString());
-			System.out.println(agent.toString() + ", time, " + ((end - start) / 100000000.0));
+			System.out.println("solo, time, " + ((end - start) / 100000000.0));
 			
 			return;
 		}

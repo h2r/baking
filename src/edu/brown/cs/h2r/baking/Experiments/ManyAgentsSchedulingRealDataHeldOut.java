@@ -80,6 +80,8 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 		Random random = new Random();
 		List<Recipe> recipes = new ArrayList<Recipe>();
 		recipes.add(allRecipes.get(random.nextInt(allRecipes.size())));
+		//recipes.add(allRecipes.get(1));
+		
 		knowledgebase.initKnowledgebase(allRecipes);
 		Map<String, Double> factors = new HashMap<String, Double>();
 		factors.put("human", 1.0);
@@ -93,7 +95,7 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 		List<Agent> agents = Arrays.asList(
 				//(Agent)new RandomActionAgent(generalDomain),
 				//(Agent)new RandomRecipeAgent(generalDomain, "partner", timeGenerator, allRecipes),
-				//(Agent)new Expert(generalDomain, "partner", timeGenerator, recipes),
+				(Agent)new Expert(generalDomain, "partner", timeGenerator, recipes),
 				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator, allRecipes, true)
 				);
 		
