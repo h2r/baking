@@ -210,56 +210,7 @@ public class SimulationHelper {
 		
 		return state;
 	}
-	/*
-	private static EvaluationResult evaluateAgent(Domain domain, StateHashFactory hashingFactory, Human human, Agent partner, State startingState, 
-			ActionTimeGenerator timeGenerator, boolean onlySubgoals, String saveFile) {
-		human.reset();
-		partner.reset();
-		
-		List<AbstractGroundedAction> actionSequence = new ArrayList<AbstractGroundedAction>();
-		List<State> stateSequence = new ArrayList<State>();
-		boolean finished = false;
-		State currentState = startingState;
-		stateSequence.add(currentState);
-		List<State> statePair = new ArrayList<State>(2);
-		List<AbstractGroundedAction> actionPair = new ArrayList<AbstractGroundedAction>(2);
-		List<Double> timesPair = new ArrayList<Double>(2);
-		List<Double> actionTimes = new ArrayList<Double>();
-		human.chooseNewRecipe();
-		if (human.getCurrentRecipe() == null) {
-			throw new RuntimeException("Human's chosen recipe is null");
-		}
-		System.out.println("Chosen recipe: " + human.getCurrentRecipe().toString());
-		Human otherHuman = null;
-		Expert humanExpert = null, otherExpert = null;
-		Map<String, Double> actionMap = new HashMap<String, Double>();
-		actionMap.put(human.getAgentName(), 0.0);
-		actionMap.put(partner.getAgentName(), 0.0);
-		double currentTime = 0.0;
-		List<String> agents = Arrays.asList(human.getAgentName(), partner.getAgentName());
-		
-		if (human instanceof Expert) {
-			humanExpert = (Expert)human;
-			humanExpert.setCooperative(false);
-		}
-		if ((partner instanceof Human) && !(partner instanceof RandomRecipeAgent)) {
-			otherHuman = (Human)partner;
-			human.initialSubgoal(startingState);
-			otherHuman.setRecipe(human.getCurrentRecipe());
-			otherHuman.setSubgoal(human.getCurrentSubgoal());
-			if (otherHuman instanceof Expert) {
-				otherExpert = (Expert)otherHuman;
-			}
-			if (humanExpert != null) {
-				humanExpert.setCooperative(true);
-			}
-		}
-		return evaluateAgent(domain, saveFile, onlySubgoals, hashingFactory,
-				startingState, currentState, currentTime, human, partner,
-				timeGenerator, actionMap, actionSequence, stateSequence,
-				finished, statePair, actionPair, timesPair, actionTimes,
-				otherHuman, humanExpert, otherExpert, agents);
-	}*/
+	
 	
 	private static void removeFile(String saveFile) {
 		try {
@@ -269,55 +220,7 @@ public class SimulationHelper {
 		}
 		
 	}
-	/*
-	private static EvaluationResult evaluateAgent(Domain domain, String saveFile, boolean onlySubgoals, StateHashFactory hashingFactory) {
-		SimulationState simState = SimulationHelper.getStateFromSaved(domain, hashingFactory, saveFile);
-		State startingState = simState.startingState;
-		State currentState = simState.state;
-		double currentTime = simState.currentTime;
-		Human human = (Human)simState.human;
-		Agent partner = simState.partner;
-		ActionTimeGenerator timeGenerator = simState.timeGenerator;
-		Map<String, Double> actionMap = simState.actionMap;
-		
-		List<AbstractGroundedAction> actionSequence = new ArrayList<AbstractGroundedAction>();
-		List<State> stateSequence = new ArrayList<State>();
-		boolean finished = false;
-		stateSequence.add(currentState);
-		List<State> statePair = new ArrayList<State>(2);
-		List<AbstractGroundedAction> actionPair = new ArrayList<AbstractGroundedAction>(2);
-		List<Double> timesPair = new ArrayList<Double>(2);
-		List<Double> actionTimes = new ArrayList<Double>();
-		if (human.getCurrentRecipe() == null) {
-			human.chooseNewRecipe();
-		}
-		if (human.getCurrentRecipe() == null) {
-			throw new RuntimeException("Human's chosen recipe is null");
-		}
-		System.out.println("Chosen recipe: " + human.getCurrentRecipe().toString());
-		Human otherHuman = null;
-		Expert humanExpert = null, otherExpert = null;
-		List<String> agents = Arrays.asList(human.getAgentName(), partner.getAgentName());
-		
-		if (human instanceof Expert) {
-			humanExpert = (Expert)human;
-			humanExpert.setCooperative(false);
-		}
-		if ((partner instanceof Human) && !(partner instanceof RandomRecipeAgent)) {
-			otherHuman = (Human)partner;
-			if (otherHuman instanceof Expert) {
-				otherExpert = (Expert)otherHuman;
-			}
-			if (humanExpert != null) {
-				humanExpert.setCooperative(true);
-			}
-		}
-		return evaluateAgent(domain, saveFile, onlySubgoals, hashingFactory,
-				startingState, currentState, currentTime, human, partner,
-				timeGenerator, actionMap, actionSequence, stateSequence,
-				finished, statePair, actionPair, timesPair, actionTimes,
-				otherHuman, humanExpert, otherExpert, agents);
-	}*/
+	
 
 	private static EvaluationResult evaluateTwoAgents(SimulationState state, Domain domain, String saveFile, boolean onlySubgoals, StateHashFactory hashingFactory) {
 		Agent partner = state.partner;
@@ -358,7 +261,7 @@ public class SimulationHelper {
 			
 			if (humanAction == null) {
 				human.setCooperative(true);
-				if (partnerChoseToWait || numNullActions > 1 || 
+				if (partnerChoseToWait || numNullActions > 3 || 
 						currentState.equals(startingState)) {
 					human.setCooperative(false);
 				}
@@ -391,8 +294,6 @@ public class SimulationHelper {
 						}
 					} else {
 						State newState = (humanAction == null) ? currentState : humanAction.executeIn(currentState);
-						
-						
 						partnerAction = (GroundedAction)partnerHuman.getActionWithScheduler(newState, agents, !onlySubgoals);
 					}
 					

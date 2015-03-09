@@ -204,6 +204,16 @@ public class SubgoalDetermination {
 		};
 		int recipeChoice = trialId % recipes.size();
 		List<KitchenSubdomain> allPolicyDomains = AgentHelper.generateAllRTDPPoliciesParallel(domain, state, recipes, rf, hashingFactory);
+		
+		for (KitchenSubdomain subdomain : allPolicyDomains) {
+			List<GroundedAction> actions = new ArrayList<GroundedAction>();
+			AgentHelper.generateActionSequence(subdomain, subdomain.getStartState(), rf, actions);
+			System.out.println(subdomain.toString());
+			System.out.println(actions.toString() + "\n");
+		}
+		
+		
+		
 		List<KitchenSubdomain> policyDomains = AgentHelper.generateRTDPPolicies(recipes.get(0), domain, state, rf, hashingFactory);
 		Collections.shuffle(policyDomains);
 		

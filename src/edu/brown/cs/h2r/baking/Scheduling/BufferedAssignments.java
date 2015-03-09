@@ -465,7 +465,8 @@ public class BufferedAssignments {
 	
 	public void waitAgentUntil(String agent, Double endTime) {
 		Assignment assignment = this.adjustedAssignments.get(agent);
-		assignment.waitUntil(time);
+		assignment.waitUntil(endTime);
+		this.time = Math.max(this.time, assignment.time());
 	}
 	
 	private void updateEarliest() {

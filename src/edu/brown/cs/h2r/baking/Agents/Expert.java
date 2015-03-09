@@ -87,71 +87,7 @@ public class Expert extends Human{
 	
 	@Override
 	public AbstractGroundedAction getActionWithScheduler(State state, List<String> agents, boolean finishRecipe) {
-		if (!this.isCooperative && this.getAgentName().equals("partner")) {
-			System.err.println("This changed");
-		}
-		if (this.isSuccess(state)) {
-			return null;
-		}
-		if (this.currentSubgoal == null) {
-			this.chooseNewSubgoal(state);
-		} else if (this.currentSubgoal.getSubgoal().goalCompleted(state)) {
-			this.getKitchenSubdomains().remove(this.currentSubgoal);
-			this.chooseNewSubgoal(state);
-		}
-		
-		List<KitchenSubdomain> subdomains = new ArrayList<KitchenSubdomain>(this.getKitchenSubdomains());
-		List<KitchenSubdomain> remaining = Expert.getRemainingSubgoals(this.currentSubgoal, subdomains, state);
-		List<GroundedAction> actions = new ArrayList<GroundedAction>();
-		AgentHelper.generateActionSequence(remaining, state, rewardFunction, actions, finishRecipe);
-		if (actions.size() == 0 && this.getAgentName().equals("human")) {
-			Action reset = generalDomain.getAction("reset");
-			return new GroundedAction(reset, new String[]{"human"});
-		}
-		List<AbstractGroundedAction> aga = new ArrayList<AbstractGroundedAction>(actions);
-		
-		Workflow workflow = Workflow.buildWorkflow(state, aga);
-		if (this.isCooperative) {
-			Scheduler exhaustive = new ExhaustiveStarScheduler(true);
-			List<Assignment> assignments = exhaustive.schedule(workflow, agents, timeGenerator);
-			Integer location = agents.indexOf(this.getAgentName());
-			Assignment assignment = assignments.get(location);
-			Workflow.Node first = assignment.first();
-			if (first == null) {
-				return null;
-			}
-			return first.getAction(this.getAgentName());
-		} else {
-			List<Workflow.Node> available = workflow.getReadyNodes();
-			GroundedAction bestAction = null;
-			double bestTime = Double.MAX_VALUE;
-			for (Workflow.Node node : available) {
-				GroundedAction ga = node.getAction(this.getAgentName());
-				ga.params[0] = this.getAgentName();
-				double time = this.timeGenerator.get(ga, true);
-				if (time < bestTime) {
-					bestAction = ga;
-					bestTime = time;
-				}
-			}
-			return bestAction;
-		}
-		/*if (this.isSuccess(state)) {
-			return null;
-		}
-		
-		List<AbstractGroundedAction> actions = this.generateActionList(state);
-		Workflow workflow = Workflow.buildWorkflow(state, actions);
-		List<Assignment> assignments = this.scheduler.schedule(workflow, agents, this.timeGenerator);
-		for (Assignment assignment : assignments) {
-			if (assignment.getId().equals(this.getAgentName())) {
-				for (ActionTime actionTime : assignment) {
-					return actionTime.getNode().getAction();
-				}
-			}
-		}
-		
-		return null;*/
+		return this.getActionWithScheduler(state, agents, finishRecipe, null);
 	}
 	
 	public AbstractGroundedAction getActionWithScheduler(State state, List<String> agents, boolean finishRecipe, GroundedAction partnersAction) {
