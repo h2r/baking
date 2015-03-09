@@ -91,9 +91,9 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 		
 		
 		List<Agent> agents = Arrays.asList(
-				(Agent)new RandomActionAgent(generalDomain),
-				(Agent)new RandomRecipeAgent(generalDomain, "partner", timeGenerator, allRecipes),
-				(Agent)new Expert(generalDomain, "partner", timeGenerator, recipes),
+				//(Agent)new RandomActionAgent(generalDomain),
+				//(Agent)new RandomRecipeAgent(generalDomain, "partner", timeGenerator, allRecipes),
+				//(Agent)new Expert(generalDomain, "partner", timeGenerator, recipes),
 				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator, allRecipes, true)
 				);
 		
