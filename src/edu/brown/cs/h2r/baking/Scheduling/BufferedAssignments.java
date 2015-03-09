@@ -463,6 +463,11 @@ public class BufferedAssignments {
 		return true;
 	}
 	
+	public void waitAgentUntil(String agent, Double endTime) {
+		Assignment assignment = this.adjustedAssignments.get(agent);
+		assignment.waitUntil(time);
+	}
+	
 	private void updateEarliest() {
 		this.earliestTime = Double.MAX_VALUE;
 		for (Assignment workflow : this.adjustedAssignments.values()) {

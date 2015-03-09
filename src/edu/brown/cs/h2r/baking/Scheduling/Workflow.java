@@ -65,10 +65,13 @@ public class Workflow implements Iterable<Node> {
 	}
 	
 	public static List<Integer> getDependencies(GroundedAction action, Workflow workflow) {
+		List<Integer> dependencies = new ArrayList<Integer>();
 		
+		if (action.action == null) {
+			return dependencies;
+		}
 		State compareState = workflow.getEndState();
 		compareState = action.executeIn(compareState);
-		List<Integer> dependencies = new ArrayList<Integer>();
 		List<Node> leaves = workflow.getLeafNodes();
 		Node newNode = new Node(workflow.size(), action);
 		

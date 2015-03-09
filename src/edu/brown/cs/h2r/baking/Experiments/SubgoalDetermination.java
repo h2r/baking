@@ -180,7 +180,7 @@ public class SubgoalDetermination {
 		
 	public static void main(String[] argv) {
 		int numTries = 10;
-		boolean breakfastOrDessert = true;
+		boolean breakfastOrDessert = false;
 		Random rando = new Random();
 		
 		int trialId = Math.abs(rando.nextInt());
@@ -204,7 +204,7 @@ public class SubgoalDetermination {
 		};
 		int recipeChoice = trialId % recipes.size();
 		List<KitchenSubdomain> allPolicyDomains = AgentHelper.generateAllRTDPPoliciesParallel(domain, state, recipes, rf, hashingFactory);
-		List<KitchenSubdomain> policyDomains = AgentHelper.generateRTDPPolicies(recipes.get(recipeChoice), domain, state, rf, hashingFactory);
+		List<KitchenSubdomain> policyDomains = AgentHelper.generateRTDPPolicies(recipes.get(0), domain, state, rf, hashingFactory);
 		Collections.shuffle(policyDomains);
 		
 		System.out.println("Chosen policy, Depth, Depth Type, Successes, Estimate Successes, Informed Guesses, Total Trials");

@@ -15,7 +15,7 @@ public class ChocolateMilk extends Recipe {
 	private static ChocolateMilk singleton = null;
 	public ChocolateMilk(Domain domain) {
 		super(domain);
-		this.recipeName = "coffee with milk";
+		this.recipeName = "chocolate milk";
 	}
 	@Override
 	protected IngredientRecipe createTopLevelIngredient() {

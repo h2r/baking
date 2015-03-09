@@ -241,7 +241,7 @@ public abstract class AdaptiveAgent extends Agent{
 		StringBuffer buffer = new StringBuffer();
 		buffer.append(action.toString() + "\n");
 		List<List<AbstractGroundedAction>> adjustedActionLists = 
-				AdaptiveAgent.correctActionLists(newState, policyDistribution, subdomains, buffer, finishRecipe);
+				AdaptiveAgent.correctActionLists(newState, action, policyDistribution, subdomains, buffer, finishRecipe);
 		System.out.println(buffer.toString());
 		
 		// For each adjusted action list, create the associated adjusted workflow
@@ -356,17 +356,14 @@ public abstract class AdaptiveAgent extends Agent{
 				assignments.add(assignment);
 			}
 			
-			BufferedAssignments buffered = new BufferedAssignments(timeGenerator, agents, exhaustive.isUsingActualValues(), false);
-			for (Map.Entry<String, Assignment> entry : buffered.getAssignmentMap().entrySet()) {
-				Assignment assignment = entry.getValue();
-				String agent = entry.getKey();
-				Double waitTime = startingDelays.get(agent);
-				if (waitTime != null) {
-					assignment.waitUntil(waitTime);
-				}
+			BufferedAssignments buffered = new BufferedAssignments(timeGenerator, agents, false, false);
+			for (Map.Entry<String, Double> entry : startingDelays.entrySet()) {
+				buffered.waitAgentUntil(entry.getKey(), entry.getValue());
 			}
-			exhaustive.finishSchedule(workflow, timeGenerator, assignments, buffered, new HashSet<Workflow.Node>());
-			buffered.buildAdjustedAssignments(assignments, false);
+			
+			assignments = exhaustive.finishSchedule(workflow, timeGenerator, assignments, buffered, new HashSet<Workflow.Node>());
+			
+			buffered = buffered.copyAndFinish(assignments);
 			completionTimes.add(buffered.time());
 		}
 		return completionTimes;
@@ -444,7 +441,8 @@ public abstract class AdaptiveAgent extends Agent{
 	}
 	
 	// Generates States x policies 2D array of Action sequences
-	protected static List<List<AbstractGroundedAction>> correctActionLists(State state, List<PolicyProbability> policies, List<KitchenSubdomain> subdomains, StringBuffer buffer, boolean finishRecipe) {
+	protected static List<List<AbstractGroundedAction>> correctActionLists(State state, GroundedAction action, 
+			List<PolicyProbability> policies, List<KitchenSubdomain> subdomains, StringBuffer buffer, boolean finishRecipe) {
 		
 		List<GroundedAction> actions = new ArrayList<GroundedAction>();
 		
@@ -453,6 +451,10 @@ public abstract class AdaptiveAgent extends Agent{
 			KitchenSubdomain policy = policyProb.getPolicyDomain();
 			
 			actions.clear();
+			if (action.action != null) {
+				actions.add(action);
+			}
+			
 			List<KitchenSubdomain> remainingSubgoals = AdaptiveAgent.getRemainingSubgoals(policy, subdomains, state);
 			AgentHelper.generateActionSequence(remainingSubgoals, state, rewardFunction, actions, finishRecipe);
 			buffer.append("\t" + policy.toString() + "\n");
