@@ -12,6 +12,7 @@ import burlap.datastructures.HashIndexedHeap;
 import burlap.debugtools.DPrint;
 import burlap.oomdp.singleagent.GroundedAction;
 import edu.brown.cs.h2r.baking.Scheduling.Assignment.ActionTime;
+import edu.brown.cs.h2r.baking.actions.ResetAction;
 
 public class ExhaustiveStarScheduler implements Scheduler {
 	public static final String GROUNDED_ACTION_CLASSNAME = "grounded_action";
@@ -125,6 +126,11 @@ public class ExhaustiveStarScheduler implements Scheduler {
 			int numAddedNodes = 0;
 			for (Workflow.Node action : availableActions) {
 				for (String agent : agents){
+					if (action.getAction().action instanceof ResetAction && !agent.equals("human")) {
+						continue;
+					}
+					
+					
 					Map<String, Assignment> currentAssignments = node.getAssignments();
 					currentAssignments.get(agent).add(action);
 					List<Assignment> completedAssignments = this.getCompleted(workflow, actionTimeLookup, SchedulingHelper.copy(currentAssignments.values()));

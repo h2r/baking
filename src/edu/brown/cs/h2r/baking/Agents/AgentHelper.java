@@ -169,7 +169,7 @@ public static State generateActionSequence(KitchenSubdomain currentSubgoal, List
 		}
 		
 		for (KitchenSubdomain subdomain : remainingSubgoals) {
-			if (subdomain.getSubgoal().allPreconditionsCompleted(startingState) && !completed.contains(subdomain)) {
+			if (subdomain.getSubgoal().allPreconditionsCompleted(nextState) && !completed.contains(subdomain)) {
 				active.add(subdomain);
 			}
 		}

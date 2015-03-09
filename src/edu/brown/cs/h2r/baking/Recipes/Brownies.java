@@ -107,7 +107,7 @@ public class Brownies extends Recipe {
 		
 		BakingPropositionalFunction pf4 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("dry_ingredients"));
 		BakingSubgoal sg4 = new BakingSubgoal(pf4, this.subgoalIngredients.get("dry_ingredients"));
-		sg4.addPrecondition(sg1);
+		sg4 = sg4.addPrecondition(sg1);
 		//sg4.addPrecondition(sg2);
 
 		subgoals.add(sg4);

@@ -131,11 +131,6 @@ public class Human extends Agent {
 	@Override
 	public void setInitialState(State state) {
 		this.startingState = state;
-		
-		for (Recipe recipe : this.recipes) {
-			List<KitchenSubdomain> policies = AgentHelper.generateRTDPPolicies(recipe, this.generalDomain, this.startingState, Human.rewardFunction, Human.hashingFactory);
-			this.recipeLookup.put(recipe, policies);
-		}
 	}
 	
 	@Override
@@ -143,6 +138,10 @@ public class Human extends Agent {
 		this.currentRecipe = null;
 		this.currentSubgoal = null;
 		this.kitchenSubdomains.clear();
+	}
+	
+	public void performResetAction() {
+		this.setRecipe(this.currentRecipe);
 	}
 	
 	public void chooseNewRecipe() {
@@ -156,7 +155,12 @@ public class Human extends Agent {
 	public void setRecipe(Recipe recipe) {
 		this.currentRecipe = recipe;
 		this.currentSubgoal = null;
-		this.allKitchenSubdomains = this.recipeLookup.get(recipe);
+		List<KitchenSubdomain> domains = this.recipeLookup.get(recipe);
+		if (domains == null) {
+			domains = AgentHelper.generateRTDPPolicies(recipe, this.generalDomain, this.startingState, Human.rewardFunction, Human.hashingFactory);
+			this.recipeLookup.put(recipe, domains);
+		}
+		this.allKitchenSubdomains = domains;
 		this.setKitchenSubdomains(new ArrayList<KitchenSubdomain>(this.allKitchenSubdomains));
 	}
 	

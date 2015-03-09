@@ -36,6 +36,7 @@ public abstract class Agent{
 	public abstract ObjectInstance getAgentObject();
 	public abstract void setInitialState(State state);
 	public abstract void reset();
+	public abstract void performResetAction();
 	public abstract AbstractGroundedAction getAction(State state);
 	public abstract AbstractGroundedAction getActionWithScheduler(State state, List<String> agents, boolean finishRecipe);
 	

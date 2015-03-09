@@ -144,6 +144,11 @@ public abstract class AdaptiveAgent extends Agent{
 		this.policyBeliefDistribution.addAll(this.getInitialPolicyDistribution(subdomains));
 	}
 	
+	@Override
+	public void performResetAction() {
+		this.reset();
+	}
+	
 	private final List<PolicyProbability> getInitialPolicyDistribution(List<KitchenSubdomain> subdomains) {
 		List<PolicyProbability> distribution = new ArrayList<PolicyProbability>(subdomains.size());
 		double uniformProbability = 1.0 / subdomains.size();

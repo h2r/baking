@@ -227,4 +227,5 @@ public class Baxter extends Agent {
 	@Override
 	public void reset(){}
 
+	public void performResetAction() {}
 }

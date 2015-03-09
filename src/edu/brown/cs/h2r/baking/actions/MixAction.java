@@ -137,9 +137,10 @@ public class MixAction extends BakingAction {
 		}
 		
 		if (contents.size() < 2) {
-			ObjectInstance ingredient = state.getObject(contents.iterator().next()); 
-			ObjectInstance mixed = IngredientFactory.mixIngredient(ingredient);
-			return state.replaceObject(ingredient, mixed);
+			return builder.toState();
+			//ObjectInstance ingredient = state.getObject(contents.iterator().next()); 
+			//ObjectInstance mixed = IngredientFactory.mixIngredient(ingredient);
+			//return state.replaceObject(ingredient, mixed);
 		}
 		
 		// get all of the objects for contents of container

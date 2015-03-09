@@ -67,27 +67,34 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 		if (args.length > 1) {
 			trialId = Integer.parseInt(args[1]);
 		} 
+		boolean breakfastOrDessert = true;
+		if (args.length > 2 && args[2].equals("dessert")) {
+			breakfastOrDessert = true;
+		}
+		
 		Domain generalDomain = SimulationHelper.generateGeneralDomain(); 
 		Knowledgebase knowledgebase = Knowledgebase.getKnowledgebase(generalDomain);
-		int numberOfRecipes = 1 + trialId / (7 * 50);
-		List<Recipe> recipes = AgentHelper.breakfastRecipes(generalDomain);
+		List<Recipe> allRecipes = (breakfastOrDessert) ? AgentHelper.dessertRecipes(generalDomain) : AgentHelper.breakfastRecipes(generalDomain);
 		//List<Recipe> recipes = Recipe.generateRecipes(generalDomain, 5 * numberOfRecipes, knowledgebase.getIngredientList(), 1, 4);
 		
-		knowledgebase.initKnowledgebase(recipes);
+		Random random = new Random();
+		List<Recipe> recipes = new ArrayList<Recipe>();
+		recipes.add(allRecipes.get(random.nextInt(allRecipes.size())));
+		knowledgebase.initKnowledgebase(allRecipes);
 		Map<String, Double> factors = new HashMap<String, Double>();
 		factors.put("human", 1.0);
 		
 		ActionTimeGenerator timeGenerator = new ActionTimeGenerator(true, true);
 		Human human = new Expert(generalDomain, "human", timeGenerator, recipes);
 		
-		State state = SimulationHelper.generateInitialState(generalDomain, hashingFactory, recipes, human, null);
+		State state = SimulationHelper.generateInitialState(generalDomain, hashingFactory, allRecipes, human, null);
 		
 		
 		List<Agent> agents = Arrays.asList(
 				(Agent)new RandomActionAgent(generalDomain),
-				(Agent)new RandomRecipeAgent(generalDomain,"partner", timeGenerator, recipes),
+				(Agent)new RandomRecipeAgent(generalDomain, "partner", timeGenerator, allRecipes),
 				(Agent)new Expert(generalDomain, "partner", timeGenerator, recipes),
-				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator, recipes, true)
+				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator, allRecipes, true)
 				);
 		
 		System.out.println("Agent, Successes, Trials, Average reward, average successful reward");
@@ -96,7 +103,7 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 		
 		Path path = Paths.get(saveFile);
 		if (true){
-			int choice = trialId % (agents.size() + 1);
+			int choice = 2;//trialId % (agents.size() + 1);
 			SimulationHelper.run(numTrials, generalDomain, hashingFactory, recipes, timeGenerator, human, agents,
 					reset, choice, false, saveFile);	
 		} else {

@@ -74,4 +74,5 @@ public class RandomActionAgent extends Agent {
 	@Override
 	public void reset() {}
 	
+	public void performResetAction() {}
 }

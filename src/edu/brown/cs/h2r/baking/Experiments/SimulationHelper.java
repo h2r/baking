@@ -357,8 +357,12 @@ public class SimulationHelper {
 			SimulationHelper.writeCurrentState(saveFile, domain, hashingFactory, startingState, currentState, human, partner, actionMap, timeGenerator, currentTime);
 			
 			if (humanAction == null) {
-				if (human != null) {
-					human.setCooperative((!currentState.equals(startingState) && numNullActions < 2) || partnerChoseToWait);
+				human.setCooperative(true);
+				if (partnerChoseToWait || numNullActions > 1 || 
+						currentState.equals(startingState)) {
+					human.setCooperative(false);
+				}
+				if (partnerAction != null) {
 					humanAction = (GroundedAction)human.getActionWithScheduler(currentState, agents, !onlySubgoals, (GroundedAction)partnerAction);
 				} else {
 					humanAction = (GroundedAction)human.getActionWithScheduler(currentState, agents, !onlySubgoals);
@@ -428,9 +432,6 @@ public class SimulationHelper {
 			
 			if (humanAction == null && partnerAction == null) {
 				numNullActions++;
-				if (numNullActions > 3) {
-					break;
-				}
 			} else {
 				numNullActions = 0;
 			}
@@ -452,19 +453,15 @@ public class SimulationHelper {
 			if (actionPair.contains(humanAction)) {
 				if (((GroundedAction)humanAction).action instanceof ResetAction) {
 					partnerAction = null;
+					human.performResetAction();
+					partner.performResetAction();
 				}
 				humanAction = null;
-				
-			}
-			if (actionPair.contains(partnerAction)) {
-				if (((GroundedAction)partnerAction).action instanceof ResetAction) {
-					humanAction = null;
-				}
-				partnerAction = null;
-				
 			}
 			
-			//partner.addObservation(currentState);
+			if (actionPair.contains(partnerAction)) {
+				partnerAction = null;
+			}
 			
 			stateSequence.addAll(statePair);
 			actionSequence.addAll(actionPair);

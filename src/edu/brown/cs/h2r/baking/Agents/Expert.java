@@ -11,6 +11,7 @@ import java.util.Set;
 import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.State;
+import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.Experiments.KitchenSubdomain;
@@ -103,7 +104,10 @@ public class Expert extends Human{
 		List<KitchenSubdomain> remaining = Expert.getRemainingSubgoals(this.currentSubgoal, subdomains, state);
 		List<GroundedAction> actions = new ArrayList<GroundedAction>();
 		AgentHelper.generateActionSequence(remaining, state, rewardFunction, actions, finishRecipe);
-		
+		if (actions.size() == 0 && this.getAgentName().equals("human")) {
+			Action reset = generalDomain.getAction("reset");
+			return new GroundedAction(reset, new String[]{"human"});
+		}
 		List<AbstractGroundedAction> aga = new ArrayList<AbstractGroundedAction>(actions);
 		
 		Workflow workflow = Workflow.buildWorkflow(state, aga);
@@ -153,7 +157,7 @@ public class Expert extends Human{
 	public AbstractGroundedAction getActionWithScheduler(State state, List<String> agents, boolean finishRecipe, GroundedAction partnersAction) {
 		State newState = state;
 		if (partnersAction != null) {
-			newState = partnersAction.executeIn(state);
+			//newState = partnersAction.executeIn(state);
 		}
 		if (this.isSuccess(newState)) {
 			return null;
@@ -176,6 +180,7 @@ public class Expert extends Human{
 		if (actions.size() > 0 && actions.get(0).action instanceof ResetAction) {
 			GroundedAction reset = actions.get(0);
 			reset.params[0] = this.getAgentName();
+			this.setRecipe(this.currentRecipe);
 			return reset;
 		}
 		
