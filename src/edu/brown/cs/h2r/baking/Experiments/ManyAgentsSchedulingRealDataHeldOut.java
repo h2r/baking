@@ -67,7 +67,7 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 		if (args.length > 1) {
 			trialId = Integer.parseInt(args[1]);
 		} 
-		boolean breakfastOrDessert = true;
+		boolean breakfastOrDessert = false;
 		if (args.length > 2 && args[2].equals("dessert")) {
 			breakfastOrDessert = true;
 		}
