@@ -72,8 +72,8 @@ public class ManyAgentsSchedulingSubgoalsRealdataHeldout {
 				(Agent)new RandomRecipeAgent(generalDomain,"partner", timeGenerator, recipes),
 				(Agent)new Human(generalDomain, "partner", timeGenerator, recipes),
 				(Agent)new Expert(generalDomain, "partner", timeGenerator, recipes),
-				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator, recipes, false),
-				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator, recipes,  true)
+				(Agent)new AdaptiveByFlow(generalDomain, false, timeGenerator, recipes, false),
+				(Agent)new AdaptiveByFlow(generalDomain, false, timeGenerator, recipes,  true)
 				);
 		
 		System.out.println("Agent, Successes, Trials, Average reward, average successful reward");

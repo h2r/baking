@@ -25,8 +25,8 @@ public class AdaptiveByFlow extends AdaptiveAgent{
 	private static final int MAX_ALPHA = 5;
 	
 	private PolicyPrediction prediction;
-	public AdaptiveByFlow(Domain domain, ActionTimeGenerator timeGenerator, List<Recipe> recipes, boolean useScheduling) {
-		super("partner", domain, timeGenerator, recipes, useScheduling);
+	public AdaptiveByFlow(Domain domain, boolean isRobot, ActionTimeGenerator timeGenerator, List<Recipe> recipes, boolean useScheduling) {
+		super("partner", isRobot, domain, timeGenerator, recipes, useScheduling);
 	}
 	
 	protected AdaptiveByFlow(Domain domain, Map<String, Object> objectMap, ActionTimeGenerator timeGenerator, List<Recipe> recipes, State startState) {

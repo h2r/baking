@@ -62,8 +62,8 @@ public abstract class AdaptiveAgent extends Agent{
 	
 	protected final List<Recipe> recipes;
 	
-	public AdaptiveAgent(String name, Domain domain, ActionTimeGenerator timeScheduler, List<Recipe> recipes, boolean useScheduling) {
-		super(name);
+	public AdaptiveAgent(String name, boolean isRobot, Domain domain, ActionTimeGenerator timeScheduler, List<Recipe> recipes, boolean useScheduling) {
+		super(name, isRobot);
 		this.domain = domain;
 		this.stateHistory = new ArrayList<State>();
 		this.subdomains = new ArrayList<KitchenSubdomain>();

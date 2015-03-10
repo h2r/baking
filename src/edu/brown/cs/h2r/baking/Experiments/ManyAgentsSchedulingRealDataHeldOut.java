@@ -80,7 +80,7 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 		Random random = new Random();
 		List<Recipe> recipes = new ArrayList<Recipe>();
 		recipes.add(allRecipes.get(random.nextInt(allRecipes.size())));
-		//recipes.add(allRecipes.get(1));
+		//recipes.add(allRecipes.get(3));
 		
 		knowledgebase.initKnowledgebase(allRecipes);
 		Map<String, Double> factors = new HashMap<String, Double>();
@@ -91,12 +91,13 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 		
 		State state = SimulationHelper.generateInitialState(generalDomain, hashingFactory, allRecipes, human, null);
 		
+		boolean useRobots = true;
 		
 		List<Agent> agents = Arrays.asList(
 				//(Agent)new RandomActionAgent(generalDomain),
 				//(Agent)new RandomRecipeAgent(generalDomain, "partner", timeGenerator, allRecipes),
-				(Agent)new Expert(generalDomain, "partner", timeGenerator, recipes),
-				(Agent)new AdaptiveByFlow(generalDomain, timeGenerator, allRecipes, true)
+				(Agent)new Expert(generalDomain, "partner", useRobots, timeGenerator, recipes),
+				(Agent)new AdaptiveByFlow(generalDomain, useRobots, timeGenerator, allRecipes, true)
 				);
 		
 		System.out.println("Agent, Successes, Trials, Average reward, average successful reward");

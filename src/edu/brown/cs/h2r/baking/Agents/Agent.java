@@ -14,17 +14,26 @@ import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
 public abstract class Agent{
 	
 	private final String agentName;
-	
+	private final boolean isRobot;
 	public Agent(String name) {
 		this.agentName = name;
+		this.isRobot = false;
 	}
+	
+	public Agent(String name, boolean isRobot) {
+		this.agentName = name;
+		this.isRobot = isRobot;
+	}
+	
 	public Agent(Map<String, Object> objectMap) {
 		this.agentName = (String)objectMap.get("name");
+		this.isRobot = (Boolean)objectMap.get("is_robot");
 	}
 	
 	protected Map<String, Object> toMap() {
 		Map<String, Object> objectMap = new HashMap<String, Object>();
 		objectMap.put("name", this.agentName);
+		objectMap.put("is_robot", this.isRobot);
 		return objectMap;
 	}
 	

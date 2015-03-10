@@ -31,6 +31,11 @@ public class Expert extends Human{
 		this.isCooperative = true;
 	}
 	
+	public Expert(Domain domain, String name, boolean isRobot, ActionTimeGenerator timeGenerator, List<Recipe> recipes)  {
+		super(domain, name, isRobot, timeGenerator, recipes);
+		this.isCooperative = true;
+	}
+	
 	protected Expert(Domain domain, Map<String, Object> map, ActionTimeGenerator timeGenerator, State state, List<Recipe> recipes) {
 		super(domain, map, timeGenerator, state, recipes);
 		this.isCooperative = (Boolean)map.get("isCooperative");

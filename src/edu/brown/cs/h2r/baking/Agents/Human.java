@@ -68,6 +68,15 @@ public class Human extends Agent {
 		this.recipes = recipes;
 	}
 	
+	public Human(Domain generalDomain, String name, boolean isRobot, ActionTimeGenerator timeGenerator, List<Recipe> recipes) {
+		super(name, isRobot);
+		this.generalDomain = generalDomain;
+		this.timeGenerator = timeGenerator;
+		this.recipeLookup = new HashMap<Recipe, List<KitchenSubdomain>>();
+		this.kitchenSubdomains = new ArrayList<KitchenSubdomain>();
+		this.recipes = recipes;
+	}
+	
 	protected Human(Domain domain, Map<String, Object> map, ActionTimeGenerator timeGenerator, State startState, List<Recipe> recipes) {
 		super(map);
 		this.generalDomain = domain;
