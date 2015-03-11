@@ -91,7 +91,7 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 		
 		State state = SimulationHelper.generateInitialState(generalDomain, hashingFactory, allRecipes, human, null);
 		
-		boolean useRobots = true;
+		boolean useRobots = false;
 		
 		List<Agent> agents = Arrays.asList(
 				//(Agent)new RandomActionAgent(generalDomain),
