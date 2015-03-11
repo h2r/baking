@@ -88,10 +88,10 @@ public class SimulationHelper {
 			List<Recipe> recipes, Agent agent1, Agent agent2) {
 		ObjectHashFactory objectHashingFactory = hashingFactory.getObjectHashFactory();
 		List<ObjectInstance> objects = new ArrayList<ObjectInstance>();
-		objects.add(agent1.getAgentObject());
+		objects.add(agent1.getAgentObject(generalDomain, hashingFactory));
 		
 		if (agent2 != null) {
-			objects.add(agent2.getAgentObject());
+			objects.add(agent2.getAgentObject(generalDomain, hashingFactory));
 		}
 		ObjectInstance makeSpan = MakeSpanFactory.getNewObjectInstance(generalDomain, "makespan", 2, objectHashingFactory);
 		objects.add(makeSpan);
@@ -181,7 +181,8 @@ public class SimulationHelper {
 		
 		if (firstTime > 0.0) {
 			State nextState = firstAction.executeIn(state);
-			System.out.println("First executing action " + firstAction.toString() + ", " + firstTime);
+			double start = lastActionTimes.get(firstAction.params[0]);
+			System.out.println("Executing action " + firstAction.toString() + ", " + start + ", " + firstTime);
 			if (nextState.equals(state)) {
 				//System.out.println("Action had no effect");
 			}
@@ -195,7 +196,9 @@ public class SimulationHelper {
 		
 		if (secondTime > 0.0 && secondTime == firstTime) {
 			State nextState = secondAction.executeIn(state);
-			System.out.println("Second executing action " + secondAction.toString() + ", " + secondTime);
+			double start = lastActionTimes.get(secondAction.params[0]);
+			
+			System.out.println("Executing action " + secondAction.toString() + ", " + start + ", " + secondTime);
 			
 			if (nextState.equals(state)) {
 				//System.out.println("Action had no effect");
@@ -341,12 +344,14 @@ public class SimulationHelper {
 			if (!timesPair.isEmpty()){
 				double now = timesPair.get(0);
 				if (humanAction == null) {
+					System.out.println("Executing action wait [" + human.getAgentName() + "] " + actionMap.get(human.getAgentName()) + ", " + now);
 					SimulationHelper.agentWaitUntilNext(human, actionMap, now);
-					System.out.println("Human waits until " + actionMap.get(human.getAgentName()));
+					
 				}
 				if (partnerAction == null) {
+					System.out.println("Executing action wait [" + partner.getAgentName() + "] " + actionMap.get(partner.getAgentName()) + ", " + now);
 					SimulationHelper.agentWaitUntilNext(partner, actionMap, now);
-					System.out.println("Partner waits until " + actionMap.get(partner.getAgentName()));
+					
 				}
 				currentTime += timesPair.get(0);
 			}

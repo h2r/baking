@@ -1,16 +1,21 @@
 package edu.brown.cs.h2r.baking.Scheduling;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Objects;
+import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Set;
 
 import burlap.oomdp.singleagent.GroundedAction;
 import edu.brown.cs.h2r.baking.Scheduling.Assignment.ActionTime;
+import edu.brown.cs.h2r.baking.Scheduling.Multitiered.Subtask;
 import edu.brown.cs.h2r.baking.Scheduling.Workflow.Node;
 
 public class Assignment implements Iterable<ActionTime> {
@@ -306,7 +311,7 @@ public class Assignment implements Iterable<ActionTime> {
 		return this.completionTimes.get(place);
 	}
 	
-	public List<Workflow.Node> nodes(Set<Workflow.Node> visited) { 
+	public List<Workflow.Node> nodes(Collection<Node> visited) { 
 		List<Workflow.Node> nodes = new ArrayList<Workflow.Node>();
 		for (Workflow.Node node : this.nodes){ 
 			if (node != null && node.isAvailable(visited)) {
@@ -315,6 +320,46 @@ public class Assignment implements Iterable<ActionTime> {
 		}
 		
 		return nodes;
+	}
+	
+		
+	// Only includes nodes completely between beginTime and endTime
+	public List<Workflow.Node> completedSubtasks(double beginTime, double endTime) { 
+		if (beginTime >= this.time || beginTime >= endTime) {
+			return new ArrayList<Workflow.Node>();
+		}
+		
+		Integer begin = this.position(beginTime);
+		Integer end = this.position(endTime);
+		if (begin == null) {
+			return null;
+		} else if (beginTime == this.completionTimes.get(begin)) {
+			begin++;
+		}
+		
+		if (end == null) {
+			end = this.nodes.size();
+		} else if (endTime == this.completionTimes.get(end)) {
+			end++;
+		}
+		
+		return this.nodes.subList(begin, end);
+	}
+	public List<ActionTime> nodesBeforeTime(double endTime) {
+		Integer end = this.position(endTime);
+		if (end == null) {
+			end = this.nodes.size();
+		} else if (endTime == this.completionTimes.get(end)) {
+			end++;
+		}
+		List<Workflow.Node> nodes = this.nodes.subList(0, end);
+		List<Double> times = this.completionTimes.subList(0, end);
+		List<ActionTime> actionTimes = new ArrayList<ActionTime>(end);
+		
+		for (int i = 0; i < end; i++) {
+			actionTimes.add(new ActionTime(nodes.get(i), times.get(i)));
+		}
+		return actionTimes;
 	}
 	
 	public List<Double> times() {
@@ -548,6 +593,16 @@ public class Assignment implements Iterable<ActionTime> {
 		@Override
 		public String toString() {
 			return this.node.toString() + ": " + time;
+		}
+
+		public static Comparator<ActionTime> comparator() {
+			return new Comparator<ActionTime>() {
+				@Override
+				public int compare(ActionTime o1, ActionTime o2) {
+					return Double.compare(o1.time, o2.time);
+				}
+				
+			};
 		}
 	}
 

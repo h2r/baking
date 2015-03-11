@@ -22,6 +22,7 @@ public class FriedEgg extends Recipe {
 	protected IngredientRecipe createTopLevelIngredient() {
 		List<IngredientRecipe> ingredientList = new ArrayList<IngredientRecipe>();
 		IngredientRecipe eggs = knowledgebase.getIngredient("eggs");
+		eggs.setHeated();
 		ingredientList.add(eggs);
 		
 		IngredientRecipe friedEgg = new IngredientRecipe("fried_egg", Recipe.HEATED, this, Recipe.SWAPPED, ingredientList);

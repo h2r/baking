@@ -5,8 +5,7 @@ import java.util.Map;
 import java.util.Set;
 
 public interface Scheduler {
-	List<Assignment> schedule(Workflow workflow, List<String> agents, ActionTimeGenerator  timeGenerator);
-	List<Assignment> finishSchedule(Workflow workflow, ActionTimeGenerator actionTimeLookup, 
-			List<Assignment> assignedWorkflows, BufferedAssignments bufferedAssignments, Set<Workflow.Node> visitedNodes);
+	Assignments schedule(Workflow workflow, List<String> agents, ActionTimeGenerator  timeGenerator);
+	Assignments finishSchedule(Workflow workflow, Assignments assignments, ActionTimeGenerator actionTimeLookup);
 	boolean isUsingActualValues();
 }

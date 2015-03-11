@@ -1,10 +1,7 @@
 package edu.brown.cs.h2r.baking.Scheduling;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import edu.brown.cs.h2r.baking.Scheduling.Workflow.Node;
 
@@ -14,14 +11,11 @@ public class WeightByShortest extends HeuristicScheduler {
 	}
 	@Override
 	protected Map<Node, Map<String, Double>> getWeights(
-			Map<Node, Map<String, Double>> times, Map<String, Assignment> assignments) {
+			Map<Node, Map<String, Double>> times, Assignments assignments) {
 		Map<Node, Map<String, Double>> weights = new HashMap<Node, Map<String, Double>>();
 		
-		List<Assignment> assignedWorkflows = new ArrayList<Assignment>(assignments.values());
-		BufferedAssignments bufferedAssignments = new BufferedAssignments(assignedWorkflows, false);
-		double baseTime = bufferedAssignments.time();
+		double baseTime = assignments.time();
 		
-		Map<String, Assignment> bufferedMap = bufferedAssignments.getAssignmentMap();
 		
 		for(Map.Entry<Node, Map<String,Double>> entry : times.entrySet()) {
 			Map<String, Double> agentTimes = entry.getValue();
@@ -32,7 +26,7 @@ public class WeightByShortest extends HeuristicScheduler {
 			
 			for (Map.Entry<String, Double> entry2 : agentTimes.entrySet()) {
 				String agent = entry2.getKey();
-				double time = bufferedMap.get(agent).time();
+				double time = assignments.getAssignment(agent).time();
 				time += entry2.getValue();
 				weightMap.put(agent, baseTime - time);
 			}

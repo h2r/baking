@@ -98,10 +98,10 @@ public class RecipeScheduling {
 	public static State generateInitialState(Domain generalDomain, List<Recipe> recipes, Agent agent1, Agent agent2) {
 		ObjectHashFactory objectHashingFactory = hashingFactory.getObjectHashFactory();
 		List<ObjectInstance> objects = new ArrayList<ObjectInstance>();
-		objects.add(agent1.getAgentObject());
+		objects.add(agent1.getAgentObject(generalDomain, hashingFactory));
 		
 		if (agent2 != null) {
-			objects.add(agent2.getAgentObject());
+			objects.add(agent2.getAgentObject(generalDomain, hashingFactory));
 		}
 		ObjectInstance makeSpan = MakeSpanFactory.getNewObjectInstance(generalDomain, "makespan", 2, objectHashingFactory);
 		objects.add(makeSpan);

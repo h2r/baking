@@ -4,10 +4,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import burlap.behavior.statehashing.StateHashFactory;
 import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
+import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
 
@@ -42,7 +44,11 @@ public abstract class Agent{
 	}
 	
 	public abstract void addObservation(State state);
-	public abstract ObjectInstance getAgentObject();
+	public ObjectInstance getAgentObject(Domain domain, StateHashFactory hashingFactory) {
+		return (this.isRobot) ?
+				AgentFactory.getNewRobotAgentObjectInstance(domain, this.getAgentName(), hashingFactory.getObjectHashFactory()) :
+				AgentFactory.getNewHumanAgentObjectInstance(domain, this.getAgentName(), hashingFactory.getObjectHashFactory());
+	}
 	public abstract void setInitialState(State state);
 	public abstract void reset();
 	public abstract void performResetAction();

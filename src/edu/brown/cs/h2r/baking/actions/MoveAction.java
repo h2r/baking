@@ -33,9 +33,9 @@ public class MoveAction extends BakingAction {
 		ObjectInstance space = state.getObject(spaceName);
 		String agentName = SpaceFactory.getAgent(space).iterator().next();
 		String paramAgentName = params[0];
-		if (!agentName.isEmpty() && !agentName.equalsIgnoreCase(paramAgentName)) {
+		/*if (!agentName.isEmpty() && !agentName.equalsIgnoreCase(paramAgentName)) {
 			return BakingActionResult.failure(paramAgentName + " cannot move objects to the " + spaceName);
-		}
+		}*/
 		
 		String containerName = params[1];
 		ObjectInstance container = state.getObject(containerName);

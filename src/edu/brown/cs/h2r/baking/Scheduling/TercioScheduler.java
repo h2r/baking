@@ -34,28 +34,16 @@ public class TercioScheduler implements Scheduler {
 	}
 
 	@Override
-	public List<Assignment> schedule(Workflow workflow, List<String> agents,
+	public Assignments schedule(Workflow workflow, List<String> agents,
 			ActionTimeGenerator timeGenerator) {
-		List<Assignment> assignments = new ArrayList<Assignment>();
-		for (String agent : agents) {
-			assignments.add(new Assignment(agent, timeGenerator, this.useActualValues));
-		}
-		
-		return this.assignTasks(workflow, assignments, timeGenerator);
+		Assignments assignments = new Assignments(timeGenerator, agents, workflow.getStartState(), this.useActualValues, false);
+		return this.finishSchedule(workflow, assignments, timeGenerator);
 	}
 
 	@Override
-	public List<Assignment> finishSchedule(Workflow workflow,
-			ActionTimeGenerator timeGenerator,
-			List<Assignment> assignedWorkflows,
-			BufferedAssignments bufferedAssignments, Set<Node> visitedNodes) {
-		// TODO Auto-generated method stub
-		return this.assignTasks(workflow, assignedWorkflows, timeGenerator);
-	}
-
-	public List<Assignment> assignTasks(Workflow workflow, List<Assignment> assignments, ActionTimeGenerator timeGenerator) {
+	public Assignments finishSchedule(Workflow workflow, Assignments assignments, ActionTimeGenerator timeGenerator) {
 		double cutoff = 0.0;
-		List<Assignment> bestAssignments = null;
+		Assignments bestAssignments = null;
 		
 		try {
 			GRBEnv    env   = new GRBEnv("mip1.log");
@@ -65,8 +53,7 @@ public class TercioScheduler implements Scheduler {
 			// Create variables
 
 			Map<String, GRBVar> modelVariables = new HashMap<String, GRBVar>();
-			GRBVar v = setupModelVariables(workflow, assignments, model,
-					modelVariables);
+			GRBVar v = setupModelVariables(workflow, assignments, model, modelVariables);
 
 			model.update();
 
@@ -98,22 +85,17 @@ public class TercioScheduler implements Scheduler {
 				if (status != 2) {
 					System.err.println("Non-optimal solution found");
 				}
-				List<Assignment> currentAssignments = SchedulingHelper.copy(assignments);
+				Assignments currentAssignments = assignments.copy();
 				
-				List<List<Double>> startTimes = this.extractAssignments(workflow, currentAssignments, modelVariables);
+				this.extractAssignments(workflow, currentAssignments, modelVariables);
 				
-				List<Assignment> sortedAssignments = new ArrayList<Assignment>();
-				for (Assignment assignment : currentAssignments) {
-					sortedAssignments.add(assignment.sort(workflow));
-				}
-				BufferedAssignments buffered = new BufferedAssignments(currentAssignments, true);
-				double time = buffered.time();
+				double time = currentAssignments.time();
 				if (time < makespanTime) {
 					//System.out.println(solutionCount + ", " + time);
 					bestAssignments = currentAssignments;
 					makespanTime = time;
 				}
-				if (!TercioScheduler.addConstraint(sortedAssignments, workflow, model, modelVariables, solutionCount)) {
+				if (!TercioScheduler.addConstraint(currentAssignments, workflow, model, modelVariables, solutionCount)) {
 					break;
 				}
 				model.update();
@@ -131,18 +113,11 @@ public class TercioScheduler implements Scheduler {
 					e.getMessage());
 		}
 		
-		List<Assignment> condensed = new ArrayList<Assignment>();
-		BufferedAssignments buffered = new BufferedAssignments(bestAssignments, true);
-		for (Assignment assignment : buffered.getAssignmentMap().values()) {
-			condensed.add(assignment.condense());
-		}
-		
-		return condensed;
+		return bestAssignments;
 	}
 
-	
 	private static GRBVar setupModelVariables(Workflow workflow,
-			List<Assignment> assignments, GRBModel model,
+			Assignments assignments, GRBModel model,
 			Map<String, GRBVar> modelVariables) throws GRBException {
 		GRBVar v = model.addVar(0.0, GRB.INFINITY, 1.0, GRB.CONTINUOUS, "v");
 		modelVariables.put("v", v);
@@ -229,7 +204,7 @@ public class TercioScheduler implements Scheduler {
 		return hadErrors;
 	}
 	
-	private static boolean addConstraint(List<Assignment> previousAssignments, Workflow workflow, GRBModel model, 
+	private static boolean addConstraint(Assignments previousAssignments, Workflow workflow, GRBModel model, 
 			Map<String, GRBVar> modelVariables, long index) throws GRBException {
 		
 		GRBLinExpr expr = new GRBLinExpr();
@@ -252,7 +227,7 @@ public class TercioScheduler implements Scheduler {
 	}
 
 	private static void addConstraints(Workflow workflow,
-			List<Assignment> assignments, ActionTimeGenerator timeGenerator,
+			Assignments assignments, ActionTimeGenerator timeGenerator,
 			GRBModel model, Map<String, GRBVar> modelVariables, GRBVar v, boolean useActualValues)
 					throws GRBException {
 		GRBLinExpr expr;
@@ -406,20 +381,19 @@ public class TercioScheduler implements Scheduler {
 		
 	}
 
-	private List<List<Double>> extractAssignments(Workflow workflow,
-			List<Assignment> assignments, Map<String, GRBVar> modelVariables) throws GRBException {
-		List<List<Double>> startTimes = new ArrayList<List<Double>>();
+	private Map<String, List<Double>> extractAssignments(Workflow workflow,
+			Assignments assignments, Map<String, GRBVar> modelVariables) throws GRBException {
+		Map<String, List<Double>> startTimes = new HashMap<String, List<Double>>();
 		for (Assignment assignment : assignments) {
-			startTimes.add(new ArrayList<Double>());
+			startTimes.put(assignment.getId(), new ArrayList<Double>());
 		}
 		for (Workflow.Node node : workflow) {
 			String nodeStartStr = node.toString() + "_START";
 			GRBVar nodeStart = modelVariables.get(nodeStartStr);
 
-			for (int i = 0; i < assignments.size(); i++) {
-				Assignment assignment = assignments.get(i);
-				List<Double> times = startTimes.get(i);
+			for (Assignment assignment : assignments) {
 				String agent = assignment.getId();
+				List<Double> times = startTimes.get(agent);
 				String actionStr = node.getAction(agent).toString();
 				GRBVar actionVar = modelVariables.get(actionStr);
 				double value = actionVar.get(GRB.DoubleAttr.X);

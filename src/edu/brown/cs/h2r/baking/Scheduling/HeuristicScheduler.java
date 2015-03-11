@@ -1,6 +1,7 @@
 package edu.brown.cs.h2r.baking.Scheduling;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -20,51 +21,34 @@ public abstract class HeuristicScheduler implements Scheduler {
 	}
 
 	@Override
-	public List<Assignment> schedule(Workflow workflow, List<String> agents,
-			ActionTimeGenerator actionTimeLookup) {
-		Map<String, Assignment> assignedWorkflows = new HashMap<String, Assignment>();
-		for (String agent : agents) {
-			Assignment assignedWorkflow = new Assignment(agent, actionTimeLookup, this.useActualValues);
-			assignedWorkflows.put(agent, assignedWorkflow);
-		}
-		
-		this.assignActions(workflow, actionTimeLookup, assignedWorkflows, agents);
-		return new ArrayList<Assignment>(assignedWorkflows.values());
+	public Assignments schedule(Workflow workflow, List<String> agents,
+			ActionTimeGenerator timeGenerator) {
+		Assignments assignments = new Assignments(timeGenerator, agents, workflow.getStartState(), this.useActualValues, false);
+		return this.finishSchedule(workflow, assignments, timeGenerator);
 	}
 	
 
 	
-	public List<Assignment> finishSchedule(Workflow workflow, ActionTimeGenerator actionTimeLookup, 
-			List<Assignment> assignedWorkflows, BufferedAssignments bufferedWorkflows, Set<Workflow.Node> visitedNodes) {
-		Map<String, Assignment> assignments = new HashMap<String, Assignment>();
-		for (Assignment assignment: assignedWorkflows) assignments.put(assignment.getId(), assignment);
-		List<String> agents = new ArrayList<String>(assignments.keySet());
-		
-		this.assignActions(workflow, actionTimeLookup, assignments, agents);
-		return new ArrayList<Assignment>(assignments.values());
-	}
-
-	private void assignActions(Workflow workflow, ActionTimeGenerator actionTimeLookup, 
-			Map<String, Assignment> assignments, List<String> agents) {
-		
+	public Assignments finishSchedule(Workflow workflow, Assignments assignments, ActionTimeGenerator actionTimeLookup) {
 		Set<Workflow.Node> visitedNodes  = new HashSet<Workflow.Node>();
-		while (visitedNodes.size() != workflow.size()) {
+		while (!workflow.allSubtasksAssigned(visitedNodes)) {
 		
 			List<Workflow.Node> availableNodes = workflow.getAvailableNodes(visitedNodes); 
 			
 			
 			Map<Workflow.Node, Map<String, Double>> timeMap = 
-					this.buildTimeMap(agents, actionTimeLookup, availableNodes);
+					this.buildTimeMap(assignments.agents(), actionTimeLookup, availableNodes);
 			
 			Map<Workflow.Node, Map<String, Double>> heuristics = this.getWeights(timeMap, assignments);
 			
 			this.addBestAction(actionTimeLookup, assignments, visitedNodes,
 					heuristics);
 		}
+		return assignments;
 	}
 
 	private void addBestAction(ActionTimeGenerator actionTimeLookup,
-			Map<String, Assignment> assignments,
+			Assignments assignments,
 			Set<Workflow.Node> visitedNodes,
 			Map<Workflow.Node, Map<String, Double>> heuristics) {
 		
@@ -88,12 +72,12 @@ public abstract class HeuristicScheduler implements Scheduler {
 				}
 			}
 		}
-		
-		assignments.get(bestAgent).add(bestAction);
-		visitedNodes.add(bestAction);
+		if (assignments.add(bestAction, bestAgent)) {
+			visitedNodes.add(bestAction);
+		}
 	}
 
-	private Map<Workflow.Node, Map<String, Double>> buildTimeMap(List<String> agents, ActionTimeGenerator actionTimeLookup,
+	private Map<Workflow.Node, Map<String, Double>> buildTimeMap(Collection<String> agents, ActionTimeGenerator actionTimeLookup,
 			List<Workflow.Node> availableNodes) {
 		
 		Map<Workflow.Node, Map<String, Double>> heuristicMap = new HashMap<Workflow.Node, Map<String, Double>>();
@@ -111,15 +95,6 @@ public abstract class HeuristicScheduler implements Scheduler {
 		return heuristicMap;
 	}
 	
-
-	
-	protected Map<String, Assignment> getBuffered(List<Assignment> assignments) {
-		Map<String, Assignment> buffered = new HashMap<String, Assignment>();
-		for (Assignment workflow : assignments) {
-			buffered.put(workflow.getId(), workflow);
-		}
-		return buffered;
-	}
 	protected abstract Map<Workflow.Node, Map<String, Double>> getWeights(Map<Workflow.Node, Map<String, Double>> times, 
-			Map<String, Assignment> assignments);
+			Assignments assignments);
 }

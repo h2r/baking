@@ -1,30 +1,38 @@
 package edu.brown.cs.h2r.baking.Scheduling;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Set;
 
 import burlap.datastructures.HashIndexedHeap;
+import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.GroundedAction;
 import edu.brown.cs.h2r.baking.Scheduling.Assignment.ActionTime;
 import edu.brown.cs.h2r.baking.Scheduling.Assignment.AssignmentIterator;
 
-public class BufferedAssignments {
+public class Assignments implements Iterable<Assignment> {
 	private final Map<String, Assignment> adjustedAssignments;
+	private final Map<String, State> states;
+	private final State startingState;
 	private double time;
 	private double earliestTime;
 	private final ActionTimeGenerator timeGenerator;
 	private Set<Workflow.Node> completedAtEarliest; 
+	private final Set<Workflow.Node> subtasks; 
 	private final boolean useActualValues;
 	private final boolean rearrangeOrder;
 	
-	public BufferedAssignments(ActionTimeGenerator timeGenerator, List<String> agents, boolean useActualValues, boolean rearrangeOrder) {
+	public Assignments(ActionTimeGenerator timeGenerator, Collection<String> agents, State startState, boolean useActualValues, boolean rearrangeOrder) {
 		this.adjustedAssignments = new HashMap<String, Assignment>();
+		this.states = new HashMap<String, State>();
+		this.startingState = startState;
+		this.subtasks = new HashSet<Workflow.Node>();
 		for (String agent : agents) {
 			this.adjustedAssignments.put(agent, new Assignment(agent, timeGenerator, useActualValues));
 		}
@@ -35,30 +43,12 @@ public class BufferedAssignments {
 		this.rearrangeOrder = rearrangeOrder;
 	}
 	
-	public BufferedAssignments(Collection<Assignment> assignments, boolean correct) {
-		this.rearrangeOrder = correct;
-		this.adjustedAssignments = new HashMap<String, Assignment>();
-		this.completedAtEarliest = new HashSet<Workflow.Node>();
-		this.earliestTime = 0.0;
-		ActionTimeGenerator timeGenerator = null;
-		boolean useActualValues = false;
-		for (Assignment assignment : assignments) {
-			if (timeGenerator == null) {
-				timeGenerator = assignment.getTimeGenerator();
-			} else if (timeGenerator != assignment.getTimeGenerator()) {
-				throw new RuntimeException("Time generators are different!");
-			}
-			useActualValues |= assignment.getUseActualValues();
-		}
-		this.useActualValues = useActualValues;
-		this.timeGenerator = timeGenerator;
-		this.buildAdjustedAssignments(assignments, correct);
-		this.updateEarliest();
-	}
-	
-	public BufferedAssignments(BufferedAssignments other) {
+	public Assignments(Assignments other) {
 		this.rearrangeOrder = other.rearrangeOrder;
+		this.startingState = other.startingState;
+		this.subtasks = new HashSet<Workflow.Node>(other.subtasks);
 		this.adjustedAssignments = SchedulingHelper.copyMap(other.adjustedAssignments);
+		this.states = new HashMap<String, State>(other.states);
 		this.time = other.time;
 		this.earliestTime = other.earliestTime;
 		this.completedAtEarliest = new HashSet<Workflow.Node>(other.completedAtEarliest);
@@ -73,11 +63,11 @@ public class BufferedAssignments {
 			return true;
 		}
 		
-		if (!(other instanceof BufferedAssignments)) {
+		if (!(other instanceof Assignments)) {
 			return false;
 		}
 		
-		BufferedAssignments bOther = (BufferedAssignments)other;
+		Assignments bOther = (Assignments)other;
 		if (this.time != bOther.time){ 
 			return false;
 		}
@@ -109,6 +99,13 @@ public class BufferedAssignments {
 		this.completedAtEarliest.clear();
 	}
 	
+	public Iterator<Assignment> iterator() {
+		return this.adjustedAssignments.values().iterator();
+	}
+	
+	public Assignment getAssignment(String agent) {
+		return this.adjustedAssignments.get(agent);
+	}
 	public String getFullString() {
 		StringBuilder builder = new StringBuilder();
 		for (Map.Entry<String, Assignment> entry : this.adjustedAssignments.entrySet()) {
@@ -396,12 +393,12 @@ public class BufferedAssignments {
 		}
 	}
 	
-	public BufferedAssignments copyAndFinish(Collection<Assignment> assignments) {
+	public Assignments copyAndFinish(Collection<Assignment> assignments) {
 		int expectedSize = 0;
 		for (Assignment assignment : assignments) {
 			expectedSize += assignment.realSize();
 		}
-		BufferedAssignments copy = new BufferedAssignments(this);
+		Assignments copy = new Assignments(this);
 		if (this.rearrangeOrder){
 			copy.sequenceTasksWithReorder(assignments);
 		} else {
@@ -415,8 +412,8 @@ public class BufferedAssignments {
 		return copy;
 	}
 	
-	public BufferedAssignments copy() {
-		return new BufferedAssignments(this);
+	public Assignments copy() {
+		return new Assignments(this);
 	}
 	
 	public GroundedAction getFirstAction(String agent) {
@@ -434,31 +431,31 @@ public class BufferedAssignments {
 	public boolean add(Workflow.Node node, String agent) {
 		Assignment assignment = this.adjustedAssignments.get(agent);
 		if (assignment == null) {
-			assignment = new Assignment(agent, this.timeGenerator, this.useActualValues);
-			this.adjustedAssignments.put(agent, assignment);
-			this.updateEarliest();
+			return false;
 		}
-		
 		if (assignment.contains(node)) {
 			return true;
 		}
 		double assignmentTime = assignment.time();
-		boolean isEarliestAssignment = (assignmentTime == this.earliestTime);
 		
 		GroundedAction action = node.getAction(agent);
 		double actionDuration = this.timeGenerator.get(action, this.useActualValues);
 		
 		double time = this.getTimeNodeIsAvailable(node, assignment, assignmentTime, actionDuration);
+		State currentState = this.getStateAtTime(time);
+		if (!action.action.applicableInState(currentState, action.params)) {
+			return false;
+		}
+		
 		if (time > assignmentTime) {
 			assignment.waitUntil(time);
 		} else if (time < 0.0) {
 			return false;
 		}
 		
+		
 		assignment.add(node);
-		if (isEarliestAssignment) {
-			this.updateEarliest();
-		}
+		this.subtasks.add(node);
 		this.time = Math.max(this.time, assignment.time());
 		return true;
 	}
@@ -467,6 +464,29 @@ public class BufferedAssignments {
 		Assignment assignment = this.adjustedAssignments.get(agent);
 		assignment.waitUntil(endTime);
 		this.time = Math.max(this.time, assignment.time());
+	}
+	
+	public State getStateAtTime(double time) {
+		int initialSize = Math.max(10, this.subtasks().size());
+		PriorityQueue<ActionTime> queue = new PriorityQueue<ActionTime>(initialSize, Assignment.ActionTime.comparator());
+		for (Assignment assignment : this.adjustedAssignments.values()) {
+			List<ActionTime> actionTimes = assignment.nodesBeforeTime(time);
+			queue.addAll(actionTimes);
+		}
+		
+		State state = this.startingState;
+		while (queue.peek() != null) {
+			ActionTime next = queue.poll();
+			if (next.getTime() > time) {
+				return state;
+			}
+			Workflow.Node node = next.getNode();
+			if (node != null) {
+				GroundedAction groundedAction = node.getAction();
+				state = groundedAction.executeIn(state);
+			}
+		}
+		return state;
 	}
 	
 	private void updateEarliest() {
@@ -484,7 +504,7 @@ public class BufferedAssignments {
 		}
 	}
 	
-	private double getTimeNodeIsAvailable(Workflow.Node node, Assignment assignment, double seed, double actionDuration) {
+	double getTimeNodeIsAvailable(Workflow.Node node, Assignment assignment, double seed, double actionDuration) {
 		Set<Workflow.Node> completed = new HashSet<Workflow.Node>(this.completedAtEarliest);
 		double previous = this.earliestTime;
 		double currentTime = assignment.time();
@@ -560,6 +580,10 @@ public class BufferedAssignments {
 		return this.adjustedAssignments.size();
 	}
 	
+	public Collection<Workflow.Node> subtasks() {
+		return new HashSet<Workflow.Node>(this.subtasks);
+	}
+	
 	public int realSize() {
 		int size = 0;
 		for (Assignment assignment : this.adjustedAssignments.values()) {
@@ -571,6 +595,16 @@ public class BufferedAssignments {
 	public Map<String, Assignment> getAssignmentMap() {
 		return SchedulingHelper.copyMap(this.adjustedAssignments);
 	}
+
+	public Collection<String> agents() {
+		return this.adjustedAssignments.keySet();
+	}
+
+	public State getStartState() {
+		return this.startingState;
+	}
+
+	
 
 	
 }

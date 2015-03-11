@@ -30,7 +30,7 @@ public class Pancake extends Recipe {
 		List<IngredientRecipe> ingredientList2 = new ArrayList<IngredientRecipe>();
 		ingredientList2.add(batter);
 		IngredientRecipe pancake = new IngredientRecipe("pancake", Recipe.HEATED, this, Recipe.SWAPPED, ingredientList2);
-		//this.subgoalIngredients.put(pancake.getSimpleName(), pancake);
+		this.subgoalIngredients.put(pancake.getSimpleName(), pancake);
 		return batter;
 	}
 
@@ -44,7 +44,7 @@ public class Pancake extends Recipe {
 		
 		BakingPropositionalFunction pf2 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("pancake"));
 		BakingSubgoal sg2 = new BakingSubgoal(pf2, this.subgoalIngredients.get("pancake"));
-		//subgoals.add(sg2);
+		subgoals.add(sg2);
 	
 		return subgoals;
 	}

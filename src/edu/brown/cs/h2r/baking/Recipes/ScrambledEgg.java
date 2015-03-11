@@ -23,6 +23,7 @@ public class ScrambledEgg extends Recipe {
 		List<IngredientRecipe> ingredientList = new ArrayList<IngredientRecipe>();
 		IngredientRecipe eggs = knowledgebase.getIngredient("eggs");
 		eggs.setMixed();
+		eggs.setHeated();
 		IngredientRecipe cookedEggs = eggs.getCopyWithNewAttributes(Recipe.NO_ATTRIBUTES);
 		ingredientList.add(cookedEggs);
 		

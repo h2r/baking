@@ -12,7 +12,7 @@ import java.util.Set;
 import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
 import edu.brown.cs.h2r.baking.Scheduling.Assignment;
 import edu.brown.cs.h2r.baking.Scheduling.Assignment.ActionTime;
-import edu.brown.cs.h2r.baking.Scheduling.BufferedAssignments;
+import edu.brown.cs.h2r.baking.Scheduling.Assignments;
 import edu.brown.cs.h2r.baking.Scheduling.ExhaustiveScheduler;
 import edu.brown.cs.h2r.baking.Scheduling.ExhaustiveStarScheduler;
 import edu.brown.cs.h2r.baking.Scheduling.GreedyScheduler;
@@ -74,13 +74,13 @@ public class SchedulingComparison {
 		return sum;
 	}
 	
-	public static boolean verifyAssignments(Workflow workflow, List<Assignment> assignedWorkflows) {
+	public static boolean verifyAssignments(Workflow workflow, Assignments assignments) {
 		int size = 0;
 		Set<Workflow.Node> visited = new HashSet<Workflow.Node>();  
-		for (Assignment assignment : assignedWorkflows) {
+		for (Assignment assignment : assignments) {
 			size += assignment.size();
 			visited.clear();
-			for (Assignment assignment2 : assignedWorkflows) {
+			for (Assignment assignment2 : assignments) {
 				if (assignment != assignment2) {
 					visited.addAll(assignment2.nodes());
 				}
@@ -93,8 +93,7 @@ public class SchedulingComparison {
 				visited.add(action.getNode());
 			}
 		}
-		BufferedAssignments buffered = new BufferedAssignments(assignedWorkflows, false);
-		System.out.println(buffered.visualString());
+		System.out.println(assignments.visualString());
 		
 		if (size != workflow.size()) {
 			System.err.println(Integer.toString(size) + " actions were assigned. Should be " + workflow.size());
@@ -152,15 +151,12 @@ public class SchedulingComparison {
 				Workflow workflow = SchedulingComparison.buildSortedWorkflow(j, numEdges, numResources, numResourcesPerNode);
 				List<Double> times = new ArrayList<Double>();
 				
-				List<Assignment> milp = new ArrayList<Assignment>();
-				double milpTime = milpScheduler.schedule(workflow, milp, Arrays.asList("human", "friend", "friend1", "friend2"), timeGenerator);
+				double milpTime = milpScheduler.schedule(workflow, Arrays.asList("human", "friend", "friend1", "friend2"), timeGenerator);
 				
 				
 				for (Scheduler scheduler : schedulers) {
-					List<Assignment> assignments = new ArrayList<Assignment>();
-					assignments = scheduler.schedule(workflow, Arrays.asList("human", "friend", "friend1", "friend2"), timeGenerator);
-					BufferedAssignments sequenced = new BufferedAssignments(assignments, false);
-					double time = sequenced.time();
+					Assignments assignments = scheduler.schedule(workflow, Arrays.asList("human", "friend", "friend1", "friend2"), timeGenerator);
+					double time = assignments.time();
 					times.add(time);
 					if (milpTime < 0.0) {
 						MILPScheduler.checkAssignments(workflow, assignments);

@@ -1,71 +1,16 @@
 package edu.brown.cs.h2r.baking.Scheduling;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import edu.brown.cs.h2r.baking.Scheduling.Assignment.ActionTime;
 
 public class SequenceNode {
 	private final double time;
-	private final List<Assignment> assignments;
-	private final BufferedAssignments bufferedAssignments;
-	private final BufferedAssignments completedBuffered;
-	private final boolean rearrangeOrder;
-	public SequenceNode(List<Assignment> assignments, boolean rearrangeOrder) {
-		this.rearrangeOrder = rearrangeOrder;
-		this.assignments = SchedulingHelper.copy(assignments);
-		List<String> agents = new ArrayList<String>();
-		ActionTimeGenerator timeGenerator = null;
-		boolean useActualValues = false;
-		for (Assignment assignment : this.assignments) {
-			if (timeGenerator == null) {
-				timeGenerator = assignment.getTimeGenerator();
-			}
-			agents.add(assignment.getId());
-			useActualValues |= assignment.getUseActualValues();
-			
-		}
-		this.bufferedAssignments = new BufferedAssignments(timeGenerator, agents, useActualValues, this.rearrangeOrder);
-		this.completedBuffered = this.bufferedAssignments.copyAndFinish(assignments);
-		this.time = this.completedBuffered.time();
-	}
-	
-	public SequenceNode(SequenceNode previous, BufferedAssignments buffered) {
-		this.assignments = previous.assignments;
-		this.bufferedAssignments = buffered;
-		this.completedBuffered = this.bufferedAssignments.copyAndFinish(assignments);
-		this.time = this.completedBuffered.time();
-		this.rearrangeOrder = previous.rearrangeOrder;
-	}
-	
-	public static SequenceNode add(SequenceNode previous, Workflow.Node node, String agent) {
-		BufferedAssignments buffered = previous.bufferedAssignments.copy();
-		if (buffered.add(node, agent)) {
-			return new SequenceNode(previous, buffered);
-		}
-		return null;	
-	}
-	
-	public static SequenceNode addAndRearrange(SequenceNode previous, Workflow.Node node, String agent) {
-		BufferedAssignments buffered = previous.bufferedAssignments.copy();
-		Map<String, Assignment> sequencedAssignments = buffered.getAssignmentMap();
-		List<Assignment> condensedAssignments = new ArrayList<Assignment>();
-		for (Assignment assignment : sequencedAssignments.values()) {
-			Assignment condensed = assignment.condense();
-			if (assignment.getId().equals(agent)) {
-				condensed.add(node);
-			}
-			condensedAssignments.add(condensed);
-		}
-		
-		buffered.clear();
-		buffered.sequenceTasksWithReorder(condensedAssignments);
-		return new SequenceNode(previous, buffered);
+	private final Assignments assignments;
+	private final Assignments completed;
+	public SequenceNode(Assignments assignments, Assignments completed) {
+		this.assignments = assignments;
+		this.completed = completed;
+		this.time = this.completed.time();
 	}
 	
 	@Override
@@ -83,7 +28,7 @@ public class SequenceNode {
 		if (this.time != node.time){ 
 			return false;
 		}
-		if (!this.bufferedAssignments.equals(node.bufferedAssignments)) {
+		if (!this.completed.equals(node.completed)) {
 			return false;
 		}
 		return true;
@@ -91,12 +36,12 @@ public class SequenceNode {
 	
 	@Override
 	public int hashCode() {
-		return this.bufferedAssignments.hashCode();
+		return this.completed.hashCode();
 	}
 	
 	@Override
 	public String toString() {
-		return this.bufferedAssignments.toString() + "\ntime:" + this.time; 
+		return this.completed.toString() + "\ntime:" + this.time; 
 	}
 	
 	public double getTime() {
@@ -104,33 +49,20 @@ public class SequenceNode {
 	}
 	
 	public boolean complete() {
-		Set<Workflow.Node> bufferedNodes = new HashSet<Workflow.Node>();
-		Set<Workflow.Node> assignmentNodes = new HashSet<Workflow.Node>();
-		for (Assignment assignment : this.assignments) {
-			for (Workflow.Node node : assignment.nodes()) {
-				if (node != null) {
-					assignmentNodes.add(node);
-				}
-			}
+		Collection<Workflow.Node> completed = this.completed.subtasks();
+		Collection<Workflow.Node> current = this.assignments.subtasks();
+		if (completed.size() > current.size()) {
+			return false;
 		}
-		
-		for (Assignment assignment : this.bufferedAssignments.getAssignmentMap().values()) {
-			for (Workflow.Node node : assignment.nodes()) {
-				if (node != null) {
-					bufferedNodes.add(node);
-				}
-			}
-		}
-		assignmentNodes.removeAll(bufferedNodes);
-		return assignmentNodes.isEmpty();
+		return completed.containsAll(current);
 	}
 	
-	public BufferedAssignments getBufferedAssignments() {
-		return this.bufferedAssignments;
+	public Assignments getAssignments() {
+		return this.assignments;
 	}
 	
-	public BufferedAssignments getCompletedBuffered() {
-		return this.completedBuffered;
+	public Assignments getCompleted() {
+		return this.completed;
 	}
 	
 	public static class SequenceComparator implements Comparator <SequenceNode>{
@@ -141,7 +73,7 @@ public class SequenceNode {
 			if (timeRes != 0) {
 				return timeRes;
 			}
-			return Double.compare(lhs.bufferedAssignments.time(), rhs.bufferedAssignments.time()); 
+			return Double.compare(lhs.assignments.time(), rhs.assignments.time()); 
 		}
 	}
 }

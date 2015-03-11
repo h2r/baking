@@ -18,7 +18,7 @@ import edu.brown.cs.h2r.baking.Experiments.KitchenSubdomain;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
 import edu.brown.cs.h2r.baking.Scheduling.Assignment;
-import edu.brown.cs.h2r.baking.Scheduling.BufferedAssignments;
+import edu.brown.cs.h2r.baking.Scheduling.Assignments;
 import edu.brown.cs.h2r.baking.Scheduling.ExhaustiveStarScheduler;
 import edu.brown.cs.h2r.baking.Scheduling.Scheduler;
 import edu.brown.cs.h2r.baking.Scheduling.Workflow;
@@ -98,7 +98,10 @@ public class Expert extends Human{
 	public AbstractGroundedAction getActionWithScheduler(State state, List<String> agents, boolean finishRecipe, GroundedAction partnersAction) {
 		State newState = state;
 		if (partnersAction != null) {
-			//newState = partnersAction.executeIn(state);
+			newState = partnersAction.executeIn(state);
+			if (newState.equals(state)) {
+				partnersAction = null;
+			}
 		}
 		if (this.isSuccess(newState)) {
 			return null;
@@ -127,36 +130,28 @@ public class Expert extends Human{
 		
 		List<AbstractGroundedAction> aga = new ArrayList<AbstractGroundedAction>(actions);
 		if (partnersAction != null) {
-			boolean foundMatch = false;
-			for (GroundedAction ga : actions) {
-				if (ga.action == partnersAction.action) {
-					foundMatch = true;
-					for (int i = 1 ; i < partnersAction.params.length; i++) {
-						if (!ga.params[i].equals(partnersAction.params[i])) {
-							foundMatch = false;
-						}
-					}
-				}
-			}
-			if (!foundMatch) {
-				aga.add(0, partnersAction);
-			}
+			aga.add(0, partnersAction);
 		}
 		Workflow workflow = Workflow.buildWorkflow(state, aga);
 		
 		if (this.isCooperative) {
-			List<Assignment> assignments = scheduleActions(state, agents, partnersAction, workflow);
+			
+			Assignments assignments = scheduleActions(state, agents, partnersAction, workflow);
 			System.out.println(this.getAgentName() + " scheduled actions");
 			for (Assignment assignment : assignments) {
 				System.out.println("-" + assignment.getId());
 				List<Workflow.Node> nodes = assignment.nodes();
 				for (Workflow.Node node : nodes) {
-					System.out.println("\t" + node.getAction(assignment.getId()).toString());
+					if (node == null) {
+						System.out.println("\t" + "wait");
+					} else {
+						System.out.println("\t" + node.getAction(assignment.getId()).toString());
+					}
+					
 				}
 			}
 			
-			BufferedAssignments buffered = new BufferedAssignments(assignments, false);
-			GroundedAction action = buffered.getFirstAction(this.getAgentName());
+			GroundedAction action = assignments.getFirstAction(this.getAgentName());
 			if (action == null) {
 				return null;
 			}
@@ -177,7 +172,7 @@ public class Expert extends Human{
 		}
 	}
 
-	private List<Assignment> scheduleActions(State state, List<String> agents,
+	private Assignments scheduleActions(State state, List<String> agents,
 			GroundedAction partnersAction, Workflow workflow) {
 		
 		Scheduler exhaustive = new ExhaustiveStarScheduler(true);
@@ -186,56 +181,14 @@ public class Expert extends Human{
 			return exhaustive.schedule(workflow, agents, this.timeGenerator);
 		}
 		
-		List<Assignment> assignments = new ArrayList<Assignment>();
-		Set<Workflow.Node> visitedNodes = new HashSet<Workflow.Node>(workflow.size() * 2); 
+		Assignments assignments = new Assignments(this.timeGenerator, agents, state, false, false);
 		
-		Assignment humansAssignment = new Assignment(this.getAgentName(), this.timeGenerator, true);
-		assignments.add(humansAssignment);
+		if (partnersAction != null) {
+			assignments.add(workflow.get(0), partnersAction.params[0]);
+		} 
 		
-		Assignment partnerAssignment = new Assignment(partnersAction.params[0], this.timeGenerator, true);
-		assignments.add(partnerAssignment);
-		
-		boolean matchedAction = false;
-		Workflow.Node partnersNode = null;
-		for (Workflow.Node node : workflow) {
-			if (this.matchingActions(node.getAction(), partnersAction)) {
-				matchedAction = true;
-				partnersNode = node;
-				break;
-			}
-		}
-		
-		
-		if (!matchedAction) {
-			State nextState = state;
-			Workflow.Node newNode = new Workflow.Node(workflow.size(), partnersAction);
-			
-			Workflow.Node node = null;
-			for (int i = 0; i < workflow.size(); i++) {
-				if (partnersAction.action.applicableInState(nextState, partnersAction.params)) {
-					if (node != null) {
-						newNode.addParent(node);
-					}
-					workflow.insert(i, newNode);
-					partnersNode = newNode;
-					break;
-				}
-				
-				node  = workflow.get(i);
-				nextState = node.getAction().executeIn(nextState);
-				humansAssignment.add(node);
-				visitedNodes.add(node);
-			}
-		}
-		if (partnersNode != null) {
-			partnerAssignment.add(partnersNode);
-			visitedNodes.add(partnersNode);
-			
-		}
-		
-		BufferedAssignments bufferedAssignments = new BufferedAssignments(assignments, false);
-		assignments = exhaustive.finishSchedule(workflow, this.timeGenerator, assignments, bufferedAssignments, visitedNodes);
-		return assignments;
+		return exhaustive.finishSchedule(workflow, assignments, this.timeGenerator);
+
 	}
 	
 	private boolean matchingActions(GroundedAction lhs, GroundedAction rhs) {

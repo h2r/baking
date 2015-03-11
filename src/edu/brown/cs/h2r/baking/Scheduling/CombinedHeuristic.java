@@ -17,7 +17,7 @@ public class CombinedHeuristic extends HeuristicScheduler {
 	@Override
 	protected Map<Node, Map<String, Double>> getWeights(
 			Map<Node, Map<String, Double>> times,
-			Map<String, Assignment> assignments) {
+			Assignments assignments) {
 		// TODO Auto-generated method stub
 		return null;
 	}

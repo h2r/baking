@@ -212,7 +212,7 @@ public static State generateActionSequence(KitchenSubdomain currentSubgoal, List
 		
 		TerminalFunction recipeTerminalFunction = new RecipeTerminalFunction(subgoal.getGoal());
 		policyDomain.getPlanner().planFromState(startingState);
-		EpisodeAnalysis episodeAnalysis = policy.evaluateBehavior(startingState, rf, recipeTerminalFunction, 100);
+ 		EpisodeAnalysis episodeAnalysis = policy.evaluateBehavior(startingState, rf, recipeTerminalFunction, 100);
 		/*
 		System.out.println("Action list for " + policyDomain.toString());
 		for (GroundedAction action : episodeAnalysis.actionSequence) {

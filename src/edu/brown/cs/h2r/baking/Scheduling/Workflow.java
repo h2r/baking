@@ -186,10 +186,10 @@ public class Workflow implements Iterable<Node> {
 		return nodes;
 	}
 	
-	public List<Node> getAvailableNodes(Set<Workflow.Node> visitedNodes) {
+	public List<Node> getAvailableNodes(Collection<Node> collection) {
 		List<Node> nodes = new ArrayList<Node>();
 		for (Node node : this.actions) {
-			if (node.isAvailable(visitedNodes) && !visitedNodes.contains(node)) {
+			if (node.isAvailable(collection) && !collection.contains(node)) {
 				nodes.add(node);
 			}
 		}
@@ -204,6 +204,15 @@ public class Workflow implements Iterable<Node> {
 			}
 		}
 		return nodes;
+	}
+	
+
+
+	public boolean allSubtasksAssigned(Collection<Node> subtasks) {
+		if (this.actions.size() > subtasks.size()) {
+			return false;
+		}
+		return this.actions.containsAll(subtasks);
 	}
 	
 	public void insert(int position, Node node) {
@@ -304,8 +313,8 @@ public class Workflow implements Iterable<Node> {
 			return Collections.unmodifiableSet(this.children);
 		}
 		
-		public boolean isAvailable(Set<Node> accomplishedNodes) {
-			return this.parents.isEmpty() || accomplishedNodes.containsAll(this.parents);
+		public boolean isAvailable(Collection<Node> collection) {
+			return this.parents.isEmpty() || collection.containsAll(this.parents);
 		}
 		
 		public GroundedAction getAction() {

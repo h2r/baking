@@ -213,12 +213,6 @@ public class Baxter extends Agent {
 	}
 
 	@Override
-	public ObjectInstance getAgentObject() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public void setInitialState(State state) {
 		// TODO Auto-generated method stub
 		

@@ -39,11 +39,6 @@ public class RandomActionAgent extends Agent {
 	}
 
 	@Override
-	public ObjectInstance getAgentObject() {
-		return AgentFactory.getNewHumanAgentObjectInstance(this.domain, this.getAgentName(), this.hashingFactory.getObjectHashFactory());
-	}
-
-	@Override
 	public void setInitialState(State state) {}
 
 	@Override

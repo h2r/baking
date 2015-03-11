@@ -18,13 +18,27 @@ public class Tea extends Recipe {
 		this.recipeName = "tea";
 	}
 	@Override
+//	List<IngredientRecipe> ingredientList = new ArrayList<IngredientRecipe>();
+//	IngredientRecipe eggs = knowledgebase.getIngredient("eggs");
+//	eggs.setHeated();
+//	ingredientList.add(eggs);
+//	
+//	IngredientRecipe friedEgg = new IngredientRecipe("fried_egg", Recipe.HEATED, this, Recipe.SWAPPED, ingredientList);
+//	friedEgg.addNecessaryTrait("fat", Recipe.HEATED);
+//	this.subgoalIngredients.put(friedEgg.getSimpleName(), friedEgg);
+//	return friedEgg;
 	protected IngredientRecipe createTopLevelIngredient() {
 		List<IngredientRecipe> ingredientList = new ArrayList<IngredientRecipe>();
 		IngredientRecipe water = knowledgebase.getIngredient("water");
+		//water.setHeated();
 		ingredientList.add(water);
-		//ingredientList.add(knowledgebase.getIngredient("brown_sugar"));
-		ingredientList.add(knowledgebase.getIngredient("tea"));
-		IngredientRecipe tea = new IngredientRecipe("tea", Recipe.HEATED, this, Recipe.SWAPPED, ingredientList);
+		
+		IngredientRecipe tea_leaves = knowledgebase.getIngredient("tea");
+		//tea_leaves.setHeated();
+		ingredientList.add(tea_leaves);
+		
+		IngredientRecipe tea = new IngredientRecipe("hot_tea", Recipe.HEATED, this, Recipe.SWAPPED, ingredientList);
+		tea.setHeated();
 		this.subgoalIngredients.put(tea.getSimpleName(), tea);
 		return tea;
 		
@@ -33,8 +47,9 @@ public class Tea extends Recipe {
 	@Override
 	public List<BakingSubgoal> getSubgoals(Domain domain) {
 		List<BakingSubgoal> subgoals = new ArrayList<BakingSubgoal>();
-		BakingPropositionalFunction pf2 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("tea"));
-		BakingSubgoal sg2 = new BakingSubgoal(pf2, this.subgoalIngredients.get("tea"));
+		IngredientRecipe tea = this.subgoalIngredients.get("hot_tea");
+		BakingPropositionalFunction pf2 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, tea);
+		BakingSubgoal sg2 = new BakingSubgoal(pf2, tea);
 		subgoals.add(sg2);
 		return subgoals;
 		

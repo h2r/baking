@@ -133,11 +133,6 @@ public class Human extends Agent {
 	}
 	
 	@Override
-	public ObjectInstance getAgentObject() {
-		return AgentFactory.getNewHumanAgentObjectInstance(this.generalDomain, this.getAgentName(), hashingFactory.getObjectHashFactory());
-	}
-	
-	@Override
 	public void setInitialState(State state) {
 		this.startingState = state;
 	}

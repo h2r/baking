@@ -12,85 +12,51 @@ import edu.brown.cs.h2r.baking.Scheduling.Assignment.AssignmentIterator;
 
 public class GreedyScheduler implements Scheduler {
 	private final boolean useActualValues;
+	private final Sequencer sequencer;
 	public GreedyScheduler(boolean useActualValues) {
 		this.useActualValues = useActualValues;
+		this.sequencer = new BasicSequencer(this.useActualValues);
 	}
 
 	public boolean isUsingActualValues() {
 		return this.useActualValues;
 	}
 	
-	@Override
-	public List<Assignment> schedule(Workflow workflow, List<String> agents,
-			ActionTimeGenerator actionTimeLookup) {
+	public Assignments schedule(Workflow workflow, List<String> agents,
+			ActionTimeGenerator timeGenerator) {
 		
-		// The scheduled assignments we are returning
-		List<Assignment> assignedWorkflows = new ArrayList<Assignment>();
-				
-		// Create the new workflow specific to the agents
-		for (String agent : agents) {
-			Assignment assignedWorkflow = new Assignment(agent, actionTimeLookup, this.useActualValues);
-			assignedWorkflows.add(assignedWorkflow);
-		}
-				
-		BufferedAssignments buffered = new BufferedAssignments(assignedWorkflows, false);
-		return this.finishSchedule(workflow, actionTimeLookup, assignedWorkflows, buffered, new HashSet<Workflow.Node>());
+		Assignments assignments = new Assignments(timeGenerator, agents, workflow.getStartState(), this.useActualValues, false);
+		
+		return this.finishSchedule(workflow, assignments, timeGenerator);
 	}
 	
-	@Override
-	public List<Assignment> finishSchedule(Workflow workflow, ActionTimeGenerator actionTimeLookup, 
-			List<Assignment> assignedWorkflows, BufferedAssignments bufferedAssignments, Set<Workflow.Node> visitedNodes ) {
+	public Assignments finishSchedule(Workflow workflow, Assignments assignments, ActionTimeGenerator actionTimeLookup) {
 		
-		// Iterate through all the workflow nodes in dependency order
-		List<AssignmentIterator> workflowIterators = new ArrayList<AssignmentIterator>();
-		
-		// Iterate through assignments, and setup initial lists
-		int size = 0;
-		for (Assignment assignedWorkflow : assignedWorkflows) {
-			workflowIterators.add((AssignmentIterator)assignedWorkflow.iterator());
-			size += workflow.size();
-		}
+		Set<Workflow.Node> visited = new HashSet<Workflow.Node>(assignments.subtasks()); 
 		
 		for (Workflow.Node node : workflow) {
-			if (!visitedNodes.add(node)){
+			if (!visited.add(node)){
 				continue;
 			}
 			
-			
-			
-			// 
-			//currentTime = 
-			//		SchedulingHelper.updateBufferedWorkflows(assignedWorkflows, workflowIterators, 
-			//				bufferedWorkflows, visitedNodes, currentTime);
-			
-			int bestChoice = 0;
 			double bestTime = Double.MAX_VALUE;
-			double bestActionTime = 0.0;
-			String bestAgent = null;
-			for (int i = 0; i < assignedWorkflows.size(); i++) {
-				Assignment assignment = assignedWorkflows.get(i);
-				String agent = assignment.getId();
-				GroundedAction ga = node.getAction();
-				ga.params[0] = agent;
-				double actionTime = actionTimeLookup.get(ga, false);
-				
-				double anticipatedTime = 
-						bufferedAssignments.getTimeAssigningNodeToAgent(node, actionTime, agent);
-				
-				if (anticipatedTime < bestTime) {
-					bestTime = anticipatedTime;
-					bestAgent = agent;
-					bestChoice = i;
-					bestActionTime = actionTime;
+			Assignments bestSequence = null;
+			
+			for (String agent : assignments.agents()) {
+				Assignments copied = assignments.copy();
+				if (copied.add(node, agent) && copied.time() < bestTime) {
+					bestTime = copied.time();
+					bestSequence = copied;
 				}
 			}
+			if (bestSequence == null) {
+				return null;
+			}
 			
-			//Add the action to the assignment that would finish this job the soonest
-			assignedWorkflows.get(bestChoice).add(node);
-			bufferedAssignments.add(node, bestAgent);
+			assignments = bestSequence;
 		}
 		
-		return assignedWorkflows;
+		return assignments;
 	}
 	
 	

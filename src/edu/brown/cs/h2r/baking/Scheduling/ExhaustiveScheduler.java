@@ -37,40 +37,39 @@ public class ExhaustiveScheduler implements Scheduler {
 	}
 
 	@Override
-	public List<Assignment> schedule(Workflow workflow, List<String> agents,
+	public Assignments schedule(Workflow workflow, List<String> agents,
 			ActionTimeGenerator actionTimeLookup) {
-		List<Assignment> assignments = new ArrayList<Assignment>();
-		for (String agent : agents) assignments.add(new Assignment(agent, actionTimeLookup, this.useActualValues));
-
+		Assignments assignments = new Assignments(actionTimeLookup, agents, workflow.getStartState(), this.useActualValues, false);
+		
 		Queue<AssignmentNode> queue =  new LinkedList<AssignmentNode>();
-		AssignmentNode first = new AssignmentNode(assignments, this.useActualValues, actionTimeLookup, null, null);
+		AssignmentNode first = new AssignmentNode(workflow, assignments, assignments);
 		queue.add(first);
 		return this.assignActions(workflow, actionTimeLookup,queue, agents);
 	}
 	
-	public List<Assignment> finishSchedule(Workflow workflow, ActionTimeGenerator actionTimeLookup, 
-			List<Assignment> assignedWorkflows, BufferedAssignments bufferedWorkflows, Set<Workflow.Node> visitedNodes) {
+	public Assignments finishSchedule(Workflow workflow, Assignments assignments, ActionTimeGenerator actionTimeLookup) {
 		
-		Map<String, Assignment> assignedWorkflowMap = new HashMap<String, Assignment>();
-		for (Assignment assignedWorkflow : assignedWorkflows) {
-			assignedWorkflowMap.put(assignedWorkflow.getId(), assignedWorkflow);
-		}
-		List<Assignment> assignments = new ArrayList<Assignment>(assignedWorkflowMap.values());
 		Queue<AssignmentNode> queue = new LinkedList<AssignmentNode>();
-		AssignmentNode first = new AssignmentNode(assignments, this.useActualValues, actionTimeLookup, null, null);
+		AssignmentNode first = new AssignmentNode(workflow, assignments, assignments);
 		queue.add(first);
-		return this.assignActions(workflow, actionTimeLookup, queue, assignedWorkflowMap.keySet());
+		return this.assignActions(workflow, actionTimeLookup, queue, assignments.agents());
 	}
 	
-	private List<Assignment> assignActions(Workflow workflow, ActionTimeGenerator actionTimeLookup, 
+	private Assignments assignActions(Workflow workflow, ActionTimeGenerator actionTimeLookup, 
 			Queue<AssignmentNode> openQueue, Collection<String> agents) {
 		int checkedNodes = 0;
-		List<AssignmentNode> completedNodes = new ArrayList<AssignmentNode>();
+		
+		AssignmentNode bestNode = null;
+		double minTime = Double.MAX_VALUE;
+		
 		while(openQueue.peek() != null) {
 			checkedNodes++;
 			AssignmentNode node = openQueue.poll();
-			if (node.complete(workflow)) {
-				completedNodes.add(node);
+			if (node.complete()) {
+				if (node.getTime() < minTime) {
+					bestNode = node;
+					minTime = node.getTime();
+				}
 				continue;
 			}
 			
@@ -79,36 +78,18 @@ public class ExhaustiveScheduler implements Scheduler {
 			int numAddedNodes = 0;
 			for (Workflow.Node nextNode : availableActions) {
 				for (String agent : agents){
-					Map<String, Assignment> currentAssignments = node.getAssignments();
-					currentAssignments.get(agent).add(nextNode);
-					AssignmentNode newNode = new AssignmentNode(currentAssignments, null, null);
-					if (!newNode.equals(node)) {
+					Assignments currentAssignments = node.getAssignments();
+					Assignments copied = currentAssignments.copy();
+					if (copied.add(nextNode, agent)) {
+						AssignmentNode newNode = new AssignmentNode(workflow, copied, copied);
 						openQueue.add(newNode);
 						numAddedNodes++;
 					}
-					
 				}
 			}
 		}
-		AssignmentNode bestNode = null;
-		double minTime = Double.MAX_VALUE;
-		for (int j = 0; j < completedNodes.size(); j++) {
-			AssignmentNode node = completedNodes.get(j);
-			List<Assignment> assignments = node.getAssignmentLists();
-			double bufferedTime = 0.0;
-			for (int i = 0; i < 3; i++) {
-			BufferedAssignments buffered = new BufferedAssignments(assignments, false);
-			if (bufferedTime > 0.0 && bufferedTime != buffered.time()) {
-				System.err.println("Inconsistent buffered time " + bufferedTime + " " + buffered.time());
-			}
-			bufferedTime = buffered.time();
-			}
-			if (bufferedTime < minTime) {
-				minTime = node.getTime();
-				bestNode = node;
-			}
-		}
-		return (bestNode == null ) ? null : bestNode.getAssignmentLists();
+		
+		return (bestNode == null ) ? null : bestNode.getSequenced();
 	}	
 	
 	

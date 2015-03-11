@@ -29,11 +29,12 @@ public class MILPScheduler {
 		this.useActualValues = useActualValues;
 	}
 
-	public  double schedule(Workflow workflow, List<Assignment> assignments, List<String> agents, ActionTimeGenerator timeGenerator) {
+	public  double schedule(Workflow workflow, List<String> agents, ActionTimeGenerator timeGenerator) {
+		Assignments assignments = new Assignments(timeGenerator, agents, workflow.getStartState(), this.useActualValues, false);
 		return this.assignTasks(workflow, assignments, timeGenerator);
 	}
 
-	public double assignTasks(Workflow workflow, List<Assignment> assignments, ActionTimeGenerator timeGenerator) {
+	public double assignTasks(Workflow workflow, Assignments assignments, ActionTimeGenerator timeGenerator) {
 		double time = -1.0;
 		try {
 			GRBEnv    env   = new GRBEnv("mip1.log");
@@ -68,8 +69,9 @@ public class MILPScheduler {
 				System.err.println("Non-optimal solution found");
 			}
 			double computedTime = v.get(GRB.DoubleAttr.X);
-			List<List<Double>> startTimes = this.extractAssignments(workflow, assignments, modelVariables);
-			BufferedAssignments buffered = new BufferedAssignments(assignments, false);
+			Map<String, List<Double>> startTimes = this.extractAssignments(workflow, assignments, modelVariables);
+			Sequencer sequencer = new BasicSequencer(this.useActualValues);
+			Assignments buffered = sequencer.sequence(assignments, timeGenerator, workflow);
 			double actualTime = buffered.time();
 			if (computedTime - 0.00001 > actualTime) {
 				System.out.println(assignments.toString());
@@ -94,30 +96,29 @@ public class MILPScheduler {
 		return time;
 	}
 
-	public static boolean checkAssignments(Workflow workflow, List<Assignment> assignments){
+	public static boolean checkAssignments(Workflow workflow, Assignments sequenced){
 		try {
 			GRBEnv env = new GRBEnv("mip1.log");
 			env.set(GRB.IntParam.OutputFlag, 0); 
 			GRBModel  model = new GRBModel(env);
 			
 			ActionTimeGenerator timeGenerator = null;
-			for (Assignment assignment : assignments) {
+			for (Assignment assignment : sequenced) {
 				timeGenerator = assignment.getTimeGenerator();
 				break;
 			}
 			// Create variables
 
 			Map<String, GRBVar> modelVariables = new HashMap<String, GRBVar>();
-			GRBVar v = setupModelVariables(workflow, assignments, model,
+			GRBVar v = setupModelVariables(workflow, sequenced, model,
 					modelVariables);
 			model.update();
 			
-			BufferedAssignments buffered = new BufferedAssignments(assignments, false);
-			setVariableValues(workflow, buffered, modelVariables, v);
+			setVariableValues(workflow, sequenced, modelVariables, v);
 			// Integrate new variables
 			
 			model.update();	
-			MILPScheduler.addConstraints(workflow, assignments, timeGenerator, model,
+			MILPScheduler.addConstraints(workflow, sequenced, timeGenerator, model,
 					modelVariables, v, false);
 			model.update();
 			return printResults(model, modelVariables, true, true);
@@ -131,7 +132,7 @@ public class MILPScheduler {
 		return false;
 	}
 	
-	public static boolean checkAssignments(Workflow workflow, List<Assignment> assignments, BufferedAssignments buffered){
+	public static boolean checkAssignments(Workflow workflow, Assignments assignments, Assignments buffered){
 		try {
 			GRBEnv env = new GRBEnv("mip1.log");
 			env.set(GRB.IntParam.OutputFlag, 0); 
@@ -168,7 +169,7 @@ public class MILPScheduler {
 	}
 
 
-	private static void setVariableValues(Workflow workflow, BufferedAssignments buffered,
+	private static void setVariableValues(Workflow workflow, Assignments buffered,
 			Map<String, GRBVar> modelVariables, GRBVar v) throws GRBException {
 		
 		List<String> agents = new ArrayList<String>(buffered.getAssignmentMap().keySet());
@@ -241,7 +242,7 @@ public class MILPScheduler {
 		}
 	}
 
-	private static GRBVar setupModelVariables(Workflow workflow, List<Assignment> assignments, 
+	private static GRBVar setupModelVariables(Workflow workflow, Assignments assignments, 
 			GRBModel model, Map<String, GRBVar> modelVariables) throws GRBException {
 		GRBVar v = model.addVar(0.0, GRB.INFINITY, 1.0, GRB.CONTINUOUS, "v");
 		modelVariables.put("v", v);
@@ -342,7 +343,7 @@ public class MILPScheduler {
 		return hadErrors;
 	}
 
-	private static void addConstraints(Workflow workflow, List<Assignment> assignments, ActionTimeGenerator timeGenerator,
+	private static void addConstraints(Workflow workflow, Assignments assignments, ActionTimeGenerator timeGenerator,
 			GRBModel model, Map<String, GRBVar> modelVariables, GRBVar v, boolean useActualValues)
 					throws GRBException {
 		GRBLinExpr expr;
@@ -530,20 +531,19 @@ public class MILPScheduler {
 		}	
 	}
 
-	private List<List<Double>> extractAssignments(Workflow workflow,
-			List<Assignment> assignments, Map<String, GRBVar> modelVariables) throws GRBException {
-		List<List<Double>> startTimes = new ArrayList<List<Double>>();
+	private Map<String, List<Double>> extractAssignments(Workflow workflow,
+			Assignments assignments, Map<String, GRBVar> modelVariables) throws GRBException {
+		Map<String, List<Double>> startTimes = new HashMap<String, List<Double>>();
 		for (Assignment assignment : assignments) {
-			startTimes.add(new ArrayList<Double>());
+			startTimes.put(assignment.getId(), new ArrayList<Double>());
 		}
 		for (Workflow.Node node : workflow) {
 			String nodeStartStr = node.toString() + "_START";
 			GRBVar nodeStart = modelVariables.get(nodeStartStr);
 
-			for (int i = 0; i < assignments.size(); i++) {
-				Assignment assignment = assignments.get(i);
-				List<Double> times = startTimes.get(i);
+			for (Assignment assignment : assignments) {
 				String agent = assignment.getId();
+				List<Double> times = startTimes.get(agent);
 				String actionStr = node.getAction(agent).toString();
 				GRBVar actionVar = modelVariables.get(actionStr);
 				double value = actionVar.get(GRB.DoubleAttr.X);

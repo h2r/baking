@@ -25,62 +25,41 @@ public class CombinedScheduler implements Scheduler {
 		this.useActualValues = usingActual;
 	}
 
-	@Override
-	public List<Assignment> schedule(Workflow workflow, List<String> agents,
+	public Assignments schedule(Workflow workflow, List<String> agents,
 			ActionTimeGenerator timeGenerator) {
-		List<Assignment> assignments = new ArrayList<Assignment>();
-		for (String agent : agents) {
-			assignments.add(new Assignment(agent, timeGenerator, this.isUsingActualValues()));
-		}
-		BufferedAssignments buffered = new BufferedAssignments(assignments, false);
-		Set<Workflow.Node> visited = new HashSet<Workflow.Node>();
-		return this.assignActions(workflow, timeGenerator, assignments, buffered, visited);
+		Assignments assignments = new Assignments(timeGenerator, agents, workflow.getStartState(), this.useActualValues, false);
+		return this.finishSchedule(workflow, assignments, timeGenerator);
 	}
 
-	@Override
-	public List<Assignment> finishSchedule(Workflow workflow,
-			ActionTimeGenerator timeGenerator,
-			List<Assignment> assignments,
-			BufferedAssignments buffered, Set<Node> visitedNodes) {
-		return this.assignActions(workflow, timeGenerator, assignments, buffered, visitedNodes);
-	}
-	
-	public List<Assignment> assignActions(Workflow workflow,
-			ActionTimeGenerator timeGenerator,
-			List<Assignment> assignments,
-			BufferedAssignments buffered, Set<Node> visitedNodes) {
-		SchedulerCallable callable = new SchedulerCallable(workflow, timeGenerator, assignments, buffered, visitedNodes);
-		List<List<Assignment>> results = Parallel.ForEach(this.schedulers, callable);
+	public Assignments finishSchedule(Workflow workflow, Assignments assignments, ActionTimeGenerator timeGenerator) {
+		SchedulerCallable callable = new SchedulerCallable(workflow, timeGenerator, assignments);
+		List<Assignments> results = Parallel.ForEach(this.schedulers, callable);
 		
-		List<Assignment> best = null;
+		Assignments best = null;
 		double minTime = Double.MAX_VALUE;
-		for (List<Assignment> assignment : results) {
-			BufferedAssignments buff = new BufferedAssignments(assignment, false);
-			if (buff.time() < minTime) {
+		for (Assignments assignment : results) {
+			if (assignments.time() < minTime) {
 				best = assignment;
-				minTime = buff.time();
+				minTime = assignment.time();
 			}
 		}
 		return best;
 	}
+	
 	@Override
 	public boolean isUsingActualValues() {
 		return this.useActualValues;
 	}
 	
-	public class SchedulerCallable extends ForEachCallable<Scheduler, List<Assignment>> {
+	public class SchedulerCallable extends ForEachCallable<Scheduler, Assignments> {
 		private final Workflow workflow;
-		private final List<Assignment> assignments;
-		private final BufferedAssignments buffered;
-		private final Set<Workflow.Node> visited; 
+		private final Assignments assignments;
 		private final ActionTimeGenerator timeGenerator;
 		private final Scheduler scheduler;
 		
-		public SchedulerCallable(Workflow workflow, ActionTimeGenerator timeGenerator, List<Assignment> assignments, BufferedAssignments buffered, Set<Workflow.Node> visited) {
+		public SchedulerCallable(Workflow workflow, ActionTimeGenerator timeGenerator, Assignments assignments) {
 			this.workflow = workflow;
 			this.timeGenerator = timeGenerator;
-			this.buffered = buffered;
-			this.visited = visited;
 			this.assignments = assignments;
 			this.scheduler = null;
 		}
@@ -88,19 +67,17 @@ public class CombinedScheduler implements Scheduler {
 		public SchedulerCallable(SchedulerCallable other, Scheduler scheduler) {
 			this.workflow = other.workflow;
 			this.timeGenerator = other.timeGenerator;
-			this.buffered = other.buffered.copy();
-			this.visited = new HashSet<Workflow.Node>(other.visited);
-			this.assignments = SchedulingHelper.copy(other.assignments);
+			this.assignments = other.assignments.copy();
 			this.scheduler = scheduler;
 		}
 		
 		@Override
-		public List<Assignment> call() throws Exception {
-			return this.scheduler.finishSchedule(workflow, timeGenerator, assignments, buffered, visited);
+		public Assignments call() throws Exception {
+			return this.scheduler.finishSchedule(workflow, assignments, timeGenerator);
 		}
 
 		@Override
-		public ForEachCallable<Scheduler, List<Assignment>> init(
+		public ForEachCallable<Scheduler, Assignments> init(
 				Scheduler current) {
 			return new SchedulerCallable(this, current);
 		}

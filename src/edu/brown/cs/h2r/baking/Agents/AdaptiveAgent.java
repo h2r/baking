@@ -31,7 +31,7 @@ import edu.brown.cs.h2r.baking.Prediction.PolicyProbability;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
 import edu.brown.cs.h2r.baking.Scheduling.Assignment;
-import edu.brown.cs.h2r.baking.Scheduling.BufferedAssignments;
+import edu.brown.cs.h2r.baking.Scheduling.Assignments;
 import edu.brown.cs.h2r.baking.Scheduling.ExhaustiveStarScheduler;
 import edu.brown.cs.h2r.baking.Scheduling.Scheduler;
 import edu.brown.cs.h2r.baking.Scheduling.Workflow;
@@ -115,11 +115,6 @@ public abstract class AdaptiveAgent extends Agent{
 		}
 		map.put("state_history", stateHistory);
 		return map;
-	}
-	
-	@Override
-	public ObjectInstance getAgentObject() {
-		return AgentFactory.getNewHumanAgentObjectInstance(this.domain, this.getAgentName(), AdaptiveAgent.hashingFactory.getObjectHashFactory());
 	}
 	
 	@Override
@@ -355,21 +350,9 @@ public abstract class AdaptiveAgent extends Agent{
 		List<Double> completionTimes = new ArrayList<Double>();
 		
 		for (Workflow workflow : workflows) {
-			List<Assignment> assignments = new ArrayList<Assignment>();
-			for (String agent : agents) {
-				Assignment assignment = new Assignment(agent, timeGenerator, exhaustive.isUsingActualValues());
-				assignments.add(assignment);
-			}
-			
-			BufferedAssignments buffered = new BufferedAssignments(timeGenerator, agents, false, false);
-			for (Map.Entry<String, Double> entry : startingDelays.entrySet()) {
-				buffered.waitAgentUntil(entry.getKey(), entry.getValue());
-			}
-			
-			assignments = exhaustive.finishSchedule(workflow, timeGenerator, assignments, buffered, new HashSet<Workflow.Node>());
-			
-			buffered = buffered.copyAndFinish(assignments);
-			completionTimes.add(buffered.time());
+			Assignments assignments = exhaustive.schedule(workflow, agents, timeGenerator);
+			double time = (assignments == null) ? Double.MAX_VALUE : assignments.time();
+			completionTimes.add(assignments.time());
 		}
 		return completionTimes;
 	}

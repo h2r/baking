@@ -12,6 +12,9 @@ public abstract class BakingPropositionalFunction extends PropositionalFunction 
 	protected final BakingSubgoal subgoal;
 	public BakingPropositionalFunction(String name, Domain domain, String[] params, IngredientRecipe ingredient) {
 		super(name, domain, params);
+		if (ingredient == null) {
+			throw new RuntimeException("Top level ingredient cannot be null");
+		}
 		this.topLevelIngredient = ingredient;
 		this.subgoal = null;
 	}

@@ -15,7 +15,7 @@ public class WeightByDifference extends HeuristicScheduler {
 	}
 	@Override
 	protected Map<Node, Map<String, Double>> getWeights(
-			Map<Node, Map<String, Double>> times, Map<String, Assignment> assignments) {
+			Map<Node, Map<String, Double>> times, Assignments assignments) {
 		Map<Node, Map<String, Double>> weights = new HashMap<Node, Map<String, Double>>();
 		
 		for(Map.Entry<Node, Map<String,Double>> entry : times.entrySet()) {

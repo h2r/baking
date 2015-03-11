@@ -18,32 +18,21 @@ public class RandomScheduler implements Scheduler {
 	}
 	
 	@Override
-	public List<Assignment> schedule(Workflow workflow,
+	public Assignments schedule(Workflow workflow,
 			List<String> agents, ActionTimeGenerator timeGenerator) {
-		List<Assignment> assignedWorkflows = new ArrayList<Assignment>();
-		for (String agent : agents) {
-			Assignment assignedWorkflow = new Assignment(agent, timeGenerator, false);
-			assignedWorkflows.add(assignedWorkflow);
-		}
-		
-		for (Workflow.Node node : workflow) {
-			int choice = random.nextInt(agents.size());
-			assignedWorkflows.get(choice).add(node);
-		}
-		
-		return assignedWorkflows;
+		Assignments assignments = new Assignments(timeGenerator, agents, workflow.getStartState(), this.useActualValues, false);
+		return assignments;
 	}
 	
-	public List<Assignment> finishSchedule(Workflow workflow, ActionTimeGenerator actionTimeLookup, 
-			List<Assignment> assignedWorkflows, BufferedAssignments bufferedWorkflows, Set<Workflow.Node> visitedNodes) {
-
+	public Assignments finishSchedule(Workflow workflow, Assignments assignments, ActionTimeGenerator actionTimeLookup) {
+		List<String> agents = new ArrayList<String>(assignments.agents());
 		for (Workflow.Node node : workflow) {
-			int choice = random.nextInt(assignedWorkflows.size());
-			Assignment assignedWorkflow = assignedWorkflows.get(choice);
-			assignedWorkflow.add(node);
+			int choice = random.nextInt(agents.size());
+			String agent = agents.get(choice);
+			assignments.add(node, agent);
 		}
 		
-		return assignedWorkflows;
+		return assignments;
 	}
 	
 	

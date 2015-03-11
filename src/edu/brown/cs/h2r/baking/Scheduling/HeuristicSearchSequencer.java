@@ -1,5 +1,6 @@
 package edu.brown.cs.h2r.baking.Scheduling;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -8,49 +9,48 @@ import java.util.Set;
 
 import burlap.datastructures.HashIndexedHeap;
 
-public class HeuristicSearchSequencer {
+public class HeuristicSearchSequencer extends Sequencer {
 	private final boolean rearrangeOrder;
-	public HeuristicSearchSequencer(boolean rearrangeOrder) {
+	private final Sequencer sequencer;
+	public HeuristicSearchSequencer(boolean useActualValues, boolean rearrangeOrder) {
+		super(useActualValues);
 		this.rearrangeOrder = rearrangeOrder;
+		this.sequencer = new BasicSequencer(this.useActualValues);
 	}
-	public BufferedAssignments sequenceAssignments(List<Assignment> assignments) {
+	
+	public Assignments finishSequence(Assignments assignments, Assignments sequenced, ActionTimeGenerator timeGenerator) {
 		HashIndexedHeap<SequenceNode> openQueue = new HashIndexedHeap<SequenceNode>(new SequenceNode.SequenceComparator());
-		SequenceNode first = new SequenceNode(assignments, this.rearrangeOrder);
+		Assignments completed = this.sequencer.finishSequence(assignments, sequenced, timeGenerator);
+		SequenceNode first = new SequenceNode(sequenced, completed);
 		openQueue.insert(first);
-		
+		return this.sequence(openQueue, assignments, timeGenerator);
+	}
+	
+	private Assignments sequence(HashIndexedHeap<SequenceNode> openQueue, Assignments assignments, ActionTimeGenerator timeGenerator) {
 		while(openQueue.peek() != null) {
 			SequenceNode next = openQueue.poll();
 			
 			if (next.complete()) {
-				return next.getCompletedBuffered();
-			}
-			Set<Workflow.Node> visited = new HashSet<Workflow.Node>();
-			for (Assignment assignment : next.getBufferedAssignments().getAssignmentMap().values()) {
-				visited.addAll(assignment.nodes());
-			}
-			Map<String, List<Workflow.Node>> available = new HashMap<String, List<Workflow.Node>>();
-			for (Assignment assignment : assignments) {
-				List<Workflow.Node> assignmentAvailable = assignment.nodes(visited);
-				assignmentAvailable.removeAll(visited);
-				available.put(assignment.getId(), assignmentAvailable);
+				return next.getCompleted();
 			}
 			
-			for (Map.Entry<String, List<Workflow.Node>> entry : available.entrySet()) {
-				String agent = entry.getKey();
-				for (Workflow.Node node : entry.getValue()) {
-					SequenceNode newNode = SequenceNode.add(next, node, agent);
-					
-					if (newNode == null) {
-						newNode = SequenceNode.addAndRearrange(next, node, agent);
-					}
-					
-					if (newNode != null && openQueue.containsInstance(newNode) == null) {
+			Collection<Workflow.Node> visited = next.getAssignments().subtasks();
+			Assignments currentSequenced = next.getAssignments();
+			for (Assignment assignment : assignments) {
+				for (Workflow.Node node : assignment.nodes(visited)) {
+					Assignments copied = currentSequenced.copy();
+					if (copied.add(node, assignment.getId())) {
+						Assignments completed = this.sequencer.finishSequence(assignments, copied, timeGenerator);
+						SequenceNode newNode = new SequenceNode(copied, completed);
 						openQueue.insert(newNode);
 					}
 				}
-			}			
+			}	
 		}
 		throw new RuntimeException("Could not complete sequencing");
+	}
+	public String getDescription() {
+		return this.getClass().getSimpleName();
 	}
 
 }
