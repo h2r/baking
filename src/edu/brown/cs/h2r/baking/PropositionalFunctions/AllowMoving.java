@@ -1,5 +1,9 @@
 package edu.brown.cs.h2r.baking.PropositionalFunctions;
 
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,6 +41,10 @@ public class AllowMoving extends BakingPropositionalFunction {
 		//	return false;
 		//}
 		
+		// Get what our subgoal is looking for and make copies
+		List<IngredientRecipe> necessaryIngs = new ArrayList<IngredientRecipe>(this.topLevelIngredient.getContents()); 
+		necessaryIngs.add(this.topLevelIngredient);
+		AbstractMap<String, IngredientRecipe> necessaryTraits = new HashMap<String, IngredientRecipe>(this.topLevelIngredient.getNecessaryTraits());
 		
 		if (SpaceFactory.isBaking(space)) {
 			return this.checkMoveToBaking(state, container, contents);
@@ -44,9 +52,55 @@ public class AllowMoving extends BakingPropositionalFunction {
 			return this.checkMoveToHeating(state, container, contents);
 		//} else if (SpaceFactory.isCleaning(space)) { 
 		 //	return this.checkMoveToCleaning(state, container);
+		} else if (ContainerFactory.isEmptyContainer(container)){
+			return false;
 		} else {
-			return !(ContainerFactory.isEmptyContainer(container));
-		} 
+			return AllowMoving.allIngredientsNecessary(state, necessaryIngs, container, necessaryTraits);
+		}
+	}
+	
+	private static boolean allIngredientsNecessary(State state, List<IngredientRecipe> necessaryIngs, ObjectInstance container, 
+			AbstractMap<String, IngredientRecipe> necessaryTraits) {
+		
+		// Look to see what  ingredients we have already fulfilled in our bowl
+		Set<ObjectInstance> receivingContents = new HashSet<ObjectInstance>();
+		Set<String> contentNames = ContainerFactory.getConstituentSwappedContentNames(container, state);
+		for (String contentName : contentNames) {
+			ObjectInstance obj = state.getObject(contentName);
+			receivingContents.add(obj);
+		}
+				
+		for (ObjectInstance ingObject : receivingContents) {
+			String contentName = ingObject.getName();
+			
+			IngredientRecipe match = null;
+			for (IngredientRecipe ing : necessaryIngs) {
+				if (ing.getFullName().equals(contentName) || ing.isMatching(ingObject, state)) {
+					match = ing;
+					break;
+				}
+			}
+			if (match != null) {
+				necessaryIngs.remove(match);
+			} else {
+				String foundTrait = null;
+				Set<String> traits = necessaryTraits.keySet();
+				for (String trait : traits) {
+					if (IngredientFactory.getTraits(ingObject).contains(trait)) {
+						foundTrait = trait;
+						break;
+					}
+				}
+				if (foundTrait != null) {
+					necessaryTraits.remove(foundTrait);
+				} else {
+					// We're trying to pour into a bowl that doesn't have "good" ingredients
+					// By good I mean relevant, in relation to our current subgoal.
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 	
 	private boolean checkMoveToBaking(State state, ObjectInstance container, Set<String> contents) {

@@ -50,7 +50,14 @@ public class GreedyScheduler implements Scheduler {
 				}
 			}
 			if (bestSequence == null) {
+				/*for (String agent : assignments.agents()) {
+					Assignments copied = assignments.copy();
+					if (!copied.add(node, agent)) {
+						System.err.println("Couldn't add " + node.toString() + " to " + agent + "'s assignment");
+					}
+				}*/
 				return null;
+				
 			}
 			
 			assignments = bestSequence;

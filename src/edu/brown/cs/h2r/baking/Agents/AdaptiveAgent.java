@@ -1,7 +1,7 @@
 package edu.brown.cs.h2r.baking.Agents;
 
-import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -17,16 +17,15 @@ import burlap.behavior.statehashing.StateHashFactory;
 import burlap.oomdp.auxiliary.common.StateYAMLParser;
 import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.Domain;
-import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
+import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.parallel.Parallel;
 import burlap.parallel.Parallel.ForEachCallable;
 import edu.brown.cs.h2r.baking.BakingSubgoal;
 import edu.brown.cs.h2r.baking.Experiments.KitchenSubdomain;
-import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.Prediction.PolicyProbability;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
@@ -62,6 +61,8 @@ public abstract class AdaptiveAgent extends Agent{
 	
 	protected final List<Recipe> recipes;
 	
+	protected GroundedAction lastAction;
+	
 	public AdaptiveAgent(String name, boolean isRobot, Domain domain, ActionTimeGenerator timeScheduler, List<Recipe> recipes, boolean useScheduling) {
 		super(name, isRobot);
 		this.domain = domain;
@@ -92,6 +93,12 @@ public abstract class AdaptiveAgent extends Agent{
 		this.policyBeliefDistribution.clear();
 		this.policyBeliefDistribution.addAll(newDistribution);
 		
+		List<String> actionParams = (List<String>)objectMap.get("last_action");
+		if (actionParams != null) {
+			Action action = (actionParams.get(0).equals("null")) ? null : domain.getAction(actionParams.get(0));
+			String[] params = actionParams.subList(1, actionParams.size()).toArray(new String[actionParams.size()-1]);
+			this.lastAction = new GroundedAction(action, params);
+		}
 		StateYAMLParser parser = new StateYAMLParser(domain, hashingFactory);
 		List<String> stateHistory = (List<String>)objectMap.get("state_history");
 		for (String str : stateHistory) {
@@ -114,6 +121,12 @@ public abstract class AdaptiveAgent extends Agent{
 			stateHistory.add(parser.stateToString(state));
 		}
 		map.put("state_history", stateHistory);
+		if (this.lastAction != null) {
+			List<String> actionParams = new ArrayList<String>(Arrays.asList(this.lastAction.params));
+			String actionName = (this.lastAction.action == null) ? "null" : this.lastAction.actionName();
+			actionParams.add(0, actionName);
+			map.put("last_action", actionParams);
+		}
 		return map;
 	}
 	
@@ -123,7 +136,7 @@ public abstract class AdaptiveAgent extends Agent{
 		this.subdomains.clear();
 		this.policyBeliefDistribution.clear();
 		this.stateHistory.add(state);
-		List<KitchenSubdomain> subdomains = AgentHelper.generateAllRTDPPolicies(domain, state, this.recipes,
+		List<KitchenSubdomain> subdomains = AgentHelper.generateAllRTDPPoliciesParallel(domain, state, this.recipes,
 				AdaptiveAgent.rewardFunction ,AdaptiveAgent.hashingFactory);
 		this.subdomains.addAll(subdomains);
 		this.policyBeliefDistribution.addAll(this.getInitialPolicyDistribution(subdomains));
@@ -166,7 +179,8 @@ public abstract class AdaptiveAgent extends Agent{
 		this.updateBeliefDistribution(policyDistribution);
 		
 		List<PolicyProbability> policyBeliefDistribution = Collections.unmodifiableList(this.policyBeliefDistribution);
-		return this.getActionFromPolicyDistribution(policyBeliefDistribution, state);
+		this.lastAction = (GroundedAction)this.getActionFromPolicyDistribution(policyBeliefDistribution, state);
+		return this.lastAction;
 		
 	}
 	
@@ -175,7 +189,6 @@ public abstract class AdaptiveAgent extends Agent{
 		if (!this.useScheduling) {
 			return this.getAction(state);
 		}
-		
 		System.out.println("Previous Distribution");
 		for (PolicyProbability policyProb : this.policyBeliefDistribution) {
 			System.out.println(policyProb.toString());
@@ -222,8 +235,8 @@ public abstract class AdaptiveAgent extends Agent{
 		ChooseHelpfulActionCallable callable = new ChooseHelpfulActionCallable(state, agents, nonZero, this.subdomains, this.timeGenerator, finishRecipe);
 		List<Double> completionTimes = Parallel.ForEach(availableActions, callable);
 		
-		GroundedAction bestAction = (GroundedAction)this.findBestAction(availableActions, completionTimes);
-		return bestAction;
+		this.lastAction = (GroundedAction)this.findBestAction(availableActions, completionTimes);
+		return this.lastAction;
 	}
 	
 	
@@ -348,11 +361,14 @@ public abstract class AdaptiveAgent extends Agent{
 	protected static List<Double> assignAllWorkflowsAndGetCompletionTimes(State state, List<String> agents, List<Workflow> workflows, ActionTimeGenerator timeGenerator, Map<String, Double> startingDelays) {
 		Scheduler exhaustive = new ExhaustiveStarScheduler(false);
 		List<Double> completionTimes = new ArrayList<Double>();
-		
+		Assignments assignments = new Assignments(timeGenerator, agents, state, false, false);
+		for (Map.Entry<String, Double> entry : startingDelays.entrySet()) {
+			assignments.waitAgentUntil(entry.getKey(), entry.getValue());
+		}
 		for (Workflow workflow : workflows) {
-			Assignments assignments = exhaustive.schedule(workflow, agents, timeGenerator);
-			double time = (assignments == null) ? Double.MAX_VALUE : assignments.time();
-			completionTimes.add(assignments.time());
+			Assignments completed = exhaustive.finishSchedule(workflow, assignments.copy(), timeGenerator);
+			double time = (completed == null) ? Double.MAX_VALUE : completed.time();
+			completionTimes.add(time);
 		}
 		return completionTimes;
 	}

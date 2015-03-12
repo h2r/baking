@@ -71,6 +71,14 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 		if (args.length > 2 && args[2].equals("dessert")) {
 			breakfastOrDessert = true;
 		}
+		boolean useRobots = false;
+		if (args.length > 3 && args[3].equals("robots")) {
+			useRobots = true;
+		}
+		boolean useShelf = false;
+		if (args.length > 4 && args[4].equals("shelf")) {
+			useShelf = true;
+		}
 		
 		Domain generalDomain = SimulationHelper.generateGeneralDomain(); 
 		Knowledgebase knowledgebase = Knowledgebase.getKnowledgebase(generalDomain);
@@ -78,9 +86,11 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 		//List<Recipe> recipes = Recipe.generateRecipes(generalDomain, 5 * numberOfRecipes, knowledgebase.getIngredientList(), 1, 4);
 		
 		Random random = new Random();
+		
+		for (Recipe recipe : allRecipes) {
 		List<Recipe> recipes = new ArrayList<Recipe>();
-		recipes.add(allRecipes.get(random.nextInt(allRecipes.size())));
-		//recipes.add(allRecipes.get(3));
+		//recipes.add(allRecipes.get(random.nextInt(allRecipes.size())));
+		recipes.add(recipe);
 		
 		knowledgebase.initKnowledgebase(allRecipes);
 		Map<String, Double> factors = new HashMap<String, Double>();
@@ -91,7 +101,6 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 		
 		State state = SimulationHelper.generateInitialState(generalDomain, hashingFactory, allRecipes, human, null);
 		
-		boolean useRobots = false;
 		
 		List<Agent> agents = Arrays.asList(
 				//(Agent)new RandomActionAgent(generalDomain),
@@ -108,9 +117,10 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 		if (true){
 			int choice = trialId % (agents.size() + 1);
 			SimulationHelper.run(numTrials, generalDomain, hashingFactory, allRecipes, timeGenerator, human, agents,
-					reset, choice, false, saveFile);	
+					reset, choice, false, saveFile, useShelf);	
 		} else {
 			SimulationHelper.runFromSaved(saveFile, generalDomain, hashingFactory, allRecipes, reset, false);	
+		}
 		}
 	}
 }

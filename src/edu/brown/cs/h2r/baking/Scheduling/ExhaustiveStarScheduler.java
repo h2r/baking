@@ -126,11 +126,25 @@ public class ExhaustiveStarScheduler implements Scheduler {
 					Assignments completed = this.heuristic.finishSchedule(workflow, added, timeGenerator);
 					if (completed == null) {
 						completed = this.heuristic.finishSchedule(workflow, added, timeGenerator);
-					}
-					AssignmentNode newNode = new AssignmentNode(workflow, added, completed);
-					if (openQueue.containsInstance(newNode) == null && !newNode.equals(node)) {
-						openQueue.insert(newNode);
-						numAddedNodes++;
+					} else {
+						Set<Workflow.Node> assigned = new HashSet<Workflow.Node>(); 
+						for (Assignment assignment : completed) {
+							for (Workflow.Node subtask : assignment.nodes()) {
+								if (subtask != null) {
+									if (!assigned.add(subtask)) {
+										System.err.println("Duplicates assigned");
+									}
+								}
+							}
+						}
+						
+						
+						
+						AssignmentNode newNode = new AssignmentNode(workflow, added, completed);
+						if (openQueue.containsInstance(newNode) == null && !newNode.equals(node)) {
+							openQueue.insert(newNode);
+							numAddedNodes++;
+						}
 					}
 				}
 			}

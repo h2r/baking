@@ -15,6 +15,8 @@ import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.GroundedAction;
 import edu.brown.cs.h2r.baking.Scheduling.Assignment.ActionTime;
 import edu.brown.cs.h2r.baking.Scheduling.Assignment.AssignmentIterator;
+import edu.brown.cs.h2r.baking.actions.BakingAction;
+import edu.brown.cs.h2r.baking.actions.BakingActionResult;
 
 public class Assignments implements Iterable<Assignment> {
 	private final Map<String, Assignment> adjustedAssignments;
@@ -433,7 +435,7 @@ public class Assignments implements Iterable<Assignment> {
 		if (assignment == null) {
 			return false;
 		}
-		if (assignment.contains(node)) {
+		if (this.subtasks.contains(node)) {
 			return true;
 		}
 		double assignmentTime = assignment.time();
@@ -443,7 +445,11 @@ public class Assignments implements Iterable<Assignment> {
 		
 		double time = this.getTimeNodeIsAvailable(node, assignment, assignmentTime, actionDuration);
 		State currentState = this.getStateAtTime(time);
-		if (!action.action.applicableInState(currentState, action.params)) {
+		BakingAction bakingAction = (BakingAction)action.action;
+		BakingActionResult result = bakingAction.checkActionIsApplicableInState(currentState, action.params);
+		if (!result.getIsSuccess()) {
+			//System.out.println("This action cannot be scheduled");
+			//System.out.println(result.getWhyFailed());
 			return false;
 		}
 		

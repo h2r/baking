@@ -23,27 +23,30 @@ public class Pancake extends Recipe {
 		List<IngredientRecipe> ingredientList = new ArrayList<IngredientRecipe>();
 		ingredientList.add(knowledgebase.getIngredient("milk"));
 		ingredientList.add(knowledgebase.getIngredient("eggs"));
-		IngredientRecipe batter = new IngredientRecipe ("batter", Recipe.HEATED, this, Recipe.SWAPPED, ingredientList);
-		batter.addNecessaryTrait("flour", Recipe.NO_ATTRIBUTES);
-		this.subgoalIngredients.put(batter.getSimpleName(), batter);
+		IngredientRecipe pancake = new IngredientRecipe ("pancake", Recipe.HEATED, this, Recipe.SWAPPED, ingredientList);
+		pancake.addNecessaryTrait("flour", Recipe.NO_ATTRIBUTES);
+		this.subgoalIngredients.put(pancake.getSimpleName(), pancake);
 		
-		List<IngredientRecipe> ingredientList2 = new ArrayList<IngredientRecipe>();
+		/*List<IngredientRecipe> ingredientList2 = new ArrayList<IngredientRecipe>();
 		ingredientList2.add(batter);
 		IngredientRecipe pancake = new IngredientRecipe("pancake", Recipe.HEATED, this, Recipe.SWAPPED, ingredientList2);
-		this.subgoalIngredients.put(pancake.getSimpleName(), pancake);
-		return batter;
+		this.subgoalIngredients.put(pancake.getSimpleName(), pancake);*/
+		return pancake;
 	}
 
 	@Override
 	public List<BakingSubgoal> getSubgoals(Domain domain) {
 		List<BakingSubgoal> subgoals = new ArrayList<BakingSubgoal>();
+		
+		/*
 		BakingPropositionalFunction pf = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("batter"));
 		BakingSubgoal sg1 = new BakingSubgoal(pf, this.subgoalIngredients.get("batter"));
-		subgoals.add(sg1);
+		subgoals.add(sg1);*/
 		
 		
 		BakingPropositionalFunction pf2 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("pancake"));
 		BakingSubgoal sg2 = new BakingSubgoal(pf2, this.subgoalIngredients.get("pancake"));
+		//sg2 = sg2.addPrecondition(sg1);
 		subgoals.add(sg2);
 	
 		return subgoals;

@@ -66,7 +66,6 @@ public class AllowPouring extends BakingPropositionalFunction {
 		// simple ingredient subgoal!
 		if (necessaryIngs.isEmpty() && necessaryTraits.isEmpty()) {
 			simpleIngredientSubgoal = true;
-			necessaryIngs.add(this.topLevelIngredient);
 		}
 		
 		
