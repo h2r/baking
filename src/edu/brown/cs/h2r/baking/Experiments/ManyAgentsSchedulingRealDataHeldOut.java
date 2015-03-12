@@ -87,10 +87,10 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 		
 		Random random = new Random();
 		
-		for (Recipe recipe : allRecipes) {
+		//for (Recipe recipe : allRecipes) {
 		List<Recipe> recipes = new ArrayList<Recipe>();
-		//recipes.add(allRecipes.get(random.nextInt(allRecipes.size())));
-		recipes.add(recipe);
+		recipes.add(allRecipes.get(random.nextInt(allRecipes.size())));
+		//recipes.add(recipe);
 		
 		knowledgebase.initKnowledgebase(allRecipes);
 		Map<String, Double> factors = new HashMap<String, Double>();
@@ -121,6 +121,6 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 		} else {
 			SimulationHelper.runFromSaved(saveFile, generalDomain, hashingFactory, allRecipes, reset, false);	
 		}
-		}
+		//}
 	}
 }
