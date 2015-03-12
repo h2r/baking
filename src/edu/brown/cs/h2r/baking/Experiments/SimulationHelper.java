@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.yaml.snakeyaml.Yaml;
 
@@ -99,7 +100,7 @@ public class SimulationHelper {
 		ObjectInstance makeSpan = MakeSpanFactory.getNewObjectInstance(generalDomain, "makespan", 2, objectHashingFactory);
 		objects.add(makeSpan);
 		
-		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2", "mixing_bowl_3");
+		List<String> containers = Arrays.asList("mixing_bowl_1"/*, "mixing_bowl_2", "mixing_bowl_3"*/);
 		ObjectInstance counterSpace = SpaceFactory.getNewWorkingSpaceObjectInstance(generalDomain, SpaceFactory.SPACE_COUNTER, containers, "human", objectHashingFactory);
 		objects.add(counterSpace);
 		
@@ -136,22 +137,6 @@ public class SimulationHelper {
 			ingredients.addAll(knowledgebase.getRecipeObjectInstanceList(generalDomain, objectHashingFactory, recipe));
 			//tools.addAll(knowledgebase.getTools(generalDomain, SpaceFactory.SPACE_COUNTER, objectHashingFactory));
 		}
-		
-		/*
-		ObjectClass oc = ingredients.get(0).getObjectClass();
-		IngredientRecipe wholeEggs = knowledgebase.getIngredient("whole_eggs");
-		ObjectInstance wholeEggsObject = IngredientFactory.getNewIngredientInstance(wholeEggs, wholeEggs.getFullName(), oc, hashingFactory.getObjectHashFactory());
-		int index = -1;
-		for (int i = 0; i < ingredients.size(); i++) {
-			ObjectInstance ingredient = ingredients.get(i);
-			if (ingredient.getName().equals("eggs")) {
-				index = i;
-				break;
-			}
-		}
-		if (index >= 0) {
-			ingredients.set(index, wholeEggsObject);
-		}*/
 	
 		ObjectClass containerClass = generalDomain.getObjectClass(ContainerFactory.ClassName);		
 		
@@ -423,177 +408,6 @@ public class SimulationHelper {
 		return new EvaluationResult(partner.toString(), reward, isSuccess);
 	}
 	
-	/*
-	private static EvaluationResult evaluateAgent(Domain domain,
-			String saveFile, boolean onlySubgoals,
-			StateHashFactory hashingFactory, State startingState,
-			State currentState, double currentTime, Human human, Agent partner,
-			ActionTimeGenerator timeGenerator, Map<String, Double> actionMap,
-			List<AbstractGroundedAction> actionSequence,
-			List<State> stateSequence, boolean finished, List<State> statePair,
-			List<AbstractGroundedAction> actionPair, List<Double> timesPair,
-			List<Double> actionTimes, Human otherHuman, Expert humanExpert,
-			Expert otherExpert, List<String> agents) {
-		boolean isSuccess = false;
-		partner.addObservation(currentState);
-		GroundedAction humanAction = null, partnerAction = null;
-		int numNullActions = 0;
-		boolean partnerChoseToWait = false;
-		while (!finished) {
-			SimulationHelper.writeCurrentState(saveFile, domain, hashingFactory, startingState, currentState, humanExpert, partner, actionMap, timeGenerator, currentTime);
-			
-			if (humanAction == null) {
-				if (humanExpert != null) {
-					humanExpert.setCooperative((!currentState.equals(startingState) && numNullActions < 2) || partnerChoseToWait);
-					humanAction = (GroundedAction)humanExpert.getActionWithScheduler(currentState, agents, !onlySubgoals, (GroundedAction)partnerAction);
-				} else {
-					humanAction = (GroundedAction)human.getActionWithScheduler(currentState, agents, !onlySubgoals);
-				}
-				if (humanAction != null) {
-					System.out.println("Human chose " + humanAction.toString());
-				} 
-			}
-			if (humanAction != null) {
-				BakingAction bakingAction = (BakingAction)humanAction.action;
-				BakingActionResult result = bakingAction.checkActionIsApplicableInState(currentState, humanAction.params);
-				if (!result.getIsSuccess()) {
-					System.err.println("Action " + humanAction.toString() + " cannot be performed");
-					System.err.println(result.getWhyFailed());
-					humanAction = null;
-				}
-			}
-			
-			if (partnerAction == null) {
-				partnerChoseToWait = false;
-				if (otherHuman != null) {
-					//if (haveGoneOnce) {
-						if (otherExpert != null) {
-							partnerAction = (GroundedAction)otherExpert.getActionWithScheduler(currentState, agents, !onlySubgoals, (GroundedAction)humanAction);
-							if (partnerAction != null && !partnerAction.params[0].equals(partner.getAgentName())) {
-								throw new RuntimeException("Partner can't choose this action");
-							}
-						} else {
-							if (!currentState.equals(startingState)) {
-								State newState = (humanAction == null) ? currentState : humanAction.executeIn(currentState);
-								partnerAction = (GroundedAction)otherHuman.getActionWithScheduler(newState, agents, !onlySubgoals);
-							}
-						}
-					//}
-				} else {
-					if (humanAction != null && humanAction.action instanceof ResetAction) {
-						System.out.println("Human resets");
-					}
-					partnerAction = (GroundedAction)partner.getActionWithScheduler(currentState, agents, !onlySubgoals);
-					if (partnerAction == null) {
-						//partnerAction = TestManyAgents.getActionAndWait(partner, currentState);
-					}
-				}
-				if (partnerAction != null && partnerAction.action == null) {
-					partnerChoseToWait = true;
-					partnerAction = null;
-					System.out.println("Partner chose to wait");
-				} 
-			}
-			
-			if (partnerAction != null) {
-				BakingAction bakingAction = (BakingAction)partnerAction.action;
-				BakingActionResult result = bakingAction.checkActionIsApplicableInState(currentState, partnerAction.params);
-				if (!result.getIsSuccess()) {
-					System.err.println("Action " + partnerAction.toString() + " cannot be performed");
-					System.err.println(result.getWhyFailed());
-					partnerAction = null;
-				}
-			}
-			
-			if (humanAction != null && !humanAction.params[0].equals(human.getAgentName())) {
-				throw new RuntimeException("Human can't choose this action");
-			}
-			
-			if (partnerAction != null && !partnerAction.params[0].equals(partner.getAgentName())) {
-				throw new RuntimeException("Partner can't choose this action");
-			}
-			
-			if (humanAction == null && partnerAction == null) {
-				numNullActions++;
-				if (numNullActions > 3) {
-					break;
-				}
-			} else {
-				numNullActions = 0;
-			}
-			currentState = SimulationHelper.performActions(currentState, humanAction, partnerAction, actionMap, statePair, actionPair, timesPair, timeGenerator);
-			
-			if (!timesPair.isEmpty()){
-				double now = timesPair.get(0);
-				if (humanAction == null) {
-					SimulationHelper.agentWaitUntilNext(human, actionMap, now);
-					System.out.println("Human waits until " + actionMap.get(human.getAgentName()));
-				}
-				if (partnerAction == null) {
-					SimulationHelper.agentWaitUntilNext(partner, actionMap, now);
-					System.out.println("Partner waits until " + actionMap.get(partner.getAgentName()));
-				}
-				currentTime += timesPair.get(0);
-			}
-			
-			if (actionPair.contains(humanAction)) {
-				if (((GroundedAction)humanAction).action instanceof ResetAction) {
-					partnerAction = null;
-				}
-				humanAction = null;
-				
-			}
-			if (actionPair.contains(partnerAction)) {
-				if (((GroundedAction)partnerAction).action instanceof ResetAction) {
-					humanAction = null;
-				}
-				partnerAction = null;
-				
-			}
-			
-			//partner.addObservation(currentState);
-			
-			stateSequence.addAll(statePair);
-			actionSequence.addAll(actionPair);
-			actionTimes.addAll(timesPair);
-			boolean isRepeating = checkIfRepeating(stateSequence);
-			isSuccess = (onlySubgoals) ? human.isSubgoalFinished(currentState) : human.isSuccess(currentState);
-			double reward = Collections.max(actionTimes);
-			//double reward = SchedulingHelper.computeSequenceTime(startingState, actionSequence, timeGenerator);
-			finished = isSuccess || reward > 1000.0;
-			if (reward > 1000.0) {
-				System.out.println("Reward became to large");
-			}
-			
-			/*if (human.isSubgoalFinished(currentState)) {
-				//System.out.println("Subgoal is finished");
-			} else {
-				//System.out.println("Subogal is not finished");
-			}*/
-			/*
-			if (finished) {
-				if (isSuccess) {
-					//System.out.println("\n\nHuman finished successfully!!!\n\n");
-				}
-				else {
-					if (reward < -200.0) {
-						//System.err.println("Error became to large");
-					}
-					if (isRepeating) {
-						//System.err.println("\n\nState sequence repetition detected!");
-					}
-					//System.err.println("\n\nHuman failed recipe!!!\n\n");
-				}
-				break;
-			}
-		}
-		
-		double reward = (actionTimes.isEmpty()) ? 0 : Collections.max(actionTimes);
-		//double reward = SchedulingHelper.computeSequenceTime(startingState, actionSequence, timeGenerator);
-		SimulationHelper.removeFile(saveFile);
-		return new EvaluationResult(partner.toString(), reward, isSuccess);
-	}*/
-	
 	private static void agentWaitUntilNext(Agent agent,
 			Map<String, Double> actionMap, double next) {
 		actionMap.put(agent.getAgentName(), next);
@@ -688,39 +502,6 @@ public class SimulationHelper {
 		Map<String, Object> map = (Map<String, Object>)yaml.load(saved);
 		return SimulationState.fromMap(map, domain, hashingFactory, recipes);
 	}
-	/*
-	private static EvaluationResult evaluateHumanAlone(String saveFile, Human human, State startingState, ActionTimeGenerator timeGenerator, boolean onlySubgoals, Domain domain, StateHashFactory hashingFactory) {
-		
-		List<AbstractGroundedAction> actionSequence = new ArrayList<AbstractGroundedAction>();
-		List<State> stateSequence = new ArrayList<State>();
-		boolean finished = false;
-		State currentState = startingState;
-		stateSequence.add(currentState);
-		List<State> statePair = new ArrayList<State>(1);
-		List<AbstractGroundedAction> actionPair = new ArrayList<AbstractGroundedAction>(1);
-		List<Double> timesPair = new ArrayList<Double>(1);
-		Map<String, Double> lastActionTime = new HashMap<String, Double>();
-		lastActionTime.put(human.getAgentName(), 0.0);
-		while (!finished) {
-			SimulationHelper.writeCurrentState(saveFile, domain, hashingFactory, startingState, currentState, human, null, null, timeGenerator, 0.0);
-			
-			AbstractGroundedAction humanAction = human.getAction(currentState);
-			if (humanAction == null) {
-				break;
-			}
-			
-			currentState = SimulationHelper.performActions(currentState, humanAction, null, lastActionTime, statePair, actionPair, timesPair, timeGenerator);
-			stateSequence.addAll(statePair);
-			actionSequence.addAll(actionPair);
-			
-			finished = (onlySubgoals) ? human.isSubgoalFinished(currentState) : human.isFinished(currentState);
-		}
-		
-		double score = timesPair.get(0);
-		//double score = SchedulingHelper.computeSequenceTime(startingState, actionSequence, timeGenerator);
-		boolean success = (onlySubgoals) ? human.isSubgoalFinished(currentState) : human.isSuccess(currentState);
-		return new EvaluationResult("solo", score, success);
-	}*/
 	
 	private static EvaluationResult evaluateOneAgent(SimulationState simState, String saveFile, Domain domain, StateHashFactory hashingFactory, boolean onlySubgoals) {
 		Human human = (Human)simState.human;
@@ -810,13 +591,13 @@ public class SimulationHelper {
 	}
 	public static void run(int numTrials, Domain generalDomain, StateHashFactory hashingFactory,
 			List<Recipe> recipes, ActionTimeGenerator timeGenerator,
-			Human human, List<Agent> agents, ResetAction reset, int choice, boolean subgoalsOnly, String filename) {
-		SimulationHelper.run(numTrials, generalDomain, hashingFactory, recipes, timeGenerator, human, agents, reset, choice, subgoalsOnly, filename, false);
+			Human human, List<Agent> agents, int choice, boolean subgoalsOnly, String filename) {
+		SimulationHelper.run(numTrials, generalDomain, hashingFactory, recipes, timeGenerator, human, agents, choice, subgoalsOnly, filename, false);
 		
 	}
 	public static void run(int numTrials, Domain generalDomain, StateHashFactory hashingFactory,
 			List<Recipe> recipes, ActionTimeGenerator timeGenerator,
-			Human human, List<Agent> agents, ResetAction reset, int choice, boolean subgoalsOnly, String filename, boolean useShelf) {
+			Human human, List<Agent> agents, int choice, boolean subgoalsOnly, String filename, boolean useShelf) {
 		
 		SimulationHelper.EvaluationResult result;
 		Agent agent = null;
@@ -843,7 +624,8 @@ public class SimulationHelper {
 			result = SimulationHelper.evaluateOneAgent(simState, filename, generalDomain, hashingFactory, subgoalsOnly);
 			long end = System.nanoTime();
 			System.out.println(result.toString());
-			System.out.println("solo, time, " + ((end - start) / 100000000.0));
+			
+			System.out.println("solo, time, " + TimeUnit.NANOSECONDS.toSeconds(end - start));
 			
 			return;
 		}
@@ -851,7 +633,6 @@ public class SimulationHelper {
 		//human = new Expert(generalDomain, "human", timeGenerator, recipes);
 		
 		State startingState = SimulationHelper.generateInitialState(generalDomain, hashingFactory, recipes, human, agent, useShelf);
-		reset.setState(startingState);
 		
 		human.setInitialState(startingState);
 		if (agent != null) {
@@ -877,9 +658,9 @@ public class SimulationHelper {
 			start = System.nanoTime();
 			result = SimulationHelper.evaluateTwoAgents(simState, generalDomain, filename, subgoalsOnly, hashingFactory);	
 			end = System.nanoTime();
-			
 			System.out.println(result.toString());
-			System.out.println(agent.toString() + ", time, " + ((end - start) / 100000000.0));
+			System.out.println(agent.toString() + ", time, " + TimeUnit.NANOSECONDS.toSeconds(end - start));
+			
 			SimulationHelper.removeFile(filename);
 			System.out.println("");
 			timeGenerator.clear();
@@ -887,7 +668,7 @@ public class SimulationHelper {
 	}
 	
 	public static void runFromSaved(String filename, Domain generalDomain, StateHashFactory hashingFactory,
-			List<Recipe> recipes, ResetAction reset, boolean subgoalsOnly) {
+			List<Recipe> recipes, boolean subgoalsOnly) {
 		SimulationState simState = SimulationHelper.getStateFromSaved(generalDomain, hashingFactory, filename, recipes);
 		if (simState.partner == null) {
 			EvaluationResult result = SimulationHelper.evaluateOneAgent(simState, filename, generalDomain, hashingFactory, subgoalsOnly);

@@ -78,6 +78,6 @@ public class ManyAgentsSchedulingSubgoals {
 		//Agent agent = agents.get(3);
 		int choice = trialId % (agents.size() + 1);
 		SimulationHelper.run(numTrials, generalDomain, hashingFactory, recipes, timeGenerator, human, agents,
-				reset, choice, true, null);	
+				choice, true, null);	
 	}
 }

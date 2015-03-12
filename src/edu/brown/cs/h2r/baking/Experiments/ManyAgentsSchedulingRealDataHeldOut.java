@@ -99,7 +99,6 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 		ActionTimeGenerator timeGenerator = new ActionTimeGenerator(true, true);
 		Human human = new Expert(generalDomain, "human", timeGenerator, recipes);
 		
-		State state = SimulationHelper.generateInitialState(generalDomain, hashingFactory, allRecipes, human, null);
 		
 		
 		List<Agent> agents = Arrays.asList(
@@ -110,16 +109,14 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 				);
 		
 		System.out.println("Agent, Successes, Trials, Average reward, average successful reward");
-		ResetAction reset = (ResetAction)generalDomain.getAction(ResetAction.className);
-		reset.setState(state);
 		
 		Path path = Paths.get(saveFile);
 		if (true){
 			int choice = trialId % (agents.size() + 1);
 			SimulationHelper.run(numTrials, generalDomain, hashingFactory, allRecipes, timeGenerator, human, agents,
-					reset, choice, false, saveFile, useShelf);	
+				 choice, false, saveFile, useShelf);	
 		} else {
-			SimulationHelper.runFromSaved(saveFile, generalDomain, hashingFactory, allRecipes, reset, false);	
+			SimulationHelper.runFromSaved(saveFile, generalDomain, hashingFactory, allRecipes, false);	
 		}
 		//}
 	}

@@ -8,10 +8,12 @@ import java.util.Set;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
+import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.ContainerFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.IngredientFactory;
 import edu.brown.cs.h2r.baking.ObjectFactories.SpaceFactory;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.AllowReset;
 
 public class ResetAction extends BakingAction {
 	private State resetState;
@@ -44,6 +46,10 @@ public class ResetAction extends BakingAction {
 	
 	public void setState(State state) {
 		this.resetState = state;
+		AllowReset resetPF = (AllowReset)this.domain.getPropFunction(AffordanceCreator.RESET_PF);
+		if (resetPF != null) {
+			resetPF.setStartState(state);
+		}
 	}
 	
 	@Override

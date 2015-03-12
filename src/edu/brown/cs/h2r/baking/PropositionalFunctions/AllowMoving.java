@@ -52,11 +52,54 @@ public class AllowMoving extends BakingPropositionalFunction {
 			return this.checkMoveToHeating(state, container, contents);
 		//} else if (SpaceFactory.isCleaning(space)) { 
 		 //	return this.checkMoveToCleaning(state, container);
-		} else if (ContainerFactory.isEmptyContainer(container)){
-			return false;
+		} else if (SpaceFactory.isWorking(space)) {
+			if (!AllowMoving.allIngredientsNecessary(state, necessaryIngs, container, necessaryTraits)) {
+				return false;
+			} else if(ContainerFactory.isIngredientContainer(container) && ContainerFactory.isEmptyContainer(container)) {
+				return false;
+			}
+			return true;
 		} else {
-			return AllowMoving.allIngredientsNecessary(state, necessaryIngs, container, necessaryTraits);
+			return false;
 		}
+	}
+	
+	private static boolean betterIngredientsAvailable(State state, List<IngredientRecipe> necessaryIngs, ObjectInstance container,
+			AbstractMap<String, IngredientRecipe> necessaryTraits, ObjectInstance space ){
+		// If this is not an ingredient container, don't bother.
+		if (!ContainerFactory.isIngredientContainer(container)) {
+			return false;
+		}
+		
+		// Check if the one ingredient is a necessary ingredient, if so, we need it
+		Set<String> contents = ContainerFactory.getContentNames(container);
+		for (String ingredient : contents) {
+			for (IngredientRecipe ingredientRecipe : necessaryIngs) {
+				if (ingredientRecipe.getSimpleName().equals(ingredient)) {
+					return false;
+				}
+			}
+		}
+		
+		Set<ObjectInstance> receivingContents = new HashSet<ObjectInstance>();
+		Set<String> contentNames = ContainerFactory.getConstituentSwappedContentNames(container, state);
+		for (String contentName : contentNames) {
+			ObjectInstance obj = state.getObject(contentName);
+			receivingContents.add(obj);
+		}
+		
+		for (ObjectInstance ingredientObject : receivingContents) {
+			for (String trait : necessaryTraits.keySet()) {
+				if (IngredientFactory.getTraits(ingredientObject).contains(trait)) {
+					//foundTrait = trait;
+					break;
+				}
+			}
+		}
+		
+		return false;
+		
+		
 	}
 	
 	private static boolean allIngredientsNecessary(State state, List<IngredientRecipe> necessaryIngs, ObjectInstance container, 
@@ -104,6 +147,9 @@ public class AllowMoving extends BakingPropositionalFunction {
 	}
 	
 	private boolean checkMoveToBaking(State state, ObjectInstance container, Set<String> contents) {
+		if (ContainerFactory.isEmptyContainer(container)) {
+			return false;
+		}
 		String ingredientName = topLevelIngredient.getFullName();
 		boolean recipeIngBaked = this.topLevelIngredient.getBaked();
 		if (!ContainerFactory.isBakingContainer(container)) {
@@ -130,6 +176,9 @@ public class AllowMoving extends BakingPropositionalFunction {
 	}
 	
 	private boolean checkMoveToHeating(State state, ObjectInstance container, Set<String> contents) {
+		if (ContainerFactory.isEmptyContainer(container)) {
+			return false;
+		}
 		String ingredientName = topLevelIngredient.getFullName();
 		boolean recipeIngHeated = this.topLevelIngredient.getHeated();
 		ObjectInstance topLevelObj = state.getObject(ingredientName);

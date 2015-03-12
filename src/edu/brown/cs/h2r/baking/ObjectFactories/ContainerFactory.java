@@ -202,6 +202,10 @@ public class ContainerFactory {
 		return container.getBooleanValue(ContainerFactory.attributePouring);
 	}
 	
+	public static boolean isIngredientContainer(ObjectInstance container) {
+		return (ContainerFactory.getAttributeNumber(container) == ContainerFactory.POURING);
+	}
+	
 	public static Boolean isGreasedContainer(ObjectInstance container) {
 		return (container.getDiscValForAttribute(ContainerFactory.attributeGreased) == 1);
 	}
@@ -309,5 +313,7 @@ public class ContainerFactory {
 	public static boolean getUsed(ObjectInstance container) {
 		return container.getBooleanValue(ContainerFactory.attributeUsed);
 	}
+
+	
 	
 }

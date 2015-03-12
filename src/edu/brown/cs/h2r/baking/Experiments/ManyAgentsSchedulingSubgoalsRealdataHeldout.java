@@ -83,7 +83,7 @@ public class ManyAgentsSchedulingSubgoalsRealdataHeldout {
 		int choice = 0;//trialId % (agents.size() + 1);
 		for (int i = 0; i <= agents.size(); i++) {
 			SimulationHelper.run(numTrials, generalDomain, hashingFactory, recipes, timeGenerator, human, agents,
-					reset, i, true, null);
+					i, true, null);
 		}
 	}
 

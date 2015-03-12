@@ -101,6 +101,6 @@ public class ManyAgentsSchedulingRealData {
 		//Agent agent = agents.get(3);
 		int choice = 3;//trialId % (agents.size() + 1);
 		SimulationHelper.run(numTrials, generalDomain, hashingFactory, recipes, timeGenerator, human, agents,
-				reset, choice, false, null);	
+				choice, false, null);	
 	}
 }

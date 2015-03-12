@@ -24,6 +24,7 @@ import edu.brown.cs.h2r.baking.RecipeTerminalFunction;
 import edu.brown.cs.h2r.baking.Experiments.KitchenSubdomain;
 import edu.brown.cs.h2r.baking.Knowledgebase.AffordanceCreator;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
+import edu.brown.cs.h2r.baking.PropositionalFunctions.AllowReset;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
 import edu.brown.cs.h2r.baking.actions.ResetAction;
@@ -135,6 +136,9 @@ public class Human extends Agent {
 	@Override
 	public void setInitialState(State state) {
 		this.startingState = state;
+		ResetAction reset = (ResetAction)generalDomain.getAction(ResetAction.className);
+		reset.setState(startingState);
+		
 	}
 	
 	@Override
@@ -244,8 +248,9 @@ public class Human extends Agent {
 		
 		final PropositionalFunction isFailure = this.currentSubgoal.getDomain().getPropFunction(AffordanceCreator.BOTCHED_PF);
 		this.isFailure = new RecipeTerminalFunction(isFailure);
-		
-		this.generalDomain = AgentHelper.setSubgoal(this.generalDomain, this.currentSubgoal.getSubgoal());
+		AllowReset resetPF = (AllowReset)this.currentSubgoal.getDomain().getPropFunction(AffordanceCreator.RESET_PF);
+		resetPF.setStartState(this.startingState);
+		this.generalDomain = AgentHelper.setSubgoal(this.currentSubgoal.getDomain(), this.currentSubgoal.getSubgoal());
 	}
 	
 	@Override
@@ -269,6 +274,7 @@ public class Human extends Agent {
 		}
 		
 		List<ActionProb> allowableActions = this.getAllowableActions(state);
+		System.out.println(allowableActions.toString());
 		if (allowableActions.size() == 0) {
 			this.chooseNewSubgoal(state);
 			if (this.currentSubgoal == null) {
@@ -308,6 +314,9 @@ public class Human extends Agent {
 	
 
 	protected List<ActionProb> getAllowableActions(State state) {
+		ResetAction reset = (ResetAction)generalDomain.getAction(ResetAction.className);
+		reset.setState(startingState);
+		
 		RTDP planner = this.currentSubgoal.getPlanner();
 		planner.planFromState(state);
 		Policy policy = this.currentSubgoal.getPolicy();

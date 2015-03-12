@@ -7,7 +7,7 @@ import edu.brown.cs.h2r.baking.IngredientRecipe;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 
 public class AllowReset extends BakingPropositionalFunction {
-
+	private State startState;
 	public AllowReset(String name, Domain domain, IngredientRecipe ingredient) {
 		super(name, domain, new String[] {AgentFactory.ClassName}, ingredient);
 	}
@@ -17,12 +17,19 @@ public class AllowReset extends BakingPropositionalFunction {
 		return this;
 	}
 
+	public void setStartState(State startingState) {
+		this.startState = startingState;
+	}
+	
 	@Override
 	public boolean isTrue(State s, String[] params) {
-		if (params[0].equals("human")) {
-			return true;
+		if (this.startState != null && this.startState.equals(s)) {
+			return false;
 		}
-		return false;
+		if (!params[0].equals("human")) {
+			return false;
+		}
+		return true;
 	}
 
 }
