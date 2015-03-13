@@ -23,36 +23,36 @@ if len(argv) > 1:
         number_recipes = 5 * int(1 + int(trial_id) / 350)
         file = open(filename, 'rb')
         action_times = dict()
-       	action_times["partner"] = []
-       	action_times["human"] = []
+        action_times["partner"] = []
+        action_times["human"] = []
         for line in file.readlines():
-        	if "Executing action" in line:
-				print(str(line))
-				items = line.split(']')
-				#print(str(items))	
-				action = items[0]
-				if 'wait' in action:
-					continue
-				#print(str(action))
-				times = items[1].split(', ')
-				#print(str(times))
-				if len(times) == 3:
-					times = times[1:]
-				#print(str(times))
-				times[0] = float(times[0])
-				times[1] = float(times[1])
-				params = action.split('[')[1].split(', ')
-				agent = params[0]
-				if times[1] > times[0]:
-					action_times[agent].append(times)
-		for agent, times in action_times.iteritems():
-			condensed = []
-			last = 0.0
-			first = 0.0
-			for time in times:
-				if time[0] != last:
-					condensed.append([first, last])
-					first = time[0]
-				last = time[1]
-			condensed.append([first, last])
-			print(agent + ": " + str(condensed))
+            if "Executing action" in line:
+                print(str(line))
+                items = line.split(']')
+                #print(str(items))  
+                action = items[0]
+                if 'wait' in action:
+                    continue
+                #print(str(action))
+                times = items[1].split(', ')
+                #print(str(times))
+                if len(times) == 3:
+                    times = times[1:]
+                #print(str(times))
+                times[0] = float(times[0])
+                times[1] = float(times[1])
+                params = action.split('[')[1].split(', ')
+                agent = params[0]
+                if times[1] > times[0]:
+                    action_times[agent].append(times)
+        for agent, times in action_times.iteritems():
+            condensed = []
+            last = 0.0
+            first = 0.0
+            for time in times:
+                if time[0] != last:
+                    condensed.append([first, last])
+                    first = time[0]
+                last = time[1]
+            condensed.append([first, last])
+            print(agent + ": " + str(condensed))
