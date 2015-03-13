@@ -30,6 +30,7 @@ if len(argv) > 1:
 				items = line.split(']')
 				action = items[0]
 				times = items[1].split(', ')
+				print(str(times))
 				times[0] = float(times[0])
 				times[1] = float(times[1])
 				params = action.split('[')[1].split(', ')
