@@ -28,8 +28,11 @@ if len(argv) > 1:
         for line in file.readlines():
         	if "Executing action" in line:
 				items = line.split(']')
+				print(str(items))	
 				action = items[0]
+				print(str(action))
 				times = items[1].split(', ')
+				print(str(times))
 				if len(times):
 					times = times[1:]
 				print(str(line))
