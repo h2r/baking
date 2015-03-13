@@ -27,6 +27,8 @@ if len(argv) > 1:
        	action_times["human"] = []
         for line in file.readlines():
         	if "Executing action" in line:
+        		print(str(line))
+				
 				items = line.split(']')
 				#print(str(items))	
 				action = items[0]
@@ -37,7 +39,6 @@ if len(argv) > 1:
 				#print(str(times))
 				if len(times) == 3:
 					times = times[1:]
-				print(str(line))
 				#print(str(times))
 				times[0] = float(times[0])
 				times[1] = float(times[1])
