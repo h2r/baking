@@ -85,7 +85,8 @@ if len(argv) > 1:
                 agents_time += interval[1] - interval[0]
             print(agent + ": " + str(agents_time) + ", " + str(agents_time / max_time))
             data[recipe][agent].append(agents_time / max_time)
-            overlap[recipe].append(calculate_overlap(condensed_times["human"], condensed_times["partner"]))
+            recipe_overlap = calculate_overlap(condensed_times["human"], condensed_times["partner"])
+            overlap[recipe].append(recipe_overlap / max_time)
     for recipe, d in data.iteritems():
         print(recipe + str(numpy.mean(overlap[recipe])))
         for agent, values in d.iteritems():
