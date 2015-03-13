@@ -28,17 +28,17 @@ if len(argv) > 1:
         for line in file.readlines():
         	if "Executing action" in line:
 				items = line.split(']')
-				print(str(items))	
+				#print(str(items))	
 				action = items[0]
 				if 'wait' in action:
 					continue
-				print(str(action))
+				#print(str(action))
 				times = items[1].split(', ')
-				print(str(times))
+				#print(str(times))
 				if len(times) == 3:
 					times = times[1:]
-				print(str(line))
-				print(str(times))
+				#print(str(line))
+				#print(str(times))
 				times[0] = float(times[0])
 				times[1] = float(times[1])
 				params = action.split('[')[1].split(', ')
