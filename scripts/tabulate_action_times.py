@@ -44,4 +44,13 @@ if len(argv) > 1:
 				if times[1] > times[0]:
 					action_times[agent].append(times)
 		for agent, times in action_times.iteritems():
+			condensed = []
+			last = 0.0
+			first = 0.0
+			for time in times:
+				if time[0] != last:
+					condensed.append([first, last])
+					first = time[0]
+				last = time[1]
 			print(agent + "-: " + str(times))
+			print(agent + "-: " + str(condensed))
