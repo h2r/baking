@@ -32,6 +32,7 @@ if len(argv) > 1:
 				times = items[1].split(', ')
 				if len(times):
 					times = times[1:]
+				print(str(line))
 				print(str(times))
 				times[0] = float(times[0])
 				times[1] = float(times[1])
@@ -40,4 +41,4 @@ if len(argv) > 1:
 				if times[1] > times[0]:
 					action_times[agent].append(times)
 		for agent, times in action_times.iteritems():
-			print(agent + ": " + str(times))
+			print(agent + "-: " + str(times))
