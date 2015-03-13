@@ -45,7 +45,7 @@ if len(argv) > 1:
                 if times[1] > times[0]:
                     action_times[agent].append(times)
         if recipe not in data.keys():
-            data[recipe] = []
+            data[recipe] = dict()
         max_time = 0.0
         condensed_times = dict()
         for agent, times in action_times.iteritems():
