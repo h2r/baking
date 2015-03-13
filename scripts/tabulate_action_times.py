@@ -30,6 +30,8 @@ if len(argv) > 1:
 				items = line.split(']')
 				action = items[0]
 				times = items[1].split(', ')
+				times[0] = float(times[0])
+				times[1] = float(times[1])
 				params = action.split('[')[1].split(', ')
 				agent = params[0]
 				if times[1] > times[0]:
