@@ -55,3 +55,4 @@ if len(argv) > 1:
 					first = time[0]
 				last = time[1]
 			condensed.append([first, last])
+			print(agent + ": " + str(condensed))
