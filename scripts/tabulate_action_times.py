@@ -6,6 +6,18 @@ import numpy
 import os
 import re
 
+def calculate_overlap(agent1, agent2):
+    sum = 0.0
+    for interval1 in agent1:
+        for interval2 in agent2:
+            sum += calculate_overlap_intervals(interval1, interval2)
+    return sum
+
+def calculate_overlap_intervals(interval1, interval2):
+    max_lower = max(interval1[0], interval2[0])
+    min_upper = min(interval1[1], interval2[1])
+    return max(0.0, min_upper - max_lower)
+
 if len(argv) > 1:
 
     files = []
@@ -72,6 +84,6 @@ if len(argv) > 1:
             print(agent + ": " + str(agents_time) + ", " + str(agents_time / max_time))
             data[recipe][agent].append(agents_time / max_time)
     for recipe, d in data.iteritems():
-        print(recipe)
+        print(recipe + str(calculate_overlap(d["human"], d["partner"])))
         for agent, values in d.iteritems():
             print(agent + ", " + str(numpy.mean(values)))
