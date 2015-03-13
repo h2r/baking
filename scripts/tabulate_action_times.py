@@ -38,7 +38,7 @@ if len(argv) > 1:
         for line in file.readlines():
             if "Recipe" in line:
                 items = line.split(', ')
-                recipe = items[1]
+                recipe = items[1].replace('\n', '')
             if "Executing action" in line:
                 items = line.split(']')
                 #print(str(items))  
@@ -87,7 +87,8 @@ if len(argv) > 1:
             data[recipe][agent].append(agents_time / max_time)
             recipe_overlap = calculate_overlap(condensed_times["human"], condensed_times["partner"])
             overlap[recipe].append(recipe_overlap / max_time)
+    
+    print("coordinates{")
     for recipe, d in data.iteritems():
-        print(recipe + str(numpy.mean(overlap[recipe])))
-        for agent, values in d.iteritems():
-            print(agent + ", " + str(numpy.mean(values)))
+        print("(" + recipe + ", " + str(numpy.mean(overlap[recipe])) + ")")
+    print("};")
