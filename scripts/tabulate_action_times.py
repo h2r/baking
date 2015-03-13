@@ -37,7 +37,7 @@ if len(argv) > 1:
 				#print(str(times))
 				if len(times) == 3:
 					times = times[1:]
-				#print(str(line))
+				print(str(line))
 				#print(str(times))
 				times[0] = float(times[0])
 				times[1] = float(times[1])
