@@ -53,9 +53,9 @@ if len(argv) > 1:
                 action = items[0]
                 if 'wait' in action:
                     continue
-                print(str(action))
+                #print(str(action))
                 times = items[1].split(', ')
-                print(str(times))
+                #print(str(times))
                 if len(times) == 3:
                     times = times[1:]
                 #print(str(times))
