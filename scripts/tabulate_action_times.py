@@ -74,7 +74,7 @@ if len(argv) > 1:
             if first != last:
                 condensed.append([first, last])
             condensed_times[agent] = condensed
-            #   print(agent + ": " + str(condensed))
+            print(agent + ": " + str(condensed))
             if last > max_time:
                 max_time = last
         for agent, condensed in condensed_times.iteritems():
@@ -83,7 +83,7 @@ if len(argv) > 1:
             agents_time = 0.0
             for interval in condensed:
                 agents_time += interval[1] - interval[0]
-            print(agent + ": " + str(agents_time) + ", " + str(agents_time / max_time))
+            #print(agent + ": " + str(agents_time) + ", " + str(agents_time / max_time))
             data[recipe][agent].append(agents_time / max_time)
             recipe_overlap = calculate_overlap(condensed_times["human"], condensed_times["partner"])
             overlap[recipe].append(recipe_overlap / max_time)
