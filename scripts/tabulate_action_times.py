@@ -78,7 +78,7 @@ if len(argv) > 1:
                 agents_time += interval[1] - interval[0]
             #print(agent + ": " + str(agents_time) + ", " + str(agents_time / max_time))
             data[recipe][agent].append(agents_time / max_time)
-            recipe_overlap = calculate_overlap(condensed_times["human"], condensed_times["partner"])
+            recipe_overlap = calculate_overlap(action_times["human"], action_times["partner"])
             overlap[recipe].append(recipe_overlap / max_time)
     
     print("coordinates{")
