@@ -7,8 +7,8 @@ import os
 import re
 
 def calculate_overlap(agent1, agent2):
-    print(str(agent1))
-    print(str(agent2))
+    print("human: " + str(agent1))
+    print("partner: " + str(agent2))
     sum = 0.0
     for interval1 in agent1:
         for interval2 in agent2:
