@@ -71,8 +71,8 @@ if len(argv) > 1:
         condensed_times = dict()
         for agent, times in action_times.iteritems():
             condensed = []
-            last = 0.0
-            first = 0.0
+            last = times[0][1]
+            first = times[0][0]
             for time in times:
                 if time[0] != last and first != last:
                     condensed.append([first, last])
