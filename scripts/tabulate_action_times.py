@@ -59,6 +59,7 @@ if len(argv) > 1:
                     action_times[agent].append(times)
         if recipe not in data.keys():
             data[recipe] = dict()
+            overlap[recipe] = []
         max_time = 0.0
         condensed_times = dict()
         for agent, times in action_times.iteritems():
@@ -86,6 +87,6 @@ if len(argv) > 1:
             data[recipe][agent].append(agents_time / max_time)
             overlap[recipe].append(calculate_overlap(condensed_times["human"], condensed_times["partner"]))
     for recipe, d in data.iteritems():
-        print(recipe + str(overlap[recipe]))
+        print(recipe + str(numpy.mean(overlap[recipe])))
         for agent, values in d.iteritems():
             print(agent + ", " + str(numpy.mean(values)))
