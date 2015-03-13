@@ -8,7 +8,7 @@ import re
 
 if len(argv) > 1:
 
-	files = []
+    files = []
     for arg in argv[1:]:
         if os.path.isdir(arg):
             files.extend(glob(arg + "/*.csv"))
