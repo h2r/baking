@@ -42,6 +42,7 @@ if len(argv) > 1:
         action_times["human"] = []
         recipe = "unknown"
             
+        max_time = 0.0
         for line in file.readlines():
             if "Recipe" in line:
                 items = line.split(', ')
@@ -60,6 +61,7 @@ if len(argv) > 1:
                 #print(str(times))
                 times[0] = float(times[0])
                 times[1] = float(times[1])
+                max_time = max(max_time, times[1])
                 params = action.split('[')[1].split(', ')
                 agent = params[0]
                 if times[1] > times[0]:
@@ -67,7 +69,7 @@ if len(argv) > 1:
         if recipe not in data.keys():
             data[recipe] = dict()
             overlap[recipe] = []
-        max_time = 0.0
+        
         for agent, condensed in action_times.iteritems():
             if agent not in data[recipe].keys():
                 data[recipe][agent] = []
