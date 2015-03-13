@@ -30,6 +30,8 @@ if len(argv) > 1:
 				items = line.split(']')
 				print(str(items))	
 				action = items[0]
+				if 'wait' in action:
+					continue
 				print(str(action))
 				times = items[1].split(', ')
 				print(str(times))
@@ -53,5 +55,3 @@ if len(argv) > 1:
 					first = time[0]
 				last = time[1]
 			condensed.append([first, last])
-			print(agent + "-: " + str(times))
-			print(agent + "-: " + str(condensed) + "\n")
