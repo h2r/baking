@@ -17,7 +17,6 @@ if len(argv) > 1:
     data = dict()
     for filename in files:
         print("Processing file " + filename)
-        total_files += 1
         print(filename)
         trial_id = re.findall(r'\d+', filename)[1]
         print(trial_id)
