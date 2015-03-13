@@ -49,7 +49,7 @@ if len(argv) > 1:
             last = 0.0
             first = 0.0
             for time in times:
-                if time[0] != last:
+                if time[0] != last and first != last:
                     condensed.append([first, last])
                     first = time[0]
                 last = time[1]
