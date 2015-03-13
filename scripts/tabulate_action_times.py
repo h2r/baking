@@ -33,7 +33,7 @@ if len(argv) > 1:
 				print(str(action))
 				times = items[1].split(', ')
 				print(str(times))
-				if len(times):
+				if len(times) == 3:
 					times = times[1:]
 				print(str(line))
 				print(str(times))
