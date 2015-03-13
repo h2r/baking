@@ -10,7 +10,10 @@ def calculate_overlap(agent1, agent2):
     sum = 0.0
     for interval1 in agent1:
         for interval2 in agent2:
-            sum += calculate_overlap_intervals(interval1, interval2)
+            overlap = calculate_overlap_intervals(interval1, interval2)
+            print(str(interval1) + ", " + str(interval2))
+            print(str(overlap))
+            sum += overlap
     return sum
 
 def calculate_overlap_intervals(interval1, interval2):
