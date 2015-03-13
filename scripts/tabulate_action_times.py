@@ -27,7 +27,6 @@ if len(argv) > 1:
         action_times["human"] = []
         for line in file.readlines():
             if "Executing action" in line:
-                print(str(line))
                 items = line.split(']')
                 #print(str(items))  
                 action = items[0]
@@ -54,5 +53,6 @@ if len(argv) > 1:
                     condensed.append([first, last])
                     first = time[0]
                 last = time[1]
-            condensed.append([first, last])
+            if first != last:
+                condensed.append([first, last])
             print(agent + ": " + str(condensed))
