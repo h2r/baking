@@ -27,6 +27,7 @@ if len(argv) > 1:
         elif os.path.isfile(arg):
             files.append(arg)
     data = dict()
+    overlap = dict()
     for filename in files:
         file = open(filename, 'rb')
         action_times = dict()
@@ -83,7 +84,8 @@ if len(argv) > 1:
                 agents_time += interval[1] - interval[0]
             print(agent + ": " + str(agents_time) + ", " + str(agents_time / max_time))
             data[recipe][agent].append(agents_time / max_time)
+            overlap[recipe].append(calculate_overlap(condensed_times["human"], condensed_times["partner"]))
     for recipe, d in data.iteritems():
-        print(recipe + str(calculate_overlap(d["human"], d["partner"])))
+        print(recipe + str(overlap[recipe]))
         for agent, values in d.iteritems():
             print(agent + ", " + str(numpy.mean(values)))
