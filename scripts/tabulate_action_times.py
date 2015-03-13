@@ -68,22 +68,6 @@ if len(argv) > 1:
             data[recipe] = dict()
             overlap[recipe] = []
         max_time = 0.0
-        condensed_times = dict()
-        for agent, times in action_times.iteritems():
-            condensed = []
-            last = times[0][1]
-            first = times[0][0]
-            for time in times:
-                if time[0] != last and first != last:
-                    condensed.append([first, last])
-                    first = time[0]
-                last = time[1]
-            if first != last:
-                condensed.append([first, last])
-            condensed_times[agent] = condensed
-            print(agent + ": " + str(condensed))
-            if last > max_time:
-                max_time = last
         for agent, condensed in condensed_times.iteritems():
             if agent not in data[recipe].keys():
                 data[recipe][agent] = []
