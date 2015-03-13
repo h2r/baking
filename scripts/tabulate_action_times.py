@@ -17,7 +17,7 @@ def calculate_overlap(agent1, agent2):
             print(str(interval1) + ", " + str(interval2))
             print("overlap " + str(overlap))
             sum += overlap
-    print("total overlap " + str(sum))
+    print("total overlap " + str(sum) + "\n")
     return sum
 
 def calculate_overlap_intervals(interval1, interval2):
@@ -52,9 +52,9 @@ if len(argv) > 1:
                 action = items[0]
                 if 'wait' in action:
                     continue
-                #print(str(action))
+                print(str(action))
                 times = items[1].split(', ')
-                #print(str(times))
+                print(str(times))
                 if len(times) == 3:
                     times = times[1:]
                 #print(str(times))
