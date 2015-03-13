@@ -8,16 +8,16 @@ import re
 
 def calculate_overlap(agent1, agent2):
 
-    print("human: " + str(agent1))
-    print("partner: " + str(agent2))
+    #print("human: " + str(agent1))
+    #print("partner: " + str(agent2))
     sum = 0.0
     for interval1 in agent1:
         for interval2 in agent2:
             overlap = calculate_overlap_intervals(interval1, interval2)
-            print(str(interval1) + ", " + str(interval2))
-            print("overlap " + str(overlap))
+            #print(str(interval1) + ", " + str(interval2))
+            #print("overlap " + str(overlap))
             sum += overlap
-    print("total overlap " + str(sum) + "\n")
+    #print("total overlap " + str(sum) + "\n")
     return sum
 
 def calculate_overlap_intervals(interval1, interval2):
