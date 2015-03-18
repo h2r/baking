@@ -61,8 +61,6 @@ public abstract class AdaptiveAgent extends Agent{
 	
 	protected final List<Recipe> recipes;
 	
-	protected GroundedAction lastAction;
-	
 	public AdaptiveAgent(String name, boolean isRobot, Domain domain, ActionTimeGenerator timeScheduler, List<Recipe> recipes, boolean useScheduling) {
 		super(name, isRobot);
 		this.domain = domain;
@@ -132,6 +130,7 @@ public abstract class AdaptiveAgent extends Agent{
 	
 	@Override
 	public void setInitialState(State state) {
+		super.setInitialState(state);
 		this.stateHistory.clear();
 		this.subdomains.clear();
 		this.policyBeliefDistribution.clear();
@@ -171,7 +170,7 @@ public abstract class AdaptiveAgent extends Agent{
 	}
 
 	@Override
-	public AbstractGroundedAction getAction(State state) {
+	public AbstractGroundedAction getActionInState(State state) {
 		List<PolicyProbability> policyDistribution = this.getPolicyDistribution(state);
 		if (policyDistribution == null) {
 			return null;
@@ -179,15 +178,14 @@ public abstract class AdaptiveAgent extends Agent{
 		this.updateBeliefDistribution(policyDistribution);
 		
 		List<PolicyProbability> policyBeliefDistribution = Collections.unmodifiableList(this.policyBeliefDistribution);
-		this.lastAction = (GroundedAction)this.getActionFromPolicyDistribution(policyBeliefDistribution, state);
-		return this.lastAction;
+		return (GroundedAction)this.getActionFromPolicyDistribution(policyBeliefDistribution, state);
 		
 	}
 	
 	@Override
-	public AbstractGroundedAction getActionWithScheduler(State state, List<String> agents, boolean finishRecipe) {
+	public AbstractGroundedAction getActionInStateWithScheduler(State state, List<String> agents, boolean finishRecipe, GroundedAction partnersAction) {
 		if (!this.useScheduling) {
-			return this.getAction(state);
+			return this.getActionInState(state);
 		}
 		System.out.println("Previous Distribution");
 		for (PolicyProbability policyProb : this.policyBeliefDistribution) {
@@ -196,18 +194,15 @@ public abstract class AdaptiveAgent extends Agent{
 		System.out.println("\n");
 		
 		List<PolicyProbability> policyDistribution = this.getPolicyDistribution(state);
-		if (policyDistribution == null) {
-			return null;
+		if (policyDistribution != null) {
+			System.out.println("Update");
+			for (PolicyProbability policyProb : policyDistribution) {
+				System.out.println(policyProb.toString());
+			}
+			System.out.println("\n");
+			
+			this.updateBeliefDistribution(policyDistribution);
 		}
-		
-		System.out.println("Update");
-		for (PolicyProbability policyProb : policyDistribution) {
-			System.out.println(policyProb.toString());
-		}
-		System.out.println("\n");
-		
-		
-		this.updateBeliefDistribution(policyDistribution);
 		List<PolicyProbability> nonZero = this.trimDistribution(this.policyBeliefDistribution);
 		System.out.println("Current Distribution");
 		for (PolicyProbability policyProb : nonZero) {
@@ -235,8 +230,7 @@ public abstract class AdaptiveAgent extends Agent{
 		ChooseHelpfulActionCallable callable = new ChooseHelpfulActionCallable(state, agents, nonZero, this.subdomains, this.timeGenerator, finishRecipe);
 		List<Double> completionTimes = Parallel.ForEach(availableActions, callable);
 		
-		this.lastAction = (GroundedAction)this.findBestAction(availableActions, completionTimes);
-		return this.lastAction;
+		return (GroundedAction)this.findBestAction(availableActions, completionTimes);
 	}
 	
 	

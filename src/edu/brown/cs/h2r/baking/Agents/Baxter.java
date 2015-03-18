@@ -73,7 +73,7 @@ public class Baxter extends Agent {
 	}
 		
 	@Override
-	public AbstractGroundedAction getAction(State state) {
+	public AbstractGroundedAction getActionInState(State state) {
 		if (this.recipe != null) {
 			return this.getActionForCurrentRecipe(state);
 		}
@@ -81,8 +81,8 @@ public class Baxter extends Agent {
 	}
 	
 	@Override
-	public AbstractGroundedAction getActionWithScheduler(State state, List<String> agents, boolean finishRecipe) {
-		return this.getAction(state);
+	public AbstractGroundedAction getActionInStateWithScheduler(State state, List<String> agents, boolean finishRecipe, GroundedAction partnersAction) {
+		return this.getActionInState(state);
 	}
 	
 	public boolean canPerformActionInState(GroundedAction action, State state) {

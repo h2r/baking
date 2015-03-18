@@ -40,12 +40,12 @@ public class RandomRecipeAgent extends Human{
 	}
 	
 	@Override
-	public AbstractGroundedAction getAction(State state) {
+	public AbstractGroundedAction getActionInState(State state) {
 		if (this.currentRecipe == null) {
 			List<Recipe> recipes = new ArrayList<Recipe>(this.recipes);
 			Collections.shuffle(recipes);
 			this.setRecipe(recipes.get(0));
 		}
-		return super.getAction(state);
+		return super.getActionInState(state);
 	}
 }

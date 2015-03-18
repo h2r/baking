@@ -9,6 +9,7 @@ import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
+import burlap.oomdp.singleagent.GroundedAction;
 import edu.brown.cs.h2r.baking.ObjectFactories.AgentFactory;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
@@ -17,18 +18,25 @@ public abstract class Agent{
 	
 	private final String agentName;
 	private final boolean isRobot;
+	protected GroundedAction lastAction;
+	private State startingState;
+	private final boolean isLeadAgent;
+	
 	public Agent(String name) {
 		this.agentName = name;
+		this.isLeadAgent = (this.agentName.equals("human"));
 		this.isRobot = false;
 	}
 	
 	public Agent(String name, boolean isRobot) {
 		this.agentName = name;
+		this.isLeadAgent = (this.agentName.equals("human"));
 		this.isRobot = isRobot;
 	}
 	
 	public Agent(Map<String, Object> objectMap) {
 		this.agentName = (String)objectMap.get("name");
+		this.isLeadAgent = (this.agentName.equals("human"));
 		this.isRobot = (Boolean)objectMap.get("is_robot");
 	}
 	
@@ -43,18 +51,40 @@ public abstract class Agent{
 		return this.agentName;
 	}
 	
+	protected State getStartState() {
+		return this.startingState;
+	}
+	
 	public abstract void addObservation(State state);
 	public ObjectInstance getAgentObject(Domain domain, StateHashFactory hashingFactory) {
 		return (this.isRobot) ?
 				AgentFactory.getNewRobotAgentObjectInstance(domain, this.getAgentName(), hashingFactory.getObjectHashFactory()) :
 				AgentFactory.getNewHumanAgentObjectInstance(domain, this.getAgentName(), hashingFactory.getObjectHashFactory());
 	}
-	public abstract void setInitialState(State state);
+	public void setInitialState(State state) {
+		this.startingState = state;
+	}
 	public abstract void reset();
 	public abstract void performResetAction();
-	public abstract AbstractGroundedAction getAction(State state);
-	public abstract AbstractGroundedAction getActionWithScheduler(State state, List<String> agents, boolean finishRecipe);
+	public abstract AbstractGroundedAction getActionInState(State state);
+	public abstract AbstractGroundedAction getActionInStateWithScheduler(State state, List<String> agents, boolean finishRecipe, GroundedAction partnersAction);
 	
+	public final AbstractGroundedAction getAction(State state, List<String> agents, boolean finishRecipe, boolean isFirstAction, GroundedAction partnersAction) {
+		if (!this.isLeadAgent && isFirstAction) {
+			this.lastAction = null;
+			return lastAction;
+		} 
+		
+		if (!(this instanceof Human) || (this instanceof RandomRecipeAgent)) {
+			partnersAction = null;
+		}
+		this.lastAction = (GroundedAction)this.getActionInStateWithScheduler(state, agents, finishRecipe, partnersAction);
+		
+		return this.lastAction;
+		
+	}
+	
+
 	public static Map<String, Object> toMap(Agent agent) {
 		String type = agent.getClass().getSimpleName();
 		Map<String, Object> map = new HashMap<String, Object>();

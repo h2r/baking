@@ -90,12 +90,9 @@ public class Expert extends Human{
 		return remaining;
 	}
 	
-	@Override
-	public AbstractGroundedAction getActionWithScheduler(State state, List<String> agents, boolean finishRecipe) {
-		return this.getActionWithScheduler(state, agents, finishRecipe, null);
-	}
 	
-	public AbstractGroundedAction getActionWithScheduler(State state, List<String> agents, boolean finishRecipe, GroundedAction partnersAction) {
+	@Override
+	public AbstractGroundedAction getActionInStateWithScheduler(State state, List<String> agents, boolean finishRecipe, GroundedAction partnersAction) {
 		State newState = state;
 		if (partnersAction != null) {
 			newState = partnersAction.executeIn(state);
@@ -141,13 +138,15 @@ public class Expert extends Human{
 			for (Assignment assignment : assignments) {
 				System.out.println("-" + assignment.getId());
 				List<Workflow.Node> nodes = assignment.nodes();
-				for (Workflow.Node node : nodes) {
-					if (node == null) {
-						System.out.println("\t" + "wait");
-					} else {
-						System.out.println("\t" + node.getAction(assignment.getId()).toString());
-					}
-					
+				List<Double> times = assignment.times();
+				List<Double> completionTimes = assignment.completionTimes();
+				for (int i = 0; i < nodes.size(); i++) {
+					Workflow.Node node = nodes.get(i);
+					double time = times.get(i);
+					double completionTime = completionTimes.get(i);
+					String line = "\t" + ((node == null) ? "wait": node.getAction(assignment.getId()).toString());
+					line = line + ", " + (completionTime - time) + ", " + completionTime;
+					System.out.println(line);
 				}
 			}
 			

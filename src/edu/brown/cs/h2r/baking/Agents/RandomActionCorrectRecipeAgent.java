@@ -35,7 +35,7 @@ public class RandomActionCorrectRecipeAgent extends Human{
 	}
 	
 	@Override
-	public AbstractGroundedAction getAction(State state) {
+	public AbstractGroundedAction getActionInState(State state) {
 		if (this.isSuccess(state)) {
 			return null;
 		}

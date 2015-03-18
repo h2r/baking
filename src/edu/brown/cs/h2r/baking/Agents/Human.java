@@ -40,7 +40,6 @@ public class Human extends Agent {
 	};
 	
 	private final static StateHashFactory hashingFactory = new NameDependentStateHashFactory();
-	private State startingState;
 	
 	protected Recipe currentRecipe;
 	protected final List<Recipe> recipes;
@@ -135,9 +134,9 @@ public class Human extends Agent {
 	
 	@Override
 	public void setInitialState(State state) {
-		this.startingState = state;
+		super.setInitialState(state);
 		ResetAction reset = (ResetAction)generalDomain.getAction(ResetAction.className);
-		reset.setState(startingState);
+		reset.setState(this.getStartState());
 		
 	}
 	
@@ -165,7 +164,7 @@ public class Human extends Agent {
 		this.currentSubgoal = null;
 		List<KitchenSubdomain> domains = this.recipeLookup.get(recipe);
 		if (domains == null) {
-			domains = AgentHelper.generateRTDPPolicies(recipe, this.generalDomain, this.startingState, Human.rewardFunction, Human.hashingFactory);
+			domains = AgentHelper.generateRTDPPolicies(recipe, this.generalDomain, this.getStartState(), Human.rewardFunction, Human.hashingFactory);
 			this.recipeLookup.put(recipe, domains);
 		}
 		this.allKitchenSubdomains = domains;
@@ -227,7 +226,7 @@ public class Human extends Agent {
 	}
 	
 	protected void chooseNewSubgoal(State state) {
-		if (this.startingState.equals(state)) {
+		if (state.equals(this.getStartState())) {
 			this.kitchenSubdomains = new ArrayList<KitchenSubdomain>(this.allKitchenSubdomains);
 		}
 		List<KitchenSubdomain> activeSubgoals = new ArrayList<KitchenSubdomain>();
@@ -249,7 +248,7 @@ public class Human extends Agent {
 		final PropositionalFunction isFailure = this.currentSubgoal.getDomain().getPropFunction(AffordanceCreator.BOTCHED_PF);
 		this.isFailure = new RecipeTerminalFunction(isFailure);
 		AllowReset resetPF = (AllowReset)this.currentSubgoal.getDomain().getPropFunction(AffordanceCreator.RESET_PF);
-		resetPF.setStartState(this.startingState);
+		resetPF.setStartState(this.getStartState());
 		this.generalDomain = AgentHelper.setSubgoal(this.currentSubgoal.getDomain(), this.currentSubgoal.getSubgoal());
 	}
 	
@@ -258,7 +257,7 @@ public class Human extends Agent {
 	}
 
 	@Override
-	public AbstractGroundedAction getAction(State state) {
+	public AbstractGroundedAction getActionInState(State state) {
 		if (this.isSuccess(state)) {
 			return null;
 		}
@@ -292,8 +291,8 @@ public class Human extends Agent {
 		return action;
 	}
 	
-	public AbstractGroundedAction getActionWithScheduler(State state, List<String> agents, boolean finishRecipe) {
-		return this.getAction(state);
+	public AbstractGroundedAction getActionInStateWithScheduler(State state, List<String> agents, boolean finishRecipe, GroundedAction partnersAction) {
+		return this.getActionInState(state);
 		/*if (this.isSuccess(state)) {
 			return null;
 		}
@@ -315,7 +314,7 @@ public class Human extends Agent {
 
 	protected List<ActionProb> getAllowableActions(State state) {
 		ResetAction reset = (ResetAction)generalDomain.getAction(ResetAction.className);
-		reset.setState(startingState);
+		reset.setState(this.getStartState());
 		
 		RTDP planner = this.currentSubgoal.getPlanner();
 		planner.planFromState(state);
@@ -385,7 +384,7 @@ public class Human extends Agent {
 	}
 	
 	public void buildAllSubdomains() {
-		this.allKitchenSubdomains = AgentHelper.generateAllRTDPPolicies(this.generalDomain, this.startingState, 
+		this.allKitchenSubdomains = AgentHelper.generateAllRTDPPolicies(this.generalDomain, this.getStartState(), 
 				this.recipes, Human.rewardFunction, Human.hashingFactory);
 		this.setKitchenSubdomains(new ArrayList<KitchenSubdomain>(this.allKitchenSubdomains));
 	}

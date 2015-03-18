@@ -42,7 +42,7 @@ public class RandomActionAgent extends Agent {
 	public void setInitialState(State state) {}
 
 	@Override
-	public AbstractGroundedAction getAction(State state) {
+	public AbstractGroundedAction getActionInState(State state) {
 		List<Action> actions = this.domain.getActions();
 		List<GroundedAction> groundedActions = new ArrayList<GroundedAction>();
 		for (Action action : actions) {
@@ -62,8 +62,8 @@ public class RandomActionAgent extends Agent {
 	}
 	
 	@Override
-	public AbstractGroundedAction getActionWithScheduler(State state, List<String> agents, boolean finishRecipe) {
-		return this.getAction(state);
+	public AbstractGroundedAction getActionInStateWithScheduler(State state, List<String> agents, boolean finishRecipe, GroundedAction partnersAction) {
+		return this.getActionInState(state);
 	}
 
 	@Override

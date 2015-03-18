@@ -210,6 +210,10 @@ public class ContainerFactory {
 		return (container.getDiscValForAttribute(ContainerFactory.attributeGreased) == 1);
 	}
 	
+	public static Boolean isTrashContainer(ObjectInstance container) {
+		return container.getName().equals("trash");
+	}
+	
 	public static ObjectInstance greaseContainer(ObjectInstance container) {
 		return container.changeValue(ContainerFactory.attributeGreased, 1);
 	}

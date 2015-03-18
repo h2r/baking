@@ -58,6 +58,8 @@ public class AllowSwitching extends BakingPropositionalFunction {
 				if (!IngredientFactory.isHeatedIngredient(obj) && !IngredientFactory.isMeltedAtRoomTemperature(obj)) {
 					return true;
 				}
+			} else {
+				return true;
 			}
 		}
 		List<IngredientRecipe> contents = this.topLevelIngredient.getContents();

@@ -31,6 +31,7 @@ public class AllowPouring extends BakingPropositionalFunction {
 	@Override
 	public boolean isTrue(State state, String[] params) {
 		ObjectInstance pouringContainer = state.getObject(params[1]);
+		
 		ObjectInstance receivingContainer = state.getObject(params[2]);
 		if (ContainerFactory.isBakingContainer(receivingContainer)) {
 			if (!this.checkPourIntoBakingContainer(state, pouringContainer, receivingContainer)) {
@@ -83,6 +84,13 @@ public class AllowPouring extends BakingPropositionalFunction {
 		// Now, lets see if our pouring container has ingredients that are actually needed;
 		if (!this.pouringNecessaryIngredients(state, pouringContainer, receivingContainer, necessaryIngs,
 				necessaryTraits)) {
+			if (ContainerFactory.isIngredientContainer(pouringContainer)) {
+				return false;
+			}
+			return ContainerFactory.isTrashContainer(receivingContainer);
+		}
+		
+		if (ContainerFactory.isIngredientContainer(pouringContainer) && ContainerFactory.isTrashContainer(receivingContainer)) {
 			return false;
 		}
 		if (!simpleIngredientSubgoal) {

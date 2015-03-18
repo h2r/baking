@@ -185,13 +185,13 @@ public class TestManyAgents {
 		
 		while (!finished) {
 			
-			AbstractGroundedAction humanAction = human.getAction(currentState);
+			AbstractGroundedAction humanAction = human.getActionInState(currentState);
 			if (humanAction == null) {
 				if (human.isSuccess(currentState)) {
 					//System.out.println("\n\nHuman finished successfully!!!\n\n");
 				}
 				else {
-					humanAction = human.getAction(currentState);
+					humanAction = human.getActionInState(currentState);
 					//System.err.println("\n\nHuman failed recipe!!!\n\n");
 				}
 				break;
@@ -292,7 +292,7 @@ public class TestManyAgents {
 		List<AbstractGroundedAction> actionPair = new ArrayList<AbstractGroundedAction>();
 		
 		while (!finished) {
-			AbstractGroundedAction humanAction = human.getAction(currentState);
+			AbstractGroundedAction humanAction = human.getActionInState(currentState);
 			if (humanAction == null) {
 				//System.err.println("Human chose to do nothing");
 				break;
@@ -339,7 +339,7 @@ public class TestManyAgents {
 	}
 	
 	private static AbstractGroundedAction getActionAndWait(final Agent agent, final State state) {
-		return agent.getAction(state);
+		return agent.getActionInState(state);
 		/*
 		ExecutorService executor = Executors.newFixedThreadPool(2); 
 		AbstractGroundedAction action = null;

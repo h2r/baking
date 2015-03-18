@@ -90,6 +90,7 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 		//for (Recipe recipe : allRecipes) {
 		List<Recipe> recipes = new ArrayList<Recipe>();
 		recipes.add(allRecipes.get(random.nextInt(allRecipes.size())));
+		//recipes.add(allRecipes.get(2));
 		//recipes.add(recipe);
 		
 		knowledgebase.initKnowledgebase(allRecipes);
@@ -113,6 +114,7 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 		Path path = Paths.get(saveFile);
 		if (true){
 			int choice = trialId % (agents.size() + 1);
+			
 			SimulationHelper.run(numTrials, generalDomain, hashingFactory, allRecipes, timeGenerator, human, agents,
 				 choice, false, saveFile, useShelf);	
 		} else {
