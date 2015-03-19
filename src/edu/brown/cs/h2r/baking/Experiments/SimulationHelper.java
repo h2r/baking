@@ -314,6 +314,8 @@ public class SimulationHelper {
 				numNullActions = 0;
 			}
 			currentState = SimulationHelper.performActions(currentState, humanAction, partnerAction, actionMap, statePair, actionPair, timesPair, timeGenerator);
+			human.addObservation(currentState);
+			partner.addObservation(currentState);
 			
 			if (!timesPair.isEmpty()){
 				double now = timesPair.get(0);

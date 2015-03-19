@@ -86,11 +86,11 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 		//List<Recipe> recipes = Recipe.generateRecipes(generalDomain, 5 * numberOfRecipes, knowledgebase.getIngredientList(), 1, 4);
 		
 		Random random = new Random();
-		
+		for (int i = 0; i < 10; i++) {
 		//for (Recipe recipe : allRecipes) {
 		List<Recipe> recipes = new ArrayList<Recipe>();
 		recipes.add(allRecipes.get(random.nextInt(allRecipes.size())));
-		//recipes.add(allRecipes.get(2));
+		//recipes.add(allRecipes.get(1));
 		//recipes.add(recipe);
 		
 		knowledgebase.initKnowledgebase(allRecipes);
@@ -119,6 +119,7 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 				 choice, false, saveFile, useShelf);	
 		} else {
 			SimulationHelper.runFromSaved(saveFile, generalDomain, hashingFactory, allRecipes, false);	
+		}
 		}
 		//}
 	}

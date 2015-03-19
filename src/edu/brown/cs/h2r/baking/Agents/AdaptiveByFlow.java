@@ -22,7 +22,7 @@ import edu.brown.cs.h2r.baking.actions.BakingActionResult;
 
 public class AdaptiveByFlow extends AdaptiveAgent{
 	private static final StateHashFactory hashingFactory = new NameDependentStateHashFactory();
-	private static final int MAX_ALPHA = 10;
+	private static final int MAX_ALPHA = 3;
 	
 	private PolicyPrediction prediction;
 	public AdaptiveByFlow(Domain domain, boolean isRobot, ActionTimeGenerator timeGenerator, List<Recipe> recipes, boolean useScheduling) {
@@ -52,7 +52,7 @@ public class AdaptiveByFlow extends AdaptiveAgent{
 	@Override
 	protected final List<PolicyProbability> getPolicyDistribution(State currentState) {
 			
-		State lastObservedState = this.stateHistory.get(this.stateHistory.size() - 1);
+		State lastObservedState = this.stateHistory.get(this.stateHistory.size() - 2);
 		if (this.lastAction != null && this.lastAction.action != null) {
 			lastObservedState = this.lastAction.executeIn(lastObservedState);
 		}
