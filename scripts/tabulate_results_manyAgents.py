@@ -59,7 +59,7 @@ if len(argv) > 1:
             if agent not in data.keys():
                 data[agent] = [[],[],[],[]]
             if agent not in data_recipes[recipe].keys():
-                data[recipe][agent] = [[],[],[],[]]
+                data_recipes[recipe][agent] = [[],[],[],[]]
             d = [0,0,0,0]
 
             try:
