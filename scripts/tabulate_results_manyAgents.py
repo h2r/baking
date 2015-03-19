@@ -67,7 +67,7 @@ if len(argv) > 1:
                     d[i] = float(line[i+1])
                 for i in range(4):
                     data[agent][i].append(d[i])
-                    data_recipes[recipe][agent].append(d[i])
+                    data_recipes[recipe][agent][i].append(d[i])
                     containedResult = True
             except:
                 print(str(line))
