@@ -22,7 +22,7 @@ if len(argv) > 1:
     files = glob(directory + "/*.csv")
     data = dict()
     for filename in files:
-        print("Processing file " + filename)
+        #print("Processing file " + filename)
         file = open(filename, 'rb')
         
         csvreader = reader(file, delimiter=",")

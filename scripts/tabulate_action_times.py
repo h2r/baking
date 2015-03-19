@@ -85,3 +85,13 @@ if len(argv) > 1:
     for recipe, d in data.iteritems():
         print("(" + recipe + ", " + str(numpy.mean(overlap[recipe])) + ")")
     print("};")
+
+    print("coordinates{")
+    for recipe, d in data.iteritems():
+        print("(" + recipe + ", " + str(numpy.mean(d["human"])) + ")")
+    print("};")
+
+    print("coordinates{")
+    for recipe, d in data.iteritems():
+        print("(" + recipe + ", " + str(numpy.mean(d["partner"])) + ")")
+    print("};")

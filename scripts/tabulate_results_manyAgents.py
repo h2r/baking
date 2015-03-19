@@ -16,7 +16,7 @@ if len(argv) > 1:
     total_files = 0
     valid_files = 0
     for filename in files:
-        print("Processing file " + filename)
+        #print("Processing file " + filename)
         total_files += 1
         file = open(filename, 'rb')
         
@@ -37,7 +37,13 @@ if len(argv) > 1:
             continue
         
         #Agent, Successes, Trials, Average reward, average successful reward
-        for line in data_lines:
+        recipe = "unknown"
+	agent = "unknown"
+	for line in data_lines:
+            if "Evaluating" in line[0]:
+                agent = line[0]
+            if len(line) == 2 and line[0] == "Recipe":
+                recipe = line[1]
             if len(line) != 5 or '\t' in line or line[0] is 'Agent':
                 continue
             isValid = True
@@ -59,11 +65,13 @@ if len(argv) > 1:
             except:
                 print(str(line))
         if not containedResult:
-            print("file did not contain result")
-            file.close()
-            file = open(filename, 'rb')
-            for line in file.readlines():
-                print(str(line))
+            print("Failed on recipe " + recipe)
+	    print("With agent " + agent)
+            print("file did not contain result\n")
+	    #file.close()
+	    #file = open(filename, 'rb')
+	    #for line in file.readlines():
+	    #    print(str(line))
         else:
             valid_files += 1
             file.close()
