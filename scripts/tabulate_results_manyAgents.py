@@ -13,6 +13,7 @@ if len(argv) > 1:
         elif os.path.isfile(arg):
             files.append(arg)
     data = dict()
+    data_recipes = dict()
     total_files = 0
     valid_files = 0
     for filename in files:
@@ -53,14 +54,20 @@ if len(argv) > 1:
             if not isValid:
                 continue
             agent = line[0]
+            if recipe not in data_recipes.keys():
+                data_recipes[recipe] = dict()
             if agent not in data.keys():
                 data[agent] = [[],[],[],[]]
+            if agent not in data_recipes[recipe].keys():
+                data[recipe][agent] = [[],[],[],[]]
             d = [0,0,0,0]
+
             try:
                 for i in range(4):
                     d[i] = float(line[i+1])
                 for i in range(4):
                     data[agent][i].append(d[i])
+                    data[recipe][agent].append(d[i])
                     containedResult = True
             except:
                 print(str(line))
@@ -85,7 +92,14 @@ if len(argv) > 1:
             continue
         print(str(agent) + ", " + str(int(sum(line[0]))) + ", " + str(int(sum(line[1]))) + ", " + str( numpy.mean(line[2])) + ", " + str(numpy.mean(line[3])) + " +- " + str(1.96 * numpy.std(line[3], ddof=1)/math.sqrt(len(line[3]))))
         results.append([agent, int(sum(line[0])), int(sum(line[1])), numpy.mean(line[2]), 1.96 * numpy.std(line[2], ddof=1)/math.sqrt(len(line[2])), numpy.mean(line[3]), 1.96 * numpy.std(line[3], ddof=1)/math.sqrt(len(line[3]))])
-   
+    
+    results_recipes = dict():
+    for recipe, data_by_agent in data_recipes.iteritems():
+        for agent, line in data_by_agent.iteritems():
+            if agent not in results_recipes.keys():
+                results_recipes[agent] = []
+        
+            results_recipes[recipe].append([recipe, int(sum(line[0])), int(sum(line[1])), numpy.mean(line[2]), 1.96 * numpy.std(line[2], ddof=1)/math.sqrt(len(line[2])), numpy.mean(line[3]), 1.96 * numpy.std(line[3], ddof=1)/math.sqrt(len(line[3]))])
 
     print("\n\n\n\n\n\n")
     sorted_results = sorted(results, key= lambda line: line[0])
@@ -112,5 +126,14 @@ if len(argv) > 1:
         print("("  + str(line[5]) + "," + str(line[0]) + ")\t+- (" + str(line[6]) + ", " + str(line[6]) + ")")
     print("};")
 
+
+
+
+    for agent, results_by_agent in results_recipes.iteritems():
+        sorted_results = sorted(results_by_agent, key= lambda line: line[0])
+        print("\t X Y Y_error Label")
+        for line in sorted_results:
+            print("\t{" + line[0] + "} " + str(line[3] + " " + str(line[4])))
+        print("\n\n")
 
 
