@@ -99,7 +99,7 @@ if len(argv) > 1:
             if agent not in results_recipes.keys():
                 results_recipes[agent] = []
         
-            results_recipes[recipe].append([recipe, int(sum(line[0])), int(sum(line[1])), numpy.mean(line[2]), 1.96 * numpy.std(line[2], ddof=1)/math.sqrt(len(line[2])), numpy.mean(line[3]), 1.96 * numpy.std(line[3], ddof=1)/math.sqrt(len(line[3]))])
+            results_recipes[agent].append([recipe, int(sum(line[0])), int(sum(line[1])), numpy.mean(line[2]), 1.96 * numpy.std(line[2], ddof=1)/math.sqrt(len(line[2])), numpy.mean(line[3]), 1.96 * numpy.std(line[3], ddof=1)/math.sqrt(len(line[3]))])
 
     print("\n\n\n\n\n\n")
     sorted_results = sorted(results, key= lambda line: line[0])
