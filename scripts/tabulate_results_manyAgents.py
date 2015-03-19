@@ -98,6 +98,7 @@ if len(argv) > 1:
         for agent, line in data_by_agent.iteritems():
             if agent not in results_recipes.keys():
                 results_recipes[agent] = []
+            print(str(agent) + ", " recipe + ", "  + str(int(sum(line[0]))) + ", " + str(int(sum(line[1]))) + ", " + str( numpy.mean(line[2])) + ", " + str(numpy.mean(line[3])) + " +- " + str(1.96 * numpy.std(line[3], ddof=1)/math.sqrt(len(line[3]))))
         
             results_recipes[agent].append([recipe, int(sum(line[0])), int(sum(line[1])), numpy.mean(line[2]), 1.96 * numpy.std(line[2], ddof=1)/math.sqrt(len(line[2])), numpy.mean(line[3]), 1.96 * numpy.std(line[3], ddof=1)/math.sqrt(len(line[3]))])
 
@@ -133,7 +134,7 @@ if len(argv) > 1:
         sorted_results = sorted(results_by_agent, key= lambda line: line[0])
         print("\t X Y Y_error Label")
         for line in sorted_results:
-            print("\t{" + line[0] + "} " + str(line[3]) + " " + str(line[4]))
+            print("\t{" + line[0].strip() + "} " + str(line[3]) + " " + str(line[4]))
         print("\n\n")
 
 
