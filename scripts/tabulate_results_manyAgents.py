@@ -132,9 +132,11 @@ if len(argv) > 1:
 
     for agent, results_by_agent in results_recipes.iteritems():
         sorted_results = sorted(results_by_agent, key= lambda line: line[0])
+        print("%%" + agent)
         print("\t X Y Y_error Label")
         for line in sorted_results:
             print("\t{" + line[0].strip() + "} " + str(line[3]) + " " + str(line[4]))
+
         print("\n\n")
 
 
