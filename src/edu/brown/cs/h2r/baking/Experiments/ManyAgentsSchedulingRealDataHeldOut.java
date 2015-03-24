@@ -71,11 +71,11 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 		if (args.length > 2 && args[2].equals("dessert")) {
 			breakfastOrDessert = true;
 		}
-		boolean useRobots = true;
+		boolean useRobots = false;
 		if (args.length > 3 && args[3].equals("robots")) {
 			useRobots = true;
 		}
-		boolean useShelf = true;
+		boolean useShelf = false;
 		if (args.length > 4 && args[4].equals("shelf")) {
 			useShelf = true;
 		}
