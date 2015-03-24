@@ -89,9 +89,9 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 		//for (int i = 0; i < 10; i++) {
 		//for (Recipe recipe : allRecipes) {
 		List<Recipe> recipes = new ArrayList<Recipe>();
-		//recipes.add(allRecipes.get(random.nextInt(allRecipes.size())));
+		recipes.add(allRecipes.get(random.nextInt(allRecipes.size())));
 		// TODO, when agent does something unhelpful, human ignores it, and continues on. It should decide to be uncooperative when the robot didn't help
-		recipes.add(allRecipes.get(2));
+		//recipes.add(allRecipes.get(2));
 		//recipes.add(recipe);
 		
 		knowledgebase.initKnowledgebase(allRecipes);
