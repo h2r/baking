@@ -26,19 +26,23 @@ import edu.brown.cs.h2r.baking.actions.ResetAction;
 
 public class Expert extends Human{
 	private boolean isCooperative;
+	private final List<State> stateHistory;
 	public Expert(Domain domain, String name, ActionTimeGenerator timeGenerator, List<Recipe> recipes)  {
 		super(domain, name, timeGenerator, recipes);
 		this.isCooperative = true;
+		this.stateHistory = new ArrayList<State>();
 	}
 	
 	public Expert(Domain domain, String name, boolean isRobot, ActionTimeGenerator timeGenerator, List<Recipe> recipes)  {
 		super(domain, name, isRobot, timeGenerator, recipes);
 		this.isCooperative = true;
+		this.stateHistory = new ArrayList<State>();
 	}
 	
 	protected Expert(Domain domain, Map<String, Object> map, ActionTimeGenerator timeGenerator, State state, List<Recipe> recipes) {
 		super(domain, map, timeGenerator, state, recipes);
 		this.isCooperative = (Boolean)map.get("isCooperative");
+		this.stateHistory = new ArrayList<State>();
 	}
 	
 	@Override
@@ -49,7 +53,8 @@ public class Expert extends Human{
 	}
 	
 	@Override
-	public void addObservation(State state) {
+	public void addObservation(State state, GroundedAction agentsAction) {
+		this.stateHistory.add(state);
 	}
 	
 	public void setCooperative(boolean isCooperative) {
@@ -124,13 +129,28 @@ public class Expert extends Human{
 			this.setRecipe(this.currentRecipe);
 			return reset;
 		}
+		List<GroundedAction> previousStateActions = new ArrayList<GroundedAction>();
+		AgentHelper.generateActionSequence(this.currentSubgoal, remaining, state, rewardFunction, previousStateActions, finishRecipe);
+		
+		List<GroundedAction> previousPStateActions = null;
+		if (this.stateHistory.size() >= 2) {
+			previousPStateActions = new ArrayList<GroundedAction>();
+			State previousState = this.stateHistory.get(this.stateHistory.size() - 2);
+			AgentHelper.generateActionSequence(this.currentSubgoal, remaining, previousState, rewardFunction, previousPStateActions, finishRecipe);
+		}
 		
 		List<AbstractGroundedAction> aga = new ArrayList<AbstractGroundedAction>(actions);
 		if (partnersAction != null) {
 			aga.add(0, partnersAction);
 		}
+		boolean previousStatesWereBetter = (previousPStateActions != null) && ((previousPStateActions.size() < previousStateActions.size()) ||
+				(previousPStateActions.size() <=  actions.size()));
 		Workflow workflow = Workflow.buildWorkflow(state, aga);
-		
+		if (this.getAgentName().equals("human")) {
+		this.isCooperative = this.isCooperative && !previousStatesWereBetter && (previousStateActions.size() >= actions.size());
+			String isCoop = (this.isCooperative) ? "Is cooperative" : "Is not cooperative";
+			System.out.println(isCoop);
+		}
 		if (this.isCooperative) {
 			
 			Assignments assignments = scheduleActions(state, agents, partnersAction, workflow);
@@ -149,13 +169,14 @@ public class Expert extends Human{
 					System.out.println(line);
 				}
 			}
-			
 			GroundedAction action = assignments.getFirstAction(this.getAgentName());
-			if (action == null) {
-				return null;
-			}
 			return action;
 		} else {
+			Assignments assignments = scheduleActions(state, agents, partnersAction, workflow);
+			GroundedAction action = assignments.getFirstAction(this.getAgentName());
+			if (action != null && action.action != null) {
+				return action;
+			}
 			List<Workflow.Node> available = workflow.getReadyNodes();
 			GroundedAction bestAction = null;
 			double bestTime = Double.MAX_VALUE;

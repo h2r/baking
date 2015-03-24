@@ -71,11 +71,11 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 		if (args.length > 2 && args[2].equals("dessert")) {
 			breakfastOrDessert = true;
 		}
-		boolean useRobots = false;
+		boolean useRobots = true;
 		if (args.length > 3 && args[3].equals("robots")) {
 			useRobots = true;
 		}
-		boolean useShelf = false;
+		boolean useShelf = true;
 		if (args.length > 4 && args[4].equals("shelf")) {
 			useShelf = true;
 		}
@@ -86,11 +86,12 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 		//List<Recipe> recipes = Recipe.generateRecipes(generalDomain, 5 * numberOfRecipes, knowledgebase.getIngredientList(), 1, 4);
 		
 		Random random = new Random();
-		for (int i = 0; i < 10; i++) {
+		//for (int i = 0; i < 10; i++) {
 		//for (Recipe recipe : allRecipes) {
 		List<Recipe> recipes = new ArrayList<Recipe>();
-		recipes.add(allRecipes.get(random.nextInt(allRecipes.size())));
-		//recipes.add(allRecipes.get(1));
+		//recipes.add(allRecipes.get(random.nextInt(allRecipes.size())));
+		// TODO, when agent does something unhelpful, human ignores it, and continues on. It should decide to be uncooperative when the robot didn't help
+		recipes.add(allRecipes.get(2));
 		//recipes.add(recipe);
 		
 		knowledgebase.initKnowledgebase(allRecipes);
@@ -113,14 +114,14 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 		
 		Path path = Paths.get(saveFile);
 		if (true){
-			int choice = trialId % (agents.size() + 1);
+			int choice = 2;//trialId % (agents.size() + 1);
 			
 			SimulationHelper.run(numTrials, generalDomain, hashingFactory, allRecipes, timeGenerator, human, agents,
 				 choice, false, saveFile, useShelf);	
 		} else {
 			SimulationHelper.runFromSaved(saveFile, generalDomain, hashingFactory, allRecipes, false);	
 		}
-		}
+		//}
 		//}
 	}
 }

@@ -50,10 +50,13 @@ public class AdaptiveByFlow extends AdaptiveAgent{
 	}
 	
 	@Override
-	protected final List<PolicyProbability> getPolicyDistribution(State currentState) {
-			
+	protected final List<PolicyProbability> getPolicyDistribution(State currentState, GroundedAction agentsAction) {
+		
+		if (this.stateHistory.size() < 2) {
+			return this.prediction.getUniformPolicyDistribution();
+		}
 		State lastObservedState = this.stateHistory.get(this.stateHistory.size() - 2);
-		if (this.lastAction != null && this.lastAction.action != null) {
+		if (agentsAction != null && agentsAction.action != null) {
 			lastObservedState = this.lastAction.executeIn(lastObservedState);
 		}
 		

@@ -7,13 +7,16 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 
 import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.GroundedAction;
 import edu.brown.cs.h2r.baking.Scheduling.Workflow.Node;
+import edu.brown.cs.h2r.baking.actions.PourAction;
 
 public class Workflow implements Iterable<Node> {
 	private static List<String> shareableResources = Arrays.asList("counter", "stove", "oven");
@@ -61,6 +64,10 @@ public class Workflow implements Iterable<Node> {
 			workflow.add(node, dependencies);
 		}
 		
+		for (int i = 0; i < 100; i++) {
+			workflow.sort();
+		}
+		
 		return workflow;
 	}
 	
@@ -71,22 +78,106 @@ public class Workflow implements Iterable<Node> {
 			return dependencies;
 		}
 		State compareState = workflow.getEndState();
+		if (compareState == null) {
+			throw new RuntimeException("This action cannot be added here");
+		}
 		compareState = action.executeIn(compareState);
+		
+		Queue<Node> nodesToCheck = new LinkedList<Node>(workflow.getLeafNodes());
+		Node newNode = new Node(workflow.size(), action);
+		
+		while (nodesToCheck.peek() != null) {
+			Node node = nodesToCheck.poll();
+			Workflow sorted = workflow.sort();
+			int newPosition = sorted.moveFarRight(node);
+			sorted.insert(newPosition + 1, newNode);
+			
+			State state = sorted.getEndState();
+			if (state == null || !state.equals(compareState)) {
+				System.err.println("Original");
+				for (Node n : workflow) {
+					System.err.println(n.id + " - " + n.children.toString() + " - " + n.getAction().toString());
+				}
+				System.err.println("Sorted");
+				for (Node n : sorted) {
+					System.err.println(n.id + " - " + n.children.toString() + " - " + n.getAction().toString());
+				}
+				throw new RuntimeException("Sorting failed");
+			}
+			sorted.swap(node, newNode);
+			state = sorted.getEndState();
+			//sorted.insert(node.id+1, node);
+			if (state == null || !state.equals(compareState)) {
+				dependencies.add(node.id);
+			} else {
+				for (Node parent : node.parents()) {
+					boolean addParent = true;
+					for (Node child : parent.children()) {
+						if (nodesToCheck.contains(child) || dependencies.contains(child.id)) {
+							addParent = false;
+							break;
+						}
+					}
+					if (addParent) {
+						nodesToCheck.add(parent);
+					}
+				}
+			}
+		}
+		/*
 		List<Node> leaves = workflow.getLeafNodes();
 		Node newNode = new Node(workflow.size(), action);
 		
 		for (Node node : leaves) {
 			Workflow sorted = workflow.sort();
+			sorted.move(node, workflow.size()-1);
 			sorted.add(newNode);
-			sorted.swap(node, newNode);
+			
 			State state = sorted.getEndState();
-			if (!state.equals(compareState)) {
+			if (state == null || !state.equals(compareState)) {
+				System.err.println("Original");
+				for (Node n : workflow) {
+					System.err.println(n.getAction().toString());
+				}
+				System.err.println("Sorted");
+				for (Node n : sorted) {
+					System.err.println(n.getAction().toString());
+				}
+				throw new RuntimeException("Sorting failed");
+			}
+			sorted.swap(node, newNode);
+			state = sorted.getEndState();
+			sorted.insert(node.id+1, node);
+			if (state == null || !state.equals(compareState)) {
 				dependencies.add(node.id);
 			}
-		}
+		}*/
 		return dependencies;
 	}
 	
+	private int moveFarRight(Node node) {
+		if (this.size() <= 1) {
+			return 0;
+		}
+		int index1 = this.actions.indexOf(node);
+		if (index1 < 0) {
+			return -1;
+		}
+		List<Node> nodesToPushLeft = new ArrayList<Node>();
+		for (int i = index1; i < this.actions.size(); i++) {
+			Node nextNode = this.actions.get(i);
+			if (nextNode != node && !node.ancestorOf(nextNode)) {
+				nodesToPushLeft.add(nextNode);
+			}
+		}
+		Collections.reverse(nodesToPushLeft);
+		for (Node n : nodesToPushLeft) {
+			this.actions.remove(n);
+			this.actions.add(index1, n);
+		}
+		return this.actions.indexOf(node);
+	}
+
 	private List<Node> getLeafNodes() {
 		List<Node> leaves = new ArrayList<Node>();
 		for (Node node : this) {
@@ -125,7 +216,7 @@ public class Workflow implements Iterable<Node> {
 			}
 			GroundedAction action = node.action;
 			if (!action.action.applicableInState(state, action.params)) {
-				return state;
+				return null;
 			}
 			state = action.executeIn(state);
 		}
@@ -162,6 +253,7 @@ public class Workflow implements Iterable<Node> {
 		boolean keepGoing = true;
 		while (keepGoing) {
 			keepGoing = false;
+			// This method doesn't get all possible orders, maybe get all leaves, and then add in children as you go
 			for (Node node : nodes) {
 				if (node.isAvailable(sortedNodes)) {
 					keepGoing |= sortedNodes.add(node);
@@ -173,7 +265,20 @@ public class Workflow implements Iterable<Node> {
 			System.err.println("Sorting failed");
 		}
 		
-		return new Workflow(this.startState, new ArrayList<Node>(sortedNodes));
+		Workflow sorted = new Workflow(this.startState, new ArrayList<Node>(sortedNodes));
+		
+		if (!this.getEndState().equals(sorted.getEndState())) {
+			System.out.println("Original");
+			for (Node node : this) {
+				System.out.println(node.id + " - " + node.getAction().toString());
+			}
+			System.out.println("Sorted");
+			for (Node node : sorted) {
+				System.out.println(node.id + " - " + node.getAction().toString());
+			}
+			throw new RuntimeException("Sorting failed, dependencies are incorrect");
+		} 
+		return sorted;
 	}
 	
 	public List<Node> getReadyNodes() {
@@ -300,9 +405,24 @@ public class Workflow implements Iterable<Node> {
 			this.degree = 0;
 			this.parents = new HashSet<Node>();
 			this.children = new HashSet<Node>();
-			String[] resources = Arrays.copyOfRange(action.params, 1, action.params.length);
-			this.resources = new HashSet<String>(Arrays.asList(resources));
-			this.resources.removeAll(shareableResources);
+			this.resources = this.getResources(action);
+			
+		}
+		
+		private Set<String> getResources(GroundedAction action) {
+			
+			int start = 1;
+			int end = action.params.length;
+			
+			String[] resources = Arrays.copyOfRange(action.params, start, end);
+			Set<String> resourceSet = new HashSet<String>(Arrays.asList(resources));
+			if (action.action instanceof PourAction) {
+				resourceSet.clear();
+				resourceSet.add(action.params[1]);
+			} 
+			
+			resourceSet.removeAll(shareableResources);
+			return resourceSet;
 		}
 		
 		public Set<Node> parents() {
@@ -419,7 +539,7 @@ public class Workflow implements Iterable<Node> {
 		
 		@Override
 		public String toString() {
-			return Integer.toString(this.id) + ((this.resources != null) ? this.resources.toString() : "");
+			return Integer.toString(this.id)/* + ((this.resources != null) ? this.resources.toString() : "")*/;
 		}
 		
 		private boolean checkChildCanBeAdded(Node child) {

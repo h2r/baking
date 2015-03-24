@@ -75,17 +75,36 @@ public class ExhaustiveStarScheduler implements Scheduler {
 		return bestSchedule;
 	}
 	
-	public Assignments finishSchedule(Workflow workflow, Assignments assignments, ActionTimeGenerator timeGenerator) {
+	public Assignments finishSchedule(Workflow workflow, Assignments original, ActionTimeGenerator timeGenerator) {
 		
-		HashIndexedHeap<AssignmentNode> openQueue = new HashIndexedHeap<AssignmentNode>(new AssignmentNode.AssignmentComparator());
-		Assignments sequenced = this.heuristic.finishSchedule(workflow, assignments, timeGenerator);
-		if (sequenced == null) {
-			throw new RuntimeException("Scheduling failed");
+		Assignments bestSchedule = null;
+		double bestTime = Double.MAX_VALUE;
+		int choice = 0;
+		for (int i = 0; i < MAX_SHUFFLES; i++) {
+			HashIndexedHeap<AssignmentNode> openQueue = new HashIndexedHeap<AssignmentNode>(new AssignmentNode.AssignmentComparator());
+			Assignments copied = original.copy();
+			
+			Assignments sequenced = this.heuristic.finishSchedule(workflow, copied, timeGenerator);
+			if (sequenced == null) {
+				throw new RuntimeException("Scheduling failed");
+			}
+			
+			AssignmentNode firstNode = new AssignmentNode(workflow, copied, sequenced);
+			openQueue.insert(firstNode);
+			
+			Workflow sorted = workflow.sort();
+			Assignments completedAssignments = this.assignActions(sorted, openQueue, timeGenerator);
+			
+			if (completedAssignments.time() < bestTime) {
+				bestSchedule = completedAssignments;
+				bestTime = completedAssignments.time();
+				choice = i;
+			}
+			//System.out.println(i + " " + newBuffered.time());
+			
 		}
-		AssignmentNode firstNode = new AssignmentNode(workflow, assignments, sequenced);
-		openQueue.insert(firstNode);
-		
-		return this.assignActions(workflow, openQueue, timeGenerator);
+		//System.out.println("Best choice " + choice);
+		return bestSchedule;
 	}
 	
 	
@@ -95,13 +114,18 @@ public class ExhaustiveStarScheduler implements Scheduler {
 		if (openQueue.peek() == null) {
 			return null;
 		}
+		Assignments bestSequenced = null;
 		//DPrint.toggleCode(debugCode, true);
 		while(openQueue.peek() != null) {
 			checkedNodes++;
 			AssignmentNode node = openQueue.poll();
-			if (node.complete()) {
-				return node.getSequenced();
+			if (bestSequenced == null || node.getTime() < bestSequenced.time()) {
+				bestSequenced = node.getSequenced();
 			}
+			
+			if (node.complete()) {
+				return bestSequenced;
+			} 
 			DPrint.cl(debugCode, "Current value: " + node.getTime());
 			
 			
@@ -149,7 +173,7 @@ public class ExhaustiveStarScheduler implements Scheduler {
 				}
 			}
 			if (numAddedNodes == 0) {
-				return node.getSequenced();
+				return bestSequenced;
 			}
 		}
 		return null;

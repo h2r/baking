@@ -55,7 +55,7 @@ public abstract class Agent{
 		return this.startingState;
 	}
 	
-	public abstract void addObservation(State state);
+	public abstract void addObservation(State state, GroundedAction agentsAction);
 	public ObjectInstance getAgentObject(Domain domain, StateHashFactory hashingFactory) {
 		return (this.isRobot) ?
 				AgentFactory.getNewRobotAgentObjectInstance(domain, this.getAgentName(), hashingFactory.getObjectHashFactory()) :

@@ -171,7 +171,7 @@ public abstract class AdaptiveAgent extends Agent{
 
 	@Override
 	public AbstractGroundedAction getActionInState(State state) {
-		List<PolicyProbability> policyDistribution = this.getPolicyDistribution(state);
+		List<PolicyProbability> policyDistribution = this.getPolicyDistribution(state, null);
 		if (policyDistribution == null) {
 			return null;
 		}
@@ -187,22 +187,7 @@ public abstract class AdaptiveAgent extends Agent{
 		if (!this.useScheduling) {
 			return this.getActionInState(state);
 		}
-		System.out.println("Previous Distribution");
-		for (PolicyProbability policyProb : this.policyBeliefDistribution) {
-			System.out.println(policyProb.toString());
-		}
-		System.out.println("\n");
 		
-		List<PolicyProbability> policyDistribution = this.getPolicyDistribution(state);
-		if (policyDistribution != null) {
-			System.out.println("Update");
-			for (PolicyProbability policyProb : policyDistribution) {
-				System.out.println(policyProb.toString());
-			}
-			System.out.println("\n");
-			
-			this.updateBeliefDistribution(policyDistribution);
-		}
 		List<PolicyProbability> nonZero = this.trimDistribution(this.policyBeliefDistribution);
 		System.out.println("Current Distribution");
 		for (PolicyProbability policyProb : nonZero) {
@@ -469,6 +454,9 @@ public abstract class AdaptiveAgent extends Agent{
 	
 	
 	protected AbstractGroundedAction findBestAction(List<GroundedAction> availableNodes, List<Double> expectedCompletionTimes) {
+		if (availableNodes.size() != expectedCompletionTimes.size()) {
+			return null;
+		}
 		double bestTime = Double.MAX_VALUE;
 		AbstractGroundedAction bestAction = null;
 		for (int i = 0; i < availableNodes.size(); i++) {
@@ -483,12 +471,33 @@ public abstract class AdaptiveAgent extends Agent{
 		return bestAction;
 	}
 	
-	protected abstract List<PolicyProbability> getPolicyDistribution(State currentState);
+	protected abstract List<PolicyProbability> getPolicyDistribution(State currentState, GroundedAction agentsAction);
 	protected abstract AbstractGroundedAction getActionFromPolicyDistribution(List<PolicyProbability> policyDistribution, State state);
 	protected abstract void init();
 	@Override
-	public void addObservation(State state) {
-		this.stateHistory.add(state);
+	public void addObservation(State state, GroundedAction agentsAction) {
+		State previousState = this.stateHistory.get(this.stateHistory.size()-1);
+		if (agentsAction == null || !agentsAction.executeIn(previousState).equals(state)) {
+			this.stateHistory.add(state);
+		}
+		
+		
+		System.out.println("Previous Distribution");
+		for (PolicyProbability policyProb : this.policyBeliefDistribution) {
+			System.out.println(policyProb.toString());
+		}
+		System.out.println("\n");
+		
+		List<PolicyProbability> policyDistribution = this.getPolicyDistribution(state, agentsAction);
+		if (policyDistribution != null) {
+			System.out.println("Update");
+			for (PolicyProbability policyProb : policyDistribution) {
+				System.out.println(policyProb.toString());
+			}
+			System.out.println("\n");
+			
+			this.updateBeliefDistribution(policyDistribution);
+		}
 		
 	}
 	

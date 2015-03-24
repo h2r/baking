@@ -8,6 +8,7 @@ import java.util.Map;
 import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.State;
+import burlap.oomdp.singleagent.GroundedAction;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
 
@@ -28,7 +29,7 @@ public class RandomRecipeAgent extends Human{
 		return super.toMap();
 	}
 	@Override
-	public void addObservation(State state) {
+	public void addObservation(State state, GroundedAction agentsAction) {
 	}
 
 	@Override

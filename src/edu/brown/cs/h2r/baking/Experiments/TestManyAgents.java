@@ -181,7 +181,7 @@ public class TestManyAgents {
 			actionBias = 1.0;
 		}
 		boolean isSuccess = false;
-		partner.addObservation(currentState);
+		partner.addObservation(currentState, null);
 		
 		while (!finished) {
 			

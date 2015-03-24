@@ -207,7 +207,7 @@ public class Baxter extends Agent {
 	}
 
 	@Override
-	public void addObservation(State state) {
+	public void addObservation(State state, GroundedAction agentsAction) {
 		// TODO Auto-generated method stub
 		
 	}

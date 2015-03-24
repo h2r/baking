@@ -253,7 +253,7 @@ public class Human extends Agent {
 	}
 	
 	@Override
-	public void addObservation(State state) {
+	public void addObservation(State state, GroundedAction agentsAction) {
 	}
 
 	@Override

@@ -253,7 +253,8 @@ public class SimulationHelper {
 		
 		
 		boolean isSuccess = false;
-		partner.addObservation(currentState);
+		human.addObservation(currentState, null);
+		partner.addObservation(currentState, null);
 		GroundedAction humanAction = null, partnerAction = null;
 		int numNullActions = 0;
 		boolean isFirstAction = true;
@@ -314,8 +315,6 @@ public class SimulationHelper {
 				numNullActions = 0;
 			}
 			currentState = SimulationHelper.performActions(currentState, humanAction, partnerAction, actionMap, statePair, actionPair, timesPair, timeGenerator);
-			human.addObservation(currentState);
-			partner.addObservation(currentState);
 			
 			if (!timesPair.isEmpty()){
 				double now = timesPair.get(0);
@@ -329,20 +328,27 @@ public class SimulationHelper {
 					SimulationHelper.agentWaitUntilNext(partner, actionMap, now);
 					
 				}
-				currentTime += timesPair.get(0);
+				currentTime = timesPair.get(0);
 			}
 			
 			if (actionPair.contains(humanAction)) {
+				human.addObservation(currentState, humanAction);
+				
 				if (((GroundedAction)humanAction).action instanceof ResetAction) {
 					partnerAction = null;
 					human.performResetAction();
 					partner.performResetAction();
 				}
 				humanAction = null;
+			} else {
+				human.addObservation(currentState, null);
 			}
 			
 			if (actionPair.contains(partnerAction)) {
+				partner.addObservation(currentState, partnerAction);
 				partnerAction = null;
+			} else {
+				partner.addObservation(currentState, null);
 			}
 			
 			stateSequence.addAll(statePair);
@@ -387,7 +393,10 @@ public class SimulationHelper {
 	
 	private static void agentWaitUntilNext(Agent agent,
 			Map<String, Double> actionMap, double next) {
-		actionMap.put(agent.getAgentName(), next);
+		Double current = actionMap.get(agent.getAgentName());
+		if (current == null || current < next) {
+			actionMap.put(agent.getAgentName(), next);
+		}
 	}
 
 	private static boolean checkIfRepeating(List<State> stateSequence) {
