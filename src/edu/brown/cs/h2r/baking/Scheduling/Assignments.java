@@ -445,12 +445,16 @@ public class Assignments implements Iterable<Assignment> {
 		
 		double time = this.getTimeNodeIsAvailable(node, assignment, assignmentTime, actionDuration);
 		State currentState = this.getStateAtTime(time);
-		BakingAction bakingAction = (BakingAction)action.action;
-		BakingActionResult result = bakingAction.checkActionIsApplicableInState(currentState, action.params);
-		if (!result.getIsSuccess()) {
-			//System.out.println("This action cannot be scheduled");
-			//System.out.println(result.getWhyFailed());
-			return false;
+			if (currentState != null) {
+			BakingAction bakingAction = (BakingAction)action.action;
+			if (currentState != null) {
+				BakingActionResult result = bakingAction.checkActionIsApplicableInState(currentState, action.params);
+				if (!result.getIsSuccess()) {
+					//System.out.println("This action cannot be scheduled");
+					//System.out.println(result.getWhyFailed());
+					return false;
+				}
+			}
 		}
 		
 		if (time > assignmentTime) {
@@ -481,6 +485,9 @@ public class Assignments implements Iterable<Assignment> {
 		}
 		
 		State state = this.startingState;
+		if (state == null) {
+			return null;
+		}
 		while (queue.peek() != null) {
 			ActionTime next = queue.poll();
 			if (next.getTime() > time) {

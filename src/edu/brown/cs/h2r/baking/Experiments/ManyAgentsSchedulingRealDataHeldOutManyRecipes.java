@@ -52,7 +52,7 @@ import edu.brown.cs.h2r.baking.actions.ResetAction;
 import edu.brown.cs.h2r.baking.actions.SwitchAction;
 import edu.brown.cs.h2r.baking.actions.UseAction;
 
-public class ManyAgentsSchedulingRealDataHeldOut {
+public class ManyAgentsSchedulingRealDataHeldOutManyRecipes {
 	private static StateHashFactory hashingFactory = new NameDependentStateHashFactory();
 	
 	
@@ -67,22 +67,20 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 		if (args.length > 1) {
 			trialId = Integer.parseInt(args[1]);
 		} 
-		boolean breakfastOrDessert = false;
-		if (args.length > 2 && args[2].equals("dessert")) {
-			breakfastOrDessert = true;
-		}
-		boolean useRobots = false;
-		if (args.length > 3 && args[3].equals("robots")) {
+		boolean useRobots = true;
+		if (args.length > 2 && args[2].equals("robots")) {
 			useRobots = true;
 		}
-		boolean useShelf = false;
-		if (args.length > 4 && args[4].equals("shelf")) {
+		boolean useShelf = true;
+		if (args.length > 3 && args[3].equals("shelf")) {
 			useShelf = true;
 		}
 		
+		int numberRecipes = 10 + trialId % 17;
+		
 		Domain generalDomain = SimulationHelper.generateGeneralDomain(); 
 		Knowledgebase knowledgebase = Knowledgebase.getKnowledgebase(generalDomain);
-		List<Recipe> allRecipes = (breakfastOrDessert) ? AgentHelper.dessertRecipes(generalDomain) : AgentHelper.breakfastRecipes(generalDomain);
+		List<Recipe> allRecipes = Recipe.generateRecipes(generalDomain, numberRecipes, knowledgebase.getIngredientList(), 1, 4);
 		//List<Recipe> recipes = Recipe.generateRecipes(generalDomain, 5 * numberOfRecipes, knowledgebase.getIngredientList(), 1, 4);
 		
 		Random random = new Random();
@@ -111,13 +109,13 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 				);
 		
 		System.out.println("Agent, Successes, Trials, Average reward, average successful reward");
-		System.out.println("Number Recipes, " + allRecipes.size());
+		
 		Path path = Paths.get(saveFile);
 		if (true){
 			int choice = 2;//trialId % (agents.size() + 1);
 			
 			SimulationHelper.run(numTrials, generalDomain, hashingFactory, allRecipes, timeGenerator, human, agents,
-				 choice, false, saveFile, useShelf, breakfastOrDessert);	
+				 choice, false, saveFile, useShelf, false);	
 		} else {
 			SimulationHelper.runFromSaved(saveFile, generalDomain, hashingFactory, allRecipes, false);	
 		}

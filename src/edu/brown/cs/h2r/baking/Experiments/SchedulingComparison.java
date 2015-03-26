@@ -158,7 +158,7 @@ public class SchedulingComparison {
 					Assignments assignments = scheduler.schedule(workflow, Arrays.asList("human", "friend", "friend1", "friend2"), timeGenerator);
 					double time = assignments.time();
 					times.add(time);
-					if (milpTime < 0.0) {
+					if (time < 0.0) {
 						MILPScheduler.checkAssignments(workflow, assignments);
 					}
 				}

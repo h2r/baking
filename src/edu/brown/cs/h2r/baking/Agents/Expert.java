@@ -147,7 +147,7 @@ public class Expert extends Human{
 				(previousPStateActions.size() <=  actions.size()));
 		Workflow workflow = Workflow.buildWorkflow(state, aga);
 		if (this.getAgentName().equals("human")) {
-		this.isCooperative = this.isCooperative && !previousStatesWereBetter && (previousStateActions.size() >= actions.size());
+		this.isCooperative = this.isCooperative && !previousStatesWereBetter && (partnersAction != null && previousStateActions.size() > actions.size());
 			String isCoop = (this.isCooperative) ? "Is cooperative" : "Is not cooperative";
 			System.out.println(isCoop);
 		}
@@ -175,6 +175,21 @@ public class Expert extends Human{
 			Assignments assignments = scheduleActions(state, agents, partnersAction, workflow);
 			GroundedAction action = assignments.getFirstAction(this.getAgentName());
 			if (action != null && action.action != null) {
+				System.out.println(this.getAgentName() + " scheduled actions");
+				for (Assignment assignment : assignments) {
+					System.out.println("-" + assignment.getId());
+					List<Workflow.Node> nodes = assignment.nodes();
+					List<Double> times = assignment.times();
+					List<Double> completionTimes = assignment.completionTimes();
+					for (int i = 0; i < nodes.size(); i++) {
+						Workflow.Node node = nodes.get(i);
+						double time = times.get(i);
+						double completionTime = completionTimes.get(i);
+						String line = "\t" + ((node == null) ? "wait": node.getAction(assignment.getId()).toString());
+						line = line + ", " + (completionTime - time) + ", " + completionTime;
+						System.out.println(line);
+					}
+				}
 				return action;
 			}
 			List<Workflow.Node> available = workflow.getReadyNodes();
@@ -197,15 +212,15 @@ public class Expert extends Human{
 		
 		Scheduler exhaustive = new ExhaustiveStarScheduler(true);
 		
-		if (partnersAction == null) {
-			return exhaustive.schedule(workflow, agents, this.timeGenerator);
-		}
-		
 		Assignments assignments = new Assignments(this.timeGenerator, agents, state, false, false);
 		
 		if (partnersAction != null) {
 			assignments.add(workflow.get(0), partnersAction.params[0]);
-		} 
+		} else if (this.isCooperative){
+			int index = agents.indexOf(this.getAgentName());
+			String other = agents.get(1 - index);
+			assignments.waitAgentUntil(other, 10.0);
+		}
 		
 		return exhaustive.finishSchedule(workflow, assignments, this.timeGenerator);
 

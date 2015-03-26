@@ -68,24 +68,8 @@ public class MILPScheduler {
 			if (status != 2) {
 				System.err.println("Non-optimal solution found");
 			}
-			double computedTime = v.get(GRB.DoubleAttr.X);
-			Map<String, List<Double>> startTimes = this.extractAssignments(workflow, assignments, modelVariables);
-			Sequencer sequencer = new BasicSequencer(this.useActualValues);
-			Assignments buffered = sequencer.sequence(assignments, timeGenerator, workflow);
-			double actualTime = buffered.time();
-			if (computedTime - 0.00001 > actualTime) {
-				System.out.println(assignments.toString());
-				System.out.println(buffered.toString());
-				System.out.println(buffered.getFullString());
-				System.out.println(buffered.visualString());
-				System.out.println(startTimes.toString());
-				System.err.println("MILP: " + computedTime + " buffered " + actualTime);
-				printResults(model, modelVariables, false, false);
-			}
-			printResults(model, modelVariables, false, false);
 			time = v.get(GRB.DoubleAttr.X);
-			//this.printResults(model, modelVariables, startTimes);
-
+			
 			model.dispose();
 			env.dispose();
 

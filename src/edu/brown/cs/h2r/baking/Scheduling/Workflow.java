@@ -210,6 +210,9 @@ public class Workflow implements Iterable<Node> {
 	
 	public State getEndState() {
 		State state = this.startState;
+		if (state == null) {
+			return null;
+		}
 		for (Node node : this) {
 			if (node == null) {
 				continue;
@@ -267,7 +270,7 @@ public class Workflow implements Iterable<Node> {
 		
 		Workflow sorted = new Workflow(this.startState, new ArrayList<Node>(sortedNodes));
 		
-		if (!this.getEndState().equals(sorted.getEndState())) {
+		/*if (!this.getEndState().equals(sorted.getEndState())) {
 			System.out.println("Original");
 			for (Node node : this) {
 				System.out.println(node.id + " - " + node.getAction().toString());
@@ -277,7 +280,7 @@ public class Workflow implements Iterable<Node> {
 				System.out.println(node.id + " - " + node.getAction().toString());
 			}
 			throw new RuntimeException("Sorting failed, dependencies are incorrect");
-		} 
+		} */
 		return sorted;
 	}
 	
@@ -466,10 +469,9 @@ public class Workflow implements Iterable<Node> {
 		}
 		
 		public boolean addParent(Node parent) {
-			if (!this.parents.add(parent)) {
-				return false;
-			}
-			parent.addChild(this);
+			if (this.parents.add(parent)) {
+				parent.addChild(this);
+			}			
 			return true;
 		}
 		
@@ -486,11 +488,10 @@ public class Workflow implements Iterable<Node> {
 				return false;
 			}
 			
-			if (!this.children.add(child)) {
-				return false;
+			if (this.children.add(child)) {
+				child.addParent(this);
 			}
 			
-			child.addParent(this);
 			this.degree = Math.max(this.degree, child.degree() + 1);
 			return true;
 		}

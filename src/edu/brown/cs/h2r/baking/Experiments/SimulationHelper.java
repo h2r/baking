@@ -86,10 +86,10 @@ public class SimulationHelper {
 	}
 	public static State generateInitialState(Domain generalDomain, StateHashFactory hashingFactory, 
 			List<Recipe> recipes, Agent agent1, Agent agent2) {
-		return SimulationHelper.generateInitialState(generalDomain, hashingFactory, recipes, agent1, agent2, false);
+		return SimulationHelper.generateInitialState(generalDomain, hashingFactory, recipes, agent1, agent2, false, false);
 	}
 	public static State generateInitialState(Domain generalDomain, StateHashFactory hashingFactory, 
-			List<Recipe> recipes, Agent agent1, Agent agent2, boolean useShelf) {
+			List<Recipe> recipes, Agent agent1, Agent agent2, boolean useShelf, boolean breakfastOrDessert) {
 		ObjectHashFactory objectHashingFactory = hashingFactory.getObjectHashFactory();
 		List<ObjectInstance> objects = new ArrayList<ObjectInstance>();
 		objects.add(agent1.getAgentObject(generalDomain, hashingFactory));
@@ -100,7 +100,9 @@ public class SimulationHelper {
 		ObjectInstance makeSpan = MakeSpanFactory.getNewObjectInstance(generalDomain, "makespan", 2, objectHashingFactory);
 		objects.add(makeSpan);
 		
-		List<String> containers = Arrays.asList("mixing_bowl_1"/*, "mixing_bowl_2", "mixing_bowl_3"*/);
+		List<String> containers = (breakfastOrDessert) ? 
+				Arrays.asList("mixing_bowl_1", "mixing_bowl_2", "mixing_bowl_3") : 
+			Arrays.asList("mixing_bowl_1"/*, "mixing_bowl_2", "mixing_bowl_3"*/);
 		ObjectInstance counterSpace = SpaceFactory.getNewWorkingSpaceObjectInstance(generalDomain, SpaceFactory.SPACE_COUNTER, containers, "human", objectHashingFactory);
 		objects.add(counterSpace);
 		
@@ -296,6 +298,19 @@ public class SimulationHelper {
 						System.err.println(result.getWhyFailed());
 						partnerAction = null;
 					}
+				}
+			}
+			
+			if (humanAction == null && partnerAction != null) {
+				human.setCooperative(true);
+				if (numNullActions > 3 || 
+						currentState.equals(startingState)) {
+					human.setCooperative(false);
+				}
+				humanAction = (GroundedAction)human.getAction(currentState, agents, !onlySubgoals, isFirstAction, (GroundedAction)partnerAction);
+				if (humanAction != null && humanAction.action != null) {
+					System.out.println("Human changed course, and decided to perform an action");
+					System.out.println("Human chose " + humanAction.toString());
 				}
 			}
 			isFirstAction = false;
@@ -578,17 +593,17 @@ public class SimulationHelper {
 	public static void run(int numTrials, Domain generalDomain, StateHashFactory hashingFactory,
 			List<Recipe> recipes, ActionTimeGenerator timeGenerator,
 			Human human, List<Agent> agents, int choice, boolean subgoalsOnly, String filename) {
-		SimulationHelper.run(numTrials, generalDomain, hashingFactory, recipes, timeGenerator, human, agents, choice, subgoalsOnly, filename, false);
+		SimulationHelper.run(numTrials, generalDomain, hashingFactory, recipes, timeGenerator, human, agents, choice, subgoalsOnly, filename, false, false);
 		
 	}
 	public static void run(int numTrials, Domain generalDomain, StateHashFactory hashingFactory,
 			List<Recipe> recipes, ActionTimeGenerator timeGenerator,
-			Human human, List<Agent> agents, int choice, boolean subgoalsOnly, String filename, boolean useShelf) {
+			Human human, List<Agent> agents, int choice, boolean subgoalsOnly, String filename, boolean useShelf, boolean breakfastOrDessert) {
 		
 		timeGenerator.clear();
 		SimulationHelper.EvaluationResult result;
 		System.out.println("Evaluating solo");
-		State startingState = SimulationHelper.generateInitialState(generalDomain, hashingFactory, recipes, human, null, useShelf);
+		State startingState = SimulationHelper.generateInitialState(generalDomain, hashingFactory, recipes, human, null, useShelf, breakfastOrDessert);
 		
 		human.setInitialState(startingState);
 		human.chooseNewRecipe();
@@ -607,7 +622,7 @@ public class SimulationHelper {
 		SimulationHelper.removeFile(filename);
 		
 		for (Agent agent : agents) {
-			startingState = SimulationHelper.generateInitialState(generalDomain, hashingFactory, recipes, human, agent, useShelf);
+			startingState = SimulationHelper.generateInitialState(generalDomain, hashingFactory, recipes, human, agent, useShelf, breakfastOrDessert);
 			
 			human.setInitialState(startingState);
 			if (agent != null) {
