@@ -197,7 +197,7 @@ public class SubgoalDetermination {
 		
 	public static void main(String[] argv) {
 		int numTries = 10;
-		boolean breakfastOrDessert = true;
+		boolean breakfastOrDessert = false;
 		Random rando = new Random();
 		
 		int trialId = Math.abs(rando.nextInt());
