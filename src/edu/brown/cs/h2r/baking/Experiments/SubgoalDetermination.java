@@ -92,8 +92,6 @@ public class SubgoalDetermination {
 		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2", "baking_dish", "melting_pot");
 		ObjectInstance counterSpace = SpaceFactory.getNewWorkingSpaceObjectInstance(generalDomain, SpaceFactory.SPACE_COUNTER, containers, "human", objectHashingFactory);
 		objects.add(counterSpace);
-		ObjectInstance shelfSpace = SpaceFactory.getNewObjectInstance(generalDomain, "shelf", SpaceFactory.NO_ATTRIBUTES, null, "", objectHashingFactory);
-		objects.add(shelfSpace);
 		
 		objects.add(ToolFactory.getNewSimpleToolObjectInstance(generalDomain, "whisk", "", "", SpaceFactory.SPACE_COUNTER, objectHashingFactory));
 		
@@ -103,7 +101,7 @@ public class SubgoalDetermination {
 		objects.add(SpaceFactory.getNewHeatingSpaceObjectInstance(generalDomain, SpaceFactory.SPACE_STOVE, null, "", objectHashingFactory));
 		
 		for (String container : containers) { 
-			objects.add(ContainerFactory.getNewMixingContainerObjectInstance(generalDomain, container, null, "shelf", objectHashingFactory));
+			objects.add(ContainerFactory.getNewMixingContainerObjectInstance(generalDomain, container, null, counterSpace.getName(), objectHashingFactory));
 		}
 		
 		// Out of all the ingredients in our kitchen, plan over only those that might be useful!
@@ -128,17 +126,15 @@ public class SubgoalDetermination {
 	
 	public static List<AbstractGroundedAction> generateActionSequenceFromPolicy(KitchenSubdomain subdomain, int maxDepth) {
 		List<AbstractGroundedAction> actions = new ArrayList<AbstractGroundedAction>();
-		Policy policy = subdomain.getPolicy();
 		State state = subdomain.getStartState();
 		BakingSubgoal subgoal = subdomain.getSubgoal();
-		AffordanceRTDP planner = subdomain.getPlanner();
-		planner.planFromState(state);
+		subdomain.planFromState(state);
 		//System.out.println("Taking actions");
 		for (int i = 0; i < maxDepth; i++) {
 			if (subgoal.goalCompleted(state)) {
 				return null;
 			}
-			AbstractGroundedAction action = policy.getAction(state);
+			AbstractGroundedAction action = subdomain.getAction(state);
 			if (action == null) {
 				return actions;
 			}
@@ -233,11 +229,11 @@ public class SubgoalDetermination {
 		Collections.shuffle(policyDomains);
 		
 		System.out.println("Chosen policy, Depth, Depth Type, Successes, Estimate Successes, Informed Guesses, Total Trials");
+		PolicyPrediction prediction = new PolicyPrediction(allPolicyDomains);			
 		
 		for (int i = 0; i < 1; i++) {
 			for (KitchenSubdomain policyDomain : allPolicyDomains) {
 				for (int depthType = 0; depthType < 1; depthType++) {
-					PolicyPrediction prediction = new PolicyPrediction(allPolicyDomains);			
 					for (int depth = 1; depth < 20; depth++) {	
 						int numSuccess = 0;
 						int numEstimateSuccesses = 0;

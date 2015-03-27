@@ -362,14 +362,11 @@ public class ExperimentHelper {
 		BakingSubgoal subgoal = policyDomain.getSubgoal();
 		Domain domain = policyDomain.getDomain();
 		State startingState = policyDomain.getStartState();
-		AffordanceRTDP planner = policyDomain.getPlanner();
-		planner.planFromState(startingState);
-		GreedyQPolicy policy = new GreedyQPolicy(planner);
 		PropositionalFunction isFailure = domain.getPropFunction(AffordanceCreator.BOTCHED_PF);
 		
 		TerminalFunction recipeTerminalFunction = new RecipeTerminalFunction(subgoal.getGoal(), isFailure);
 		RewardFunction rf = new RecipeAgentSpecificMakeSpanRewardFunction("human");
-		EpisodeAnalysis episodeAnalysis = policy.evaluateBehavior(startingState, rf, recipeTerminalFunction,100);
+		EpisodeAnalysis episodeAnalysis = policyDomain.evaluateBehavior(startingState, rf, recipeTerminalFunction,100);
 		
 		
 		for (GroundedAction action : episodeAnalysis.actionSequence) {
@@ -383,14 +380,11 @@ public class ExperimentHelper {
 	public static void printPlan(KitchenSubdomain policyDomain, RewardFunction rf) {
 		BakingSubgoal subgoal = policyDomain.getSubgoal();
 		Domain domain = policyDomain.getDomain();
-		Policy policy = policyDomain.getPolicy();
-		AffordanceRTDP planner = policyDomain.getPlanner();
 		State startingState = policyDomain.getStartState();
 		PropositionalFunction isFailure = domain.getPropFunction(AffordanceCreator.BOTCHED_PF);
 		
 		TerminalFunction recipeTerminalFunction = new RecipeTerminalFunction(subgoal.getGoal(), isFailure);
-		planner.planFromState(startingState);
-		EpisodeAnalysis episodeAnalysis = policy.evaluateBehavior(startingState, rf, recipeTerminalFunction,100);
+		EpisodeAnalysis episodeAnalysis = policyDomain.evaluateBehavior(startingState, rf, recipeTerminalFunction,100);
 		
 		System.out.println(policyDomain.toString());
 		for (GroundedAction action : episodeAnalysis.actionSequence) {

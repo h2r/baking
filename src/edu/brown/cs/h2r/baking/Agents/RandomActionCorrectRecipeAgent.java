@@ -52,10 +52,7 @@ public class RandomActionCorrectRecipeAgent extends Human{
 		
 		List<ActionProb> allowableActions = new ArrayList<ActionProb>();
 		for (KitchenSubdomain subdomain : this.kitchenSubdomains) {
-			AffordanceRTDP planner = subdomain.getPlanner();
-			planner.planFromState(state);
-			Policy policy = subdomain.getPolicy();
-			allowableActions.addAll(policy.getActionDistributionForState(state));
+			allowableActions.addAll(subdomain.getActionDistribution(state));
 		}
 		
 		List<ActionProb> nonZero = new ArrayList<ActionProb>(allowableActions.size());

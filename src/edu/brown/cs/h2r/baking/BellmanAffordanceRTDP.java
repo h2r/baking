@@ -29,7 +29,7 @@ public class BellmanAffordanceRTDP extends AffordanceRTDP {
 	public BellmanAffordanceRTDP(Domain domain, RewardFunction rf, TerminalFunction tf, 
 			double gamma, StateHashFactory hashingFactory, double vInit, int numRollouts, 
 			double maxDelta, int maxDepth, AffordancesController affController) {
-		super(domain, rf, tf, gamma, hashingFactory, vInit, numRollouts, maxDelta, maxDepth, affController, 10);
+		super(domain, rf, tf, gamma, hashingFactory, vInit, numRollouts, maxDelta, maxDepth, affController, 4);
 		this.affController = affController;
 	}
 	

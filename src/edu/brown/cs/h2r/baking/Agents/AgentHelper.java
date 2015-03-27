@@ -209,12 +209,8 @@ public static State generateActionSequence(KitchenSubdomain currentSubgoal, List
 	
 	public static State generateActionSequence(KitchenSubdomain policyDomain, State startingState, RewardFunction rf, List<GroundedAction> actions) {
 		BakingSubgoal subgoal = policyDomain.getSubgoal();
-		policyDomain.getPlanner().planFromState(startingState);
- 		
-		Policy policy = new GreedyQPolicy(policyDomain.getPlanner());
-		
 		TerminalFunction recipeTerminalFunction = new RecipeTerminalFunction(subgoal.getGoal());
-		EpisodeAnalysis episodeAnalysis = policy.evaluateBehavior(startingState, rf, recipeTerminalFunction, 100);
+		EpisodeAnalysis episodeAnalysis = policyDomain.evaluateBehavior(startingState, rf, recipeTerminalFunction, 100);
 		/*
 		System.out.println("Action list for " + policyDomain.toString());
 		for (GroundedAction action : episodeAnalysis.actionSequence) {

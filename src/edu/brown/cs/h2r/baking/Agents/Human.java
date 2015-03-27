@@ -316,10 +316,7 @@ public class Human extends Agent {
 		ResetAction reset = (ResetAction)generalDomain.getAction(ResetAction.className);
 		reset.setState(this.getStartState());
 		
-		RTDP planner = this.currentSubgoal.getPlanner();
-		planner.planFromState(state);
-		Policy policy = this.currentSubgoal.getPolicy();
-		List<ActionProb> actionDistribution = policy.getActionDistributionForState(state);
+		List<ActionProb> actionDistribution = this.currentSubgoal.getActionDistribution(state);
 		List<ActionProb> allowableActions = new ArrayList<ActionProb>();
 		for (ActionProb actionProb : actionDistribution) {
 			GroundedAction groundedAction = (GroundedAction)actionProb.ga;

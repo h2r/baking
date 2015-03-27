@@ -103,60 +103,8 @@ public class AdaptiveByFlow extends AdaptiveAgent{
 		//}
 		
 		
-		AbstractGroundedAction chosenAction = 
-				this.getAgentsActionFromPolicy(bestPolicy.getPolicyDomain().getPolicy(), state, terminalFunction);
+		AbstractGroundedAction chosenAction = bestPolicy.getPolicyDomain().getAction(state);
 		return chosenAction;
-	}
-	
-	
-	
-	private final AbstractGroundedAction getAgentsActionFromPolicy(Policy policy, State state, TerminalFunction terminalFunction) {
-		
-		boolean isValidAction = false;
-		AbstractGroundedAction action = policy.getAction(state);
-		int tries = 0;
-		while (!isValidAction) {
-			if (Thread.interrupted()) {
-				return null;
-			}
-			if (action == null){
-				return null;
-			}
-			state = action.executeIn(state);
-			if (terminalFunction.isTerminal(state)) {
-				return null;
-			}
-			action = policy.getAction(state);
-			
-			if (action == null) {
-				return null;
-			}
-			
-			GroundedAction groundedAction = (GroundedAction)action;
-			groundedAction.params[0] = this.getAgentName();
-			
-			BakingAction bakingAction = (BakingAction)groundedAction.action;
-			BakingActionResult result = bakingAction.checkActionIsApplicableInState(state, groundedAction.params);
-			
-			if (!result.getIsSuccess()) {
-				System.err.println(this.getAgentName() + " chose action " + groundedAction.toString() + " which cannot succeed because:");
-				System.err.println(result.getWhyFailed());
-				tries++;
-				if (tries == 3) {
-					return null;
-				}
-			}
-			
-			isValidAction = (
-					this.canAgentGo(groundedAction, state) && 
-					groundedAction.action.applicableInState(state, action.params));
-		}
-		
-		return action;
-	}
-	
-	private final boolean canAgentGo(GroundedAction action, State state) {
-		return (action.params[0].equals(this.getAgentName()));	
 	}
 	
 	@Override

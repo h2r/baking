@@ -9,7 +9,6 @@ import java.util.Map;
 
 import burlap.behavior.singleagent.Policy.ActionProb;
 import burlap.behavior.singleagent.planning.StateConditionTest;
-import burlap.behavior.singleagent.planning.stochastic.rtdp.AffordanceRTDP;
 import burlap.behavior.statehashing.NameDependentStateHashFactory;
 import burlap.behavior.statehashing.StateHashFactory;
 import burlap.behavior.statehashing.StateHashTuple;
@@ -76,8 +75,7 @@ public class PolicyPrediction {
 	}
 
 	private static List<ActionProb> getActionDistributionForPolicyInState(State state, KitchenSubdomain subdomain) {
-		
-		return subdomain.getPolicy().getActionDistributionForState(state);
+		return subdomain.getActionDistribution(state);
 	}
 
 	public double getFlowToStateCondition(KitchenSubdomain subdomain, State fromState, StateConditionTest goalCondition, int maxDepth) throws InterruptedException {
@@ -264,8 +262,7 @@ public class PolicyPrediction {
 			StateHashFactory hashingFactory, int depthType) throws InterruptedException {
 		
 		State fromState = fromStateTuple.getState();
-		AffordanceRTDP planner = subdomain.getPlanner();
-		planner.planFromState(fromStateTuple.getState());
+		subdomain.planFromState(fromStateTuple.getState());
 		String name = subdomain.toString();
 		if (name.equals("brownies - wet_ingredients")) {
 			//System.out.println("");
