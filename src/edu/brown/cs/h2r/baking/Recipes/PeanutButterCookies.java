@@ -65,13 +65,13 @@ public class PeanutButterCookies extends Recipe {
 	
 	public List<BakingSubgoal> getSubgoals(Domain domain) {
 		List<BakingSubgoal> subgoals = new ArrayList<BakingSubgoal>();
-		BakingPropositionalFunction pf1 = new SpaceOn(AffordanceCreator.SPACEON_PF, domain, this.topLevelIngredient, "oven");
+		/*BakingPropositionalFunction pf1 = new SpaceOn(AffordanceCreator.SPACEON_PF, domain, this.topLevelIngredient, "oven");
 		BakingSubgoal sg1 = new BakingSubgoal(pf1, this.topLevelIngredient);
-		subgoals.add(sg1);
+		subgoals.add(sg1);*/
 		
 		BakingPropositionalFunction pf2 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("creamed_ingredients"));
 		BakingSubgoal sg2 = new BakingSubgoal(pf2, this.subgoalIngredients.get("creamed_ingredients"));
-		sg2 = sg2.addPrecondition(sg1);
+		//sg2 = sg2.addPrecondition(sg1);
 		subgoals.add(sg2);
 
 		BakingPropositionalFunction pf3 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("wet_ingredients"));
@@ -81,7 +81,7 @@ public class PeanutButterCookies extends Recipe {
 		
 		BakingPropositionalFunction pf4 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("dry_ingredients"));
 		BakingSubgoal sg4 = new BakingSubgoal(pf4, this.subgoalIngredients.get("dry_ingredients"));
-		sg4 = sg4.addPrecondition(sg1);
+		//sg4 = sg4.addPrecondition(sg1);
 		subgoals.add(sg4);
 		
 		BakingPropositionalFunction pf5 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("peanutButterCookies"));

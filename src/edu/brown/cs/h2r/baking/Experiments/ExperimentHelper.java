@@ -12,6 +12,7 @@ import java.util.Set;
 import burlap.behavior.affordances.AffordancesController;
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.Policy;
+import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
 import burlap.behavior.singleagent.planning.stochastic.rtdp.AffordanceRTDP;
 import burlap.debugtools.DPrint;
 import burlap.oomdp.core.Domain;
@@ -360,8 +361,10 @@ public class ExperimentHelper {
 	public static State getEndState(KitchenSubdomain policyDomain) {
 		BakingSubgoal subgoal = policyDomain.getSubgoal();
 		Domain domain = policyDomain.getDomain();
-		Policy policy = policyDomain.getPolicy();
 		State startingState = policyDomain.getStartState();
+		AffordanceRTDP planner = policyDomain.getPlanner();
+		planner.planFromState(startingState);
+		GreedyQPolicy policy = new GreedyQPolicy(planner);
 		PropositionalFunction isFailure = domain.getPropFunction(AffordanceCreator.BOTCHED_PF);
 		
 		TerminalFunction recipeTerminalFunction = new RecipeTerminalFunction(subgoal.getGoal(), isFailure);

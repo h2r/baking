@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
@@ -221,10 +222,48 @@ public class MixAction extends BakingAction {
 		return state.appendObject(newIngredient);
 	}
 	
+	private IngredientRecipe chooseBestCombination(List<IngredientRecipe> combinations, Collection<ObjectInstance> combinedIngredients) {
+		IngredientRecipe bestIngredient = null;
+		int bestNeighborness = 0;
+		for (IngredientRecipe ingredient : combinations) {
+			List<IngredientRecipe> contents = ingredient.getContents();
+			int sum = 0;
+			List<ObjectInstance> found = new ArrayList<ObjectInstance>();
+			for (IngredientRecipe ing : contents) {
+				for (ObjectInstance object : combinedIngredients) {
+					if (object.getName().equals(ing.getSimpleName())) {
+						int neighborness = IngredientFactory.getAttributeNumber(object) & ing.getAttributeNumber();
+						sum += Integer.bitCount(neighborness);
+						found.add(object);
+						break;
+					}
+				}
+			}
+			
+			Map<String, IngredientRecipe> necTraits = ingredient.getNecessaryTraits();
+			for (Map.Entry<String, IngredientRecipe> entry : necTraits.entrySet()) {
+				for (ObjectInstance object : combinedIngredients) {
+					if (!found.contains(object) && IngredientFactory.getTraits(object).contains(entry.getKey())) {
+						int neighborness = IngredientFactory.getAttributeNumber(object) & entry.getValue().getAttributeNumber();
+						sum += Integer.bitCount(neighborness);
+						found.add(object);
+						break;
+					}
+				}
+			}
+			if (sum >= bestNeighborness) {
+				bestNeighborness = sum;
+				bestIngredient = ingredient;
+			}
+			
+		}
+		
+		return bestIngredient;
+	}
 	
 	public State makeSwappedIngredient(State state, StateBuilder builder, Domain domain, ObjectInstance container, 
 			List<IngredientRecipe> combinations, Collection<ObjectInstance> combinedIngredients) {
-		IngredientRecipe newIngredient = combinations.get(0);
+		IngredientRecipe newIngredient = chooseBestCombination(combinations, combinedIngredients);
 		
 		//get the actual traits from the trait map
 		Set<String> ings = ContainerFactory.getContentNames(container);

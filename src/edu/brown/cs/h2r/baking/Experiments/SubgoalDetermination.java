@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Random;
 
 import burlap.behavior.singleagent.Policy;
+import burlap.behavior.singleagent.planning.stochastic.rtdp.AffordanceRTDP;
 import burlap.behavior.statehashing.NameDependentStateHashFactory;
 import burlap.behavior.statehashing.ObjectHashFactory;
 import burlap.behavior.statehashing.StateHashFactory;
@@ -33,11 +34,19 @@ import edu.brown.cs.h2r.baking.ObjectFactories.ToolFactory;
 import edu.brown.cs.h2r.baking.Prediction.PolicyPrediction;
 import edu.brown.cs.h2r.baking.Prediction.PolicyProbability;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
+import edu.brown.cs.h2r.baking.Recipes.CerealWithMilk;
+import edu.brown.cs.h2r.baking.Recipes.ChocolateMilk;
+import edu.brown.cs.h2r.baking.Recipes.CoffeeWithMilk;
+import edu.brown.cs.h2r.baking.Recipes.FriedEgg;
+import edu.brown.cs.h2r.baking.Recipes.Pancake;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
+import edu.brown.cs.h2r.baking.Recipes.ScrambledEgg;
+import edu.brown.cs.h2r.baking.Recipes.Tea;
 import edu.brown.cs.h2r.baking.actions.GreaseAction;
 import edu.brown.cs.h2r.baking.actions.MixAction;
 import edu.brown.cs.h2r.baking.actions.MoveAction;
 import edu.brown.cs.h2r.baking.actions.PourAction;
+import edu.brown.cs.h2r.baking.actions.ResetAction;
 import edu.brown.cs.h2r.baking.actions.SwitchAction;
 import edu.brown.cs.h2r.baking.actions.UseAction;
 
@@ -58,9 +67,11 @@ public class SubgoalDetermination {
 		Action mix = new MixAction(domain);
 		Action pour = new PourAction(domain);
 		Action move = new MoveAction(domain);
-		Action grease = new GreaseAction(domain);
+		//Action grease = new GreaseAction(domain);
 		Action aSwitch = new SwitchAction(domain);
-		Action use = new UseAction(domain);
+		//Action use = new UseAction(domain);
+		Action resetAction = new ResetAction(domain);
+		//Action prepareAction = new PreparationAction(domain);
 		
 		
 		// To the failed propFunction, add in all subgoals for a recipe that are based on an ingredient.
@@ -81,6 +92,8 @@ public class SubgoalDetermination {
 		List<String> containers = Arrays.asList("mixing_bowl_1", "mixing_bowl_2", "baking_dish", "melting_pot");
 		ObjectInstance counterSpace = SpaceFactory.getNewWorkingSpaceObjectInstance(generalDomain, SpaceFactory.SPACE_COUNTER, containers, "human", objectHashingFactory);
 		objects.add(counterSpace);
+		ObjectInstance shelfSpace = SpaceFactory.getNewObjectInstance(generalDomain, "shelf", SpaceFactory.NO_ATTRIBUTES, null, "", objectHashingFactory);
+		objects.add(shelfSpace);
 		
 		objects.add(ToolFactory.getNewSimpleToolObjectInstance(generalDomain, "whisk", "", "", SpaceFactory.SPACE_COUNTER, objectHashingFactory));
 		
@@ -90,7 +103,7 @@ public class SubgoalDetermination {
 		objects.add(SpaceFactory.getNewHeatingSpaceObjectInstance(generalDomain, SpaceFactory.SPACE_STOVE, null, "", objectHashingFactory));
 		
 		for (String container : containers) { 
-			objects.add(ContainerFactory.getNewMixingContainerObjectInstance(generalDomain, container, null, SpaceFactory.SPACE_COUNTER, objectHashingFactory));
+			objects.add(ContainerFactory.getNewMixingContainerObjectInstance(generalDomain, container, null, "shelf", objectHashingFactory));
 		}
 		
 		// Out of all the ingredients in our kitchen, plan over only those that might be useful!
@@ -118,13 +131,17 @@ public class SubgoalDetermination {
 		Policy policy = subdomain.getPolicy();
 		State state = subdomain.getStartState();
 		BakingSubgoal subgoal = subdomain.getSubgoal();
-		
+		AffordanceRTDP planner = subdomain.getPlanner();
+		planner.planFromState(state);
 		//System.out.println("Taking actions");
 		for (int i = 0; i < maxDepth; i++) {
 			if (subgoal.goalCompleted(state)) {
 				return null;
 			}
 			AbstractGroundedAction action = policy.getAction(state);
+			if (action == null) {
+				return actions;
+			}
 			//System.out.println("\t" + action.actionName() + " " + Arrays.toString(action.params) );
 			state = action.executeIn(state);
 			actions.add(action);
@@ -180,7 +197,7 @@ public class SubgoalDetermination {
 		
 	public static void main(String[] argv) {
 		int numTries = 10;
-		boolean breakfastOrDessert = false;
+		boolean breakfastOrDessert = true;
 		Random rando = new Random();
 		
 		int trialId = Math.abs(rando.nextInt());
@@ -195,32 +212,30 @@ public class SubgoalDetermination {
 		Knowledgebase knowledgebase = Knowledgebase.getKnowledgebase(domain);
 		knowledgebase.initKnowledgebase(recipes);
 		State state = SubgoalDetermination.generateInitialState(domain, recipes);
-		
+		ResetAction reset = (ResetAction)domain.getAction(ResetAction.className);
+		reset.setState(state);
 		RewardFunction rf = new RewardFunction() {
 			@Override
 			public double reward(State s, GroundedAction a, State sprime) {
 				return -1;
 			}
 		};
-		int recipeChoice = trialId % recipes.size();
 		List<KitchenSubdomain> allPolicyDomains = AgentHelper.generateAllRTDPPoliciesParallel(domain, state, recipes, rf, hashingFactory);
 		
 		for (KitchenSubdomain subdomain : allPolicyDomains) {
 			List<GroundedAction> actions = new ArrayList<GroundedAction>();
 			AgentHelper.generateActionSequence(subdomain, subdomain.getStartState(), rf, actions);
-			System.out.println(subdomain.toString());
+			System.out.println(subdomain.toString() + ", " + actions.size());
 			System.out.println(actions.toString() + "\n");
 		}
-		
-		
 		
 		List<KitchenSubdomain> policyDomains = AgentHelper.generateRTDPPolicies(recipes.get(0), domain, state, rf, hashingFactory);
 		Collections.shuffle(policyDomains);
 		
 		System.out.println("Chosen policy, Depth, Depth Type, Successes, Estimate Successes, Informed Guesses, Total Trials");
 		
-		for (int i = 0; i < numTries; i++) {
-			for (KitchenSubdomain policyDomain : policyDomains) {
+		for (int i = 0; i < 1; i++) {
+			for (KitchenSubdomain policyDomain : allPolicyDomains) {
 				for (int depthType = 0; depthType < 1; depthType++) {
 					PolicyPrediction prediction = new PolicyPrediction(allPolicyDomains);			
 					for (int depth = 1; depth < 20; depth++) {	
@@ -229,7 +244,7 @@ public class SubgoalDetermination {
 						int numRandomGuesses = 0;
 						
 						List<AbstractGroundedAction> actions = SubgoalDetermination.generateActionSequenceFromPolicy(policyDomain, depth);
-						if (actions == null) {
+						if (actions == null || actions.size() != depth) {
 							break;
 						}
 						for (AbstractGroundedAction action : actions) {

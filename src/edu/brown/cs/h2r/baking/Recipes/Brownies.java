@@ -82,9 +82,9 @@ public class Brownies extends Recipe {
 	
 	public List<BakingSubgoal> getSubgoals(Domain domain) {
 		List<BakingSubgoal> subgoals = new ArrayList<BakingSubgoal>();
-		BakingPropositionalFunction pf1 = new SpaceOn(AffordanceCreator.SPACEON_PF, domain, this.topLevelIngredient, SpaceFactory.SPACE_OVEN);
+		/*BakingPropositionalFunction pf1 = new SpaceOn(AffordanceCreator.SPACEON_PF, domain, this.topLevelIngredient, SpaceFactory.SPACE_OVEN);
 		BakingSubgoal sg1 = new BakingSubgoal(pf1, this.topLevelIngredient);
-		subgoals.add(sg1);
+		subgoals.add(sg1);*/
 		
 		//BakingPropositionalFunction pf2 = new ContainerGreased(AffordanceCreator.CONTAINERGREASED_PF, domain, this.topLevelIngredient);
 		//BakingSubgoal sg2 = new BakingSubgoal(pf2, this.topLevelIngredient);
@@ -107,7 +107,7 @@ public class Brownies extends Recipe {
 		
 		BakingPropositionalFunction pf4 = new RecipeFinished(AffordanceCreator.FINISH_PF, domain, this.subgoalIngredients.get("dry_ingredients"));
 		BakingSubgoal sg4 = new BakingSubgoal(pf4, this.subgoalIngredients.get("dry_ingredients"));
-		sg4 = sg4.addPrecondition(sg1);
+		//sg4 = sg4.addPrecondition(sg1);
 		//sg4.addPrecondition(sg2);
 
 		subgoals.add(sg4);

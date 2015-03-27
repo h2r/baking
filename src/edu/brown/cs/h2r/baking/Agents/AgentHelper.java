@@ -15,6 +15,7 @@ import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.Policy;
 import burlap.behavior.singleagent.planning.QComputablePlanner;
 import burlap.behavior.singleagent.planning.commonpolicies.AffordanceGreedyQPolicy;
+import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
 import burlap.behavior.singleagent.planning.stochastic.rtdp.AffordanceRTDP;
 import burlap.behavior.statehashing.NameDependentStateHashFactory;
 import burlap.behavior.statehashing.StateHashFactory;
@@ -208,11 +209,12 @@ public static State generateActionSequence(KitchenSubdomain currentSubgoal, List
 	
 	public static State generateActionSequence(KitchenSubdomain policyDomain, State startingState, RewardFunction rf, List<GroundedAction> actions) {
 		BakingSubgoal subgoal = policyDomain.getSubgoal();
-		Policy policy = policyDomain.getPolicy();
+		policyDomain.getPlanner().planFromState(startingState);
+ 		
+		Policy policy = new GreedyQPolicy(policyDomain.getPlanner());
 		
 		TerminalFunction recipeTerminalFunction = new RecipeTerminalFunction(subgoal.getGoal());
-		policyDomain.getPlanner().planFromState(startingState);
- 		EpisodeAnalysis episodeAnalysis = policy.evaluateBehavior(startingState, rf, recipeTerminalFunction, 100);
+		EpisodeAnalysis episodeAnalysis = policy.evaluateBehavior(startingState, rf, recipeTerminalFunction, 100);
 		/*
 		System.out.println("Action list for " + policyDomain.toString());
 		for (GroundedAction action : episodeAnalysis.actionSequence) {
