@@ -27,10 +27,15 @@ import gurobi.GRBVar;
 
 public class TercioScheduler implements Scheduler {
 	private static double M = 1000.0;
-	private static long MAX_SOLUTIONS = 100;
+	private static long MAX_SOLUTIONS = 10;
 	private final boolean useActualValues;
 	public TercioScheduler(boolean useActualValues) {
 		this.useActualValues = useActualValues;
+	}
+	
+	@Override
+	public String toString() {
+		return "Tercio";
 	}
 
 	@Override
@@ -75,6 +80,7 @@ public class TercioScheduler implements Scheduler {
 			
 			double makespanTime = Double.MAX_VALUE;
 			long solutionCount = 0;
+			TercioSequencer sequencer = new TercioSequencer(this.useActualValues);
 			while (solutionCount++ < MAX_SOLUTIONS && makespanTime > cutoff) {
 				model.optimize();
 				int numSolutions = model.get(GRB.IntAttr.SolCount);
@@ -88,11 +94,11 @@ public class TercioScheduler implements Scheduler {
 				Assignments currentAssignments = assignments.copy();
 				
 				this.extractAssignments(workflow, currentAssignments, modelVariables);
-				
-				double time = currentAssignments.time();
+				Assignments sequenced = sequencer.sequence(currentAssignments, timeGenerator, workflow);
+				double time = sequenced.time();
 				if (time < makespanTime) {
 					//System.out.println(solutionCount + ", " + time);
-					bestAssignments = currentAssignments;
+					bestAssignments = sequenced;
 					makespanTime = time;
 				}
 				if (!TercioScheduler.addConstraint(currentAssignments, workflow, model, modelVariables, solutionCount)) {
@@ -381,35 +387,19 @@ public class TercioScheduler implements Scheduler {
 		
 	}
 
-	private Map<String, List<Double>> extractAssignments(Workflow workflow,
+	private void extractAssignments(Workflow workflow,
 			Assignments assignments, Map<String, GRBVar> modelVariables) throws GRBException {
-		Map<String, List<Double>> startTimes = new HashMap<String, List<Double>>();
-		for (Assignment assignment : assignments) {
-			startTimes.put(assignment.getId(), new ArrayList<Double>());
-		}
 		for (Workflow.Node node : workflow) {
-			String nodeStartStr = node.toString() + "_START";
-			GRBVar nodeStart = modelVariables.get(nodeStartStr);
-
-			for (Assignment assignment : assignments) {
-				String agent = assignment.getId();
-				List<Double> times = startTimes.get(agent);
+			for (String agent : assignments.agents()) {
 				String actionStr = node.getAction(agent).toString();
 				GRBVar actionVar = modelVariables.get(actionStr);
 				double value = actionVar.get(GRB.DoubleAttr.X);
 				if (value > 0.5) {
-					double startTime = nodeStart.get(GRB.DoubleAttr.X);
-					int pos = Collections.binarySearch(times, startTime);
-					if (pos < 0) {
-						pos = -(pos + 1);
-					}
-					times.add(pos, startTime);
-					assignment.add(pos, node);
-					
+					assignments.add(node, agent);
+					break;
 				}
 			}
 		}
-		return startTimes;
 	}
 
 	

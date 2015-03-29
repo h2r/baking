@@ -225,71 +225,63 @@ public class SubgoalDetermination {
 			System.out.println(actions.toString() + "\n");
 		}
 		
-		List<KitchenSubdomain> policyDomains = AgentHelper.generateRTDPPolicies(recipes.get(0), domain, state, rf, hashingFactory);
-		Collections.shuffle(policyDomains);
-		
 		System.out.println("Chosen policy, Depth, Depth Type, Successes, Estimate Successes, Informed Guesses, Total Trials");
 		PolicyPrediction prediction = new PolicyPrediction(allPolicyDomains);			
 		
-		for (int i = 0; i < 1; i++) {
-			for (KitchenSubdomain policyDomain : allPolicyDomains) {
-				for (int depthType = 0; depthType < 1; depthType++) {
-					for (int depth = 1; depth < 20; depth++) {	
-						int numSuccess = 0;
-						int numEstimateSuccesses = 0;
-						int numRandomGuesses = 0;
-						
-						List<AbstractGroundedAction> actions = SubgoalDetermination.generateActionSequenceFromPolicy(policyDomain, depth);
-						if (actions == null || actions.size() != depth) {
-							break;
-						}
-						for (AbstractGroundedAction action : actions) {
-							System.out.println("\t" + action.toString());
-						}
-						state = SubgoalDetermination.getStateFromActionSequence(policyDomain.getStartState(), actions);
-						if (state == null) {
-							break;
-						}
-						
-						List<PolicyProbability> policyDistribution = 
-								prediction.getPolicyDistributionFromStatePair(policyDomain.getStartState(), state, 20, 
-										policyDomain, actions, SubgoalDetermination.hashingFactory, depthType);
-						
-						if (policyDistribution == null) {
-							continue;
-						}
-						double maxProb = 0.0;
-						List<KitchenSubdomain> bestPolicies = new ArrayList<KitchenSubdomain>();
-						for (int j = 0; j < policyDistribution.size(); j++) {
-							PolicyProbability policyProbability = policyDistribution.get(j);
-							System.out.println("\t" + policyProbability.toString());
-									
-							double prob = (policyProbability == null) ? 0.0 : policyProbability.getProbability();
-							if (prob > maxProb) {
-								bestPolicies.clear();
-								bestPolicies.add(policyProbability.getPolicyDomain());
-								maxProb = prob;	
-							} else if (prob == maxProb) {
-								bestPolicies.add(policyProbability.getPolicyDomain());
-							}
-						}
-						Collections.shuffle(bestPolicies, rando);
-						if (bestPolicies.size() > 1) {
-							numRandomGuesses++;
-						}
-						KitchenSubdomain choice = bestPolicies.get(0);
-						
-						if (choice.toString().equals(policyDomain.toString())) {
-							numSuccess++;
-							if (bestPolicies.size() == 1) {
-								numEstimateSuccesses++;
-							}
-						}
-						System.out.println(policyDomain.toString() + ", " + depth + ", " + depthType + ", " + numSuccess + ", " + numEstimateSuccesses + ", " + numRandomGuesses + ", " +  1);
-					}
-				}
-			}
+		int numExperiments = trialId % (10 * allPolicyDomains.size());
+		int depth = numExperiments / 10;
+		int choice = numExperiments % allPolicyDomains.size();
+		KitchenSubdomain policyDomain = allPolicyDomains.get(choice);
+		int numSuccess = 0;
+		int numEstimateSuccesses = 0;
+		int numRandomGuesses = 0;
 		
+		List<AbstractGroundedAction> actions = SubgoalDetermination.generateActionSequenceFromPolicy(policyDomain, depth);
+		if (actions == null || actions.size() != depth) {
+			return;
 		}
+		for (AbstractGroundedAction action : actions) {
+			System.out.println("\t" + action.toString());
+		}
+		state = SubgoalDetermination.getStateFromActionSequence(policyDomain.getStartState(), actions);
+		if (state == null) {
+			return;
+		}
+		
+		List<PolicyProbability> policyDistribution = 
+				prediction.getPolicyDistributionFromStatePair(policyDomain.getStartState(), state, 20, 
+						policyDomain, actions, SubgoalDetermination.hashingFactory, 0);
+		
+		if (policyDistribution == null) {
+			return;
+		}
+		double maxProb = 0.0;
+		List<KitchenSubdomain> bestPolicies = new ArrayList<KitchenSubdomain>();
+		for (int j = 0; j < policyDistribution.size(); j++) {
+			PolicyProbability policyProbability = policyDistribution.get(j);
+			System.out.println("\t" + policyProbability.toString());
+					
+			double prob = (policyProbability == null) ? 0.0 : policyProbability.getProbability();
+			if (prob > maxProb) {
+				bestPolicies.clear();
+				bestPolicies.add(policyProbability.getPolicyDomain());
+				maxProb = prob;	
+			} else if (prob == maxProb) {
+				bestPolicies.add(policyProbability.getPolicyDomain());
+			}
+		}
+		Collections.shuffle(bestPolicies, rando);
+		if (bestPolicies.size() > 1) {
+			numRandomGuesses++;
+		}
+		KitchenSubdomain bestPolicy = bestPolicies.get(0);
+		
+		if (bestPolicy.toString().equals(policyDomain.toString())) {
+			numSuccess++;
+			if (bestPolicies.size() == 1) {
+				numEstimateSuccesses++;
+			}
+		}
+		System.out.println(policyDomain.toString() + ", " + depth + ", " + 0 + ", " + numSuccess + ", " + numEstimateSuccesses + ", " + numRandomGuesses + ", " +  1);
 	}
 }

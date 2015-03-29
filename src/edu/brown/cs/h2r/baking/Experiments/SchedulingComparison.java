@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
 import edu.brown.cs.h2r.baking.Scheduling.Assignment;
@@ -107,7 +109,7 @@ public class SchedulingComparison {
 				//new MILPScheduler(false),
 				new GreedyScheduler(false),
 				new ExhaustiveStarScheduler(new GreedyScheduler(false)),
-				new TercioScheduler(false)
+				(Scheduler)new TercioScheduler(false)
 				//(Scheduler)new ExhaustiveStarScheduler(new WeightByShortest(false)),
 				//(Scheduler)new ExhaustiveStarScheduler(new WeightByDifference(false)),
 				//(Scheduler)new ExhaustiveScheduler(10, false),
@@ -133,8 +135,11 @@ public class SchedulingComparison {
 		List<Integer> connectedness = Arrays.asList(20);
 		Random random = new Random();
 		//Collections.shuffle(connectedness);
+		
 		for (int j = 4; j < 40; j++) {
 			for (int i = 0; i < numTries; i++) {
+				Map<String, Double> results = new HashMap<String, Double>();
+				Map<String, Long> timeResults = new HashMap<String, Long>();
 				int numEdges =  j;
 				int numResources = j;
 				int numResourcesPerNode = 3;
@@ -151,21 +156,34 @@ public class SchedulingComparison {
 				Workflow workflow = SchedulingComparison.buildSortedWorkflow(j, numEdges, numResources, numResourcesPerNode);
 				List<Double> times = new ArrayList<Double>();
 				
+				long start = System.nanoTime();
 				double milpTime = milpScheduler.schedule(workflow, Arrays.asList("human", "friend", "friend1", "friend2"), timeGenerator);
-				
+				long end = System.nanoTime();
+				results.put("milp", milpTime);
+				timeResults.put("milp", (end - start));
 				
 				for (Scheduler scheduler : schedulers) {
+					start = System.nanoTime();
 					Assignments assignments = scheduler.schedule(workflow, Arrays.asList("human", "friend", "friend1", "friend2"), timeGenerator);
+					end = System.nanoTime();
 					double time = assignments.time();
+					results.put(scheduler.toString(), time);
+					timeResults.put(scheduler.toString(), (end - start));
 					times.add(time);
 					if (time < 0.0) {
 						MILPScheduler.checkAssignments(workflow, assignments);
 					}
 				}
 
-				System.out.print(j + ", " + milpTime + ", ");
-				for (Double time : times) {
-					System.out.print(time + ", ");
+				Iterator<Map.Entry<String, Double>> it = results.entrySet().iterator();
+				System.out.print(j + ", ");
+				while (it.hasNext()){
+					Map.Entry<String, Double> entry = it.next();
+					double t = (double)(timeResults.get(entry.getKey())) / 1000000000.0;
+					System.out.print(entry.getKey() + ", " + entry.getValue() + ", " + t);
+					if (it.hasNext()) {
+						System.out.print(", ");
+					}
 				}
 				System.out.print("\n");
 				

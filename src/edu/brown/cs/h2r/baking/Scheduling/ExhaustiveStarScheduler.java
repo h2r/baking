@@ -39,6 +39,10 @@ public class ExhaustiveStarScheduler implements Scheduler {
 		this.sequencer = new BasicSequencer(this.useActualValues);
 	}
 
+	@Override
+	public String toString() {
+		return "Search";
+	}
 	public boolean isUsingActualValues() {
 		return this.useActualValues;
 	}

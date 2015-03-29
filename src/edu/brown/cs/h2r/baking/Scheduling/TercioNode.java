@@ -44,10 +44,13 @@ public class TercioNode {
 		return (size == 0) ? 2.0 : 1.0 / size;
 	}
 	
-	public static double computeR(Collection<Assignment> assignments, Set<String> nodeResources) {
+	public static double computeR(Assignments assignments, Set<String> nodeResources) {
 		Map<String, Integer> resourceCounts = new HashMap<String, Integer>();
 		for (Assignment assignment : assignments) {
 			for (Workflow.Node node : assignment.nodes()) {
+				if (node == null) {
+					continue;
+				}
 				Set<String> resources = node.getResources();
 				for (String resource : resources) {
 					Integer count = resourceCounts.get(resource);
@@ -69,7 +72,7 @@ public class TercioNode {
 		return sum;
 	}
 	
-	public static double computeP(String thisAgent, Workflow.Node thisNode, Collection<Assignment> assignments, Set<Workflow.Node> visited ) {
+	public static double computeP(String thisAgent, Workflow.Node thisNode, Assignments assignments, Set<Workflow.Node> visited ) {
 		double sum = 0.0;
 		for (Assignment assignment : assignments) {
 			if (assignment.getId().equals(thisAgent)) {

@@ -18,6 +18,10 @@ public class GreedyScheduler implements Scheduler {
 		this.sequencer = new BasicSequencer(this.useActualValues);
 	}
 
+	@Override
+	public String toString() {
+		return "ECT";
+	}
 	public boolean isUsingActualValues() {
 		return this.useActualValues;
 	}
