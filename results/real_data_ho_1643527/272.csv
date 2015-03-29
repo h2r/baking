@@ -1,0 +1,38 @@
+Agent, Successes, Trials, Average reward, average successful reward
+Evaluating solo
+Recipe, fried egg
+[switch [human, stove]: 0.25, move [human, eggs_bowl, counter]: 0.25, move [human, olive_oil_bowl, counter]: 0.25, move [human, butter_bowl, counter]: 0.25]
+Executing action switch [human, stove], 0.0, 2.210358470769808
+[reset [human]: 0.0, move [human, eggs_bowl, counter]: 0.3333333333333333, move [human, olive_oil_bowl, counter]: 0.3333333333333333, move [human, butter_bowl, counter]: 0.3333333333333333]
+Executing action move [human, olive_oil_bowl, counter], 2.210358470769808, 33.55257023557417
+[pour [human, olive_oil_bowl, frying_pan]: 0.5, reset [human]: 0.0, move [human, eggs_bowl, counter]: 0.5, move [human, butter_bowl, counter]: 0.0]
+Executing action move [human, eggs_bowl, counter], 33.55257023557417, 65.16551163366385
+[pour [human, eggs_bowl, frying_pan]: 0.5, pour [human, eggs_bowl, mixing_bowl_1]: 0.0, pour [human, olive_oil_bowl, frying_pan]: 0.5, reset [human]: 0.0, move [human, butter_bowl, counter]: 0.0]
+Executing action pour [human, eggs_bowl, frying_pan], 65.16551163366385, 77.70529134969166
+[pour [human, frying_pan, trash]: 0.0, pour [human, frying_pan, mixing_bowl_1]: 0.0, pour [human, olive_oil_bowl, frying_pan]: 1.0, reset [human]: 0.0, move [human, frying_pan, stove]: 0.0, move [human, butter_bowl, counter]: 0.0]
+Executing action pour [human, olive_oil_bowl, frying_pan], 77.70529134969166, 98.72570943918109
+[pour [human, frying_pan, trash]: 0.0, reset [human]: 0.0, move [human, frying_pan, stove]: 1.0, move [human, butter_bowl, counter]: 0.0, mix [human, frying_pan, whisk]: 0.0]
+Executing action move [human, frying_pan, stove], 98.72570943918109, 116.59525644117882
+[reset [human]: 0.0, move [human, frying_pan, counter]: 0.0, move [human, butter_bowl, counter]: 0.0, mix [human, frying_pan, whisk]: 1.0]
+Executing action mix [human, frying_pan, whisk], 116.59525644117882, 167.89264460276843
+solo, 1, 1, 167.89264460276843, 167.89264460276843
+solo, time, 38
+Evaluating Expert
+Required 8.17E-7
+Recipe, fried egg
+Is not cooperative
+Human chose move [human, butter_bowl, counter]
+Partner chose to wait
+Executing action move [human, butter_bowl, counter], 0.0, 17.508258950739144
+Executing action wait [partner] 0.0, 17.508258950739144
+Is cooperative
+human scheduled actions
+-partner
+	move [partner, eggs_bowl, counter], 0.0, 17.638171521376616
+-human
+	pour [human, butter_bowl, frying_pan], 0.0, 16.05074884668936
+	switch [human, stove], 16.05074884668936, 17.883995101107445
+	pour [human, eggs_bowl, frying_pan], 17.883995101107445, 28.82594666405278
+	move [human, frying_pan, stove], 28.825946664052776, 44.87911678933895
+	mix [human, frying_pan, whisk], 44.879116789338944, 87.6396377136069
+Human chose pour [human, butter_bowl, frying_pan]

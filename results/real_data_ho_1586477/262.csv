@@ -1,0 +1,179 @@
+Agent, Successes, Trials, Average reward, average successful reward
+Evaluating solo
+Recipe, cereal with milk
+[pour [human, milk_bowl, mixing_bowl_1]: 0.5, pour [human, cereal_bowl, mixing_bowl_1]: 0.5]
+Executing action pour [human, milk_bowl, mixing_bowl_1], 0.0, 25.06819329588122
+[pour [human, mixing_bowl_1, trash]: 0.0, pour [human, cereal_bowl, mixing_bowl_1]: 1.0, reset [human]: 0.0]
+Executing action pour [human, cereal_bowl, mixing_bowl_1], 25.06819329588122, 40.734678367304014
+[pour [human, mixing_bowl_1, trash]: 0.0, reset [human]: 0.0, mix [human, mixing_bowl_1, whisk]: 1.0]
+Executing action mix [human, mixing_bowl_1, whisk], 40.734678367304014, 58.15577850898562
+solo, 1, 1, 58.15577850898562, 58.15577850898562
+solo, time, 38
+Evaluating Expert
+Required 1.187E-6
+Recipe, cereal with milk
+Human chose pour [human, cereal_bowl, mixing_bowl_1]
+Partner chose to wait
+Executing action pour [human, cereal_bowl, mixing_bowl_1], 0.0, 15.866672503545999
+Executing action wait [partner] 0.0, 15.866672503545999
+human scheduled actions
+-partner
+	pour [partner, milk_bowl, mixing_bowl_1], 0.0, 16.208331412288096
+	mix [partner, mixing_bowl_1, whisk], 16.208331412288096, 16.788331986752063
+-human
+partner scheduled actions
+-partner
+	pour [partner, milk_bowl, mixing_bowl_1], 0.0, 15.666787701055656
+	mix [partner, mixing_bowl_1, whisk], 15.666787701055654, 16.288294281949398
+-human
+Executing action pour [partner, milk_bowl, mixing_bowl_1], 15.866672503545999, 31.71217648550264
+Executing action wait [human] 15.866672503545999, 31.71217648550264
+human scheduled actions
+-partner
+	mix [partner, mixing_bowl_1, whisk], 0.0, 0.5458021841636082
+-human
+partner scheduled actions
+-partner
+	mix [partner, mixing_bowl_1, whisk], 0.0, 0.5444405108704047
+-human
+Executing action mix [partner, mixing_bowl_1, whisk], 31.71217648550264, 32.29064244256783
+Executing action wait [human] 31.71217648550264, 32.29064244256783
+Expert, 1, 1, 32.29064244256783, 32.29064244256783
+Expert, time, 90
+
+Time cereal with milk - 95.632194967
+Time chocolate milk - 98.395347238
+Time coffee with milk - 98.549760162
+Time tea - 312.915968134
+Time pancake - 500.087237578
+Time scrambled egg - 1064.923012377
+Time fried egg - 1614.588635707
+Evaluating AdaptiveByFlow scheduling: true
+Required 1.886E-6
+Recipe, cereal with milk
+Human chose pour [human, cereal_bowl, mixing_bowl_1]
+Partner chose to wait
+Executing action pour [human, cereal_bowl, mixing_bowl_1], 0.0, 14.915759293017334
+Executing action wait [partner] 0.0, 14.915759293017334
+human scheduled actions
+-partner
+	pour [partner, milk_bowl, mixing_bowl_1], 0.0, 15.674467623773396
+	mix [partner, mixing_bowl_1, whisk], 15.674467623773394, 16.251944338931164
+-human
+Previous Distribution
+coffee with milk - coffee_with_milk: 0.14285714285714285
+cereal with milk - cereal_with_milk: 0.14285714285714285
+pancake - pancake: 0.14285714285714285
+fried egg - fried_egg: 0.14285714285714285
+scrambled egg - scrambled_egg: 0.14285714285714285
+chocolate milk - chocolate_milk: 0.14285714285714285
+tea - hot_tea: 0.14285714285714285
+
+
+Update
+coffee with milk - coffee_with_milk: 0.0
+cereal with milk - cereal_with_milk: 1.0
+pancake - pancake: 0.0
+fried egg - fried_egg: 0.0
+scrambled egg - scrambled_egg: 0.0
+chocolate milk - chocolate_milk: 0.0
+tea - hot_tea: 0.0
+
+
+Current Distribution
+cereal with milk - cereal_with_milk: 1.0
+
+
+pour [partner, milk_bowl, mixing_bowl_1]
+	cereal with milk - cereal_with_milk
+		[pour [partner, milk_bowl, mixing_bowl_1], mix [human, mixing_bowl_1, whisk]]
+
+NullAction [partner]
+	cereal with milk - cereal_with_milk
+		[pour [human, milk_bowl, mixing_bowl_1], mix [human, mixing_bowl_1, whisk]]
+
+pour [partner, milk_bowl, mixing_bowl_1]: 16.043860043558972
+NullAction [partner]: 26.043860043558972
+Executing action pour [partner, milk_bowl, mixing_bowl_1], 14.915759293017334, 31.90228675934802
+Executing action wait [human] 14.915759293017334, 31.90228675934802
+human scheduled actions
+-partner
+	mix [partner, mixing_bowl_1, whisk], 0.0, 0.5560694099383054
+-human
+Previous Distribution
+coffee with milk - coffee_with_milk: 0.0
+cereal with milk - cereal_with_milk: 1.0
+pancake - pancake: 0.0
+fried egg - fried_egg: 0.0
+scrambled egg - scrambled_egg: 0.0
+chocolate milk - chocolate_milk: 0.0
+tea - hot_tea: 0.0
+
+
+Current Distribution
+cereal with milk - cereal_with_milk: 1.0
+
+
+mix [partner, mixing_bowl_1, whisk]
+	cereal with milk - cereal_with_milk
+		[mix [partner, mixing_bowl_1, whisk]]
+
+NullAction [partner]
+	cereal with milk - cereal_with_milk
+		[mix [human, mixing_bowl_1, whisk]]
+
+mix [partner, mixing_bowl_1, whisk]: 0.5438600435589724
+NullAction [partner]: 10.543860043558972
+Executing action mix [partner, mixing_bowl_1, whisk], 31.90228675934802, 32.50679250015414
+Executing action wait [human] 31.90228675934802, 32.50679250015414
+AdaptiveByFlow scheduling: true, 1, 1, 32.50679250015414, 32.50679250015414
+AdaptiveByFlow scheduling: true, time, 568
+
+Agent, Successes, Trials, Average reward, average successful reward
+Evaluating solo
+Recipe, cereal with milk
+[pour [human, milk_bowl, mixing_bowl_1]: 0.5, pour [human, cereal_bowl, mixing_bowl_1]: 0.5]
+Executing action pour [human, cereal_bowl, mixing_bowl_1], 0.0, 18.32897861382242
+[pour [human, mixing_bowl_1, trash]: 0.0, pour [human, milk_bowl, mixing_bowl_1]: 1.0, reset [human]: 0.0]
+Executing action pour [human, milk_bowl, mixing_bowl_1], 18.32897861382242, 37.76563954782776
+[pour [human, mixing_bowl_1, trash]: 0.0, reset [human]: 0.0, mix [human, mixing_bowl_1, whisk]: 1.0]
+Executing action mix [human, mixing_bowl_1, whisk], 37.76563954782776, 55.84845566640672
+solo, 1, 1, 55.84845566640672, 55.84845566640672
+solo, time, 28
+Evaluating Expert
+Required 5.7134E-5
+Recipe, cereal with milk
+Human chose pour [human, cereal_bowl, mixing_bowl_1]
+Partner chose to wait
+Executing action pour [human, cereal_bowl, mixing_bowl_1], 0.0, 17.741758471404964
+Executing action wait [partner] 0.0, 17.741758471404964
+human scheduled actions
+-partner
+	pour [partner, milk_bowl, mixing_bowl_1], 0.0, 16.1162837697508
+	mix [partner, mixing_bowl_1, whisk], 16.1162837697508, 24.586297029010318
+-human
+partner scheduled actions
+-partner
+	pour [partner, milk_bowl, mixing_bowl_1], 0.0, 15.977306690470606
+	mix [partner, mixing_bowl_1, whisk], 15.977306690470606, 24.365836570801093
+-human
+Executing action pour [partner, milk_bowl, mixing_bowl_1], 17.741758471404964, 34.84476610085826
+Executing action wait [human] 17.741758471404964, 34.84476610085826
+human scheduled actions
+-partner
+	mix [partner, mixing_bowl_1, whisk], 0.0, 8.074554609236513
+-human
+partner scheduled actions
+-partner
+	mix [partner, mixing_bowl_1, whisk], 0.0, 8.236477536471082
+-human
+Executing action mix [partner, mixing_bowl_1, whisk], 34.84476610085826, 44.57315199755368
+Executing action wait [human] 34.84476610085826, 44.57315199755368
+Expert, 1, 1, 44.57315199755368, 44.57315199755368
+Expert, time, 92
+
+Time cereal with milk - 52.10625755
+Time coffee with milk - 53.072924101
+Time chocolate milk - 54.605052908
+Time tea - 224.533551155
+Time pancake - 415.872216084

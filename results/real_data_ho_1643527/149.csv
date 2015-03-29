@@ -1,0 +1,94 @@
+Agent, Successes, Trials, Average reward, average successful reward
+Evaluating solo
+Recipe, scrambled egg
+[switch [human, stove]: 0.25, move [human, eggs_bowl, counter]: 0.25, move [human, olive_oil_bowl, counter]: 0.25, move [human, butter_bowl, counter]: 0.25]
+Executing action switch [human, stove], 0.0, 10.194370484759908
+[reset [human]: 0.0, move [human, eggs_bowl, counter]: 0.3333333333333333, move [human, olive_oil_bowl, counter]: 0.3333333333333333, move [human, butter_bowl, counter]: 0.3333333333333333]
+Executing action move [human, eggs_bowl, counter], 10.194370484759908, 26.579071776337695
+[pour [human, eggs_bowl, mixing_bowl_1]: 0.0, reset [human]: 0.0, move [human, olive_oil_bowl, counter]: 0.5, move [human, butter_bowl, counter]: 0.5]
+Executing action move [human, olive_oil_bowl, counter], 26.579071776337695, 43.436439383047585
+[pour [human, eggs_bowl, mixing_bowl_1]: 0.0, pour [human, olive_oil_bowl, frying_pan]: 1.0, reset [human]: 0.0, move [human, butter_bowl, counter]: 0.0]
+Executing action pour [human, olive_oil_bowl, frying_pan], 43.436439383047585, 76.08129535371458
+[pour [human, frying_pan, trash]: 0.0, reset [human]: 0.0, move [human, frying_pan, stove]: 1.0, move [human, butter_bowl, counter]: 0.0]
+Executing action move [human, frying_pan, stove], 76.08129535371458, 105.2289987443157
+[reset [human]: 0.0, move [human, frying_pan, counter]: 1.0, move [human, butter_bowl, counter]: 0.0]
+Executing action move [human, frying_pan, counter], 105.2289987443157, 133.0314976938861
+[pour [human, frying_pan, trash]: 0.0, pour [human, frying_pan, mixing_bowl_1]: 0.0, pour [human, eggs_bowl, frying_pan]: 1.0, reset [human]: 0.0, move [human, frying_pan, stove]: 0.0, move [human, butter_bowl, counter]: 0.0]
+Executing action pour [human, eggs_bowl, frying_pan], 133.0314976938861, 151.18325653283378
+[pour [human, frying_pan, trash]: 0.0, pour [human, frying_pan, mixing_bowl_1]: 0.0, reset [human]: 0.0, move [human, frying_pan, stove]: 0.0, move [human, butter_bowl, counter]: 0.0, mix [human, frying_pan, whisk]: 1.0]
+Executing action mix [human, frying_pan, whisk], 151.18325653283378, 168.77682491350873
+[pour [human, frying_pan, trash]: 0.0, pour [human, frying_pan, mixing_bowl_1]: 0.0, reset [human]: 0.0, move [human, frying_pan, stove]: 1.0, move [human, butter_bowl, counter]: 0.0]
+Executing action move [human, frying_pan, stove], 168.77682491350873, 199.6440337764908
+solo, 1, 1, 199.6440337764908, 199.6440337764908
+solo, time, 9
+Evaluating Expert
+Required 3.21E-7
+Recipe, scrambled egg
+Is not cooperative
+Human chose switch [human, stove]
+Partner chose to wait
+Executing action switch [human, stove], 0.0, 9.813035686789943
+Executing action wait [partner] 0.0, 9.813035686789943
+Is cooperative
+human scheduled actions
+-partner
+	move [partner, butter_bowl, counter], 0.0, 16.735758232630275
+	wait, 16.735758232630275, 30.57950502004187
+	move [partner, frying_pan, stove], 30.579505020041868, 50.33954359849177
+	move [partner, frying_pan, counter], 50.33954359849177, 66.36794134583818
+	wait, 66.36794134583818, 97.65222388153019
+	move [partner, frying_pan, stove], 97.65222388153019, 115.7624009835521
+-human
+	wait, 0.0, 16.735758232630275
+	pour [human, butter_bowl, frying_pan], 16.735758232630275, 30.57950502004187
+	move [human, eggs_bowl, counter], 30.57950502004187, 47.75886891345924
+	wait, 47.75886891345924, 66.36794134583818
+	pour [human, eggs_bowl, frying_pan], 66.36794134583818, 81.43772938844778
+	mix [human, frying_pan, whisk], 81.43772938844778, 97.65222388153019
+partner scheduled actions
+-partner
+	move [partner, olive_oil_bowl, counter], 0.0, 16.392215755262935
+	wait, 16.392215755262935, 43.805103354515495
+	move [partner, frying_pan, stove], 43.805103354515495, 59.830690463206466
+	move [partner, frying_pan, counter], 59.830690463206466, 75.94876279345
+	wait, 75.94876279345, 107.84214316628791
+	move [partner, frying_pan, stove], 107.84214316628791, 126.61909917194481
+-human
+	move [human, eggs_bowl, counter], 0.0, 17.232469136280987
+	pour [human, olive_oil_bowl, frying_pan], 17.232469136280983, 43.805103354515495
+	wait, 43.805103354515495, 75.94876279345
+	pour [human, eggs_bowl, frying_pan], 75.94876279345, 91.32421927637894
+	mix [human, frying_pan, whisk], 91.32421927637894, 107.84214316628791
+Executing action move [partner, olive_oil_bowl, counter], 9.813035686789943, 29.184916990243146
+Executing action wait [human] 9.813035686789943, 29.184916990243146
+Is cooperative
+human scheduled actions
+-partner
+	move [partner, eggs_bowl, counter], 0.0, 18.356711132704433
+	wait, 18.356711132704433, 28.012594688566242
+	move [partner, frying_pan, stove], 28.01259468856624, 45.396188618495046
+	move [partner, frying_pan, counter], 45.396188618495046, 61.840106005615354
+	wait, 61.840106005615354, 94.42341653264863
+	move [partner, frying_pan, stove], 94.42341653264864, 111.11098697827748
+-human
+	pour [human, olive_oil_bowl, frying_pan], 0.0, 28.012594688566242
+	wait, 28.01259468856624, 61.840106005615354
+	pour [human, eggs_bowl, frying_pan], 61.840106005615354, 77.49509112519374
+	mix [human, frying_pan, whisk], 77.49509112519374, 94.42341653264863
+Human chose pour [human, olive_oil_bowl, frying_pan]
+partner scheduled actions
+-partner
+	wait, 0.0, 26.160544217690614
+	move [partner, frying_pan, stove], 26.160544217690614, 42.160544217690614
+	move [partner, frying_pan, counter], 42.160544217690614, 58.160544217690614
+	wait, 58.160544217690614, 87.87949846606061
+	move [partner, frying_pan, stove], 87.87949846606061, 103.87949846606061
+-human
+	pour [human, olive_oil_bowl, frying_pan], 0.0, 26.160544217690614
+	move [human, eggs_bowl, counter], 26.160544217690614, 41.99734977324717
+	wait, 41.99734977324717, 58.160544217690614
+	pour [human, eggs_bowl, frying_pan], 58.160544217690614, 73.18668800855022
+	mix [human, frying_pan, whisk], 73.18668800855022, 87.87949846606061
+Partner chose to wait
+Executing action pour [human, olive_oil_bowl, frying_pan], 29.184916990243146, 56.2761616151555
+Executing action wait [partner] 29.184916990243146, 56.2761616151555
