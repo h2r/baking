@@ -1,0 +1,3484 @@
+state: |
+  - {name: human, class: agent, robot: '0'}
+  - {name: partner, class: agent, robot: '0'}
+  - AgentCount: '2'
+    PrimaryAgent: ''
+    AgentList: !!set {}
+    name: makespan
+    class: MakeSpan
+  - switchable: false
+    cleaning: false
+    onoff: false
+    name: counter
+    heating: false
+    class: space
+    contains: !!set {mixing_bowl_1: null, mixing_bowl_2: null, mixing_bowl_3: null}
+    baking: false
+    working: true
+    agent: human
+  - incldue: !!set {}
+    toolAttribute: ''
+    name: whisk
+    toolTrait: ''
+    class: tool
+    exclude: !!set {}
+    contains: !!set {}
+    canCarry: false
+    used: false
+    space: counter
+  - mixing: false
+    pouring: true
+    name: baking_dish
+    greased: false
+    heating: false
+    class: container
+    contains: !!set {}
+    baking: true
+    space: counter
+    used: false
+    receiving: true
+  - mixing: true
+    pouring: true
+    name: frying_pan
+    greased: false
+    heating: true
+    class: container
+    contains: !!set {}
+    baking: false
+    space: stove
+    used: false
+    receiving: true
+  - switchable: true
+    cleaning: true
+    onoff: false
+    name: oven
+    heating: false
+    class: space
+    contains: !!set {}
+    baking: true
+    working: false
+    agent: ''
+  - mixing: true
+    pouring: true
+    name: mixing_bowl_1
+    greased: false
+    heating: false
+    class: container
+    contains: !!set {}
+    baking: false
+    space: counter
+    used: false
+    receiving: true
+  - mixing: true
+    pouring: true
+    name: mixing_bowl_2
+    greased: false
+    heating: false
+    class: container
+    contains: !!set {}
+    baking: false
+    space: counter
+    used: false
+    receiving: true
+  - mixing: true
+    pouring: true
+    name: mixing_bowl_3
+    greased: false
+    heating: false
+    class: container
+    contains: !!set {}
+    baking: false
+    space: counter
+    used: false
+    receiving: true
+  - mixing: false
+    pouring: true
+    name: milk_bowl
+    greased: false
+    heating: false
+    class: container
+    contains: !!set {milk: null}
+    baking: false
+    space: counter
+    used: false
+    receiving: false
+  - heatingInfo: ''
+    preparation: !!set {}
+    container: milk_bowl
+    toolAttribute: !!set {}
+    name: milk
+    toolTrait: !!set {}
+    mixed: false
+    class: simple_ingredient
+    heated: false
+    traits: !!set {liquid: null, wet: null}
+    useCount: '1'
+    baked: false
+    heatedState: ''
+  - mixing: false
+    pouring: true
+    name: coffee_bowl
+    greased: false
+    heating: false
+    class: container
+    contains: !!set {coffee: null}
+    baking: false
+    space: counter
+    used: false
+    receiving: false
+  - heatingInfo: ''
+    preparation: !!set {}
+    container: coffee_bowl
+    toolAttribute: !!set {}
+    name: coffee
+    toolTrait: !!set {}
+    mixed: false
+    class: simple_ingredient
+    heated: false
+    traits: !!set {liquid: null, wet: null}
+    useCount: '1'
+    baked: false
+    heatedState: ''
+  - mixing: false
+    pouring: true
+    name: cereal_bowl
+    greased: false
+    heating: false
+    class: container
+    contains: !!set {cereal: null}
+    baking: false
+    space: counter
+    used: false
+    receiving: false
+  - heatingInfo: ''
+    preparation: !!set {}
+    container: cereal_bowl
+    toolAttribute: !!set {}
+    name: cereal
+    toolTrait: !!set {}
+    mixed: false
+    class: simple_ingredient
+    heated: false
+    traits: !!set {}
+    useCount: '1'
+    baked: false
+    heatedState: ''
+  - mixing: false
+    pouring: true
+    name: eggs_bowl
+    greased: false
+    heating: false
+    class: container
+    contains: !!set {eggs: null}
+    baking: false
+    space: counter
+    used: false
+    receiving: false
+  - heatingInfo: cooked
+    preparation: !!set {}
+    container: eggs_bowl
+    toolAttribute: !!set {}
+    name: eggs
+    toolTrait: !!set {}
+    mixed: false
+    class: simple_ingredient
+    heated: false
+    traits: !!set {eggs: null, wet: null}
+    useCount: '1'
+    baked: false
+    heatedState: ''
+  - mixing: false
+    pouring: true
+    name: flour_bowl
+    greased: false
+    heating: false
+    class: container
+    contains: !!set {flour: null}
+    baking: false
+    space: counter
+    used: false
+    receiving: false
+  - heatingInfo: ''
+    preparation: !!set {}
+    container: flour_bowl
+    toolAttribute: !!set {}
+    name: flour
+    toolTrait: !!set {}
+    mixed: false
+    class: simple_ingredient
+    heated: false
+    traits: !!set {dry: null, flour: null, grain: null}
+    useCount: '1'
+    baked: false
+    heatedState: ''
+  - mixing: false
+    pouring: true
+    name: olive_oil_bowl
+    greased: false
+    heating: false
+    class: container
+    contains: !!set {olive_oil: null}
+    baking: false
+    space: counter
+    used: false
+    receiving: false
+  - heatingInfo: ''
+    preparation: !!set {}
+    container: olive_oil_bowl
+    toolAttribute: !!set {}
+    name: olive_oil
+    toolTrait: !!set {}
+    mixed: false
+    class: simple_ingredient
+    heated: false
+    traits: !!set {fat: null, liquid: null, lubricant: null, oil: null, unsaturated: null,
+      wet: null}
+    useCount: '1'
+    baked: false
+    heatedState: ''
+  - mixing: false
+    pouring: true
+    name: butter_bowl
+    greased: false
+    heating: false
+    class: container
+    contains: !!set {butter: null}
+    baking: false
+    space: counter
+    used: false
+    receiving: false
+  - heatingInfo: melted
+    preparation: !!set {}
+    container: butter_bowl
+    toolAttribute: !!set {}
+    name: butter
+    toolTrait: !!set {}
+    mixed: false
+    class: simple_ingredient
+    heated: false
+    traits: !!set {dairy: null, fat: null, grease: null, lubricant: null, wet: null}
+    useCount: '1'
+    baked: false
+    heatedState: ''
+  - mixing: false
+    pouring: true
+    name: cocoa_bowl
+    greased: false
+    heating: false
+    class: container
+    contains: !!set {cocoa: null}
+    baking: false
+    space: counter
+    used: false
+    receiving: false
+  - heatingInfo: ''
+    preparation: !!set {}
+    container: cocoa_bowl
+    toolAttribute: !!set {}
+    name: cocoa
+    toolTrait: !!set {}
+    mixed: false
+    class: simple_ingredient
+    heated: false
+    traits: !!set {dry: null}
+    useCount: '1'
+    baked: false
+    heatedState: ''
+  - mixing: false
+    pouring: true
+    name: water_bowl
+    greased: false
+    heating: false
+    class: container
+    contains: !!set {water: null}
+    baking: false
+    space: counter
+    used: false
+    receiving: false
+  - heatingInfo: ''
+    preparation: !!set {}
+    container: water_bowl
+    toolAttribute: !!set {}
+    name: water
+    toolTrait: !!set {}
+    mixed: false
+    class: simple_ingredient
+    heated: false
+    traits: !!set {liquid: null, water: null, wet: null}
+    useCount: '1'
+    baked: false
+    heatedState: ''
+  - mixing: false
+    pouring: true
+    name: tea_bowl
+    greased: false
+    heating: false
+    class: container
+    contains: !!set {tea: null}
+    baking: false
+    space: counter
+    used: false
+    receiving: false
+  - heatingInfo: ''
+    preparation: !!set {}
+    container: tea_bowl
+    toolAttribute: !!set {}
+    name: tea
+    toolTrait: !!set {}
+    mixed: false
+    class: simple_ingredient
+    heated: false
+    traits: !!set {}
+    useCount: '1'
+    baked: false
+    heatedState: ''
+  - switchable: true
+    cleaning: true
+    onoff: true
+    name: stove
+    heating: true
+    class: space
+    contains: !!set {frying_pan: null}
+    baking: false
+    working: false
+    agent: ''
+current_time: 19.041248766436787
+partner:
+  type: AdaptiveByFlow
+  agent:
+    use_scheduling: false
+    policy_distribution: {fried egg - fried_egg: 0.5, pancake - batter: 0.0, coffee with milk - coffee_with_milk: 0.0,
+      scrambled egg - scrambled_egg: 0.5, coffee with milk - chocolate_milk: 0.0,
+      cereal with milk - cereal_with_milk: 0.0, tea - tea: 0.0}
+    name: partner
+    state_history:
+    - |
+      - {name: human, class: agent, robot: '0'}
+      - {name: partner, class: agent, robot: '0'}
+      - AgentCount: '2'
+        PrimaryAgent: ''
+        AgentList: !!set {}
+        name: makespan
+        class: MakeSpan
+      - switchable: false
+        cleaning: false
+        onoff: false
+        name: counter
+        heating: false
+        class: space
+        contains: !!set {mixing_bowl_1: null, mixing_bowl_2: null, mixing_bowl_3: null}
+        baking: false
+        working: true
+        agent: human
+      - incldue: !!set {}
+        toolAttribute: ''
+        name: whisk
+        toolTrait: ''
+        class: tool
+        exclude: !!set {}
+        contains: !!set {}
+        canCarry: false
+        used: false
+        space: counter
+      - mixing: false
+        pouring: true
+        name: baking_dish
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {}
+        baking: true
+        space: counter
+        used: false
+        receiving: true
+      - mixing: true
+        pouring: true
+        name: frying_pan
+        greased: false
+        heating: true
+        class: container
+        contains: !!set {}
+        baking: false
+        space: counter
+        used: false
+        receiving: true
+      - switchable: true
+        cleaning: true
+        onoff: false
+        name: oven
+        heating: false
+        class: space
+        contains: !!set {}
+        baking: true
+        working: false
+        agent: ''
+      - switchable: true
+        cleaning: true
+        onoff: false
+        name: stove
+        heating: true
+        class: space
+        contains: !!set {}
+        baking: false
+        working: false
+        agent: ''
+      - mixing: true
+        pouring: true
+        name: mixing_bowl_1
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {}
+        baking: false
+        space: counter
+        used: false
+        receiving: true
+      - mixing: true
+        pouring: true
+        name: mixing_bowl_2
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {}
+        baking: false
+        space: counter
+        used: false
+        receiving: true
+      - mixing: true
+        pouring: true
+        name: mixing_bowl_3
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {}
+        baking: false
+        space: counter
+        used: false
+        receiving: true
+      - mixing: false
+        pouring: true
+        name: milk_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {milk: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: milk_bowl
+        toolAttribute: !!set {}
+        name: milk
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {liquid: null, wet: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: coffee_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {coffee: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: coffee_bowl
+        toolAttribute: !!set {}
+        name: coffee
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {liquid: null, wet: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: cereal_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {cereal: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: cereal_bowl
+        toolAttribute: !!set {}
+        name: cereal
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: eggs_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {eggs: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: cooked
+        preparation: !!set {}
+        container: eggs_bowl
+        toolAttribute: !!set {}
+        name: eggs
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {eggs: null, wet: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: flour_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {flour: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: flour_bowl
+        toolAttribute: !!set {}
+        name: flour
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {dry: null, flour: null, grain: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: olive_oil_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {olive_oil: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: olive_oil_bowl
+        toolAttribute: !!set {}
+        name: olive_oil
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {fat: null, liquid: null, lubricant: null, oil: null, unsaturated: null,
+          wet: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: butter_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {butter: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: melted
+        preparation: !!set {}
+        container: butter_bowl
+        toolAttribute: !!set {}
+        name: butter
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {dairy: null, fat: null, grease: null, lubricant: null, wet: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: cocoa_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {cocoa: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: cocoa_bowl
+        toolAttribute: !!set {}
+        name: cocoa
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {dry: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: water_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {water: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: water_bowl
+        toolAttribute: !!set {}
+        name: water
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {liquid: null, water: null, wet: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: tea_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {tea: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: tea_bowl
+        toolAttribute: !!set {}
+        name: tea
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+    - |
+      - {name: human, class: agent, robot: '0'}
+      - {name: partner, class: agent, robot: '0'}
+      - AgentCount: '2'
+        PrimaryAgent: ''
+        AgentList: !!set {}
+        name: makespan
+        class: MakeSpan
+      - switchable: false
+        cleaning: false
+        onoff: false
+        name: counter
+        heating: false
+        class: space
+        contains: !!set {mixing_bowl_1: null, mixing_bowl_2: null, mixing_bowl_3: null}
+        baking: false
+        working: true
+        agent: human
+      - incldue: !!set {}
+        toolAttribute: ''
+        name: whisk
+        toolTrait: ''
+        class: tool
+        exclude: !!set {}
+        contains: !!set {}
+        canCarry: false
+        used: false
+        space: counter
+      - mixing: false
+        pouring: true
+        name: baking_dish
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {}
+        baking: true
+        space: counter
+        used: false
+        receiving: true
+      - mixing: true
+        pouring: true
+        name: frying_pan
+        greased: false
+        heating: true
+        class: container
+        contains: !!set {}
+        baking: false
+        space: counter
+        used: false
+        receiving: true
+      - switchable: true
+        cleaning: true
+        onoff: false
+        name: oven
+        heating: false
+        class: space
+        contains: !!set {}
+        baking: true
+        working: false
+        agent: ''
+      - switchable: true
+        cleaning: true
+        onoff: false
+        name: stove
+        heating: true
+        class: space
+        contains: !!set {}
+        baking: false
+        working: false
+        agent: ''
+      - mixing: true
+        pouring: true
+        name: mixing_bowl_1
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {}
+        baking: false
+        space: counter
+        used: false
+        receiving: true
+      - mixing: true
+        pouring: true
+        name: mixing_bowl_2
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {}
+        baking: false
+        space: counter
+        used: false
+        receiving: true
+      - mixing: true
+        pouring: true
+        name: mixing_bowl_3
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {}
+        baking: false
+        space: counter
+        used: false
+        receiving: true
+      - mixing: false
+        pouring: true
+        name: milk_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {milk: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: milk_bowl
+        toolAttribute: !!set {}
+        name: milk
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {liquid: null, wet: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: coffee_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {coffee: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: coffee_bowl
+        toolAttribute: !!set {}
+        name: coffee
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {liquid: null, wet: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: cereal_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {cereal: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: cereal_bowl
+        toolAttribute: !!set {}
+        name: cereal
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: eggs_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {eggs: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: cooked
+        preparation: !!set {}
+        container: eggs_bowl
+        toolAttribute: !!set {}
+        name: eggs
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {eggs: null, wet: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: flour_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {flour: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: flour_bowl
+        toolAttribute: !!set {}
+        name: flour
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {dry: null, flour: null, grain: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: olive_oil_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {olive_oil: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: olive_oil_bowl
+        toolAttribute: !!set {}
+        name: olive_oil
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {fat: null, liquid: null, lubricant: null, oil: null, unsaturated: null,
+          wet: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: butter_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {butter: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: melted
+        preparation: !!set {}
+        container: butter_bowl
+        toolAttribute: !!set {}
+        name: butter
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {dairy: null, fat: null, grease: null, lubricant: null, wet: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: cocoa_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {cocoa: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: cocoa_bowl
+        toolAttribute: !!set {}
+        name: cocoa
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {dry: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: water_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {water: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: water_bowl
+        toolAttribute: !!set {}
+        name: water
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {liquid: null, water: null, wet: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: tea_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {tea: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: tea_bowl
+        toolAttribute: !!set {}
+        name: tea
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+    - |
+      - {name: human, class: agent, robot: '0'}
+      - {name: partner, class: agent, robot: '0'}
+      - AgentCount: '2'
+        PrimaryAgent: ''
+        AgentList: !!set {}
+        name: makespan
+        class: MakeSpan
+      - switchable: false
+        cleaning: false
+        onoff: false
+        name: counter
+        heating: false
+        class: space
+        contains: !!set {mixing_bowl_1: null, mixing_bowl_2: null, mixing_bowl_3: null}
+        baking: false
+        working: true
+        agent: human
+      - incldue: !!set {}
+        toolAttribute: ''
+        name: whisk
+        toolTrait: ''
+        class: tool
+        exclude: !!set {}
+        contains: !!set {}
+        canCarry: false
+        used: false
+        space: counter
+      - mixing: false
+        pouring: true
+        name: baking_dish
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {}
+        baking: true
+        space: counter
+        used: false
+        receiving: true
+      - mixing: true
+        pouring: true
+        name: frying_pan
+        greased: false
+        heating: true
+        class: container
+        contains: !!set {}
+        baking: false
+        space: counter
+        used: false
+        receiving: true
+      - switchable: true
+        cleaning: true
+        onoff: false
+        name: oven
+        heating: false
+        class: space
+        contains: !!set {}
+        baking: true
+        working: false
+        agent: ''
+      - switchable: true
+        cleaning: true
+        onoff: false
+        name: stove
+        heating: true
+        class: space
+        contains: !!set {}
+        baking: false
+        working: false
+        agent: ''
+      - mixing: true
+        pouring: true
+        name: mixing_bowl_1
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {}
+        baking: false
+        space: counter
+        used: false
+        receiving: true
+      - mixing: true
+        pouring: true
+        name: mixing_bowl_2
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {}
+        baking: false
+        space: counter
+        used: false
+        receiving: true
+      - mixing: true
+        pouring: true
+        name: mixing_bowl_3
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {}
+        baking: false
+        space: counter
+        used: false
+        receiving: true
+      - mixing: false
+        pouring: true
+        name: milk_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {milk: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: milk_bowl
+        toolAttribute: !!set {}
+        name: milk
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {liquid: null, wet: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: coffee_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {coffee: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: coffee_bowl
+        toolAttribute: !!set {}
+        name: coffee
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {liquid: null, wet: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: cereal_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {cereal: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: cereal_bowl
+        toolAttribute: !!set {}
+        name: cereal
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: eggs_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {eggs: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: cooked
+        preparation: !!set {}
+        container: eggs_bowl
+        toolAttribute: !!set {}
+        name: eggs
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {eggs: null, wet: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: flour_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {flour: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: flour_bowl
+        toolAttribute: !!set {}
+        name: flour
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {dry: null, flour: null, grain: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: olive_oil_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {olive_oil: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: olive_oil_bowl
+        toolAttribute: !!set {}
+        name: olive_oil
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {fat: null, liquid: null, lubricant: null, oil: null, unsaturated: null,
+          wet: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: butter_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {butter: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: melted
+        preparation: !!set {}
+        container: butter_bowl
+        toolAttribute: !!set {}
+        name: butter
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {dairy: null, fat: null, grease: null, lubricant: null, wet: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: cocoa_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {cocoa: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: cocoa_bowl
+        toolAttribute: !!set {}
+        name: cocoa
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {dry: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: water_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {water: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: water_bowl
+        toolAttribute: !!set {}
+        name: water
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {liquid: null, water: null, wet: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: tea_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {tea: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: tea_bowl
+        toolAttribute: !!set {}
+        name: tea
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+    - |
+      - {name: human, class: agent, robot: '0'}
+      - {name: partner, class: agent, robot: '0'}
+      - AgentCount: '2'
+        PrimaryAgent: ''
+        AgentList: !!set {}
+        name: makespan
+        class: MakeSpan
+      - switchable: false
+        cleaning: false
+        onoff: false
+        name: counter
+        heating: false
+        class: space
+        contains: !!set {mixing_bowl_1: null, mixing_bowl_2: null, mixing_bowl_3: null}
+        baking: false
+        working: true
+        agent: human
+      - incldue: !!set {}
+        toolAttribute: ''
+        name: whisk
+        toolTrait: ''
+        class: tool
+        exclude: !!set {}
+        contains: !!set {}
+        canCarry: false
+        used: false
+        space: counter
+      - mixing: false
+        pouring: true
+        name: baking_dish
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {}
+        baking: true
+        space: counter
+        used: false
+        receiving: true
+      - mixing: true
+        pouring: true
+        name: frying_pan
+        greased: false
+        heating: true
+        class: container
+        contains: !!set {}
+        baking: false
+        space: counter
+        used: false
+        receiving: true
+      - switchable: true
+        cleaning: true
+        onoff: false
+        name: oven
+        heating: false
+        class: space
+        contains: !!set {}
+        baking: true
+        working: false
+        agent: ''
+      - mixing: true
+        pouring: true
+        name: mixing_bowl_1
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {}
+        baking: false
+        space: counter
+        used: false
+        receiving: true
+      - mixing: true
+        pouring: true
+        name: mixing_bowl_2
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {}
+        baking: false
+        space: counter
+        used: false
+        receiving: true
+      - mixing: true
+        pouring: true
+        name: mixing_bowl_3
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {}
+        baking: false
+        space: counter
+        used: false
+        receiving: true
+      - mixing: false
+        pouring: true
+        name: milk_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {milk: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: milk_bowl
+        toolAttribute: !!set {}
+        name: milk
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {liquid: null, wet: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: coffee_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {coffee: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: coffee_bowl
+        toolAttribute: !!set {}
+        name: coffee
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {liquid: null, wet: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: cereal_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {cereal: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: cereal_bowl
+        toolAttribute: !!set {}
+        name: cereal
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: eggs_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {eggs: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: cooked
+        preparation: !!set {}
+        container: eggs_bowl
+        toolAttribute: !!set {}
+        name: eggs
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {eggs: null, wet: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: flour_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {flour: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: flour_bowl
+        toolAttribute: !!set {}
+        name: flour
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {dry: null, flour: null, grain: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: olive_oil_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {olive_oil: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: olive_oil_bowl
+        toolAttribute: !!set {}
+        name: olive_oil
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {fat: null, liquid: null, lubricant: null, oil: null, unsaturated: null,
+          wet: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: butter_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {butter: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: melted
+        preparation: !!set {}
+        container: butter_bowl
+        toolAttribute: !!set {}
+        name: butter
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {dairy: null, fat: null, grease: null, lubricant: null, wet: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: cocoa_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {cocoa: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: cocoa_bowl
+        toolAttribute: !!set {}
+        name: cocoa
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {dry: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: water_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {water: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: water_bowl
+        toolAttribute: !!set {}
+        name: water
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {liquid: null, water: null, wet: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: tea_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {tea: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: tea_bowl
+        toolAttribute: !!set {}
+        name: tea
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - switchable: true
+        cleaning: true
+        onoff: true
+        name: stove
+        heating: true
+        class: space
+        contains: !!set {}
+        baking: false
+        working: false
+        agent: ''
+    - |
+      - {name: human, class: agent, robot: '0'}
+      - {name: partner, class: agent, robot: '0'}
+      - AgentCount: '2'
+        PrimaryAgent: ''
+        AgentList: !!set {}
+        name: makespan
+        class: MakeSpan
+      - switchable: false
+        cleaning: false
+        onoff: false
+        name: counter
+        heating: false
+        class: space
+        contains: !!set {mixing_bowl_1: null, mixing_bowl_2: null, mixing_bowl_3: null}
+        baking: false
+        working: true
+        agent: human
+      - incldue: !!set {}
+        toolAttribute: ''
+        name: whisk
+        toolTrait: ''
+        class: tool
+        exclude: !!set {}
+        contains: !!set {}
+        canCarry: false
+        used: false
+        space: counter
+      - mixing: false
+        pouring: true
+        name: baking_dish
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {}
+        baking: true
+        space: counter
+        used: false
+        receiving: true
+      - mixing: true
+        pouring: true
+        name: frying_pan
+        greased: false
+        heating: true
+        class: container
+        contains: !!set {}
+        baking: false
+        space: stove
+        used: false
+        receiving: true
+      - switchable: true
+        cleaning: true
+        onoff: false
+        name: oven
+        heating: false
+        class: space
+        contains: !!set {}
+        baking: true
+        working: false
+        agent: ''
+      - mixing: true
+        pouring: true
+        name: mixing_bowl_1
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {}
+        baking: false
+        space: counter
+        used: false
+        receiving: true
+      - mixing: true
+        pouring: true
+        name: mixing_bowl_2
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {}
+        baking: false
+        space: counter
+        used: false
+        receiving: true
+      - mixing: true
+        pouring: true
+        name: mixing_bowl_3
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {}
+        baking: false
+        space: counter
+        used: false
+        receiving: true
+      - mixing: false
+        pouring: true
+        name: milk_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {milk: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: milk_bowl
+        toolAttribute: !!set {}
+        name: milk
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {liquid: null, wet: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: coffee_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {coffee: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: coffee_bowl
+        toolAttribute: !!set {}
+        name: coffee
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {liquid: null, wet: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: cereal_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {cereal: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: cereal_bowl
+        toolAttribute: !!set {}
+        name: cereal
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: eggs_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {eggs: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: cooked
+        preparation: !!set {}
+        container: eggs_bowl
+        toolAttribute: !!set {}
+        name: eggs
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {eggs: null, wet: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: flour_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {flour: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: flour_bowl
+        toolAttribute: !!set {}
+        name: flour
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {dry: null, flour: null, grain: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: olive_oil_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {olive_oil: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: olive_oil_bowl
+        toolAttribute: !!set {}
+        name: olive_oil
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {fat: null, liquid: null, lubricant: null, oil: null, unsaturated: null,
+          wet: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: butter_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {butter: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: melted
+        preparation: !!set {}
+        container: butter_bowl
+        toolAttribute: !!set {}
+        name: butter
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {dairy: null, fat: null, grease: null, lubricant: null, wet: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: cocoa_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {cocoa: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: cocoa_bowl
+        toolAttribute: !!set {}
+        name: cocoa
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {dry: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: water_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {water: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: water_bowl
+        toolAttribute: !!set {}
+        name: water
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {liquid: null, water: null, wet: null}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - mixing: false
+        pouring: true
+        name: tea_bowl
+        greased: false
+        heating: false
+        class: container
+        contains: !!set {tea: null}
+        baking: false
+        space: counter
+        used: false
+        receiving: false
+      - heatingInfo: ''
+        preparation: !!set {}
+        container: tea_bowl
+        toolAttribute: !!set {}
+        name: tea
+        toolTrait: !!set {}
+        mixed: false
+        class: simple_ingredient
+        heated: false
+        traits: !!set {}
+        useCount: '1'
+        baked: false
+        heatedState: ''
+      - switchable: true
+        cleaning: true
+        onoff: true
+        name: stove
+        heating: true
+        class: space
+        contains: !!set {frying_pan: null}
+        baking: false
+        working: false
+        agent: ''
+action_map: {partner: 17.546722124215567, human: 17.546722124215567}
+time_generator:
+  robot_parsed_times:
+    pour:
+      '[]':
+        robot: [14.0, 17.0]
+    move:
+      '[]':
+        robot: [17.0, 15.0]
+  bias_factors: {}
+  action_times:
+    ? [pour, human, eggs_bowl, frying_pan]
+    : 16.559183673471424
+    ? [pour, human, olive_oil_bowl, frying_pan]
+    : 16.559183673471424
+    ? [mix, human, frying_pan, whisk]
+    : 50.281099656350804
+    ? [pour, partner, olive_oil_bowl, frying_pan]
+    : 15.5
+    ? [pour, human, butter_bowl, frying_pan]
+    : 13.261728395059075
+    ? [mix, partner, frying_pan, whisk]
+    : 5.215946715689793
+    ? [pour, partner, eggs_bowl, frying_pan]
+    : 15.5
+    ? [switch, human, stove]
+    : 1.2798607002621964
+    ? [move, partner, frying_pan, counter]
+    : 16.0
+    ? [move, human, frying_pan, counter]
+    : 25.367272727267263
+    ? [move, human, frying_pan, stove]
+    : 15.836805555556557
+    ? [move, partner, frying_pan, stove]
+    : 16.0
+  real_data_choice:
+    ? [pour, human, eggs_bowl, frying_pan]
+    : '[coffee]'
+    ? [pour, human, olive_oil_bowl, frying_pan]
+    : '[coffee]'
+    ? [mix, human, frying_pan, whisk]
+    : '[egg]'
+    ? [pour, partner, olive_oil_bowl, frying_pan]
+    : '[]'
+    ? [pour, human, butter_bowl, frying_pan]
+    : '[oil]'
+    ? [pour, partner, eggs_bowl, frying_pan]
+    : '[]'
+    ? [move, partner, frying_pan, counter]
+    : '[]'
+    ? [move, human, frying_pan, counter]
+    : '[toppingOnTop]'
+    ? [move, human, frying_pan, stove]
+    : '[egg, plate]'
+    ? [move, partner, frying_pan, stove]
+    : '[]'
+  human_subject: P47
+  human_parsed_times:
+    take:
+      '[glass]':
+        P07: [6.53333333333]
+        P06: [6.26666666667]
+        P46: [8.26666666667]
+        P28: [7.26666666667]
+        P47: [5.53333333333]
+        P44: [11.8]
+        P09: [5.26666666667]
+        P45: [11.6]
+        P08: [11.6]
+        P27: [7.93333333333]
+        P24: [17.2666666667]
+        P48: [10.9333333333]
+        P22: [5.26666666667]
+        P49: [5.93333333333]
+        P23: [11.2666666667]
+        P21: [7.26666666667]
+        P20: [4.93333333333]
+        P42: [7.6]
+        P41: [7.93333333333]
+        P40: [2.53333333333]
+        P14: [5.26666666667]
+        P15: [6.6]
+        P18: [3.6]
+        P17: [8.6]
+        P19: [3.93333333333]
+        P38: [6.6]
+        P39: [2.6]
+        P34: [5.33333333333]
+        P35: [3.93333333333]
+        P30: [5.26666666667]
+        P50: [6.6]
+        P32: [5.93333333333]
+        P52: [6.6]
+        P51: [15.9333333333]
+        P53: [9.86666666667]
+        P10: [15.9333333333]
+      '[cup]':
+        P03: [10.6666666667, 11.6, 9.93333333333]
+        P07: [6.6, 6.66666666667]
+        P06: [6.8, 4.6, 3.13333333333]
+        P05: [16.0, 5.73333333333, 10.6666666667]
+        P46: [7.93333333333]
+        P47: [7.26666666667, 6.6]
+        P09: [11.8]
+        P44: [6.93333333333, 7.93333333333]
+        P24: [9.26666666667, 7.93333333333, 7.6]
+        P25: [9.93333333333]
+        P48: [9.6]
+        P23: [9.6, 3.6]
+        P20: [7.8, 6.26666666667, 8.6]
+        P43: [3.53333333333, 3.46666666667, 2.0]
+        P42: [5.26666666667, 7.26666666667, 7.26666666667]
+        P41: [2.86666666667, 2.86666666667, 2.66666666667]
+        P40: [2.26666666667, 4.26666666667, 6.26666666667]
+        P14: [7.26666666667]
+        P19: [7.26666666667]
+        P39: [2.8, 4.6, 5.26666666667]
+        P33: [2.46666666667, 4.6]
+        P34: [6.26666666667]
+        P30: [4.93333333333]
+        P50: [12.2666666667]
+        P31: [10.6, 13.9333333333]
+        P51: [5.13333333333, 10.6666666667]
+        P54: [5.66666666667, 3.6]
+        P53: [2.86666666667, 5.93333333333]
+        P10: [20.6, 11.2666666667]
+      '[topping]':
+        P30: [9.6]
+        P03: [6.53333333333, 34.3333333333]
+        P11: [13.9333333333]
+        P32: [4.6]
+        P31: [11.6]
+        P13: [10.6]
+        P16: [20.6]
+        P07: [8.26666666667]
+        P06: [14.0]
+        P05: [18.2666666667]
+        P09: [8.93333333333]
+        P08: [8.6]
+        P33: [11.2666666667]
+        P34: [2.6]
+        P10: [12.6]
+      '[bowl]':
+        P03: [7.93333333333, 9.93333333333]
+        P07: [17.8, 5.2, 3.93333333333]
+        P06: [6.4]
+        P05: [15.4666666667, 11.2666666667]
+        P04: [6.2]
+        P46: [2.33333333333]
+        P47: [7.13333333333, 3.6]
+        P09: [7.4, 6.33333333333]
+        P26: [15.9333333333]
+        P44: [7.13333333333, 9.93333333333]
+        P08: [2.93333333333]
+        P45: [14.0666666667]
+        P48: [7.6, 6.6]
+        P22: [4.73333333333, 4.33333333333, 6.93333333333]
+        P49: [14.3333333333, 23.6]
+        P23: [9.46666666667, 15.6, 3.8]
+        P21: [3.66666666667, 4.6]
+        P20: [1.26666666667, 7.53333333333]
+        P43: [3.06666666667, 4.53333333333, 3.93333333333]
+        P42: [6.6]
+        P41: [8.8]
+        P40: [2.73333333333, 2.6]
+        P12: [6.73333333333]
+        P11: [4.06666666667]
+        P13: [8.46666666667, 10.1333333333]
+        P19: [8.4]
+        P39: [3.66666666667, 3.6]
+        P50: [2.86666666667, 2.8]
+        P52: [6.4]
+        P51: [4.6, 1.93333333333, 14.3333333333]
+        P53: [5.93333333333]
+        P10: [7.6, 10.6]
+      '[knife]':
+        P03: [4.26666666667, 4.6]
+        P11: [11.6666666667, 4.93333333333]
+        P14: [9.26666666667]
+        P07: [2.93333333333, 15.6, 3.93333333333, 7.6]
+        P16: [3.26666666667]
+        P06: [3.13333333333]
+        P05: [8.26666666667, 10.6]
+        P04: [5.93333333333]
+        P19: [5.26666666667]
+        P44: [13.6, 4.6]
+        P39: [3.6]
+        P09: [3.6]
+        P08: [5.93333333333]
+        P48: [6.4]
+        P21: [8.2]
+        P20: [5.6, 3.4]
+        P50: [1.0]
+        P52: [12.2666666667]
+        P42: [8.6]
+        P41: [6.6]
+      '[eggs]':
+        P32: [16.9333333333]
+        P06: [13.2666666667]
+        P54: [13.4]
+        P18: [8.73333333333]
+        P25: [24.2666666667]
+        P22: [4.53333333333]
+      '[butter]':
+        P03: [6.6]
+        P20: [3.93333333333]
+        P34: [6.6]
+        P35: [1.93333333333]
+      '[squeezer]':
+        P50: [13.0]
+        P14: [9.2]
+        P15: [3.26666666667]
+        P06: [1.6]
+        P05: [1.93333333333]
+        P47: [1.86666666667]
+        P39: [2.6]
+        P09: [8.26666666667]
+        P33: [5.26666666667]
+        P48: [3.93333333333]
+        P10: [11.2666666667]
+      '[plate]':
+        P07: [4.26666666667, 7.86666666667, 5.6, 4.33333333333]
+        P06: [4.93333333333, 5.93333333333]
+        P05: [18.9333333333, 5.46666666667, 9.6, 5.13333333333, 3.93333333333, 7.6,
+          5.0]
+        P04: [9.26666666667, 7.66666666667, 7.86666666667]
+        P46: [8.93333333333, 8.66666666667]
+        P47: [13.8666666667, 7.8, 23.0666666667, 7.6, 53.1333333333]
+        P29: [5.13333333333, 8.6]
+        P44: [10.6, 8.93333333333, 37.2666666667, 15.6]
+        P09: [9.46666666667]
+        P26: [33.7333333333]
+        P45: [8.66666666667]
+        P08: [12.9333333333, 12.8666666667]
+        P27: [26.6, 20.0, 7.06666666667]
+        P24: [6.46666666667, 13.9333333333, 9.66666666667]
+        P25: [5.6]
+        P48: [9.8, 9.26666666667, 11.4666666667, 7.13333333333, 8.26666666667, 9.93333333333]
+        P22: [15.8, 5.66666666667, 3.6]
+        P49: [7.86666666667, 7.0]
+        P23: [5.93333333333, 10.4666666667, 6.6, 5.26666666667]
+        P21: [6.13333333333, 5.26666666667, 17.4]
+        P20: [7.33333333333, 9.2, 9.2]
+        P43: [6.93333333333, 5.26666666667, 3.6]
+        P42: [5.93333333333, 3.93333333333, 8.26666666667]
+        P41: [6.0, 5.93333333333, 2.93333333333]
+        P40: [3.6, 5.6, 6.0]
+        P12: [22.0, 5.26666666667, 10.4]
+        P11: [4.0, 12.6666666667, 5.26666666667, 32.0666666667]
+        P14: [17.6666666667, 2.6, 3.73333333333]
+        P13: [5.93333333333, 13.2666666667, 7.73333333333]
+        P16: [86.1333333333, 5.0, 10.0666666667]
+        P15: [42.8, 10.4, 3.13333333333]
+        P18: [8.2]
+        P17: [63.8666666667, 4.26666666667, 4.86666666667]
+        P37: [2.93333333333]
+        P38: [23.3333333333, 5.4, 7.6]
+        P19: [28.7333333333, 19.0666666667]
+        P39: [8.26666666667, 7.26666666667, 8.66666666667]
+        P35: [5.53333333333]
+        P30: [11.7333333333, 10.5333333333]
+        P50: [12.0, 1.93333333333, 9.06666666667, 2.53333333333, 6.26666666667]
+        P32: [32.4666666667, 3.26666666667, 25.7333333333]
+        P31: [9.46666666667, 14.2]
+        P52: [8.13333333333]
+        P51: [6.0, 11.4, 5.66666666667]
+        P54: [6.4, 14.9333333333, 6.46666666667]
+        P53: [8.53333333333, 5.73333333333, 6.8]
+        P10: [10.4]
+    pour:
+      '[dough, pan]':
+        P07: [7.86666666667]
+        P06: [19.1333333333]
+        P05: [18.8666666667]
+        P04: [23.4666666667]
+        P46: [34.0666666667]
+        P47: [8.6]
+        P29: [22.0666666667]
+        P44: [27.8666666667]
+        P09: [15.5333333333]
+        P26: [148.466666667]
+        P45: [33.3333333333]
+        P08: [18.1333333333]
+        P27: [40.3333333333]
+        P24: [59.3333333333]
+        P25: [52.9333333333]
+        P48: [11.6666666667]
+        P22: [11.4666666667]
+        P49: [11.1333333333]
+        P23: [51.6666666667]
+        P21: [20.7333333333]
+        P20: [12.0666666667]
+        P43: [50.7333333333]
+        P42: [23.8666666667]
+        P41: [22.2]
+        P40: [10.6]
+        P12: [9.33333333333]
+        P11: [40.5333333333]
+        P14: [19.0]
+        P13: [14.6]
+        P16: [13.3333333333]
+        P15: [24.7333333333]
+        P18: [12.4666666667]
+        P17: [22.2]
+        P37: [17.6666666667]
+        P38: [11.5333333333]
+        P19: [16.3333333333]
+        P39: [28.0]
+        P33: [14.8]
+        P35: [13.3333333333]
+        P36: [40.0]
+        P30: [31.6]
+        P50: [16.6666666667]
+        P32: [30.0]
+        P31: [60.4]
+        P52: [15.6]
+        P51: [12.5333333333]
+        P54: [8.46666666667]
+        P53: [6.86666666667]
+        P10: [45.7333333333]
+      '[sugar]':
+        P50: [7.13333333333]
+        P42: [12.9333333333]
+        P06: [12.6666666667]
+        P54: [11.2666666667, 9.26666666667]
+        P05: [16.5333333333]
+        P53: [10.3333333333]
+        P10: [6.66666666667]
+      '[oil]':
+        P03: [14.2]
+        P14: [7.8]
+        P13: [9.33333333333]
+        P16: [21.8, 21.5333333333]
+        P06: [8.0]
+        P15: [15.5333333333, 14.3333333333]
+        P18: [25.2, 14.5333333333]
+        P05: [9.73333333333, 11.8]
+        P04: [14.6, 16.4, 9.4]
+        P17: [7.06666666667, 9.93333333333]
+        P37: [6.66666666667, 12.4]
+        P38: [24.8666666667, 9.33333333333, 6.53333333333]
+        P26: [25.5333333333, 19.6, 16.4666666667]
+        P09: [6.66666666667, 5.0, 7.73333333333, 6.73333333333]
+        P27: [16.3333333333, 18.5333333333]
+        P08: [7.2, 7.86666666667]
+        P24: [8.66666666667, 21.2]
+        P34: [11.8, 7.86666666667]
+        P25: [17.0]
+        P35: [7.26666666667, 5.0, 12.0666666667]
+        P22: [9.33333333333, 18.3333333333, 9.93333333333]
+        P36: [6.13333333333, 18.9333333333, 20.4]
+        P23: [14.2, 16.6666666667, 15.7333333333]
+        P21: [32.6666666667, 11.2]
+        P10: [15.8666666667, 7.2]
+      '[milk]':
+        P03: [9.73333333333, 26.4, 15.9333333333]
+        P07: [19.2, 34.6, 5.73333333333]
+        P06: [13.8666666667, 6.26666666667, 7.13333333333, 12.5333333333]
+        P05: [33.2666666667, 26.6, 5.26666666667, 10.4666666667, 27.3333333333]
+        P04: [11.4, 12.6, 11.8]
+        P46: [15.6666666667, 11.0666666667, 27.2666666667, 10.8]
+        P28: [8.73333333333]
+        P47: [11.2, 11.4666666667, 14.6, 15.3333333333]
+        P29: [10.2, 18.0, 14.6, 10.6666666667]
+        P44: [13.4666666667, 17.9333333333, 13.0666666667]
+        P09: [19.3333333333, 13.2666666667, 8.13333333333, 14.0]
+        P26: [13.2666666667, 16.6, 11.2, 33.2666666667]
+        P45: [16.1333333333, 17.8, 15.2666666667, 16.8]
+        P27: [10.6666666667, 17.9333333333, 12.0, 9.13333333333]
+        P08: [19.9333333333, 19.8666666667, 7.6]
+        P24: [10.5333333333, 7.93333333333, 8.6, 18.8666666667]
+        P25: [7.4, 8.26666666667, 8.93333333333]
+        P48: [10.6, 17.2666666667, 15.4]
+        P22: [22.2666666667, 13.2666666667, 14.1333333333]
+        P49: [10.6666666667, 20.9333333333, 18.7333333333]
+        P23: [24.6, 8.6, 10.6, 7.06666666667, 4.06666666667]
+        P21: [15.4, 11.9333333333, 17.3333333333]
+        P20: [10.8666666667, 7.73333333333, 23.2666666667, 13.6666666667]
+        P43: [13.1333333333, 14.9333333333, 12.0666666667, 20.4]
+        P42: [12.9333333333, 13.4666666667, 13.2666666667, 21.2666666667]
+        P41: [11.2, 9.93333333333, 10.2, 15.6666666667, 8.46666666667]
+        P40: [12.3333333333, 9.86666666667, 15.2666666667, 10.2]
+        P12: [12.1333333333, 8.53333333333, 8.06666666667]
+        P11: [5.33333333333, 14.9333333333, 9.93333333333, 7.46666666667]
+        P14: [13.8666666667, 10.2666666667, 12.6, 11.4666666667]
+        P13: [10.6, 9.73333333333, 10.4666666667, 8.53333333333]
+        P16: [13.6, 6.53333333333, 10.9333333333, 8.26666666667, 18.2]
+        P15: [9.33333333333, 15.6, 9.6, 24.1333333333]
+        P18: [11.4, 13.6, 7.06666666667]
+        P17: [13.2, 17.9333333333, 8.26666666667]
+        P37: [3.8, 15.9333333333, 13.6666666667, 16.2666666667, 7.66666666667]
+        P38: [17.8666666667, 16.5333333333, 19.6, 14.8666666667, 10.4, 8.73333333333]
+        P19: [11.1333333333, 7.93333333333, 12.6, 12.2666666667]
+        P39: [11.5333333333, 14.8666666667, 17.2666666667, 17.9333333333]
+        P33: [7.73333333333, 7.6, 9.2, 9.26666666667]
+        P34: [11.0, 16.3333333333, 24.2666666667]
+        P35: [11.2666666667, 13.2666666667, 5.93333333333, 8.6]
+        P36: [10.4666666667, 23.9333333333, 33.0]
+        P30: [11.3333333333, 13.1333333333, 9.26666666667, 11.3333333333, 5.33333333333]
+        P50: [10.8666666667, 9.6, 11.2666666667, 10.7333333333, 9.2]
+        P32: [4.8, 5.93333333333, 6.6, 8.13333333333]
+        P31: [65.2, 16.2666666667, 21.2666666667, 21.0666666667]
+        P52: [14.6666666667, 5.53333333333, 13.9333333333, 10.0]
+        P51: [12.8666666667, 23.9333333333, 18.6, 17.2666666667]
+        P54: [13.8666666667, 9.6, 11.1333333333, 12.3333333333]
+        P53: [15.6, 11.7333333333, 25.6, 15.0]
+        P10: [14.7333333333, 11.2666666667, 19.6, 5.66666666667]
+      '[water]':
+        P03: [16.9333333333]
+        P07: [13.0666666667]
+        P06: [18.9333333333]
+        P05: [20.4666666667]
+        P04: [9.86666666667]
+        P46: [9.93333333333]
+        P47: [11.9333333333]
+        P29: [17.2666666667]
+        P44: [20.2666666667]
+        P09: [9.26666666667]
+        P26: [16.6]
+        P45: [8.93333333333]
+        P27: [21.9333333333]
+        P08: [10.4]
+        P24: [26.8]
+        P25: [13.2666666667]
+        P48: [11.2666666667]
+        P22: [11.3333333333]
+        P49: [15.2666666667]
+        P23: [21.2666666667]
+        P21: [8.2]
+        P20: [9.6]
+        P43: [17.2666666667]
+        P42: [23.2666666667]
+        P41: [23.1333333333]
+        P40: [29.2666666667]
+        P12: [7.26666666667]
+        P11: [11.9333333333]
+        P14: [14.4666666667]
+        P13: [10.2666666667]
+        P16: [14.6]
+        P15: [12.2666666667]
+        P18: [14.2666666667]
+        P17: [22.6]
+        P37: [11.9333333333]
+        P38: [16.8666666667]
+        P19: [11.2666666667]
+        P39: [27.2666666667]
+        P33: [10.6]
+        P34: [11.2666666667]
+        P35: [8.6]
+        P36: [10.6]
+        P30: [11.2666666667]
+        P50: [16.5333333333]
+        P32: [9.6]
+        P31: [19.2666666667]
+        P52: [13.0]
+        P51: [21.2666666667]
+        P54: [9.06666666667]
+        P53: [14.2666666667]
+        P10: [20.2666666667]
+      '[juice]':
+        P07: [14.4666666667]
+        P06: [20.6]
+        P05: [9.26666666667, 17.9333333333]
+        P46: [34.2666666667]
+        P28: [11.9333333333]
+        P47: [13.4666666667]
+        P29: [10.8666666667]
+        P44: [11.2666666667]
+        P09: [11.2666666667]
+        P26: [22.2666666667]
+        P45: [9.93333333333]
+        P08: [8.73333333333]
+        P27: [33.9333333333]
+        P24: [9.93333333333]
+        P25: [7.0]
+        P48: [7.93333333333]
+        P22: [9.93333333333]
+        P49: [8.6]
+        P23: [9.26666666667]
+        P21: [10.6]
+        P20: [8.6]
+        P43: [10.9333333333]
+        P42: [10.2666666667]
+        P41: [11.9333333333]
+        P14: [9.26666666667]
+        P16: [7.8, 7.2, 8.8, 6.53333333333]
+        P15: [25.9333333333]
+        P18: [5.93333333333, 4.6, 6.26666666667, 5.93333333333]
+        P17: [9.26666666667]
+        P37: [13.2666666667]
+        P38: [11.9333333333]
+        P19: [15.8666666667]
+        P39: [13.2666666667, 5.26666666667]
+        P33: [9.93333333333]
+        P34: [6.53333333333]
+        P35: [23.9333333333]
+        P36: [28.9333333333]
+        P30: [4.6, 10.6]
+        P50: [19.9333333333]
+        P32: [6.6]
+        P31: [59.2666666667]
+        P52: [48.9333333333]
+        P51: [9.26666666667]
+        P54: [9.26666666667]
+        P53: [10.6, 6.26666666667]
+        P10: [17.2666666667]
+      '[cereals]':
+        P03: [18.4666666667]
+        P07: [11.6666666667]
+        P06: [10.0]
+        P05: [25.1333333333]
+        P04: [11.8]
+        P46: [22.2, 9.53333333333]
+        P28: [11.1333333333]
+        P47: [19.4666666667]
+        P29: [12.0666666667]
+        P44: [15.6]
+        P09: [16.1333333333]
+        P26: [17.2666666667]
+        P45: [23.9333333333]
+        P27: [26.6]
+        P08: [39.0]
+        P24: [17.6666666667]
+        P25: [11.9333333333]
+        P48: [25.2]
+        P22: [15.0]
+        P49: [18.3333333333]
+        P23: [17.8666666667]
+        P21: [53.2666666667]
+        P20: [12.0]
+        P43: [18.2666666667]
+        P42: [15.8666666667]
+        P41: [25.1333333333]
+        P40: [16.7333333333]
+        P12: [18.6]
+        P11: [14.3333333333]
+        P14: [30.0666666667]
+        P13: [20.2666666667]
+        P16: [17.2666666667]
+        P15: [14.4]
+        P18: [10.8666666667]
+        P17: [18.8]
+        P37: [17.2666666667]
+        P38: [21.5333333333]
+        P19: [14.8666666667]
+        P39: [26.7333333333]
+        P33: [8.66666666667]
+        P34: [15.5333333333]
+        P35: [10.7333333333]
+        P36: [21.4]
+        P30: [15.5333333333]
+        P50: [13.6666666667]
+        P32: [10.2666666667]
+        P31: [16.7333333333]
+        P52: [13.2666666667]
+        P51: [16.9333333333]
+        P54: [25.2666666667]
+        P53: [18.6666666667]
+        P10: [7.13333333333]
+      '[egg, pan]':
+        P12: [56.4666666667]
+        P13: [13.6666666667]
+        P07: [9.6]
+        P16: [25.1333333333]
+        P05: [11.4]
+        P18: [19.6]
+        P04: [8.6]
+        P17: [28.2]
+        P47: [17.6666666667]
+        P26: [26.9333333333]
+        P09: [6.33333333333]
+        P45: [22.9333333333]
+        P27: [40.8]
+        P08: [10.8666666667]
+        P34: [18.9333333333]
+        P25: [30.0]
+        P35: [11.8666666667]
+        P23: [23.3333333333]
+        P21: [26.4666666667]
+        P32: [24.4666666667]
+        P52: [36.8]
+        P51: [9.6]
+        P41: [5.26666666667]
+        P40: [13.2]
+      '[flour]':
+        P12: [12.4666666667]
+        P13: [12.6, 8.4]
+        P26: [52.0]
+        P25: [16.1333333333, 7.86666666667]
+        P35: [11.1333333333]
+      '[coffee]':
+        P03: [11.8666666667]
+        P06: [5.66666666667]
+        P05: [9.0]
+        P46: [7.33333333333]
+        P47: [8.66666666667]
+        P29: [20.9333333333]
+        P44: [10.6]
+        P09: [25.0]
+        P26: [17.8666666667]
+        P45: [16.9333333333]
+        P08: [10.4]
+        P27: [29.2666666667]
+        P24: [9.6]
+        P25: [12.2666666667]
+        P48: [10.9333333333]
+        P22: [17.2666666667]
+        P49: [14.3333333333]
+        P23: [19.2666666667]
+        P21: [14.9333333333]
+        P20: [10.0666666667]
+        P43: [15.9333333333]
+        P42: [16.2666666667]
+        P41: [13.5333333333]
+        P40: [14.2666666667]
+        P12: [13.8666666667]
+        P11: [9.53333333333]
+        P14: [11.9333333333]
+        P13: [21.6]
+        P16: [19.1333333333]
+        P15: [30.6]
+        P18: [17.4666666667]
+        P17: [11.6]
+        P37: [39.9333333333]
+        P38: [30.6]
+        P19: [9.26666666667]
+        P39: [21.8]
+        P33: [17.2666666667]
+        P34: [9.2]
+        P35: [8.93333333333]
+        P36: [37.2666666667]
+        P30: [13.3333333333]
+        P50: [19.9333333333]
+        P32: [20.2666666667]
+        P31: [18.6]
+        P52: [24.1333333333]
+        P51: [14.2666666667]
+        P54: [12.9333333333]
+        P53: [16.4666666667]
+        P10: [19.2666666667]
+    mix:
+      '[tea]':
+        P41: [6.53333333333]
+        P46: [7.26666666667]
+      '[dough]':
+        P07: [17.7333333333, 80.3333333333]
+        P06: [54.0666666667]
+        P05: [43.4666666667, 52.8]
+        P04: [72.1333333333]
+        P46: [16.1333333333, 31.5333333333]
+        P47: [69.6, 47.0]
+        P29: [82.2666666667]
+        P44: [90.8666666667]
+        P09: [8.2, 12.5333333333]
+        P26: [85.7333333333]
+        P45: [28.5333333333, 30.8, 29.7333333333]
+        P08: [52.4666666667]
+        P27: [56.4, 35.6666666667]
+        P24: [48.5333333333, 70.6]
+        P25: [20.0, 16.6666666667, 41.1333333333]
+        P48: [46.9333333333]
+        P22: [66.4]
+        P49: [31.1333333333, 20.8666666667]
+        P23: [50.8, 15.8]
+        P21: [44.8666666667]
+        P20: [24.6666666667, 11.1333333333]
+        P43: [55.9333333333]
+        P42: [159.0]
+        P41: [59.0, 31.6]
+        P40: [54.5333333333]
+        P12: [10.4]
+        P11: [67.9333333333]
+        P14: [46.6, 28.4666666667]
+        P13: [18.6, 3.26666666667]
+        P16: [37.4, 35.0]
+        P15: [79.4]
+        P18: [91.4666666667]
+        P17: [29.4666666667, 19.6]
+        P37: [38.6]
+        P38: [25.0666666667, 17.7333333333, 12.2666666667, 39.6]
+        P19: [23.8]
+        P39: [132.266666667]
+        P33: [28.9333333333]
+        P35: [27.8]
+        P36: [60.8666666667]
+        P30: [17.1333333333, 23.0666666667, 15.6]
+        P50: [12.8, 48.8]
+        P32: [53.7333333333]
+        P31: [123.933333333]
+        P52: [54.9333333333, 12.6666666667]
+        P51: [36.1333333333, 35.4]
+        P54: [21.6666666667, 24.8]
+        P53: [51.0666666667]
+        P10: [42.0666666667, 14.4]
+      '[milk]':
+        P03: [17.9333333333]
+        P06: [7.26666666667]
+        P05: [13.6]
+        P04: [8.6]
+        P46: [18.9333333333]
+        P47: [18.6]
+        P29: [9.93333333333]
+        P44: [12.6]
+        P09: [10.6]
+        P26: [12.5333333333]
+        P08: [42.9333333333]
+        P27: [23.2]
+        P24: [14.9333333333, 20.6]
+        P25: [32.6]
+        P48: [11.9333333333]
+        P22: [13.2666666667]
+        P49: [1.6]
+        P23: [43.9333333333]
+        P21: [9.93333333333]
+        P20: [18.6]
+        P42: [10.6]
+        P41: [9.0]
+        P40: [5.93333333333]
+        P12: [7.93333333333]
+        P11: [14.6]
+        P14: [12.6]
+        P13: [4.6]
+        P16: [9.26666666667]
+        P15: [18.6]
+        P18: [17.2666666667]
+        P17: [21.9333333333]
+        P37: [12.9333333333]
+        P38: [12.6]
+        P19: [18.9333333333]
+        P39: [8.6]
+        P33: [8.86666666667]
+        P34: [10.6]
+        P35: [3.93333333333]
+        P36: [19.9333333333]
+        P30: [17.9333333333]
+        P50: [6.93333333333, 5.26666666667]
+        P32: [2.26666666667]
+        P31: [40.9333333333, 25.9333333333]
+        P52: [25.0666666667]
+        P51: [4.6, 10.8666666667]
+        P53: [3.4]
+        P10: [13.2666666667]
+      '[fruit]':
+        P03: [11.6]
+        P41: [11.9333333333]
+        P47: [26.9333333333]
+        P09: [10.9333333333]
+        P27: [15.2666666667]
+        P08: [10.6]
+        P34: [5.26666666667]
+        P35: [6.6]
+        P22: [16.6]
+        P49: [3.93333333333]
+        P23: [9.93333333333]
+      '[egg]':
+        P07: [32.6666666667, 27.8]
+        P06: [49.8666666667]
+        P05: [11.5333333333, 64.2]
+        P04: [32.1333333333, 32.5333333333, 44.8]
+        P46: [31.4, 79.6666666667]
+        P47: [31.8666666667, 84.2666666667]
+        P29: [108.533333333]
+        P44: [21.2666666667]
+        P09: [9.33333333333, 41.0666666667]
+        P26: [33.8666666667, 24.4666666667, 55.3333333333]
+        P45: [55.1333333333, 81.4]
+        P08: [11.2, 33.4]
+        P27: [39.0666666667, 63.7333333333]
+        P24: [133.466666667]
+        P25: [32.0, 26.4]
+        P48: [29.9333333333, 53.6]
+        P22: [36.0666666667, 52.6]
+        P49: [8.2, 108.333333333]
+        P23: [33.6, 22.8]
+        P21: [19.1333333333, 147.533333333]
+        P20: [15.0, 148.266666667]
+        P43: [22.1333333333, 33.0]
+        P42: [26.5333333333, 37.0666666667]
+        P41: [24.9333333333, 16.1333333333, 67.8666666667]
+        P40: [9.86666666667, 40.6]
+        P12: [18.9333333333, 36.2]
+        P11: [68.6666666667]
+        P14: [37.6, 78.6]
+        P13: [13.7333333333, 35.8666666667]
+        P16: [12.9333333333, 7.8, 19.8, 140.066666667]
+        P15: [63.4666666667]
+        P18: [22.8, 69.3333333333, 52.6]
+        P17: [37.7333333333, 386.0]
+        P37: [19.6, 27.1333333333]
+        P38: [174.266666667]
+        P19: [6.6]
+        P39: [105.0]
+        P33: [112.933333333, 20.8666666667]
+        P34: [25.3333333333, 152.733333333]
+        P35: [5.73333333333, 31.6666666667, 19.0]
+        P36: [59.0]
+        P30: [14.4, 11.2, 22.6666666667]
+        P50: [26.0, 26.6]
+        P32: [9.2, 9.0, 75.4666666667]
+        P31: [44.2, 112.0]
+        P52: [22.8, 15.5333333333, 174.733333333]
+        P51: [11.4, 56.2666666667]
+        P54: [44.2]
+        P53: [69.0666666667, 24.9333333333]
+      '[cereals]':
+        P03: [8.6]
+        P11: [6.13333333333]
+        P07: [7.86666666667]
+        P05: [2.2]
+        P18: [2.86666666667]
+        P46: [7.73333333333]
+        P38: [2.6]
+        P26: [4.6]
+        P08: [7.2]
+        P27: [20.9333333333]
+        P24: [7.66666666667]
+        P35: [1.33333333333]
+        P22: [8.2]
+        P23: [3.8]
+        P30: [3.06666666667]
+        P20: [5.33333333333]
+        P51: [10.0]
+        P54: [9.4]
+        P41: [5.26666666667]
+        P53: [20.3333333333]
+      '[coffee]':
+        P20: [8.6]
+        P50: [8.4]
+        P51: [10.1333333333]
+        P42: [10.9333333333]
+        P54: [5.66666666667]
+        P41: [16.5333333333]
+        P53: [12.4]
+        P47: [4.6]
+        P19: [14.9333333333]
+        P36: [11.9333333333]
+    move:
+      '[egg, plate]':
+        P03: [7.66666666667]
+        P07: [12.4, 25.6]
+        P06: [6.4, 24.2666666667]
+        P05: [25.2666666667, 25.4]
+        P04: [10.0, 11.2666666667]
+        P46: [16.4]
+        P47: [7.53333333333, 9.4]
+        P29: [11.4, 18.8666666667]
+        P44: [32.3333333333, 32.0666666667]
+        P09: [3.4, 6.6]
+        P26: [48.2, 28.1333333333]
+        P45: [11.1333333333, 15.3333333333]
+        P27: [7.2, 33.5333333333]
+        P08: [5.26666666667, 8.6]
+        P24: [5.93333333333, 22.9333333333]
+        P25: [38.8]
+        P48: [6.33333333333, 16.6]
+        P22: [16.0, 8.86666666667]
+        P49: [5.26666666667, 34.0666666667]
+        P23: [11.4, 18.9333333333]
+        P21: [10.4, 51.3333333333]
+        P20: [9.8, 16.0666666667]
+        P43: [13.2666666667, 19.6666666667]
+        P42: [6.2, 31.8]
+        P41: [19.1333333333]
+        P40: [12.8, 12.9333333333]
+        P12: [52.0666666667, 4.6]
+        P11: [4.26666666667, 13.9333333333]
+        P14: [11.6, 31.0]
+        P13: [17.6666666667, 12.0]
+        P16: [4.73333333333, 16.0]
+        P15: [21.6666666667, 10.7333333333]
+        P18: [17.7333333333, 20.1333333333]
+        P17: [6.66666666667, 12.2]
+        P37: [31.6666666667, 15.4666666667]
+        P38: [6.0, 10.5333333333]
+        P19: [16.8666666667, 20.6666666667]
+        P39: [5.0, 20.8666666667]
+        P33: [10.9333333333, 9.73333333333]
+        P34: [5.6, 10.9333333333]
+        P35: [4.93333333333, 11.6]
+        P36: [8.33333333333, 23.8]
+        P30: [11.4, 20.4666666667]
+        P50: [7.26666666667, 11.0]
+        P32: [21.6666666667, 11.5333333333]
+        P31: [18.2666666667, 22.0666666667]
+        P52: [8.93333333333]
+        P51: [10.5333333333, 24.6]
+        P54: [4.53333333333, 17.2666666667]
+        P53: [7.6, 5.26666666667]
+        P10: [15.8]
+      '[pancake, plate]':
+        P07: [9.46666666667]
+        P06: [11.3333333333]
+        P04: [5.53333333333]
+        P46: [6.8]
+        P47: [11.1333333333]
+        P29: [6.6]
+        P09: [13.8]
+        P26: [7.6]
+        P45: [9.86666666667]
+        P27: [43.6666666667]
+        P24: [40.9333333333]
+        P25: [7.93333333333]
+        P48: [10.8666666667]
+        P22: [41.6666666667]
+        P49: [8.13333333333]
+        P23: [28.1333333333]
+        P21: [20.4]
+        P20: [7.33333333333]
+        P42: [19.6666666667]
+        P12: [8.26666666667]
+        P11: [4.93333333333]
+        P14: [19.8666666667]
+        P13: [25.7333333333]
+        P16: [25.2]
+        P15: [32.0666666667]
+        P18: [13.7333333333]
+        P17: [22.0666666667]
+        P38: [7.13333333333]
+        P19: [12.4]
+        P39: [7.66666666667]
+        P33: [7.53333333333]
+        P35: [5.13333333333]
+        P30: [16.4, 9.0]
+        P50: [8.06666666667]
+        P32: [21.2666666667]
+        P31: [14.0]
+        P51: [8.86666666667]
+        P54: [3.4]
+        P53: [5.93333333333]
+        P10: [16.2666666667]
+      '[toppingOnTop]':
+        P03: [33.3333333333, 10.5333333333]
+        P07: [31.2666666667]
+        P06: [51.4666666667]
+        P05: [29.9333333333]
+        P04: [15.9333333333]
+        P46: [67.6]
+        P28: [54.6]
+        P47: [10.8666666667]
+        P29: [23.1333333333]
+        P44: [25.2666666667]
+        P09: [23.4]
+        P26: [30.6]
+        P45: [12.9333333333]
+        P27: [51.7333333333]
+        P08: [13.9333333333]
+        P24: [43.9333333333]
+        P25: [55.9333333333]
+        P48: [12.6]
+        P22: [33.2666666667]
+        P49: [34.6]
+        P23: [31.2666666667]
+        P21: [19.2666666667]
+        P20: [13.4666666667]
+        P43: [25.9333333333]
+        P42: [28.6]
+        P41: [10.2666666667]
+        P40: [25.9333333333]
+        P12: [14.5333333333, 11.6]
+        P11: [14.9333333333]
+        P14: [41.9333333333]
+        P13: [47.6]
+        P16: [19.2666666667]
+        P15: [20.9333333333]
+        P18: [16.2666666667]
+        P17: [20.6]
+        P37: [14.9333333333]
+        P38: [13.2666666667]
+        P19: [19.2]
+        P39: [7.26666666667]
+        P33: [14.6]
+        P34: [11.2666666667]
+        P35: [14.1333333333]
+        P36: [28.6]
+        P30: [29.2666666667]
+        P50: [15.9333333333]
+        P32: [16.6]
+        P31: [90.9333333333]
+        P52: [17.9333333333]
+        P51: [12.6]
+        P54: [25.6]
+        P53: [2.93333333333]
+        P10: [17.9333333333, 12.9333333333]
+      '[bunTogether]':
+        P06: [4.66666666667]
+        P05: [3.93333333333]
+        P04: [2.6]
+        P46: [6.93333333333]
+        P47: [4.6]
+        P26: [5.93333333333]
+        P08: [1.93333333333]
+        P45: [5.6]
+        P48: [3.26666666667]
+        P49: [3.26666666667]
+        P41: [3.93333333333]
+        P11: [3.26666666667]
+        P16: [5.93333333333]
+        P18: [2.26666666667]
+        P17: [1.93333333333]
+        P37: [3.93333333333]
+        P38: [5.26666666667]
+        P39: [1.6]
+        P33: [7.26666666667]
+        P34: [11.2666666667]
+        P36: [3.26666666667]
+        P52: [2.26666666667]
+        P51: [3.26666666667]
+        P54: [4.6]
+        P53: [1.6]
+      '[fruit, bowl]':
+        P03: [21.7333333333, 5.93333333333]
+        P07: [3.6, 4.26666666667, 4.6, 4.93333333333, 3.26666666667, 3.2]
+        P05: [1.26666666667, 1.6, 17.9333333333]
+        P04: [5.26666666667, 3.6, 3.93333333333]
+        P28: [23.2666666667, 11.9333333333]
+        P47: [3.93333333333, 1.6, 3.26666666667, 6.26666666667, 2.93333333333, 2.6]
+        P29: [9.93333333333, 13.8666666667]
+        P09: [2.26666666667, 1.73333333333, 1.6, 2.93333333333, 3.26666666667, 2.93333333333]
+        P26: [21.2666666667]
+        P08: [3.26666666667, 7.26666666667, 3.93333333333, 3.93333333333, 4.6]
+        P27: [8.6, 6.6, 3.26666666667, 3.26666666667, 6.6]
+        P24: [7.6, 3.26666666667, 4.6]
+        P25: [3.26666666667, 3.26666666667, 2.6, 5.6]
+        P48: [18.6, 11.2666666667]
+        P22: [7.26666666667, 3.26666666667, 2.26666666667]
+        P49: [8.26666666667, 5.6]
+        P23: [14.6]
+        P21: [26.6]
+        P20: [9.93333333333]
+        P43: [10.2666666667, 8.26666666667]
+        P42: [16.6]
+        P41: [6.6, 9.93333333333]
+        P40: [6.26666666667, 5.6]
+        P12: [9.8, 5.0]
+        P11: [2.26666666667, 1.93333333333, 2.6, 2.6]
+        P14: [7.86666666667, 1.26666666667, 13.4]
+        P13: [7.86666666667, 4.26666666667, 8.6]
+        P16: [5.93333333333, 6.93333333333, 15.2666666667]
+        P15: [9.53333333333, 7.6]
+        P18: [8.93333333333, 6.6, 4.6, 2.26666666667, 5.26666666667]
+        P17: [8.93333333333, 2.6, 5.93333333333]
+        P37: [11.9333333333, 14.4]
+        P38: [3.26666666667, 2.26666666667, 4.6, 6.6]
+        P19: [3.93333333333]
+        P39: [8.6, 7.26666666667]
+        P34: [4.26666666667, 3.26666666667]
+        P35: [4.6, 1.93333333333, 5.0]
+        P36: [11.2666666667, 12.6]
+        P50: [18.8666666667, 6.66666666667]
+        P32: [3.26666666667, 2.6, 1.93333333333, 2.93333333333, 4.93333333333, 20.2666666667]
+        P31: [1.93333333333, 2.26666666667, 1.93333333333, 2.8, 3.26666666667, 2.6,
+          3.26666666667, 3.26666666667]
+        P52: [3.93333333333, 7.26666666667, 1.93333333333, 2.86666666667]
+        P51: [7.26666666667, 23.9333333333, 3.93333333333]
+        P54: [1.26666666667, 1.93333333333, 2.6, 3.46666666667]
+        P53: [9.2]
+        P10: [8.6, 5.93333333333, 2.93333333333, 1.93333333333, 2.26666666667]
+start_state: |
+  - {name: human, class: agent, robot: '0'}
+  - {name: partner, class: agent, robot: '0'}
+  - AgentCount: '2'
+    PrimaryAgent: ''
+    AgentList: !!set {}
+    name: makespan
+    class: MakeSpan
+  - switchable: false
+    cleaning: false
+    onoff: false
+    name: counter
+    heating: false
+    class: space
+    contains: !!set {mixing_bowl_1: null, mixing_bowl_2: null, mixing_bowl_3: null}
+    baking: false
+    working: true
+    agent: human
+  - incldue: !!set {}
+    toolAttribute: ''
+    name: whisk
+    toolTrait: ''
+    class: tool
+    exclude: !!set {}
+    contains: !!set {}
+    canCarry: false
+    used: false
+    space: counter
+  - mixing: false
+    pouring: true
+    name: baking_dish
+    greased: false
+    heating: false
+    class: container
+    contains: !!set {}
+    baking: true
+    space: counter
+    used: false
+    receiving: true
+  - mixing: true
+    pouring: true
+    name: frying_pan
+    greased: false
+    heating: true
+    class: container
+    contains: !!set {}
+    baking: false
+    space: counter
+    used: false
+    receiving: true
+  - switchable: true
+    cleaning: true
+    onoff: false
+    name: oven
+    heating: false
+    class: space
+    contains: !!set {}
+    baking: true
+    working: false
+    agent: ''
+  - switchable: true
+    cleaning: true
+    onoff: false
+    name: stove
+    heating: true
+    class: space
+    contains: !!set {}
+    baking: false
+    working: false
+    agent: ''
+  - mixing: true
+    pouring: true
+    name: mixing_bowl_1
+    greased: false
+    heating: false
+    class: container
+    contains: !!set {}
+    baking: false
+    space: counter
+    used: false
+    receiving: true
+  - mixing: true
+    pouring: true
+    name: mixing_bowl_2
+    greased: false
+    heating: false
+    class: container
+    contains: !!set {}
+    baking: false
+    space: counter
+    used: false
+    receiving: true
+  - mixing: true
+    pouring: true
+    name: mixing_bowl_3
+    greased: false
+    heating: false
+    class: container
+    contains: !!set {}
+    baking: false
+    space: counter
+    used: false
+    receiving: true
+  - mixing: false
+    pouring: true
+    name: milk_bowl
+    greased: false
+    heating: false
+    class: container
+    contains: !!set {milk: null}
+    baking: false
+    space: counter
+    used: false
+    receiving: false
+  - heatingInfo: ''
+    preparation: !!set {}
+    container: milk_bowl
+    toolAttribute: !!set {}
+    name: milk
+    toolTrait: !!set {}
+    mixed: false
+    class: simple_ingredient
+    heated: false
+    traits: !!set {liquid: null, wet: null}
+    useCount: '1'
+    baked: false
+    heatedState: ''
+  - mixing: false
+    pouring: true
+    name: coffee_bowl
+    greased: false
+    heating: false
+    class: container
+    contains: !!set {coffee: null}
+    baking: false
+    space: counter
+    used: false
+    receiving: false
+  - heatingInfo: ''
+    preparation: !!set {}
+    container: coffee_bowl
+    toolAttribute: !!set {}
+    name: coffee
+    toolTrait: !!set {}
+    mixed: false
+    class: simple_ingredient
+    heated: false
+    traits: !!set {liquid: null, wet: null}
+    useCount: '1'
+    baked: false
+    heatedState: ''
+  - mixing: false
+    pouring: true
+    name: cereal_bowl
+    greased: false
+    heating: false
+    class: container
+    contains: !!set {cereal: null}
+    baking: false
+    space: counter
+    used: false
+    receiving: false
+  - heatingInfo: ''
+    preparation: !!set {}
+    container: cereal_bowl
+    toolAttribute: !!set {}
+    name: cereal
+    toolTrait: !!set {}
+    mixed: false
+    class: simple_ingredient
+    heated: false
+    traits: !!set {}
+    useCount: '1'
+    baked: false
+    heatedState: ''
+  - mixing: false
+    pouring: true
+    name: eggs_bowl
+    greased: false
+    heating: false
+    class: container
+    contains: !!set {eggs: null}
+    baking: false
+    space: counter
+    used: false
+    receiving: false
+  - heatingInfo: cooked
+    preparation: !!set {}
+    container: eggs_bowl
+    toolAttribute: !!set {}
+    name: eggs
+    toolTrait: !!set {}
+    mixed: false
+    class: simple_ingredient
+    heated: false
+    traits: !!set {eggs: null, wet: null}
+    useCount: '1'
+    baked: false
+    heatedState: ''
+  - mixing: false
+    pouring: true
+    name: flour_bowl
+    greased: false
+    heating: false
+    class: container
+    contains: !!set {flour: null}
+    baking: false
+    space: counter
+    used: false
+    receiving: false
+  - heatingInfo: ''
+    preparation: !!set {}
+    container: flour_bowl
+    toolAttribute: !!set {}
+    name: flour
+    toolTrait: !!set {}
+    mixed: false
+    class: simple_ingredient
+    heated: false
+    traits: !!set {dry: null, flour: null, grain: null}
+    useCount: '1'
+    baked: false
+    heatedState: ''
+  - mixing: false
+    pouring: true
+    name: olive_oil_bowl
+    greased: false
+    heating: false
+    class: container
+    contains: !!set {olive_oil: null}
+    baking: false
+    space: counter
+    used: false
+    receiving: false
+  - heatingInfo: ''
+    preparation: !!set {}
+    container: olive_oil_bowl
+    toolAttribute: !!set {}
+    name: olive_oil
+    toolTrait: !!set {}
+    mixed: false
+    class: simple_ingredient
+    heated: false
+    traits: !!set {fat: null, liquid: null, lubricant: null, oil: null, unsaturated: null,
+      wet: null}
+    useCount: '1'
+    baked: false
+    heatedState: ''
+  - mixing: false
+    pouring: true
+    name: butter_bowl
+    greased: false
+    heating: false
+    class: container
+    contains: !!set {butter: null}
+    baking: false
+    space: counter
+    used: false
+    receiving: false
+  - heatingInfo: melted
+    preparation: !!set {}
+    container: butter_bowl
+    toolAttribute: !!set {}
+    name: butter
+    toolTrait: !!set {}
+    mixed: false
+    class: simple_ingredient
+    heated: false
+    traits: !!set {dairy: null, fat: null, grease: null, lubricant: null, wet: null}
+    useCount: '1'
+    baked: false
+    heatedState: ''
+  - mixing: false
+    pouring: true
+    name: cocoa_bowl
+    greased: false
+    heating: false
+    class: container
+    contains: !!set {cocoa: null}
+    baking: false
+    space: counter
+    used: false
+    receiving: false
+  - heatingInfo: ''
+    preparation: !!set {}
+    container: cocoa_bowl
+    toolAttribute: !!set {}
+    name: cocoa
+    toolTrait: !!set {}
+    mixed: false
+    class: simple_ingredient
+    heated: false
+    traits: !!set {dry: null}
+    useCount: '1'
+    baked: false
+    heatedState: ''
+  - mixing: false
+    pouring: true
+    name: water_bowl
+    greased: false
+    heating: false
+    class: container
+    contains: !!set {water: null}
+    baking: false
+    space: counter
+    used: false
+    receiving: false
+  - heatingInfo: ''
+    preparation: !!set {}
+    container: water_bowl
+    toolAttribute: !!set {}
+    name: water
+    toolTrait: !!set {}
+    mixed: false
+    class: simple_ingredient
+    heated: false
+    traits: !!set {liquid: null, water: null, wet: null}
+    useCount: '1'
+    baked: false
+    heatedState: ''
+  - mixing: false
+    pouring: true
+    name: tea_bowl
+    greased: false
+    heating: false
+    class: container
+    contains: !!set {tea: null}
+    baking: false
+    space: counter
+    used: false
+    receiving: false
+  - heatingInfo: ''
+    preparation: !!set {}
+    container: tea_bowl
+    toolAttribute: !!set {}
+    name: tea
+    toolTrait: !!set {}
+    mixed: false
+    class: simple_ingredient
+    heated: false
+    traits: !!set {}
+    useCount: '1'
+    baked: false
+    heatedState: ''
+human:
+  type: Expert
+  agent:
+    current_subgoals: [fried egg - fried_egg]
+    isCooperative: true
+    current_recipe: fried egg
+    current_subgoal: fried egg - fried_egg
+    name: human
+

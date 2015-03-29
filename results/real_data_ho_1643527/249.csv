@@ -1,0 +1,681 @@
+Agent, Successes, Trials, Average reward, average successful reward
+Evaluating solo
+Recipe, pancake
+[switch [human, stove]: 0.25, move [human, milk_bowl, counter]: 0.25, move [human, eggs_bowl, counter]: 0.25, move [human, flour_bowl, counter]: 0.25]
+Executing action move [human, eggs_bowl, counter], 0.0, 4.922715567752776
+[pour [human, eggs_bowl, mixing_bowl_1]: 0.25, switch [human, stove]: 0.25, reset [human]: 0.0, move [human, milk_bowl, counter]: 0.25, move [human, flour_bowl, counter]: 0.25]
+Executing action move [human, flour_bowl, counter], 4.922715567752776, 24.11385869721086
+[pour [human, eggs_bowl, mixing_bowl_1]: 0.25, pour [human, flour_bowl, mixing_bowl_1]: 0.25, switch [human, stove]: 0.25, reset [human]: 0.0, move [human, milk_bowl, counter]: 0.25]
+Executing action switch [human, stove], 24.11385869721086, 27.44201551338559
+[pour [human, eggs_bowl, mixing_bowl_1]: 0.3333333333333333, pour [human, flour_bowl, mixing_bowl_1]: 0.3333333333333333, reset [human]: 0.0, move [human, milk_bowl, counter]: 0.3333333333333333]
+Executing action pour [human, eggs_bowl, mixing_bowl_1], 27.44201551338559, 42.924157523351425
+[pour [human, mixing_bowl_1, trash]: 0.0, pour [human, flour_bowl, mixing_bowl_1]: 0.5, reset [human]: 0.0, move [human, milk_bowl, counter]: 0.5]
+Executing action move [human, milk_bowl, counter], 42.924157523351425, 60.902539859852695
+[pour [human, mixing_bowl_1, trash]: 0.0, pour [human, milk_bowl, mixing_bowl_1]: 0.5, pour [human, flour_bowl, mixing_bowl_1]: 0.5, reset [human]: 0.0]
+Executing action pour [human, milk_bowl, mixing_bowl_1], 60.902539859852695, 81.37947642325548
+[pour [human, mixing_bowl_1, trash]: 0.0, pour [human, flour_bowl, mixing_bowl_1]: 1.0, reset [human]: 0.0]
+Executing action pour [human, flour_bowl, mixing_bowl_1], 81.37947642325548, 98.70124450891686
+[pour [human, mixing_bowl_1, trash]: 0.0, reset [human]: 0.0, mix [human, mixing_bowl_1, whisk]: 1.0]
+Executing action mix [human, mixing_bowl_1, whisk], 98.70124450891686, 107.22054714398892
+[pour [human, mixing_bowl_1, trash]: 0.0, pour [human, mixing_bowl_1, frying_pan]: 1.0, reset [human]: 0.0]
+Executing action pour [human, mixing_bowl_1, frying_pan], 107.22054714398892, 126.09178476475104
+[pour [human, frying_pan, trash]: 0.0, pour [human, frying_pan, mixing_bowl_1]: 0.0, reset [human]: 0.0, move [human, frying_pan, stove]: 1.0]
+Executing action move [human, frying_pan, stove], 126.09178476475104, 133.63607473465453
+solo, 1, 1, 133.63607473465453, 133.63607473465453
+solo, time, 15
+Evaluating Expert
+Required 4.783E-6
+Recipe, pancake
+Is not cooperative
+Human chose move [human, eggs_bowl, counter]
+Partner chose to wait
+Executing action move [human, eggs_bowl, counter], 0.0, 4.77571487991289
+Executing action wait [partner] 0.0, 4.77571487991289
+Is cooperative
+human scheduled actions
+-partner
+	switch [partner, stove], 0.0, 0.7949911910917551
+	move [partner, milk_bowl, counter], 0.7949911910917535, 17.30975160792271
+	move [partner, flour_bowl, counter], 17.309751607922713, 34.68439058572824
+-human
+	pour [human, eggs_bowl, mixing_bowl_1], 0.0, 15.64335026207544
+	wait, 15.64335026207544, 17.30975160792271
+	pour [human, milk_bowl, mixing_bowl_1], 17.30975160792271, 36.33982942786772
+	pour [human, flour_bowl, mixing_bowl_1], 36.33982942786772, 54.22641019728368
+	mix [human, mixing_bowl_1, whisk], 54.22641019728368, 61.294183114108115
+	pour [human, mixing_bowl_1, frying_pan], 61.29418311410812, 77.88331791347937
+	move [human, frying_pan, stove], 77.88331791347937, 84.36624205146124
+Human chose pour [human, eggs_bowl, mixing_bowl_1]
+partner scheduled actions
+-partner
+	move [partner, milk_bowl, counter], 0.0, 16.0
+	switch [partner, stove], 16.0, 16.738030339565086
+	move [partner, flour_bowl, counter], 16.738030339565086, 32.738030339565086
+-human
+	pour [human, eggs_bowl, mixing_bowl_1], 0.0, 13.647619047620179
+	wait, 13.647619047620179, 16.0
+	pour [human, milk_bowl, mixing_bowl_1], 16.0, 33.22857142856714
+	pour [human, flour_bowl, mixing_bowl_1], 33.22857142856714, 50.457142857134286
+	mix [human, mixing_bowl_1, whisk], 50.457142857134286, 57.357142857134285
+	pour [human, mixing_bowl_1, frying_pan], 57.35714285713429, 73.91632653060572
+	move [human, frying_pan, stove], 73.91632653060572, 80.32783732197385
+Executing action pour [human, eggs_bowl, mixing_bowl_1], 4.77571487991289, 20.389037821748644
+Is cooperative
+human scheduled actions
+-partner
+	move [partner, milk_bowl, counter], 0.0, 16.0
+	switch [partner, stove], 16.0, 16.738030339565086
+-human
+	move [human, flour_bowl, counter], 0.0, 15.836805555556557
+	pour [human, flour_bowl, mixing_bowl_1], 15.836805555556559, 33.0653769841237
+	pour [human, milk_bowl, mixing_bowl_1], 33.0653769841237, 50.293948412690845
+	mix [human, mixing_bowl_1, whisk], 50.293948412690845, 57.193948412690844
+	pour [human, mixing_bowl_1, frying_pan], 57.193948412690844, 73.75313208616227
+	move [human, frying_pan, stove], 73.75313208616227, 80.1646428775304
+Human chose move [human, flour_bowl, counter]
+Executing action move [partner, milk_bowl, counter], 4.77571487991289, 21.81165040600735
+partner scheduled actions
+-partner
+	switch [partner, stove], 0.0, 0.7380303395650857
+-human
+	move [human, flour_bowl, counter], 0.0, 15.836805555556557
+	pour [human, flour_bowl, mixing_bowl_1], 15.836805555556559, 33.0653769841237
+	pour [human, milk_bowl, mixing_bowl_1], 33.0653769841237, 50.293948412690845
+	mix [human, mixing_bowl_1, whisk], 50.293948412690845, 57.193948412690844
+	pour [human, mixing_bowl_1, frying_pan], 57.193948412690844, 73.75313208616227
+	move [human, frying_pan, stove], 73.75313208616227, 80.1646428775304
+Executing action switch [partner, stove], 21.81165040600735, 22.659183468701304
+partner scheduled actions
+-partner
+-human
+	move [human, flour_bowl, counter], 0.0, 15.836805555556557
+	pour [human, milk_bowl, mixing_bowl_1], 15.836805555556559, 33.0653769841237
+	pour [human, flour_bowl, mixing_bowl_1], 33.0653769841237, 50.293948412690845
+	mix [human, mixing_bowl_1, whisk], 50.293948412690845, 57.193948412690844
+	pour [human, mixing_bowl_1, frying_pan], 57.193948412690844, 73.75313208616227
+	move [human, frying_pan, stove], 73.75313208616227, 80.1646428775304
+Partner chose to wait
+Executing action move [human, flour_bowl, counter], 20.389037821748644, 37.828150318639295
+Executing action wait [partner] 22.659183468701304, 37.828150318639295
+Is cooperative
+human scheduled actions
+-partner
+-human
+	pour [human, flour_bowl, mixing_bowl_1], 0.0, 17.976724703076602
+	pour [human, milk_bowl, mixing_bowl_1], 17.976724703076606, 36.3917947932088
+	mix [human, mixing_bowl_1, whisk], 36.3917947932088, 43.64672687829347
+	pour [human, mixing_bowl_1, frying_pan], 43.64672687829347, 60.929474860042404
+	move [human, frying_pan, stove], 60.92947486004241, 68.54327281392385
+Human chose pour [human, flour_bowl, mixing_bowl_1]
+partner scheduled actions
+-partner
+-human
+	pour [human, flour_bowl, mixing_bowl_1], 0.0, 17.228571428567143
+	pour [human, milk_bowl, mixing_bowl_1], 17.228571428567143, 34.457142857134286
+	mix [human, mixing_bowl_1, whisk], 34.457142857134286, 41.357142857134285
+	pour [human, mixing_bowl_1, frying_pan], 41.357142857134285, 57.91632653060571
+	move [human, frying_pan, stove], 57.91632653060571, 64.32783732197383
+Partner chose to wait
+Executing action pour [human, flour_bowl, mixing_bowl_1], 37.828150318639295, 58.017474473275456
+Executing action wait [partner] 37.828150318639295, 58.017474473275456
+Is cooperative
+human scheduled actions
+-partner
+-human
+	pour [human, milk_bowl, mixing_bowl_1], 0.0, 17.49860091928629
+	mix [human, mixing_bowl_1, whisk], 17.49860091928629, 24.468355147200544
+	pour [human, mixing_bowl_1, frying_pan], 24.46835514720054, 41.79460999179618
+	move [human, frying_pan, stove], 41.79460999179618, 48.4824249021524
+Human chose pour [human, milk_bowl, mixing_bowl_1]
+partner scheduled actions
+-partner
+-human
+	pour [human, milk_bowl, mixing_bowl_1], 0.0, 17.228571428567143
+	mix [human, mixing_bowl_1, whisk], 17.228571428567143, 24.12857142856714
+	pour [human, mixing_bowl_1, frying_pan], 24.12857142856714, 40.687755102038565
+	move [human, frying_pan, stove], 40.687755102038565, 47.09926589340669
+Partner chose to wait
+Executing action pour [human, milk_bowl, mixing_bowl_1], 58.017474473275456, 79.03426187049422
+Executing action wait [partner] 58.017474473275456, 79.03426187049422
+Is cooperative
+human scheduled actions
+-partner
+-human
+	mix [human, mixing_bowl_1, whisk], 0.0, 7.100411836292559
+	pour [human, mixing_bowl_1, frying_pan], 7.100411836292558, 23.841172123688796
+	move [human, frying_pan, stove], 23.841172123688796, 30.556620060943647
+Human chose mix [human, mixing_bowl_1, whisk]
+partner scheduled actions
+-partner
+-human
+	mix [human, mixing_bowl_1, whisk], 0.0, 6.9
+	pour [human, mixing_bowl_1, frying_pan], 6.899999999999999, 23.459183673471422
+	move [human, frying_pan, stove], 23.459183673471422, 29.870694464839545
+Partner chose to wait
+Executing action mix [human, mixing_bowl_1, whisk], 79.03426187049422, 86.40336850828808
+Executing action wait [partner] 79.03426187049422, 86.40336850828808
+Is cooperative
+human scheduled actions
+-partner
+-human
+	pour [human, mixing_bowl_1, frying_pan], 0.0, 16.973044378555652
+	move [human, frying_pan, stove], 16.973044378555656, 23.426289963017766
+Human chose pour [human, mixing_bowl_1, frying_pan]
+partner scheduled actions
+-partner
+-human
+	pour [human, mixing_bowl_1, frying_pan], 0.0, 16.559183673471424
+	move [human, frying_pan, stove], 16.559183673471424, 22.970694464839546
+Partner chose to wait
+Executing action pour [human, mixing_bowl_1, frying_pan], 86.40336850828808, 102.99983769119564
+Executing action wait [partner] 86.40336850828808, 102.99983769119564
+Is cooperative
+human scheduled actions
+-partner
+-human
+	move [human, frying_pan, stove], 0.0, 6.513298643112757
+Human chose move [human, frying_pan, stove]
+Partner chose to wait
+Executing action move [human, frying_pan, stove], 102.99983769119564, 109.55916924900723
+Executing action wait [partner] 102.99983769119564, 109.55916924900723
+Expert, 1, 1, 109.55916924900723, 109.55916924900723
+Expert, time, 207
+
+Time cereal with milk - 7.702623683
+Time chocolate milk - 7.925005628
+Time coffee with milk - 10.194303647
+Time tea - 29.707648038
+Time pancake - 83.571491574
+Time scrambled egg - 189.558005332
+Time fried egg - 238.395974473
+Evaluating AdaptiveByFlow scheduling: true
+Required 3.85E-7
+Recipe, pancake
+Previous Distribution
+coffee with milk - coffee_with_milk: 0.14285714285714285
+cereal with milk - cereal_with_milk: 0.14285714285714285
+pancake - pancake: 0.14285714285714285
+fried egg - fried_egg: 0.14285714285714285
+scrambled egg - scrambled_egg: 0.14285714285714285
+chocolate milk - chocolate_milk: 0.14285714285714285
+tea - hot_tea: 0.14285714285714285
+
+
+Is not cooperative
+Human chose switch [human, stove]
+Partner chose to wait
+Executing action switch [human, stove], 0.0, 3.82220143048156
+Executing action wait [partner] 0.0, 3.82220143048156
+Previous Distribution
+coffee with milk - coffee_with_milk: 0.14285714285714285
+cereal with milk - cereal_with_milk: 0.14285714285714285
+pancake - pancake: 0.14285714285714285
+fried egg - fried_egg: 0.14285714285714285
+scrambled egg - scrambled_egg: 0.14285714285714285
+chocolate milk - chocolate_milk: 0.14285714285714285
+tea - hot_tea: 0.14285714285714285
+
+
+Update
+coffee with milk - coffee_with_milk: 0.0
+cereal with milk - cereal_with_milk: 0.0
+pancake - pancake: 0.23076923076923075
+fried egg - fried_egg: 0.23076923076923075
+scrambled egg - scrambled_egg: 0.23076923076923075
+chocolate milk - chocolate_milk: 0.0
+tea - hot_tea: 0.30769230769230765
+
+
+Is cooperative
+human scheduled actions
+-partner
+	move [partner, flour_bowl, counter], 0.0, 16.842020295689046
+	move [partner, milk_bowl, counter], 16.84202029568905, 33.923421725658756
+-human
+	move [human, eggs_bowl, counter], 0.0, 4.521773084131503
+	wait, 4.521773084131503, 16.842020295689046
+	pour [human, flour_bowl, mixing_bowl_1], 16.842020295689046, 34.90373980952261
+	pour [human, eggs_bowl, mixing_bowl_1], 34.90373980952262, 49.125783744066126
+	pour [human, milk_bowl, mixing_bowl_1], 49.12578374406612, 66.49519389539202
+	mix [human, mixing_bowl_1, whisk], 66.49519389539202, 74.56288081693943
+	pour [human, mixing_bowl_1, frying_pan], 74.56288081693943, 92.90078680307148
+	move [human, frying_pan, stove], 92.90078680307148, 99.91264740609961
+Human chose move [human, eggs_bowl, counter]
+Current Distribution
+pancake - pancake: 0.23076923076923078
+fried egg - fried_egg: 0.23076923076923078
+scrambled egg - scrambled_egg: 0.23076923076923078
+tea - hot_tea: 0.3076923076923077
+
+
+NullAction [partner]
+	pancake - pancake
+		[move [human, eggs_bowl, counter], move [human, flour_bowl, counter], move [partner, milk_bowl, counter], pour [human, milk_bowl, mixing_bowl_1], pour [human, flour_bowl, mixing_bowl_1], pour [human, eggs_bowl, mixing_bowl_1], mix [human, mixing_bowl_1, whisk], pour [human, mixing_bowl_1, frying_pan], move [partner, frying_pan, stove]]
+	fried egg - fried_egg
+		[move [human, olive_oil_bowl, counter], move [partner, eggs_bowl, counter], pour [human, olive_oil_bowl, frying_pan], pour [human, eggs_bowl, frying_pan], move [human, frying_pan, stove], mix [human, frying_pan, whisk]]
+	scrambled egg - scrambled_egg
+		[move [human, eggs_bowl, counter], move [partner, butter_bowl, counter], pour [human, butter_bowl, frying_pan], move [partner, frying_pan, stove], move [partner, frying_pan, counter], pour [human, eggs_bowl, frying_pan], mix [human, frying_pan, whisk], move [human, frying_pan, stove]]
+	tea - hot_tea
+		[move [human, water_bowl, counter], pour [human, water_bowl, mixing_bowl_1], move [human, tea_bowl, counter], pour [human, tea_bowl, mixing_bowl_1], mix [human, mixing_bowl_1, whisk], pour [human, mixing_bowl_1, frying_pan], move [human, frying_pan, stove]]
+
+move [partner, eggs_bowl, counter]
+	pancake - pancake
+		[move [partner, eggs_bowl, counter], move [partner, milk_bowl, counter], pour [human, milk_bowl, mixing_bowl_1], move [partner, flour_bowl, counter], pour [human, eggs_bowl, mixing_bowl_1], pour [human, flour_bowl, mixing_bowl_1], mix [human, mixing_bowl_1, whisk], pour [human, mixing_bowl_1, frying_pan], move [human, frying_pan, stove]]
+	fried egg - fried_egg
+		[move [partner, eggs_bowl, counter], move [human, butter_bowl, counter], pour [human, butter_bowl, frying_pan], pour [human, eggs_bowl, frying_pan], move [partner, frying_pan, stove], mix [human, frying_pan, whisk]]
+	scrambled egg - scrambled_egg
+		[move [partner, eggs_bowl, counter], move [human, butter_bowl, counter], pour [human, butter_bowl, frying_pan], move [partner, frying_pan, stove], move [partner, frying_pan, counter], pour [human, eggs_bowl, frying_pan], mix [human, frying_pan, whisk], move [partner, frying_pan, stove]]
+	tea - hot_tea
+		[move [partner, eggs_bowl, counter], move [partner, tea_bowl, counter], move [partner, water_bowl, counter], pour [human, water_bowl, mixing_bowl_1], pour [human, tea_bowl, mixing_bowl_1], mix [human, mixing_bowl_1, whisk], pour [human, mixing_bowl_1, frying_pan], move [human, frying_pan, stove]]
+
+move [partner, butter_bowl, counter]
+	pancake - pancake
+		[move [partner, butter_bowl, counter], move [partner, milk_bowl, counter], move [human, eggs_bowl, counter], move [human, flour_bowl, counter], pour [human, flour_bowl, mixing_bowl_1], pour [human, eggs_bowl, mixing_bowl_1], pour [human, milk_bowl, mixing_bowl_1], mix [human, mixing_bowl_1, whisk], pour [human, mixing_bowl_1, frying_pan], move [partner, frying_pan, stove]]
+	fried egg - fried_egg
+		[move [partner, butter_bowl, counter], pour [human, butter_bowl, frying_pan], move [human, eggs_bowl, counter], pour [human, eggs_bowl, frying_pan], move [human, frying_pan, stove], mix [human, frying_pan, whisk]]
+	scrambled egg - scrambled_egg
+		[move [partner, butter_bowl, counter], move [human, eggs_bowl, counter], pour [human, butter_bowl, frying_pan], move [partner, frying_pan, stove], move [partner, frying_pan, counter], pour [human, eggs_bowl, frying_pan], mix [human, frying_pan, whisk], move [partner, frying_pan, stove]]
+	tea - hot_tea
+		[move [partner, butter_bowl, counter], move [partner, tea_bowl, counter], pour [human, tea_bowl, mixing_bowl_1], move [partner, water_bowl, counter], pour [human, water_bowl, mixing_bowl_1], mix [human, mixing_bowl_1, whisk], pour [human, mixing_bowl_1, frying_pan], move [partner, frying_pan, stove]]
+
+move [partner, flour_bowl, counter]
+	pancake - pancake
+		[move [partner, flour_bowl, counter], move [partner, milk_bowl, counter], move [human, eggs_bowl, counter], pour [human, flour_bowl, mixing_bowl_1], pour [human, milk_bowl, mixing_bowl_1], pour [human, eggs_bowl, mixing_bowl_1], mix [human, mixing_bowl_1, whisk], pour [human, mixing_bowl_1, frying_pan], move [human, frying_pan, stove]]
+	fried egg - fried_egg
+		[move [partner, flour_bowl, counter], move [partner, eggs_bowl, counter], move [partner, olive_oil_bowl, counter], pour [human, eggs_bowl, frying_pan], pour [human, olive_oil_bowl, frying_pan], move [human, frying_pan, stove], mix [human, frying_pan, whisk]]
+	scrambled egg - scrambled_egg
+		[move [partner, flour_bowl, counter], move [partner, olive_oil_bowl, counter], move [human, eggs_bowl, counter], pour [human, olive_oil_bowl, frying_pan], move [partner, frying_pan, stove], move [human, frying_pan, counter], pour [human, eggs_bowl, frying_pan], mix [human, frying_pan, whisk], move [human, frying_pan, stove]]
+	tea - hot_tea
+		[move [partner, flour_bowl, counter], move [partner, water_bowl, counter], move [human, tea_bowl, counter], pour [human, tea_bowl, mixing_bowl_1], pour [human, water_bowl, mixing_bowl_1], mix [human, mixing_bowl_1, whisk], pour [human, mixing_bowl_1, frying_pan], move [human, frying_pan, stove]]
+
+move [partner, milk_bowl, counter]
+	pancake - pancake
+		[move [partner, milk_bowl, counter], move [partner, eggs_bowl, counter], pour [human, milk_bowl, mixing_bowl_1], pour [human, eggs_bowl, mixing_bowl_1], move [partner, flour_bowl, counter], pour [human, flour_bowl, mixing_bowl_1], mix [human, mixing_bowl_1, whisk], pour [human, mixing_bowl_1, frying_pan], move [human, frying_pan, stove]]
+	fried egg - fried_egg
+		[move [partner, milk_bowl, counter], move [partner, butter_bowl, counter], move [human, eggs_bowl, counter], pour [human, butter_bowl, frying_pan], pour [human, eggs_bowl, frying_pan], move [human, frying_pan, stove], mix [human, frying_pan, whisk]]
+	scrambled egg - scrambled_egg
+		[move [partner, milk_bowl, counter], move [partner, eggs_bowl, counter], move [human, olive_oil_bowl, counter], pour [human, olive_oil_bowl, frying_pan], move [human, frying_pan, stove], move [partner, frying_pan, counter], pour [human, eggs_bowl, frying_pan], mix [human, frying_pan, whisk], move [partner, frying_pan, stove]]
+	tea - hot_tea
+		[move [partner, milk_bowl, counter], move [human, tea_bowl, counter], move [human, water_bowl, counter], pour [human, tea_bowl, mixing_bowl_1], pour [human, water_bowl, mixing_bowl_1], mix [human, mixing_bowl_1, whisk], pour [human, mixing_bowl_1, frying_pan], move [partner, frying_pan, stove]]
+
+move [partner, tea_bowl, counter]
+	pancake - pancake
+		[move [partner, tea_bowl, counter], move [human, flour_bowl, counter], move [human, eggs_bowl, counter], move [human, milk_bowl, counter], pour [human, milk_bowl, mixing_bowl_1], pour [human, eggs_bowl, mixing_bowl_1], pour [human, flour_bowl, mixing_bowl_1], mix [human, mixing_bowl_1, whisk], pour [human, mixing_bowl_1, frying_pan], move [human, frying_pan, stove]]
+	fried egg - fried_egg
+		[move [partner, tea_bowl, counter], move [human, olive_oil_bowl, counter], move [partner, eggs_bowl, counter], pour [human, olive_oil_bowl, frying_pan], pour [human, eggs_bowl, frying_pan], move [partner, frying_pan, stove], mix [human, frying_pan, whisk]]
+	scrambled egg - scrambled_egg
+		[move [partner, tea_bowl, counter], move [human, olive_oil_bowl, counter], pour [human, olive_oil_bowl, frying_pan], move [human, frying_pan, stove], move [partner, eggs_bowl, counter], move [human, frying_pan, counter], pour [human, eggs_bowl, frying_pan], mix [human, frying_pan, whisk], move [human, frying_pan, stove]]
+	tea - hot_tea
+		[move [partner, tea_bowl, counter], move [human, water_bowl, counter], pour [human, tea_bowl, mixing_bowl_1], pour [human, water_bowl, mixing_bowl_1], mix [human, mixing_bowl_1, whisk], pour [human, mixing_bowl_1, frying_pan], move [human, frying_pan, stove]]
+
+move [partner, water_bowl, counter]
+	pancake - pancake
+		[move [partner, water_bowl, counter], move [human, milk_bowl, counter], move [partner, eggs_bowl, counter], move [partner, flour_bowl, counter], pour [human, milk_bowl, mixing_bowl_1], pour [human, eggs_bowl, mixing_bowl_1], pour [human, flour_bowl, mixing_bowl_1], mix [human, mixing_bowl_1, whisk], pour [human, mixing_bowl_1, frying_pan], move [human, frying_pan, stove]]
+	fried egg - fried_egg
+		[move [partner, water_bowl, counter], move [partner, olive_oil_bowl, counter], move [human, eggs_bowl, counter], pour [human, olive_oil_bowl, frying_pan], pour [human, eggs_bowl, frying_pan], move [partner, frying_pan, stove], mix [human, frying_pan, whisk]]
+	scrambled egg - scrambled_egg
+		[move [partner, water_bowl, counter], move [human, olive_oil_bowl, counter], move [partner, eggs_bowl, counter], pour [human, olive_oil_bowl, frying_pan], move [partner, frying_pan, stove], move [partner, frying_pan, counter], pour [human, eggs_bowl, frying_pan], mix [human, frying_pan, whisk], move [human, frying_pan, stove]]
+	tea - hot_tea
+		[move [partner, water_bowl, counter], pour [human, water_bowl, mixing_bowl_1], move [human, tea_bowl, counter], pour [human, tea_bowl, mixing_bowl_1], mix [human, mixing_bowl_1, whisk], pour [human, mixing_bowl_1, frying_pan], move [partner, frying_pan, stove]]
+
+move [partner, tea_bowl, counter]: 74.79539496608383
+move [partner, eggs_bowl, counter]: 83.66832065945513
+move [partner, butter_bowl, counter]: 81.25991712599637
+move [partner, flour_bowl, counter]: 74.32347805008591
+move [partner, milk_bowl, counter]: 75.91778073334505
+move [partner, water_bowl, counter]: 74.75773470967381
+NullAction [partner]: 80.86264226138364
+Executing action move [human, eggs_bowl, counter], 3.82220143048156, 8.886523013783464
+Previous Distribution
+coffee with milk - coffee_with_milk: 0.0
+cereal with milk - cereal_with_milk: 0.0
+pancake - pancake: 0.23076923076923078
+fried egg - fried_egg: 0.23076923076923078
+scrambled egg - scrambled_egg: 0.23076923076923078
+chocolate milk - chocolate_milk: 0.0
+tea - hot_tea: 0.3076923076923077
+
+
+Update
+coffee with milk - coffee_with_milk: 0.0
+cereal with milk - cereal_with_milk: 0.0
+pancake - pancake: 0.3333333333333333
+fried egg - fried_egg: 0.3333333333333333
+scrambled egg - scrambled_egg: 0.3333333333333333
+chocolate milk - chocolate_milk: 0.0
+tea - hot_tea: 0.0
+
+
+Is cooperative
+human scheduled actions
+-partner
+	move [partner, flour_bowl, counter], 0.0, 16.0
+	move [partner, milk_bowl, counter], 16.0, 32.0
+-human
+	pour [human, eggs_bowl, mixing_bowl_1], 0.0, 13.647619047620179
+	wait, 13.647619047620179, 16.0
+	pour [human, flour_bowl, mixing_bowl_1], 16.0, 33.22857142856714
+	pour [human, milk_bowl, mixing_bowl_1], 33.22857142856714, 50.457142857134286
+	mix [human, mixing_bowl_1, whisk], 50.457142857134286, 57.357142857134285
+	pour [human, mixing_bowl_1, frying_pan], 57.35714285713429, 73.91632653060572
+	move [human, frying_pan, stove], 73.91632653060572, 80.32783732197385
+Human chose pour [human, eggs_bowl, mixing_bowl_1]
+Executing action move [partner, flour_bowl, counter], 3.82220143048156, 20.830285914246087
+Previous Distribution
+coffee with milk - coffee_with_milk: 0.0
+cereal with milk - cereal_with_milk: 0.0
+pancake - pancake: 0.3333333333333333
+fried egg - fried_egg: 0.3333333333333333
+scrambled egg - scrambled_egg: 0.3333333333333333
+chocolate milk - chocolate_milk: 0.0
+tea - hot_tea: 0.0
+
+
+Current Distribution
+pancake - pancake: 0.3333333333333333
+fried egg - fried_egg: 0.3333333333333333
+scrambled egg - scrambled_egg: 0.3333333333333333
+
+
+move [partner, butter_bowl, counter]
+	pancake - pancake
+		[move [partner, butter_bowl, counter], pour [human, eggs_bowl, mixing_bowl_1], pour [human, flour_bowl, mixing_bowl_1], move [partner, milk_bowl, counter], pour [human, milk_bowl, mixing_bowl_1], mix [human, mixing_bowl_1, whisk], pour [human, mixing_bowl_1, frying_pan], move [partner, frying_pan, stove]]
+	fried egg - fried_egg
+		[move [partner, butter_bowl, counter], pour [human, butter_bowl, frying_pan], pour [human, eggs_bowl, frying_pan], move [human, frying_pan, stove], mix [human, frying_pan, whisk]]
+	scrambled egg - scrambled_egg
+		[move [partner, butter_bowl, counter], pour [human, butter_bowl, frying_pan], move [partner, frying_pan, stove], move [human, frying_pan, counter], pour [human, eggs_bowl, frying_pan], mix [human, frying_pan, whisk], move [human, frying_pan, stove]]
+
+NullAction [partner]
+	pancake - pancake
+		[move [partner, milk_bowl, counter], pour [human, eggs_bowl, mixing_bowl_1], pour [human, milk_bowl, mixing_bowl_1], pour [human, flour_bowl, mixing_bowl_1], mix [human, mixing_bowl_1, whisk], pour [human, mixing_bowl_1, frying_pan], move [human, frying_pan, stove]]
+	fried egg - fried_egg
+		[move [partner, butter_bowl, counter], pour [human, eggs_bowl, frying_pan], pour [human, butter_bowl, frying_pan], move [human, frying_pan, stove], mix [human, frying_pan, whisk]]
+	scrambled egg - scrambled_egg
+		[move [human, olive_oil_bowl, counter], pour [human, olive_oil_bowl, frying_pan], move [human, frying_pan, stove], move [partner, frying_pan, counter], pour [human, eggs_bowl, frying_pan], mix [human, frying_pan, whisk], move [partner, frying_pan, stove]]
+
+move [partner, olive_oil_bowl, counter]
+	pancake - pancake
+		[move [partner, olive_oil_bowl, counter], pour [human, flour_bowl, mixing_bowl_1], move [partner, milk_bowl, counter], pour [human, milk_bowl, mixing_bowl_1], pour [human, eggs_bowl, mixing_bowl_1], mix [human, mixing_bowl_1, whisk], pour [human, mixing_bowl_1, frying_pan], move [human, frying_pan, stove]]
+	fried egg - fried_egg
+		[move [partner, olive_oil_bowl, counter], pour [human, eggs_bowl, frying_pan], pour [human, olive_oil_bowl, frying_pan], move [partner, frying_pan, stove], mix [human, frying_pan, whisk]]
+	scrambled egg - scrambled_egg
+		[move [partner, olive_oil_bowl, counter], pour [human, olive_oil_bowl, frying_pan], move [partner, frying_pan, stove], move [human, frying_pan, counter], pour [human, eggs_bowl, frying_pan], mix [human, frying_pan, whisk], move [partner, frying_pan, stove]]
+
+move [partner, milk_bowl, counter]
+	pancake - pancake
+		[move [partner, milk_bowl, counter], pour [human, milk_bowl, mixing_bowl_1], pour [human, eggs_bowl, mixing_bowl_1], pour [human, flour_bowl, mixing_bowl_1], mix [human, mixing_bowl_1, whisk], pour [human, mixing_bowl_1, frying_pan], move [partner, frying_pan, stove]]
+	fried egg - fried_egg
+		[move [partner, milk_bowl, counter], move [human, olive_oil_bowl, counter], pour [human, eggs_bowl, frying_pan], pour [human, olive_oil_bowl, frying_pan], move [partner, frying_pan, stove], mix [human, frying_pan, whisk]]
+	scrambled egg - scrambled_egg
+		[move [partner, milk_bowl, counter], move [partner, butter_bowl, counter], pour [human, butter_bowl, frying_pan], move [partner, frying_pan, stove], move [human, frying_pan, counter], pour [human, eggs_bowl, frying_pan], mix [human, frying_pan, whisk], move [partner, frying_pan, stove]]
+
+move [partner, olive_oil_bowl, counter]: 67.1777409127101
+move [partner, butter_bowl, counter]: 78.65255429637313
+move [partner, milk_bowl, counter]: 74.4860300652397
+NullAction [partner]: 74.67759847717689
+Executing action pour [human, eggs_bowl, mixing_bowl_1], 8.886523013783464, 22.60805181678126
+Previous Distribution
+coffee with milk - coffee_with_milk: 0.0
+cereal with milk - cereal_with_milk: 0.0
+pancake - pancake: 0.3333333333333333
+fried egg - fried_egg: 0.3333333333333333
+scrambled egg - scrambled_egg: 0.3333333333333333
+chocolate milk - chocolate_milk: 0.0
+tea - hot_tea: 0.0
+
+
+Update
+coffee with milk - coffee_with_milk: 0.0
+cereal with milk - cereal_with_milk: 0.0
+pancake - pancake: 1.0
+fried egg - fried_egg: 0.0
+scrambled egg - scrambled_egg: 0.0
+chocolate milk - chocolate_milk: 0.0
+tea - hot_tea: 0.0
+
+
+Is cooperative
+human scheduled actions
+-partner
+	move [partner, olive_oil_bowl, counter], 0.0, 16.0
+	move [partner, milk_bowl, counter], 16.0, 32.0
+-human
+	pour [human, flour_bowl, mixing_bowl_1], 0.0, 17.228571428567143
+	wait, 17.228571428567143, 32.0
+	pour [human, milk_bowl, mixing_bowl_1], 32.0, 49.22857142856714
+	mix [human, mixing_bowl_1, whisk], 49.22857142856714, 56.12857142856714
+	pour [human, mixing_bowl_1, frying_pan], 56.12857142856714, 72.68775510203857
+	move [human, frying_pan, stove], 72.68775510203857, 79.0992658934067
+Human chose pour [human, flour_bowl, mixing_bowl_1]
+Executing action move [partner, olive_oil_bowl, counter], 20.830285914246087, 40.352285764339314
+Previous Distribution
+coffee with milk - coffee_with_milk: 0.0
+cereal with milk - cereal_with_milk: 0.0
+pancake - pancake: 1.0
+fried egg - fried_egg: 0.0
+scrambled egg - scrambled_egg: 0.0
+chocolate milk - chocolate_milk: 0.0
+tea - hot_tea: 0.0
+
+
+Current Distribution
+pancake - pancake: 1.0
+
+
+move [partner, milk_bowl, counter]
+	pancake - pancake
+		[move [partner, milk_bowl, counter], pour [human, milk_bowl, mixing_bowl_1], pour [human, flour_bowl, mixing_bowl_1], mix [human, mixing_bowl_1, whisk], pour [human, mixing_bowl_1, frying_pan], move [partner, frying_pan, stove]]
+
+NullAction [partner]
+	pancake - pancake
+		[move [human, milk_bowl, counter], pour [human, milk_bowl, mixing_bowl_1], pour [human, flour_bowl, mixing_bowl_1], mix [human, mixing_bowl_1, whisk], pour [human, mixing_bowl_1, frying_pan], move [human, frying_pan, stove]]
+
+move [partner, milk_bowl, counter]: 64.32783732197383
+NullAction [partner]: 73.0992658934067
+Executing action pour [human, flour_bowl, mixing_bowl_1], 22.60805181678126, 43.36081024606777
+Previous Distribution
+coffee with milk - coffee_with_milk: 0.0
+cereal with milk - cereal_with_milk: 0.0
+pancake - pancake: 1.0
+fried egg - fried_egg: 0.0
+scrambled egg - scrambled_egg: 0.0
+chocolate milk - chocolate_milk: 0.0
+tea - hot_tea: 0.0
+
+
+Update
+coffee with milk - coffee_with_milk: 0.14285714285714285
+cereal with milk - cereal_with_milk: 0.14285714285714285
+pancake - pancake: 0.14285714285714285
+fried egg - fried_egg: 0.14285714285714285
+scrambled egg - scrambled_egg: 0.14285714285714285
+chocolate milk - chocolate_milk: 0.14285714285714285
+tea - hot_tea: 0.14285714285714285
+
+
+Is cooperative
+human scheduled actions
+-partner
+	move [partner, milk_bowl, counter], 0.0, 16.0
+-human
+	wait, 0.0, 16.0
+	pour [human, milk_bowl, mixing_bowl_1], 16.0, 33.22857142856714
+	mix [human, mixing_bowl_1, whisk], 33.22857142856714, 40.12857142856714
+	pour [human, mixing_bowl_1, frying_pan], 40.12857142856714, 56.687755102038565
+	move [human, frying_pan, stove], 56.687755102038565, 63.09926589340669
+Executing action move [partner, milk_bowl, counter], 40.352285764339314, 59.59688448962612
+Executing action wait [human] 43.36081024606777, 59.59688448962612
+Previous Distribution
+coffee with milk - coffee_with_milk: 0.0
+cereal with milk - cereal_with_milk: 0.0
+pancake - pancake: 1.0
+fried egg - fried_egg: 0.0
+scrambled egg - scrambled_egg: 0.0
+chocolate milk - chocolate_milk: 0.0
+tea - hot_tea: 0.0
+
+
+Is cooperative
+human scheduled actions
+-partner
+-human
+	pour [human, milk_bowl, mixing_bowl_1], 0.0, 18.190258776428344
+	mix [human, mixing_bowl_1, whisk], 18.190258776428344, 25.127632794591598
+	pour [human, mixing_bowl_1, frying_pan], 25.127632794591594, 42.04088047937641
+	move [human, frying_pan, stove], 42.04088047937641, 48.592635378319464
+Human chose pour [human, milk_bowl, mixing_bowl_1]
+Current Distribution
+pancake - pancake: 1.0
+
+
+NullAction [partner]
+	pancake - pancake
+		[pour [human, milk_bowl, mixing_bowl_1], mix [human, mixing_bowl_1, whisk], pour [human, mixing_bowl_1, frying_pan], move [partner, frying_pan, stove]]
+
+NullAction [partner]: 47.09926589340669
+Partner chose to wait
+Executing action pour [human, milk_bowl, mixing_bowl_1], 59.59688448962612, 80.61564475606092
+Executing action wait [partner] 59.59688448962612, 80.61564475606092
+Previous Distribution
+coffee with milk - coffee_with_milk: 0.0
+cereal with milk - cereal_with_milk: 0.0
+pancake - pancake: 1.0
+fried egg - fried_egg: 0.0
+scrambled egg - scrambled_egg: 0.0
+chocolate milk - chocolate_milk: 0.0
+tea - hot_tea: 0.0
+
+
+Update
+coffee with milk - coffee_with_milk: 0.0
+cereal with milk - cereal_with_milk: 0.0
+pancake - pancake: 1.0
+fried egg - fried_egg: 0.0
+scrambled egg - scrambled_egg: 0.0
+chocolate milk - chocolate_milk: 0.0
+tea - hot_tea: 0.0
+
+
+Is cooperative
+human scheduled actions
+-partner
+-human
+	mix [human, mixing_bowl_1, whisk], 0.0, 7.280668226206562
+	pour [human, mixing_bowl_1, frying_pan], 7.280668226206561, 24.72829199576877
+	move [human, frying_pan, stove], 24.72829199576877, 31.518215843221352
+Human chose mix [human, mixing_bowl_1, whisk]
+Current Distribution
+pancake - pancake: 1.0
+
+
+NullAction [partner]
+	pancake - pancake
+		[mix [human, mixing_bowl_1, whisk], pour [human, mixing_bowl_1, frying_pan], move [human, frying_pan, stove]]
+
+NullAction [partner]: 29.870694464839545
+Partner chose to wait
+Executing action mix [human, mixing_bowl_1, whisk], 80.61564475606092, 88.61474226196916
+Executing action wait [partner] 80.61564475606092, 88.61474226196916
+Previous Distribution
+coffee with milk - coffee_with_milk: 0.0
+cereal with milk - cereal_with_milk: 0.0
+pancake - pancake: 1.0
+fried egg - fried_egg: 0.0
+scrambled egg - scrambled_egg: 0.0
+chocolate milk - chocolate_milk: 0.0
+tea - hot_tea: 0.0
+
+
+Update
+coffee with milk - coffee_with_milk: 0.0
+cereal with milk - cereal_with_milk: 0.0
+pancake - pancake: 1.0
+fried egg - fried_egg: 0.0
+scrambled egg - scrambled_egg: 0.0
+chocolate milk - chocolate_milk: 0.0
+tea - hot_tea: 0.0
+
+
+Is cooperative
+human scheduled actions
+-partner
+-human
+	pour [human, mixing_bowl_1, frying_pan], 0.0, 16.722366142341556
+	move [human, frying_pan, stove], 16.722366142341556, 23.47943605108514
+Human chose pour [human, mixing_bowl_1, frying_pan]
+Current Distribution
+pancake - pancake: 1.0
+
+
+NullAction [partner]
+	pancake - pancake
+		[pour [human, mixing_bowl_1, frying_pan], move [partner, frying_pan, stove]]
+
+NullAction [partner]: 22.970694464839546
+Partner chose to wait
+Executing action pour [human, mixing_bowl_1, frying_pan], 88.61474226196916, 106.42564631458757
+Executing action wait [partner] 88.61474226196916, 106.42564631458757
+Previous Distribution
+coffee with milk - coffee_with_milk: 0.0
+cereal with milk - cereal_with_milk: 0.0
+pancake - pancake: 1.0
+fried egg - fried_egg: 0.0
+scrambled egg - scrambled_egg: 0.0
+chocolate milk - chocolate_milk: 0.0
+tea - hot_tea: 0.0
+
+
+Update
+coffee with milk - coffee_with_milk: 0.0
+cereal with milk - cereal_with_milk: 0.0
+pancake - pancake: 1.0
+fried egg - fried_egg: 0.0
+scrambled egg - scrambled_egg: 0.0
+chocolate milk - chocolate_milk: 0.0
+tea - hot_tea: 0.0
+
+
+Is cooperative
+human scheduled actions
+-partner
+-human
+	move [human, frying_pan, stove], 0.0, 6.439241429390599
+Human chose move [human, frying_pan, stove]
+Current Distribution
+pancake - pancake: 1.0
+
+
+move [partner, frying_pan, stove]
+	pancake - pancake
+		[move [partner, frying_pan, stove]]
+
+NullAction [partner]
+	pancake - pancake
+		[move [human, frying_pan, stove]]
+
+move [partner, frying_pan, stove]: 6.411510791368125
+NullAction [partner]: 10.0
+Executing action move [human, frying_pan, stove], 106.42564631458757, 113.57323568904233
+Previous Distribution
+coffee with milk - coffee_with_milk: 0.0
+cereal with milk - cereal_with_milk: 0.0
+pancake - pancake: 1.0
+fried egg - fried_egg: 0.0
+scrambled egg - scrambled_egg: 0.0
+chocolate milk - chocolate_milk: 0.0
+tea - hot_tea: 0.0
+
+
+Update
+coffee with milk - coffee_with_milk: 0.0
+cereal with milk - cereal_with_milk: 0.0
+pancake - pancake: 1.0
+fried egg - fried_egg: 0.0
+scrambled egg - scrambled_egg: 0.0
+chocolate milk - chocolate_milk: 0.0
+tea - hot_tea: 0.0
+
+
+AdaptiveByFlow scheduling: true, 1, 1, 113.57323568904233, 113.57323568904233
+AdaptiveByFlow scheduling: true, time, 722
+
