@@ -7,6 +7,8 @@ import os
 import re
 import textwrap
 
+actual_agent_names = {"solo": "Solo", "Expert": "Full Knowledge", "AdaptiveByFlow scheduling: true":"Online update"}
+
 def calculate_overlap(agent1, agent2):
 
     #print("human: " + str(agent1))
@@ -45,20 +47,23 @@ if len(argv) > 1:
             
         max_time = 0.0
         experiment_agent = None
+        recipe = "unknown"
         for line in file.readlines():
             if "Evaluating " in line:
-                if experiment_agent != None:
-                    experiments.append([experiment_agent, action_times, data, overlap])
                 experiment_agent = line.replace("Evaluating ", "").strip()
+                experiment_agent = actual_agent_names[experiment_agent]
                 data = dict()
                 overlap = dict()
                 action_times = dict()
-                action_times["partner"] = []
-                action_times["human"] = []
-                recipe = "unknown"
-            if "Recipe" in line:
+                action_times["Partner"] = []
+                action_times["Human"] = []
+                
+            if "Recipe," in line:
                 items = line.split(', ')
-                recipe = items[1].replace('\n', '')
+                recipe = items[1].replace('\n', '').title();
+                if experiment_agent != None:
+                    experiments.append([experiment_agent, action_times, data, overlap, recipe])
+                
             if "Executing action" in line:
                 items = line.split(']')
                 #print(str(items))  
@@ -73,10 +78,9 @@ if len(argv) > 1:
                 times[1] = float(times[1])
                 max_time = max(max_time, times[1])
                 params = action.split('[')[1].split(', ')
-                agent = params[0]
+                agent = params[0].capitalize()
                 if times[1] > times[0]:
                     action_times[agent].append([action, times[0], times[1]])
-        experiments.append([experiment_agent, action_times, data, overlap])
         if recipe not in data.keys():
             data[recipe] = dict()
             overlap[recipe] = []
@@ -85,7 +89,7 @@ if len(argv) > 1:
         
 
         for experiment in experiments:
-            print("\\begin{frame}{" + experiment[0] + "}")
+            print("\\begin{frame}{" + experiment[0] + ", " + experiment[4] + "}")
             print("\\fontsize{0.15cm}{1em}")
             print("%" + experiment[0])
             print("\\begin{tikzpicture}[]")
@@ -101,7 +105,7 @@ if len(argv) > 1:
             for agent, condensed in action_times.iteritems():
                 if (len(condensed) > 0):
                     print("\\draw [thick] (0," + str(ypos) + ") -- (" + str(total_width) + "," + str(ypos) + ");")
-            
+                    print("\\node[align=left, above] at (0.0," + str(ypos + 0.6)+ ") {\\normalsize " + agent + "};")
                 if agent not in data[recipe].keys():
                     data[recipe][agent] = []
                 agents_time = 0.0
@@ -123,8 +127,7 @@ if len(argv) > 1:
                     #print("\\draw [thick] (" + str(start) + "," + str(ypos) + ") -- (" + str(end) + "," + str(ypos) + ");")
                     print("\\draw (" + str(start) + "," + str(ystart) + ") -- (" + str(start) + "," + str(yend) + ");")
                     print("\\draw (" + str(end) + "," + str(ystart) + ") -- (" + str(end) + "," + str(yend) + ");")
-                    if agent is "human":
-                        print("\\node[align=left, above] at (" + str(start) + "," + str(yend)+ ") {" + "{:.2f}".format(interval[1]) + "};")
+                    print("\\node[align=left, above] at (" + str(start) + "," + str(yend)+ ") {" + "{:.2f}".format(interval[1]) + "};")
                     if "wait" in action:
                         print("\\fill[blue!40!white] (" + str(start) + "," + str(ystart) + ") rectangle (" + str(end) + "," + str(yend) + ");")
                     else:
