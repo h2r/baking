@@ -75,7 +75,7 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 		if (args.length > 3 && args[3].equals("robots")) {
 			useRobots = true;
 		}
-		boolean useShelf = false;
+		boolean useShelf = true;
 		if (args.length > 4 && args[4].equals("shelf")) {
 			useShelf = true;
 		}

@@ -88,6 +88,19 @@ public class Workflow implements Iterable<Node> {
 		
 		while (nodesToCheck.peek() != null) {
 			Node node = nodesToCheck.poll();
+			
+			boolean isAncestor = false;
+			for (Integer id : dependencies) {
+				Node dependency = workflow.get(id);
+				if (node.ancestorOf(dependency)) {
+					isAncestor = true;
+					break;
+				}
+			}
+			if (isAncestor) {
+				continue;
+			}
+			
 			Workflow sorted = workflow.sort();
 			int newPosition = sorted.moveFarRight(node);
 			sorted.insert(newPosition + 1, newNode);
