@@ -420,7 +420,7 @@ public class SimulationHelper {
 		
 		double reward = (actionTimes.isEmpty()) ? 0 : Collections.max(actionTimes);
 		//double reward = SchedulingHelper.computeSequenceTime(startingState, actionSequence, timeGenerator);
-		return new EvaluationResult(partner.toString(), reward, isSuccess);
+		return new EvaluationResult(partner.toString(), human.getCurrentRecipe().toString(), reward, isSuccess);
 	}
 	
 	private static void agentWaitUntilNext(Agent agent,
@@ -554,7 +554,7 @@ public class SimulationHelper {
 		double score = timesPair.get(0);
 		//double score = SchedulingHelper.computeSequenceTime(startingState, actionSequence, timeGenerator);
 		boolean success = (onlySubgoals) ? human.isSubgoalFinished(currentState) : human.isSuccess(currentState);
-		return new EvaluationResult("solo", score, success);
+		return new EvaluationResult("solo", human.getCurrentRecipe().toString(), score, success);
 	}
 	
 	public static class EvaluationResult {
@@ -562,6 +562,7 @@ public class SimulationHelper {
 		private double successScore;
 		private int numberSuccesses;
 		private int numberTrials;
+		private String recipe;
 		private String agent;
 		
 		public EvaluationResult() {
@@ -571,12 +572,13 @@ public class SimulationHelper {
 			this.numberTrials = 0;
 		}
 		
-		public EvaluationResult(String agent, double score, boolean wasSuccess) {
+		public EvaluationResult(String agent, String recipe, double score, boolean wasSuccess) {
 			this.agent = agent;
 			this.score = score;
 			this.successScore = (wasSuccess) ? score : 0.0;
 			this.numberSuccesses = (wasSuccess) ? 1 : 0;
 			this.numberTrials = 1;
+			this.recipe = recipe;
 		}
 		public void incrementResults(double addedScore, boolean wasSuccess) {
 			this.score += addedScore;
@@ -604,7 +606,7 @@ public class SimulationHelper {
 		@Override
 		public String toString() {
 			double averageSuccessScore = (this.numberSuccesses == 0) ? 0.0 : this.successScore / this.numberSuccesses;
-			return this.agent + ", " + this.numberSuccesses + ", " + this.numberTrials + ", " + this.score / this.numberTrials + ", " + averageSuccessScore;
+			return this.agent + ", " + this.numberSuccesses + ", " + this.numberTrials + ", " + this.score / this.numberTrials + ", " + averageSuccessScore + ", " + this.recipe;
 		}
 	}
 	public static void run(int numTrials, Domain generalDomain, StateHashFactory hashingFactory,
@@ -701,7 +703,8 @@ public class SimulationHelper {
 			//
 			int start = -1;
 			for (int i = 0; i < agents.size(); i++) {
-				if (simState.partner.getAgentName().equals(agents.get(i).getAgentName())) {
+				//TODO there has to be a better way of checking equality
+				if (simState.partner.getClass().equals(agents.get(i).getClass())) {
 					start = i + 1;
 					break;
 				}
