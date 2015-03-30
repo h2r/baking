@@ -702,11 +702,11 @@ public class SimulationHelper {
 			int start = -1;
 			for (int i = 0; i < agents.size(); i++) {
 				if (simState.partner.getAgentName().equals(agents.get(i).getAgentName())) {
-					start = i;
+					start = i + 1;
 					break;
 				}
 			}
-			while (start != -1 || start < agents.size()) {
+			while (start != -1 && start < agents.size()) {
 				Agent nextAgent = agents.get(start++);
 				Map<String, Double> actionTimes =  new HashMap<String, Double>();
 				actionTimes.put(simState.human.getAgentName(), 0.0);
