@@ -671,17 +671,41 @@ public class SimulationHelper {
 	}
 	
 	public static void runFromSaved(String filename, Domain generalDomain, StateHashFactory hashingFactory,
-			List<Recipe> recipes, boolean subgoalsOnly) {
+			List<Recipe> recipes, List<Agent> agents, boolean subgoalsOnly) {
 		SimulationState simState = SimulationHelper.getStateFromSaved(generalDomain, hashingFactory, filename, recipes);
 		if (simState.partner == null) {
 			EvaluationResult result = SimulationHelper.evaluateOneAgent(simState, filename, generalDomain, hashingFactory, subgoalsOnly);
 			System.out.println(result.toString());
+			SimulationHelper.removeFile(filename);
 		} else {
 			EvaluationResult result = SimulationHelper.evaluateTwoAgents(simState, generalDomain, filename, subgoalsOnly, hashingFactory);
 			System.out.println(result.toString());
+			SimulationHelper.removeFile(filename);
+			//
+			int start = -1;
+			for (int i = 0; i < agents.size(); i++) {
+				if (simState.partner.getAgentName().equals(agents.get(i).getAgentName())) {
+					start = i;
+					break;
+				}
+			}
+			while (start != -1 && start < agents.size()) {
+				Agent nextAgent = agents.get(start++);
+				Map<String, Double> actionTimes =  new HashMap<String, Double>();
+				actionTimes.put(simState.human.getAgentName(), 0.0);
+				actionTimes.put(nextAgent.getAgentName(), 0.0);
+				if (nextAgent instanceof Human && !(nextAgent instanceof RandomRecipeAgent)) {
+					Human otherHuman = (Human)nextAgent;
+					otherHuman.setRecipe(otherHuman.getCurrentRecipe());
+				}
+				simState = new SimulationState(simState.startingState, simState.startingState, simState.human, nextAgent, actionTimes, simState.timeGenerator, 0.0);
+				result = SimulationHelper.evaluateTwoAgents(simState, generalDomain, filename, subgoalsOnly, hashingFactory);
+				SimulationHelper.removeFile(filename);
+				System.out.println(result.toString());
+			}
 		}
 		
-		SimulationHelper.removeFile(filename);
+		
 		
 	}
 	

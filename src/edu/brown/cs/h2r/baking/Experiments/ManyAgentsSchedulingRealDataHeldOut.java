@@ -119,7 +119,7 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 			SimulationHelper.run(numTrials, generalDomain, hashingFactory, allRecipes, timeGenerator, human, agents,
 				 choice, false, saveFile, useShelf, breakfastOrDessert);	
 		} else {
-			SimulationHelper.runFromSaved(saveFile, generalDomain, hashingFactory, allRecipes, false);	
+			SimulationHelper.runFromSaved(saveFile, generalDomain, hashingFactory, allRecipes, agents, false);	
 		}
 		//}
 		//}
