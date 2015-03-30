@@ -706,7 +706,7 @@ public class SimulationHelper {
 					break;
 				}
 			}
-			while (start != -1 && start < agents.size()) {
+			while (start != -1 || start < agents.size()) {
 				Agent nextAgent = agents.get(start++);
 				Map<String, Double> actionTimes =  new HashMap<String, Double>();
 				actionTimes.put(simState.human.getAgentName(), 0.0);

@@ -87,7 +87,7 @@ public class Human extends Agent {
 		this.setInitialState(startState);
 		String currentRecipeStr = (String)map.get("current_recipe");
 		if (currentRecipeStr != null) {
-			for (Recipe recipe : this.recipeLookup.keySet()) {
+			for (Recipe recipe : recipes) {
 				if (currentRecipeStr.equals(recipe.toString())) {
 					this.setRecipe(recipe);
 					break;
