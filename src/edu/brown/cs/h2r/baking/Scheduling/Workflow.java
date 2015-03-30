@@ -412,7 +412,7 @@ public class Workflow implements Iterable<Node> {
 			
 		}
 		
-		private Set<String> getResources(GroundedAction action) {
+		public static Set<String> getResources(GroundedAction action) {
 			
 			int start = 1;
 			int end = action.params.length;

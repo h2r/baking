@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.yaml.snakeyaml.Yaml;
@@ -44,6 +45,7 @@ import edu.brown.cs.h2r.baking.ObjectFactories.ToolFactory;
 import edu.brown.cs.h2r.baking.PropositionalFunctions.RecipeBotched;
 import edu.brown.cs.h2r.baking.Recipes.Recipe;
 import edu.brown.cs.h2r.baking.Scheduling.ActionTimeGenerator;
+import edu.brown.cs.h2r.baking.Scheduling.Workflow;
 import edu.brown.cs.h2r.baking.actions.BakingAction;
 import edu.brown.cs.h2r.baking.actions.BakingActionResult;
 import edu.brown.cs.h2r.baking.actions.MixAction;
@@ -297,6 +299,21 @@ public class SimulationHelper {
 						System.err.println("Action " + partnerAction.toString() + " cannot be performed");
 						System.err.println(result.getWhyFailed());
 						partnerAction = null;
+					}
+				}
+			}
+			
+			if (humanAction != null && partnerAction != null) {
+				double humanStart = actionMap.get(human.getAgentName());
+				double partnerStart = actionMap.get(partner.getAgentName());
+				Set<String> humanResources = Workflow.Node.getResources(humanAction);
+				Set<String> partnerResources = Workflow.Node.getResources(partnerAction);
+				humanResources.retainAll(partnerResources);
+				if (!humanResources.isEmpty()) {
+					if (humanStart < partnerStart) {
+						partnerAction = null;
+					} else if (humanStart >= partnerStart) {
+						humanAction = null;
 					}
 				}
 			}

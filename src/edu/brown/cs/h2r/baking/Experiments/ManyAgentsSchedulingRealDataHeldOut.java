@@ -113,7 +113,7 @@ public class ManyAgentsSchedulingRealDataHeldOut {
 		System.out.println("Agent, Successes, Trials, Average reward, average successful reward");
 		System.out.println("Number Recipes, " + allRecipes.size());
 		Path path = Paths.get(saveFile);
-		if (true){
+		if (!Files.exists(path)){
 			int choice = 2;//trialId % (agents.size() + 1);
 			
 			SimulationHelper.run(numTrials, generalDomain, hashingFactory, allRecipes, timeGenerator, human, agents,
