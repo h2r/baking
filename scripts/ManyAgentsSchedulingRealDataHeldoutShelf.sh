@@ -1,6 +1,6 @@
 #!/bin/sh
-TIMESTAMP=$(date +"%m_%d_%y__%M_%k")
-#echo $TIMESTAMP
+TIMESTAMP=$(date +"%m_%d_%y__%M_%H")
+echo $TIMESTAMP
 
 
 DIRECTORY="$HOME/results/real_data_ho_${JOB_ID:-$TIMESTAMP}"
@@ -12,4 +12,4 @@ SAVE_FILE="$SAVE_DIRECTORY/${4:-$SGE_TASK_ID}.save"
 mkdir -p $DIRECTORY
 mkdir -p $ERR_DIRECTORY
 mkdir -p $SAVE_DIRECTORY
-java -Xms1g -Xmx4g -cp ~/workspace/baking/h2r-baking.jar edu.brown.cs.h2r.baking.Experiments.ManyAgentsSchedulingRealDataHeldOut $SAVE_FILE ${SGE_TASK_ID:-1} breakfast norobots shelf    2>>"$ERR_DIRECTORY/${4:-$SGE_TASK_ID}.err" 1>> "$DIRECTORY/${2:-$SGE_TASK_ID}.csv"
+java -Xms1g -Xmx4g -cp ~/workspace/baking/h2r-baking.jar edu.brown.cs.h2r.baking.Experiments.ManyAgentsSchedulingRealDataHeldOut $SAVE_FILE ${SGE_TASK_ID:-1} breakfast norobots shelf    2>>"$ERR_DIRECTORY/${1:-$SGE_TASK_ID}.err" 1>> "$DIRECTORY/${2:-$SGE_TASK_ID}.csv"
