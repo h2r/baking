@@ -8,7 +8,7 @@ TIMESTAMP=$(date +"%m_%d_%y__%M_%H")
 
 NEWID=${JOB_ID:-$TIMESTAMP}
 EXPERIMENTID=${2:-$NEWID}
-export UNIQUEID=${$3:-SGE_TASK_ID}
+export UNIQUEID=${3:-SGE_TASK_ID}
 
 #echo $TIMESTAMP
 
