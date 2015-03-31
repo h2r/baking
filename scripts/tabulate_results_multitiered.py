@@ -81,20 +81,33 @@ if len(argv) > 1:
             print(str(edges) + ", " +  label + ", " + str( numpy.mean(line)) + " +- " + str(1.96 * numpy.std(line, ddof=1)/math.sqrt(len(line))))
             all_times[label].append([edges, numpy.mean(line), 1.96 * numpy.std(line, ddof=1)/math.sqrt(len(line))])
    
+    colors = ["blue", "red", "black", "green!40!black"]
+    keys = all_results.keys()
+    for label, results in all_results.iteritems():
+        if len(results) == 0:
+            keys.remove(label)
+    print(str(keys))
+    colors = dict(zip(keys, colors))
     print("Differences")
     for label, results in all_results.iteritems():
+        if len(results) == 0:
+            continue
         sorted_results = sorted(results, key= lambda line: int(line[0]))
-        print("% " + label)
+        print("\\addplot[color=" + colors[label] + ", error bars/.cd,y dir=both,y explicit]")
         print("coordinates {")
         for line in sorted_results:
             print("(" + str(line[0]) + ", " + str(line[1]) + " )\t+- (" + str(line[2]) + ", " + str(line[2]) + ")")
         print("};")
+        print("\\addlegendentry{" + label + "}")
     print("Times")
     for label, results in all_times.iteritems():
+        if len(results) == 0:
+            continue
         sorted_results = sorted(results, key= lambda line: int(line[0]))
-        print("% " + label)
+        print("\\addplot[color=" + colors[label] + ", error bars/.cd,y dir=both,y explicit]")
         print("coordinates {")
         for line in sorted_results:
             print("(" + str(line[0]) + ", " + str(line[1]) + " )\t+- (" + str(line[2]) + ", " + str(line[2]) + ")")
         print("};")
+        print("\\addlegendentry{" + label + "}")
 
