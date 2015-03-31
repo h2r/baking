@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #$1 Experiment type (real_data_ho)
 #$2 Experiment ID (JOB_ID)
 #$3 Unique Id (SGE_TASK_ID)
