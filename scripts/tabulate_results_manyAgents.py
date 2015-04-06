@@ -138,7 +138,8 @@ def print_results(data, data_recipes, total_files, valid_files):
         print("%%" + recipe)
         print("\t X Y Y_error Label")
         for agent, line in results_by_agent.iteritems():
-            print("\t{" + agent.strip() + "} " + str(line[2]) + " " + str(line[2]))
+            for num in line[2]:
+                print("\t{" + agent.strip() + "} " + str(num))
 
 
 
