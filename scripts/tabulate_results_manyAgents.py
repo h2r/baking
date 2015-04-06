@@ -131,8 +131,6 @@ def print_results(data, data_recipes, total_files, valid_files):
         if recipe not in results_recipes.keys():
             results_recipes[recipe] = []
         for agent, line in data_by_agent.iteritems():
-            if agent not in results_recipes.keys():
-                results_recipes[agent] = []
             for num in line[2]:
                 print(agent + " " + str(num))
             #print(str(agent) + ", " + recipe + ", "  + str(int(sum(line[0]))) + ", " + str(int(sum(line[1]))) + ", " + str( numpy.mean(line[2])) + ", " + str(numpy.mean(line[3])) + " +- " + str(1.96 * numpy.std(line[3], ddof=1)/math.sqrt(len(line[3]))))
