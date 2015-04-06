@@ -74,6 +74,7 @@ def extract_data(data_lines):
 
     condensed_recipes = dict()
     for recipe, data_agent in data_recipes.iteritems():
+        print(str(data_agent))
         for agent, lines in data_agent.iteritems():
             if agent != 'solo':
                 if agent not in condensed_recipes.keys():
