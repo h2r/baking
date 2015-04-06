@@ -129,17 +129,26 @@ def print_results(data, data_recipes, total_files, valid_files):
         if recipe not in results_recipes.keys():
             results_recipes[recipe] = []
         for agent, line in data_by_agent.iteritems():
-            #for num in line[2]:
+            #   for num in line[2]:
             #    print(agent + " " + str(num))
             results_recipes[recipe].append([agent, int(sum(line[0])), int(sum(line[1])), numpy.mean(line[2]), 1.96 * numpy.std(line[2], ddof=1)/math.sqrt(len(line[2])), numpy.mean(line[3]), 1.96 * numpy.std(line[3], ddof=1)/math.sqrt(len(line[3])), min(line[3]), max(line[3])])
         
    
-    for recipe, results_by_agent in data_recipes.iteritems():
-        print("%%" + recipe)
+    data_agents = dict()
+    for recipe, data_by_recipe in data_recipes.iteritems():
+        for agent, line in data_by_recipe.iteritems():
+            if agent not in data_agents.keys():
+                data_agents[agent] = dict()
+            if recipe not in data_agents[agent].keys():
+                data_agents[agent][recipe] = []
+            data_agents[agent][recipe].extend(line[2])
+
+    for agent, results_by_agent in data_agents.iteritems():
+        print("%%" + agent)
         print("\t X Y Y_error Label")
-        for agent, line in results_by_agent.iteritems():
-            for num in line[2]:
-                print("\t{" + agent.strip() + "} " + str(num))
+        for recipe, line in results_by_agent.iteritems():
+            for num in line:
+                print("\t{" + recipe.strip() + "} " + str(num))
 
 
 
