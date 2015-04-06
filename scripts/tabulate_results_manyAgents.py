@@ -149,6 +149,8 @@ def print_results(data, data_recipes, total_files, valid_files):
         for recipe, line in results_by_agent.iteritems():
             for num in line:
                 print("\t{" + recipe.strip() + "} " + str(num))
+    print("total: " + str(total_files) + " valid: " + str(valid_files))    
+    
 
 
 
