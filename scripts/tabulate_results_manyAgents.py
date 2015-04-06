@@ -128,7 +128,8 @@ def print_results(data, data_recipes, total_files, valid_files):
     for recipe, data_by_agent in data_recipes.iteritems():
         print("%" + recipe)
         print("\t X Y")
-    
+        if recipe not in results_recipes.keys():
+            results_recipes[recipe] = []
         for agent, line in data_by_agent.iteritems():
             if agent not in results_recipes.keys():
                 results_recipes[agent] = []
@@ -136,42 +137,14 @@ def print_results(data, data_recipes, total_files, valid_files):
                 print(agent + " " + str(num))
             #print(str(agent) + ", " + recipe + ", "  + str(int(sum(line[0]))) + ", " + str(int(sum(line[1]))) + ", " + str( numpy.mean(line[2])) + ", " + str(numpy.mean(line[3])) + " +- " + str(1.96 * numpy.std(line[3], ddof=1)/math.sqrt(len(line[3]))))
 
-            results_recipes[agent].append([recipe, int(sum(line[0])), int(sum(line[1])), numpy.mean(line[2]), 1.96 * numpy.std(line[2], ddof=1)/math.sqrt(len(line[2])), numpy.mean(line[3]), 1.96 * numpy.std(line[3], ddof=1)/math.sqrt(len(line[3])), min(line[3]), max(line[3])])
+            results_recipes[recipe].append([agent, int(sum(line[0])), int(sum(line[1])), numpy.mean(line[2]), 1.96 * numpy.std(line[2], ddof=1)/math.sqrt(len(line[2])), numpy.mean(line[3]), 1.96 * numpy.std(line[3], ddof=1)/math.sqrt(len(line[3])), min(line[3]), max(line[3])])
         print("\n\n")
         
     print("\n\n\n\n\n\n")
-    sorted_results = sorted(results, key= lambda line: line[0])
-
-    yCoords = "symbolic y coords={"
-    for line in sorted_results:
-        yCoords = yCoords + "{" + str(line[0]) + "},"
-    yCoords = yCoords + "}"
-    print(yCoords)
-
-    for line in sorted_results:
-        print(str(line[0]) + " min: " + str(line[7]) + " max: " + str(line[8]))
-
-    print("coordinates {")
-    for line in sorted_results:
-        print("(" + str(float(line[1]) / line[2])  + "," + str(line[0]) + ")")
-    print("};")
-
-    print("coordinates {")
-    for line in sorted_results:
-        print("(" + str(line[3]) + "," + str(line[0]) + ")\t+- (" + str(line[4]) + ", " + str(line[4]) + ")")
-    print("};")
-
-    print("coordinates {")
-    for line in sorted_results:
-        print("("  + str(line[5]) + "," + str(line[0]) + ")\t+- (" + str(line[6]) + ", " + str(line[6]) + ")")
-    print("};")
-
-
-
-
-    for agent, results_by_agent in results_recipes.iteritems():
+    
+    for recipe, results_by_agent in results_recipes.iteritems():
         sorted_results = sorted(results_by_agent, key= lambda line: line[0])
-        print("%%" + agent)
+        print("%%" + recipe)
         print("\t X Y Y_error Label")
         for line in sorted_results:
             print("\t{" + line[0].strip() + "} " + str(line[3]) + " " + str(line[4]))
