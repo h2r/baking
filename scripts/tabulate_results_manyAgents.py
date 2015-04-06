@@ -87,8 +87,9 @@ def extract_data(data_lines):
                     condensed_recipes[recipe][agent][2].append(lines[2][i] - data_agent['solo'][2][i])
                 for i in range(len(lines[3])):
                     condensed_recipes[recipe][agent][3].append(lines[3][i] - data_agent['solo'][3][i])
-                
-    return [condensed_data, condensed_recipes]
+     
+    return [data, data_recipes]           
+    #return [condensed_data, condensed_recipes]
 
 def append_data(data, data_recipes, append):
     newData = append[0]
