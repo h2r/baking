@@ -59,7 +59,33 @@ def extract_data(data_lines):
     print("\n")
     if len(data.keys()) < 3:
         return None
-    return [data, data_recipes]
+
+    condensed_data = dict()
+    for agent, lines in data.iteritems():
+        if agent != 'solo':
+            if agent not in condensed_data.keys():
+                condensed_data[agent] = [[],[],[],[]]
+            condensed_data[agent][0].extend(lines[0])
+            condensed_data[agent][1].extend(lines[1])
+            for i in range(len(lines[2])):
+                condensed_data[agent][2].append(lines[2][i] - data['solo'][2][i])
+            for i in range(len(lines[3])):
+                condensed_data[agent][3].append(lines[3][i] - data['solo'][3][i])
+
+    condensed_recipes = dict()
+    for recipe, data_agent in data_recipes.iteritems():
+        for agent, lines in data_agent.iteritems():
+            if agent != 'solo':
+                if agent not in condensed_recipes.keys():
+                    condensed_recipes[agent] = [[],[],[],[]]
+                condensed_recipes[agent][0].extend(lines[0])
+                condensed_recipes[agent][1].extend(lines[1])
+                for i in range(len(lines[2])):
+                    condensed_recipes[agent][2].append(lines[2][i] - data_agent['solo'][2][i])
+                for i in range(len(lines[3])):
+                    condensed_recipes[agent][3].append(lines[3][i] - data_agent['solo'][3][i])
+                
+    return [condensed_data, condensed_recipes]
 
 def append_data(data, data_recipes, append):
     newData = append[0]
