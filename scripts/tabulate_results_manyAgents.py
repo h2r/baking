@@ -126,21 +126,15 @@ def print_results(data, data_recipes, total_files, valid_files):
     print("\n\n")
     results_recipes = dict()
     for recipe, data_by_agent in data_recipes.iteritems():
-        print("%" + recipe)
-        print("\t X Y")
         if recipe not in results_recipes.keys():
             results_recipes[recipe] = []
         for agent, line in data_by_agent.iteritems():
             for num in line[2]:
                 print(agent + " " + str(num))
-            #print(str(agent) + ", " + recipe + ", "  + str(int(sum(line[0]))) + ", " + str(int(sum(line[1]))) + ", " + str( numpy.mean(line[2])) + ", " + str(numpy.mean(line[3])) + " +- " + str(1.96 * numpy.std(line[3], ddof=1)/math.sqrt(len(line[3]))))
-
             results_recipes[recipe].append([agent, int(sum(line[0])), int(sum(line[1])), numpy.mean(line[2]), 1.96 * numpy.std(line[2], ddof=1)/math.sqrt(len(line[2])), numpy.mean(line[3]), 1.96 * numpy.std(line[3], ddof=1)/math.sqrt(len(line[3])), min(line[3]), max(line[3])])
-        print("\n\n")
         
-    print("\n\n\n\n\n\n")
-    
-    for recipe, results_by_agent in results_recipes.iteritems():
+   
+    for recipe, results_by_agent in data_recipes.iteritems():
         sorted_results = sorted(results_by_agent, key= lambda line: line[0])
         print("%%" + recipe)
         print("\t X Y Y_error Label")
