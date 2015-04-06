@@ -129,8 +129,8 @@ def print_results(data, data_recipes, total_files, valid_files):
         if recipe not in results_recipes.keys():
             results_recipes[recipe] = []
         for agent, line in data_by_agent.iteritems():
-            for num in line[2]:
-                print(agent + " " + str(num))
+            #for num in line[2]:
+            #    print(agent + " " + str(num))
             results_recipes[recipe].append([agent, int(sum(line[0])), int(sum(line[1])), numpy.mean(line[2]), 1.96 * numpy.std(line[2], ddof=1)/math.sqrt(len(line[2])), numpy.mean(line[3]), 1.96 * numpy.std(line[3], ddof=1)/math.sqrt(len(line[3])), min(line[3]), max(line[3])])
         
    
@@ -139,11 +139,8 @@ def print_results(data, data_recipes, total_files, valid_files):
         print("%%" + recipe)
         print("\t X Y Y_error Label")
         for line in sorted_results:
-            print("\t{" + line[0].strip() + "} " + str(line[3]) + " " + str(line[4]))
+            print("\t{" + line[0].strip() + "} " + str(line[2]) + " " + str(line[2]))
 
-        print("\n\n")
-        for line in sorted_results:
-            print(str(line[0]) + " min: " + str(line[7]) + " max: " + str(line[8]))
 
 
 if __name__ == "__main__":
