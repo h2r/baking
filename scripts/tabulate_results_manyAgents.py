@@ -88,8 +88,8 @@ def extract_data(data_lines):
                 for i in range(len(lines[3])):
                     condensed_recipes[recipe][agent][3].append(lines[3][i] - data_agent['solo'][3][i])
      
-    return [data, data_recipes]           
-    #return [condensed_data, condensed_recipes]
+    #return [data, data_recipes]           
+    return [condensed_data, condensed_recipes]
 
 def append_data(data, data_recipes, append):
     newData = append[0]
@@ -117,7 +117,7 @@ def print_results(data, data_recipes, total_files, valid_files):
         if sum(line[0]) == 0:
             continue
         print(str(agent) + ", " + str(int(sum(line[0]))) + ", " + str(int(sum(line[1]))) + ", " + str( numpy.mean(line[2])) + ", " + str(numpy.mean(line[3])) + " +- " + str(1.96 * numpy.std(line[3], ddof=1)/math.sqrt(len(line[3]))))
-        results.append([agent, int(sum(line[0])), int(sum(line[1])), numpy.mean(line[2]), 1.96 * numpy.std(line[2], ddof=1)/math.sqrt(len(line[2])), numpy.mean(line[3]), 1.96 * numpy.std(line[3], ddof=1)/math.sqrt(len(line[3]))])
+        results.append([agent, int(sum(line[0])), int(sum(line[1])), numpy.mean(line[2]), 1.96 * numpy.std(line[2], ddof=1)/math.sqrt(len(line[2])), numpy.mean(line[3]), 1.96 * numpy.std(line[3], ddof=1)/math.sqrt(len(line[3])), min(line[3]), max(line[3])])
 
     results_recipes = dict()
     for recipe, data_by_agent in data_recipes.iteritems():
@@ -126,7 +126,7 @@ def print_results(data, data_recipes, total_files, valid_files):
                 results_recipes[agent] = []
             print(str(agent) + ", " + recipe + ", "  + str(int(sum(line[0]))) + ", " + str(int(sum(line[1]))) + ", " + str( numpy.mean(line[2])) + ", " + str(numpy.mean(line[3])) + " +- " + str(1.96 * numpy.std(line[3], ddof=1)/math.sqrt(len(line[3]))))
         
-            results_recipes[agent].append([recipe, int(sum(line[0])), int(sum(line[1])), numpy.mean(line[2]), 1.96 * numpy.std(line[2], ddof=1)/math.sqrt(len(line[2])), numpy.mean(line[3]), 1.96 * numpy.std(line[3], ddof=1)/math.sqrt(len(line[3]))])
+            results_recipes[agent].append([recipe, int(sum(line[0])), int(sum(line[1])), numpy.mean(line[2]), 1.96 * numpy.std(line[2], ddof=1)/math.sqrt(len(line[2])), numpy.mean(line[3]), 1.96 * numpy.std(line[3], ddof=1)/math.sqrt(len(line[3])), min(line[3]), max(line[3])])
 
     print("\n\n\n\n\n\n")
     sorted_results = sorted(results, key= lambda line: line[0])
@@ -137,6 +137,8 @@ def print_results(data, data_recipes, total_files, valid_files):
     yCoords = yCoords + "}"
     print(yCoords)
 
+    for line in sorted_results:
+        print(str(line[0]) + " min: " + line[7] + " max: " + line[8])
 
     print("coordinates {")
     for line in sorted_results:
@@ -164,6 +166,9 @@ def print_results(data, data_recipes, total_files, valid_files):
             print("\t{" + line[0].strip() + "} " + str(line[3]) + " " + str(line[4]))
 
         print("\n\n")
+        for line in sorted_results:
+            print(str(line[0]) + " min: " + line[7] + " max: " + line[8])
+
 
 if __name__ == "__main__":
 
