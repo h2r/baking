@@ -113,18 +113,24 @@ def print_results(data, data_recipes, total_files, valid_files):
     results = []
     print("total: " + str(total_files) + " valid: " + str(valid_files))    
     print("Agent, Successes, Trials, Average reward, average successful reward")
+
+    print("\t X Y")
     for agent, line in data.iteritems():
         if sum(line[0]) == 0:
             continue
-        print(str(agent) + ", " + str(int(sum(line[0]))) + ", " + str(int(sum(line[1]))) + ", " + str( numpy.mean(line[2])) + ", " + str(numpy.mean(line[3])) + " +- " + str(1.96 * numpy.std(line[3], ddof=1)/math.sqrt(len(line[3]))))
+        print(agent + " " + line[2])
+        #print(str(agent) + ", " + str(int(sum(line[0]))) + ", " + str(int(sum(line[1]))) + ", " + str( numpy.mean(line[2])) + ", " + str(numpy.mean(line[3])) + " +- " + str(1.96 * numpy.std(line[3], ddof=1)/math.sqrt(len(line[3]))))
         results.append([agent, int(sum(line[0])), int(sum(line[1])), numpy.mean(line[2]), 1.96 * numpy.std(line[2], ddof=1)/math.sqrt(len(line[2])), numpy.mean(line[3]), 1.96 * numpy.std(line[3], ddof=1)/math.sqrt(len(line[3])), min(line[3]), max(line[3])])
 
+    print("\t X Y")
     results_recipes = dict()
     for recipe, data_by_agent in data_recipes.iteritems():
         for agent, line in data_by_agent.iteritems():
             if agent not in results_recipes.keys():
                 results_recipes[agent] = []
-            print(str(agent) + ", " + recipe + ", "  + str(int(sum(line[0]))) + ", " + str(int(sum(line[1]))) + ", " + str( numpy.mean(line[2])) + ", " + str(numpy.mean(line[3])) + " +- " + str(1.96 * numpy.std(line[3], ddof=1)/math.sqrt(len(line[3]))))
+            print(agent + " " + line[2])
+        
+            #print(str(agent) + ", " + recipe + ", "  + str(int(sum(line[0]))) + ", " + str(int(sum(line[1]))) + ", " + str( numpy.mean(line[2])) + ", " + str(numpy.mean(line[3])) + " +- " + str(1.96 * numpy.std(line[3], ddof=1)/math.sqrt(len(line[3]))))
         
             results_recipes[agent].append([recipe, int(sum(line[0])), int(sum(line[1])), numpy.mean(line[2]), 1.96 * numpy.std(line[2], ddof=1)/math.sqrt(len(line[2])), numpy.mean(line[3]), 1.96 * numpy.std(line[3], ddof=1)/math.sqrt(len(line[3])), min(line[3]), max(line[3])])
 
