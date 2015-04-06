@@ -135,11 +135,11 @@ def print_results(data, data_recipes, total_files, valid_files):
         
    
     for recipe, results_by_agent in data_recipes.iteritems():
-        sorted_results = sorted(results_by_agent, key= lambda line: line[0])
         print("%%" + recipe)
         print("\t X Y Y_error Label")
-        for line in sorted_results:
-            print("\t{" + line[0].strip() + "} " + str(line[2]) + " " + str(line[2]))
+        for agent, line in results_by_agent.iteritems():
+            for line in sorted_results:
+                print("\t{" + agent.strip() + "} " + str(line[2]) + " " + str(line[2]))
 
 
 
