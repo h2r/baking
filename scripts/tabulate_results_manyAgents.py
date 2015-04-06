@@ -81,12 +81,12 @@ def extract_data(data_lines):
             if agent != 'solo':
                 if agent not in condensed_recipes[recipe].keys():
                     condensed_recipes[recipe][agent] = [[],[],[],[]]
-                condensed_recipes[agent][0].extend(lines[0])
-                condensed_recipes[agent][1].extend(lines[1])
+                condensed_recipes[recipe][agent][0].extend(lines[0])
+                condensed_recipes[recipe][agent][1].extend(lines[1])
                 for i in range(len(lines[2])):
-                    condensed_recipes[agent][2].append(lines[2][i] - data_agent['solo'][2][i])
+                    condensed_recipes[recipe][agent][2].append(lines[2][i] - data_agent['solo'][2][i])
                 for i in range(len(lines[3])):
-                    condensed_recipes[agent][3].append(lines[3][i] - data_agent['solo'][3][i])
+                    condensed_recipes[recipe][agent][3].append(lines[3][i] - data_agent['solo'][3][i])
                 
     return [condensed_data, condensed_recipes]
 
