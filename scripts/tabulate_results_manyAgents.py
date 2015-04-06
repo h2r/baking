@@ -75,10 +75,12 @@ def extract_data(data_lines):
     condensed_recipes = dict()
     for recipe, data_agent in data_recipes.iteritems():
         print(str(data_agent))
+        if recipe not in condensed_recipes.keys():
+            condensed_recipes[recipe] = dict()
         for agent, lines in data_agent.iteritems():
             if agent != 'solo':
-                if agent not in condensed_recipes.keys():
-                    condensed_recipes[agent] = [[],[],[],[]]
+                if agent not in condensed_recipes[recipe].keys():
+                    condensed_recipes[recipe][agent] = [[],[],[],[]]
                 condensed_recipes[agent][0].extend(lines[0])
                 condensed_recipes[agent][1].extend(lines[1])
                 for i in range(len(lines[2])):
