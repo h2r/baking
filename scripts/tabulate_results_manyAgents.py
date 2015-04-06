@@ -138,7 +138,7 @@ def print_results(data, data_recipes, total_files, valid_files):
     print(yCoords)
 
     for line in sorted_results:
-        print(str(line[0]) + " min: " + line[7] + " max: " + line[8])
+        print(str(line[0]) + " min: " + str(line[7]) + " max: " + str(line[8]))
 
     print("coordinates {")
     for line in sorted_results:
@@ -167,7 +167,7 @@ def print_results(data, data_recipes, total_files, valid_files):
 
         print("\n\n")
         for line in sorted_results:
-            print(str(line[0]) + " min: " + line[7] + " max: " + line[8])
+            print(str(line[0]) + " min: " + str(line[7]) + " max: " + str(line[8]))
 
 
 if __name__ == "__main__":
