@@ -74,19 +74,18 @@ def extract_data(data_lines):
 
     condensed_recipes = dict()
     for recipe, data_agent in data_recipes.iteritems():
-        print(str(data_agent))
         if recipe not in condensed_recipes.keys():
             condensed_recipes[recipe] = dict()
         for agent, lines in data_agent.iteritems():
-            if agent != 'solo':
-                if agent not in condensed_recipes[recipe].keys():
-                    condensed_recipes[recipe][agent] = [[],[],[],[]]
-                condensed_recipes[recipe][agent][0].extend(lines[0])
-                condensed_recipes[recipe][agent][1].extend(lines[1])
-                for i in range(len(lines[2])):
-                    condensed_recipes[recipe][agent][2].append(lines[2][i] - data_agent['solo'][2][i])
-                for i in range(len(lines[3])):
-                    condensed_recipes[recipe][agent][3].append(lines[3][i] - data_agent['solo'][3][i])
+            if agent not in condensed_recipes[recipe].keys():
+                condensed_recipes[recipe][agent] = [[],[],[],[]]
+            condensed_recipes[recipe][agent][0].extend(lines[0])
+            condensed_recipes[recipe][agent][1].extend(lines[1])
+            print(agent + ", " + str(lines[2]))
+            for i in range(len(lines[2])):
+                condensed_recipes[recipe][agent][2].append(lines[2][i] - data_agent['solo'][2][i])
+            for i in range(len(lines[3])):
+                condensed_recipes[recipe][agent][3].append(lines[3][i] - data_agent['solo'][3][i])
      
     #return [data, data_recipes]           
     return [condensed_data, condensed_recipes]
@@ -114,12 +113,11 @@ def print_results(data, data_recipes, total_files, valid_files):
     print("total: " + str(total_files) + " valid: " + str(valid_files))    
     print("Agent, Successes, Trials, Average reward, average successful reward")
 
-    print("\t X Y")
+    print("\t X Y Y_error Label")
     for agent, line in data.iteritems():
         if sum(line[0]) == 0:
             continue
-        for num in line[2]:
-            print(agent + " " + str(num))
+        print("\t{" + agent.strip() + "} " + str(numpy.mean(line[2])) + " " + str(1.96 * numpy.std(line[2], ddof=1)/math.sqrt(len(line[2]))))
         #print(str(agent) + ", " + str(int(sum(line[0]))) + ", " + str(int(sum(line[1]))) + ", " + str( numpy.mean(line[2])) + ", " + str(numpy.mean(line[3])) + " +- " + str(1.96 * numpy.std(line[3], ddof=1)/math.sqrt(len(line[3]))))
         results.append([agent, int(sum(line[0])), int(sum(line[1])), numpy.mean(line[2]), 1.96 * numpy.std(line[2], ddof=1)/math.sqrt(len(line[2])), numpy.mean(line[3]), 1.96 * numpy.std(line[3], ddof=1)/math.sqrt(len(line[3])), min(line[3]), max(line[3])])
 
@@ -127,28 +125,29 @@ def print_results(data, data_recipes, total_files, valid_files):
     results_recipes = dict()
     for recipe, data_by_agent in data_recipes.iteritems():
         if recipe not in results_recipes.keys():
-            results_recipes[recipe] = []
+            results_recipes[recipe] = dict()
         for agent, line in data_by_agent.iteritems():
             #   for num in line[2]:
             #    print(agent + " " + str(num))
-            results_recipes[recipe].append([agent, int(sum(line[0])), int(sum(line[1])), numpy.mean(line[2]), 1.96 * numpy.std(line[2], ddof=1)/math.sqrt(len(line[2])), numpy.mean(line[3]), 1.96 * numpy.std(line[3], ddof=1)/math.sqrt(len(line[3])), min(line[3]), max(line[3])])
+            if agent not in results_recipes.keys():
+                results_recipes[recipe][agent] = []
+
+            results_recipes[recipe][agent] = [agent, int(sum(line[0])), int(sum(line[1])), numpy.mean(line[2]), 1.96 * numpy.std(line[2], ddof=1)/math.sqrt(len(line[2])), numpy.mean(line[3]), 1.96 * numpy.std(line[3], ddof=1)/math.sqrt(len(line[3])), min(line[3]), max(line[3])]
         
    
     data_agents = dict()
-    for recipe, data_by_recipe in data_recipes.iteritems():
+    for recipe, data_by_recipe in results_recipes.iteritems():
         for agent, line in data_by_recipe.iteritems():
             if agent not in data_agents.keys():
                 data_agents[agent] = dict()
-            if recipe not in data_agents[agent].keys():
-                data_agents[agent][recipe] = []
-            data_agents[agent][recipe].extend(line[2])
+            data_agents[agent][recipe] = line
 
     for agent, results_by_agent in data_agents.iteritems():
         print("%%" + agent)
         print("\t X Y Y_error Label")
         for recipe, line in results_by_agent.iteritems():
-            for num in line:
-                print("\t{" + recipe.strip() + "} " + str(num))
+            print("\t{" + recipe.strip() + "} " + str(line[3]))
+                
     print("total: " + str(total_files) + " valid: " + str(valid_files))    
     
 
